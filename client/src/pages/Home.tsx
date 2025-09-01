@@ -34,19 +34,19 @@ export default function Home() {
   }, [isAuthenticated, isLoading, toast]);
 
   // Fetch recent posts
-  const { data: recentPosts = [], isLoading: postsLoading } = useQuery({
+  const { data: recentPosts = [], isLoading: postsLoading } = useQuery<Post[]>({
     queryKey: ["/api/feed"],
     retry: false,
   });
 
   // Fetch upcoming events
-  const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery({
+  const { data: upcomingEvents = [], isLoading: eventsLoading } = useQuery<Event[]>({
     queryKey: ["/api/events"],
     retry: false,
   });
 
   // Fetch connect requests
-  const { data: connectRequests = [], isLoading: requestsLoading } = useQuery({
+  const { data: connectRequests = [], isLoading: requestsLoading } = useQuery<any[]>({
     queryKey: ["/api/connect-requests"],
     retry: false,
   });

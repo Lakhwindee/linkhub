@@ -12,7 +12,11 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const user = isAuthenticated ? { 
     firstName: 'Demo', 
     lastName: 'User', 
-    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' 
+    displayName: 'Demo User',
+    username: 'demo',
+    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    plan: 'creator'
   } : null;
   
   const { theme, setTheme } = useTheme();
