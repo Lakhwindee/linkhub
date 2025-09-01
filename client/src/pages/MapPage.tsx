@@ -17,13 +17,13 @@ export default function MapPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header with location controls */}
-      <div className="bg-background border-b border-border p-4">
+      <div className="bg-green-50 dark:bg-green-900 border-b border-border p-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div className="flex items-center space-x-2">
               <MapPin className="w-6 h-6 text-green-600" />
-              <h1 className="text-2xl font-bold text-foreground" data-testid="heading-discover">
-                Discover Travelers
+              <h1 className="text-2xl font-bold text-green-800 dark:text-green-200" data-testid="heading-discover">
+                Discover Travelers - UPDATED
               </h1>
             </div>
             
