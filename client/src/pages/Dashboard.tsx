@@ -166,10 +166,12 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {/* Google Earth-like Map with full controls */}
-                  <Map 
-                    onUserSelect={(user) => console.log('Selected user:', user)}
-                    height="h-96"
-                  />
+                  <div className="w-full">
+                    <Map 
+                      onUserSelect={(user) => console.log('Selected user:', user)}
+                      height="h-96"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
