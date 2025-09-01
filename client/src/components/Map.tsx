@@ -21,6 +21,8 @@ interface MapProps {
   height?: string;
   selectedCountry?: string;
   selectedCity?: string;
+  center?: { lat: number; lng: number };
+  zoom?: number;
 }
 
 interface CountryData {
@@ -79,7 +81,7 @@ const CITIES: Record<string, CityData[]> = {
   ],
 };
 
-export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCity }: MapProps) {
+export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCity, center, zoom }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -180,24 +182,31 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     enabled: !!userLocation || !!currentCountry,
   });
 
-  // Update map view when country/city props change
+  // Update map view when center/zoom props change
   useEffect(() => {
-    if (mapInstanceRef.current && selectedCountry) {
+    if (mapInstanceRef.current && center && zoom) {
+      mapInstanceRef.current.setView([center.lat, center.lng], zoom);
+    }
+  }, [center, zoom]);
+
+  // Fallback: Update map view when country/city props change (for internal controls)
+  useEffect(() => {
+    if (mapInstanceRef.current && selectedCountry && !center) {
       const country = COUNTRIES.find(c => c.code === selectedCountry);
       if (country) {
         mapInstanceRef.current.setView([country.lat, country.lng], country.zoom);
       }
     }
-  }, [selectedCountry]);
+  }, [selectedCountry, center]);
 
   useEffect(() => {
-    if (mapInstanceRef.current && selectedCity && selectedCountry) {
+    if (mapInstanceRef.current && selectedCity && selectedCountry && !center) {
       const city = CITIES[selectedCountry]?.find(c => c.name === selectedCity);
       if (city) {
         mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
       }
     }
-  }, [selectedCity, selectedCountry]);
+  }, [selectedCity, selectedCountry, center]);
 
   // Load Leaflet dynamically
   useEffect(() => {
@@ -348,87 +357,92 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
 
   return (
     <div className="space-y-4">
-      {/* Live Location Controls */}
-      <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
-          <div className="flex items-center space-x-3">
-            <Radar className={`w-5 h-5 ${liveLocationEnabled ? 'text-green-500 animate-pulse' : 'text-muted-foreground'}`} />
-            <div>
-              <Label htmlFor="live-location" className="text-sm font-medium">Live Location Sharing</Label>
-              <p className="text-xs text-muted-foreground">
-                {liveLocationEnabled ? '📍 Sharing your live location with connected users' : '🔒 Location sharing is disabled'}
-              </p>
+      {/* Show search/selection controls only if no external center/zoom control is provided */}
+      {!center && (
+        <>
+          {/* Live Location Controls */}
+          <div className="flex items-center justify-between p-4 bg-card border rounded-lg">
+              <div className="flex items-center space-x-3">
+                <Radar className={`w-5 h-5 ${liveLocationEnabled ? 'text-green-500 animate-pulse' : 'text-muted-foreground'}`} />
+                <div>
+                  <Label htmlFor="live-location" className="text-sm font-medium">Live Location Sharing</Label>
+                  <p className="text-xs text-muted-foreground">
+                    {liveLocationEnabled ? '📍 Sharing your live location with connected users' : '🔒 Location sharing is disabled'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="live-location"
+                checked={liveLocationEnabled}
+                onCheckedChange={setLiveLocationEnabled}
+                data-testid="switch-live-location"
+              />
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
+                placeholder="Search by username, city, or country..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+                data-testid="input-search-users"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Select value={currentCountry} onValueChange={(value) => {
+                setInternalSelectedCountry(value);
+                setInternalSelectedCity("");
+                if (value && value !== "all") {
+                  const country = COUNTRIES.find(c => c.code === value);
+                  if (country && mapInstanceRef.current) {
+                    mapInstanceRef.current.setView([country.lat, country.lng], country.zoom);
+                  }
+                }
+              }}>
+                <SelectTrigger className="w-full sm:w-48" data-testid="select-country">
+                  <Globe className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Select Country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">🌍 All Countries</SelectItem>
+                  {COUNTRIES.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {country.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {currentCountry && currentCountry !== "all" && CITIES[currentCountry] && (
+                <Select value={currentCity} onValueChange={(value) => {
+                  setInternalSelectedCity(value);
+                  if (value && value !== "all") {
+                    const city = CITIES[currentCountry]?.find(c => c.name === value);
+                    if (city && mapInstanceRef.current) {
+                      mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
+                    }
+                  }
+                }}>
+                  <SelectTrigger className="w-full sm:w-48" data-testid="select-city">
+                    <Navigation className="w-4 h-4 mr-2" />
+                    <SelectValue placeholder="Select City" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">🏙️ All Cities</SelectItem>
+                    {CITIES[currentCountry]?.map((city) => (
+                      <SelectItem key={city.name} value={city.name}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
-          <Switch
-            id="live-location"
-            checked={liveLocationEnabled}
-            onCheckedChange={setLiveLocationEnabled}
-            data-testid="switch-live-location"
-          />
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Search by username, city, or country..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            data-testid="input-search-users"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Select value={currentCountry} onValueChange={(value) => {
-            setInternalSelectedCountry(value);
-            setInternalSelectedCity("");
-            if (value && value !== "all") {
-              const country = COUNTRIES.find(c => c.code === value);
-              if (country && mapInstanceRef.current) {
-                mapInstanceRef.current.setView([country.lat, country.lng], country.zoom);
-              }
-            }
-          }}>
-            <SelectTrigger className="w-full sm:w-48" data-testid="select-country">
-              <Globe className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Select Country" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">🌍 All Countries</SelectItem>
-              {COUNTRIES.map((country) => (
-                <SelectItem key={country.code} value={country.code}>
-                  {country.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {currentCountry && currentCountry !== "all" && CITIES[currentCountry] && (
-            <Select value={currentCity} onValueChange={(value) => {
-              setInternalSelectedCity(value);
-              if (value && value !== "all") {
-                const city = CITIES[currentCountry]?.find(c => c.name === value);
-                if (city && mapInstanceRef.current) {
-                  mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
-                }
-              }
-            }}>
-              <SelectTrigger className="w-full sm:w-48" data-testid="select-city">
-                <Navigation className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Select City" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">🏙️ All Cities</SelectItem>
-                {CITIES[currentCountry]?.map((city) => (
-                  <SelectItem key={city.name} value={city.name}>
-                    {city.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        </div>
-      </div>
+        </>
+      )}
 
       {/* Map Container */}
       <div className={`${height} w-full rounded-xl border border-border overflow-hidden relative`}>
