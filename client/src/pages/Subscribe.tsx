@@ -11,11 +11,10 @@ import { Badge } from "@/components/ui/badge";
 import { CheckIcon, DollarSign, Star, Heart, Users, MapPin, MessageCircle, Calendar, Crown, Zap } from "lucide-react";
 import { Link } from "wouter";
 
-// Load Stripe
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
-}
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+// Load Stripe (only if key is available)
+const stripePromise = import.meta.env.VITE_STRIPE_PUBLIC_KEY 
+  ? loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY)
+  : null;
 
 const CheckoutForm = ({ plan }: { plan: string }) => {
   const stripe = useStripe();
