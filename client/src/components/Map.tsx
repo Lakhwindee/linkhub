@@ -19,6 +19,8 @@ let L: any;
 interface MapProps {
   onUserSelect?: (user: User) => void;
   height?: string;
+  selectedCountry?: string;
+  selectedCity?: string;
 }
 
 interface CountryData {
@@ -77,13 +79,17 @@ const CITIES: Record<string, CityData[]> = {
   ],
 };
 
-export function Map({ onUserSelect, height = "h-96" }: MapProps) {
+export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCity }: MapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
-  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [internalSelectedCountry, setInternalSelectedCountry] = useState<string>("");
+  const [internalSelectedCity, setInternalSelectedCity] = useState<string>("");
+  
+  // Use props if provided, otherwise use internal state
+  const currentCountry = selectedCountry || internalSelectedCountry;
+  const currentCity = selectedCity || internalSelectedCity;
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [connectingTo, setConnectingTo] = useState<string | null>(null);
   const [liveLocationEnabled, setLiveLocationEnabled] = useState<boolean>(false);
@@ -170,9 +176,28 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
 
   // Fetch nearby users
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["/api/discover", userLocation?.[0], userLocation?.[1], selectedCountry],
-    enabled: !!userLocation || !!selectedCountry,
+    queryKey: ["/api/discover", userLocation?.[0], userLocation?.[1], currentCountry],
+    enabled: !!userLocation || !!currentCountry,
   });
+
+  // Update map view when country/city props change
+  useEffect(() => {
+    if (mapInstanceRef.current && selectedCountry) {
+      const country = COUNTRIES.find(c => c.code === selectedCountry);
+      if (country) {
+        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom);
+      }
+    }
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (mapInstanceRef.current && selectedCity && selectedCountry) {
+      const city = CITIES[selectedCountry]?.find(c => c.name === selectedCity);
+      if (city) {
+        mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
+      }
+    }
+  }, [selectedCity, selectedCountry]);
 
   // Load Leaflet dynamically
   useEffect(() => {
@@ -354,9 +379,9 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
           />
         </div>
         <div className="flex gap-2">
-          <Select value={selectedCountry} onValueChange={(value) => {
-            setSelectedCountry(value);
-            setSelectedCity("");
+          <Select value={currentCountry} onValueChange={(value) => {
+            setInternalSelectedCountry(value);
+            setInternalSelectedCity("");
             if (value && value !== "all") {
               const country = COUNTRIES.find(c => c.code === value);
               if (country && mapInstanceRef.current) {
@@ -378,11 +403,11 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
             </SelectContent>
           </Select>
           
-          {selectedCountry && selectedCountry !== "all" && CITIES[selectedCountry] && (
-            <Select value={selectedCity} onValueChange={(value) => {
-              setSelectedCity(value);
+          {currentCountry && currentCountry !== "all" && CITIES[currentCountry] && (
+            <Select value={currentCity} onValueChange={(value) => {
+              setInternalSelectedCity(value);
               if (value && value !== "all") {
-                const city = CITIES[selectedCountry]?.find(c => c.name === value);
+                const city = CITIES[currentCountry]?.find(c => c.name === value);
                 if (city && mapInstanceRef.current) {
                   mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
                 }
@@ -394,7 +419,7 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">🏙️ All Cities</SelectItem>
-                {CITIES[selectedCountry]?.map((city) => (
+                {CITIES[currentCountry]?.map((city) => (
                   <SelectItem key={city.name} value={city.name}>
                     {city.name}
                   </SelectItem>
