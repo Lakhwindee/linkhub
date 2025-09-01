@@ -251,7 +251,7 @@ export default function AdMarketplace() {
                   <SelectValue placeholder="Filter by country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="GB">United Kingdom</SelectItem>
                   <SelectItem value="IN">India</SelectItem>
                   <SelectItem value="US">United States</SelectItem>

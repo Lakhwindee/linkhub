@@ -237,7 +237,7 @@ export default function Feed() {
                       <SelectValue placeholder="Country" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No Location</SelectItem>
+                      <SelectItem value="none">No Location</SelectItem>
                       <SelectItem value="GB">United Kingdom</SelectItem>
                       <SelectItem value="IN">India</SelectItem>
                       <SelectItem value="US">United States</SelectItem>
@@ -256,7 +256,7 @@ export default function Feed() {
                       <SelectValue placeholder="City" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No City</SelectItem>
+                      <SelectItem value="none">No City</SelectItem>
                       <SelectItem value="London">London</SelectItem>
                       <SelectItem value="Mumbai">Mumbai</SelectItem>
                       <SelectItem value="New York">New York</SelectItem>
@@ -355,7 +355,7 @@ export default function Feed() {
                   <SelectValue placeholder="Filter by country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="GB">United Kingdom</SelectItem>
                   <SelectItem value="IN">India</SelectItem>
                   <SelectItem value="US">United States</SelectItem>

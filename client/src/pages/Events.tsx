@@ -379,7 +379,7 @@ export default function Events() {
                   <SelectValue placeholder="Event type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="meetup">Meetup</SelectItem>
                   <SelectItem value="tour">Tour</SelectItem>
                   <SelectItem value="collab">Collaboration</SelectItem>
@@ -392,7 +392,7 @@ export default function Events() {
                   <SelectValue placeholder="Country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="GB">United Kingdom</SelectItem>
                   <SelectItem value="IN">India</SelectItem>
                   <SelectItem value="US">United States</SelectItem>

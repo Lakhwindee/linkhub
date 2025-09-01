@@ -144,7 +144,7 @@ export default function Map() {
                   <SelectValue placeholder="Country" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="GB">United Kingdom</SelectItem>
                   <SelectItem value="IN">India</SelectItem>
                   <SelectItem value="US">United States</SelectItem>
@@ -160,7 +160,7 @@ export default function Map() {
                   <SelectValue placeholder="Plan Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Plans</SelectItem>
+                  <SelectItem value="all">All Plans</SelectItem>
                   <SelectItem value="free">Free</SelectItem>
                   <SelectItem value="traveler">Traveler</SelectItem>
                   <SelectItem value="creator">Creator</SelectItem>
@@ -302,7 +302,7 @@ export default function Map() {
                     <SelectValue placeholder="Country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Countries</SelectItem>
+                    <SelectItem value="all">All Countries</SelectItem>
                     <SelectItem value="GB">United Kingdom</SelectItem>
                     <SelectItem value="IN">India</SelectItem>
                     <SelectItem value="US">United States</SelectItem>
@@ -318,7 +318,7 @@ export default function Map() {
                     <SelectValue placeholder="Interests" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Interests</SelectItem>
+                    <SelectItem value="all">All Interests</SelectItem>
                     <SelectItem value="photography">Photography</SelectItem>
                     <SelectItem value="hiking">Hiking</SelectItem>
                     <SelectItem value="food">Food & Culture</SelectItem>
@@ -333,7 +333,7 @@ export default function Map() {
                     <SelectValue placeholder="Plan Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Plans</SelectItem>
+                    <SelectItem value="all">All Plans</SelectItem>
                     <SelectItem value="free">Free</SelectItem>
                     <SelectItem value="traveler">Traveler</SelectItem>
                     <SelectItem value="creator">Creator</SelectItem>

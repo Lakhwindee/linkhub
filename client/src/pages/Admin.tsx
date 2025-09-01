@@ -517,7 +517,7 @@ export default function Admin() {
                         <SelectValue placeholder="Filter by role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Roles</SelectItem>
+                        <SelectItem value="all">All Roles</SelectItem>
                         <SelectItem value="user">User</SelectItem>
                         <SelectItem value="creator">Creator</SelectItem>
                         <SelectItem value="moderator">Moderator</SelectItem>
