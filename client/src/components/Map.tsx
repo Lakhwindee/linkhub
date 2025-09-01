@@ -84,8 +84,14 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
       mapInstanceRef.current.remove();
     }
 
-    // Create map
-    const map = L.map(mapRef.current).setView(userLocation, 10);
+    // Create map with world view
+    const map = L.map(mapRef.current, {
+      center: userLocation,
+      zoom: 3,
+      minZoom: 2,
+      maxZoom: 18,
+      worldCopyJump: true
+    });
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -113,16 +119,41 @@ export function Map({ onUserSelect, height = "h-96" }: MapProps) {
       }
     });
 
-    // Add user markers
+    // Add user markers with custom icons
     users.forEach((user: User) => {
       if (user.lat && user.lng && user.showOnMap) {
-        const marker = L.marker([user.lat, user.lng])
+        // Create custom icon based on user plan
+        const iconColor = user.plan === 'creator' ? '#f59e0b' : user.plan === 'traveler' ? '#10b981' : '#6b7280';
+        const userIcon = L.divIcon({
+          html: `<div style="background: ${iconColor}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+          className: 'traveler-marker',
+          iconSize: [14, 14],
+          iconAnchor: [7, 7]
+        });
+        
+        const marker = L.marker([user.lat, user.lng], { icon: userIcon })
           .addTo(mapInstanceRef.current)
           .bindPopup(`
-            <div class="p-2">
-              <div class="font-semibold">${user.displayName || user.username}</div>
-              <div class="text-sm text-gray-500">${user.city}, ${user.country}</div>
-              <div class="text-xs text-gray-400">${user.plan}</div>
+            <div class="p-3 min-w-[220px]">
+              <div class="flex items-center space-x-3 mb-3">
+                <img src="${user.profileImageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'}" 
+                     class="w-10 h-10 rounded-full object-cover border-2 border-gray-200" 
+                     alt="${user.displayName}" />
+                <div>
+                  <div class="font-semibold text-gray-900">${user.displayName || user.username}</div>
+                  <div class="text-xs text-gray-500">@${user.username}</div>
+                </div>
+              </div>
+              <div class="text-sm mb-2 flex items-center text-gray-700">
+                <span class="mr-1">📍</span>
+                ${user.city}, ${user.country}
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="text-xs px-2 py-1 rounded-full" style="background: ${iconColor}; color: white;">
+                  ${user.plan.charAt(0).toUpperCase() + user.plan.slice(1)}
+                </div>
+                <div class="text-xs text-gray-400">${user.interests?.slice(0, 2).join(', ') || 'Explorer'}</div>
+              </div>
             </div>
           `);
 

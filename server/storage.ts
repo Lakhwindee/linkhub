@@ -112,6 +112,39 @@ export interface IStorage {
   getFollowing(userId: string): Promise<User[]>;
 }
 
+// Test data for demo/development
+const testUsers = [
+  { id: 'test-user-1', username: 'alex_traveler', displayName: 'Alex Johnson', email: 'alex@example.com', firstName: 'Alex', lastName: 'Johnson', plan: 'traveler', currentCity: 'London', currentCountry: 'United Kingdom', lat: 51.5074, lng: -0.1278, showOnMap: true, interests: ['photography', 'food'], profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-2', username: 'maria_creator', displayName: 'Maria Santos', email: 'maria@example.com', firstName: 'Maria', lastName: 'Santos', plan: 'creator', currentCity: 'Barcelona', currentCountry: 'Spain', lat: 41.3851, lng: 2.1734, showOnMap: true, interests: ['culture', 'nightlife'], profileImageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-3', username: 'yuki_explorer', displayName: 'Yuki Tanaka', email: 'yuki@example.com', firstName: 'Yuki', lastName: 'Tanaka', plan: 'traveler', currentCity: 'Tokyo', currentCountry: 'Japan', lat: 35.6762, lng: 139.6503, showOnMap: true, interests: ['hiking', 'history'], profileImageUrl: 'https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-4', username: 'raj_backpacker', displayName: 'Raj Patel', email: 'raj@example.com', firstName: 'Raj', lastName: 'Patel', plan: 'free', currentCity: 'Mumbai', currentCountry: 'India', lat: 19.0760, lng: 72.8777, showOnMap: true, interests: ['backpacking', 'adventure'], profileImageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-5', username: 'emma_foodie', displayName: 'Emma Thompson', email: 'emma@example.com', firstName: 'Emma', lastName: 'Thompson', plan: 'creator', currentCity: 'Paris', currentCountry: 'France', lat: 48.8566, lng: 2.3522, showOnMap: true, interests: ['food', 'photography'], profileImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-6', username: 'lucas_surfer', displayName: 'Lucas Silva', email: 'lucas@example.com', firstName: 'Lucas', lastName: 'Silva', plan: 'traveler', currentCity: 'Sydney', currentCountry: 'Australia', lat: -33.8688, lng: 151.2093, showOnMap: true, interests: ['adventure', 'nightlife'], profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-7', username: 'sofia_artist', displayName: 'Sofia Martinez', email: 'sofia@example.com', firstName: 'Sofia', lastName: 'Martinez', plan: 'creator', currentCity: 'Mexico City', currentCountry: 'Mexico', lat: 19.4326, lng: -99.1332, showOnMap: true, interests: ['culture', 'history'], profileImageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-8', username: 'david_hiker', displayName: 'David Brown', email: 'david@example.com', firstName: 'David', lastName: 'Brown', plan: 'traveler', currentCity: 'Denver', currentCountry: 'United States', lat: 39.7392, lng: -104.9903, showOnMap: true, interests: ['hiking', 'adventure'], profileImageUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-9', username: 'anna_blogger', displayName: 'Anna Kowalski', email: 'anna@example.com', firstName: 'Anna', lastName: 'Kowalski', plan: 'creator', currentCity: 'Berlin', currentCountry: 'Germany', lat: 52.5200, lng: 13.4050, showOnMap: true, interests: ['photography', 'culture'], profileImageUrl: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face' },
+  { id: 'test-user-10', username: 'tom_wanderer', displayName: 'Tom Wilson', email: 'tom@example.com', firstName: 'Tom', lastName: 'Wilson', plan: 'free', currentCity: 'Toronto', currentCountry: 'Canada', lat: 43.6532, lng: -79.3832, showOnMap: true, interests: ['backpacking', 'food'], profileImageUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face' }
+];
+
+const testEvents = [
+  { id: 'event-1', title: 'London Photography Walk', description: 'Join us for an evening photography walk through central London, capturing the city at golden hour.', type: 'meetup', date: new Date('2024-10-15'), time: '18:00', location: 'Tower Bridge, London', country: 'United Kingdom', city: 'London', capacity: 15, hostId: 'test-user-1' },
+  { id: 'event-2', title: 'Barcelona Food Tour', description: 'Explore the best tapas bars and local cuisine in the Gothic Quarter.', type: 'tour', date: new Date('2024-10-20'), time: '19:00', location: 'Gothic Quarter, Barcelona', country: 'Spain', city: 'Barcelona', capacity: 20, hostId: 'test-user-2' },
+  { id: 'event-3', title: 'Tokyo Temple Hopping', description: 'Visit historic temples and shrines across Tokyo with a local guide.', type: 'tour', date: new Date('2024-10-25'), time: '09:00', location: 'Senso-ji Temple, Tokyo', country: 'Japan', city: 'Tokyo', capacity: 12, hostId: 'test-user-3' },
+  { id: 'event-4', title: 'Mumbai Street Art Collaboration', description: 'Create a collaborative mural in the heart of Mumbai with local artists.', type: 'collab', date: new Date('2024-11-01'), time: '14:00', location: 'Bandra, Mumbai', country: 'India', city: 'Mumbai', capacity: 8, hostId: 'test-user-4' }
+];
+
+const testAds = [
+  { id: 'ad-1', title: 'Travel Photography Campaign', brand: 'Canon', description: 'Showcase your travel photography skills with our latest mirrorless camera. Perfect for creators who love capturing adventures.', budget: 500, campaignType: 'photography', targetCountries: ['GB', 'US', 'AU'], requirements: 'Min 1K followers, travel content focus', deadline: new Date('2024-11-30'), status: 'active' },
+  { id: 'ad-2', title: 'Street Food Adventures', brand: 'FoodieApp', description: 'Document your local street food experiences and share authentic cultural dining moments.', budget: 300, campaignType: 'food', targetCountries: ['IN', 'TH', 'MX'], requirements: 'Food content creators, 500+ followers', deadline: new Date('2024-12-15'), status: 'active' },
+  { id: 'ad-3', title: 'Sustainable Travel Gear', brand: 'EcoTravel', description: 'Promote eco-friendly travel gear and sustainable tourism practices to conscious travelers.', budget: 750, campaignType: 'lifestyle', targetCountries: ['DE', 'NL', 'SE'], requirements: 'Sustainability focus, 2K+ followers', deadline: new Date('2024-12-01'), status: 'active' }
+];
+
+const testPosts = [
+  { id: 'post-1', userId: 'test-user-1', body: 'Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 📸✨', mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600&h=400&fit=crop'], visibility: 'public', country: 'United Kingdom', city: 'London', createdAt: new Date('2024-09-01T08:00:00Z') },
+  { id: 'post-2', userId: 'test-user-2', body: 'Just finished an incredible flamenco workshop in Barcelona! The passion and energy of this dance is absolutely captivating. 💃🔥', mediaUrls: ['https://images.unsplash.com/photo-1504609813442-a8c73c66ea25?w=600&h=400&fit=crop'], visibility: 'public', country: 'Spain', city: 'Barcelona', createdAt: new Date('2024-09-01T19:30:00Z') },
+  { id: 'post-3', userId: 'test-user-3', body: 'Peaceful morning meditation at Senso-ji Temple. Tokyo has the most beautiful blend of traditional and modern culture. 🏯⛩️', mediaUrls: ['https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=600&h=400&fit=crop'], visibility: 'public', country: 'Japan', city: 'Tokyo', createdAt: new Date('2024-09-01T06:00:00Z') }
+];
+
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
@@ -172,18 +205,16 @@ export class DatabaseStorage implements IStorage {
 
   // Discovery operations
   async getUsersNearby(lat: number, lng: number, radiusKm: number, filters?: any): Promise<User[]> {
-    const query = db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.showOnMap, true),
-          sql`ST_DWithin(ST_MakePoint(${lng}, ${lat})::geography, ST_MakePoint(lng, lat)::geography, ${radiusKm * 1000})`
-        )
-      )
-      .limit(100);
-    
-    return await query;
+    // Return test users for demo purposes with proper User structure
+    return testUsers.map(user => ({
+      ...user,
+      currentCity: user.currentCity,
+      currentCountry: user.currentCountry,
+      city: user.currentCity,
+      country: user.currentCountry,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })) as User[];
   }
 
   async searchUsers(query: string, filters?: any): Promise<User[]> {
@@ -275,18 +306,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFeedPosts(tab: 'global' | 'country' | 'following', userId?: string, country?: string, limit = 20): Promise<Post[]> {
-    let query = db
-      .select()
-      .from(posts)
-      .where(eq(posts.status, "published"));
-
-    if (tab === 'country' && country) {
-      query = query.where(eq(posts.country, country));
-    }
-
-    return await query
-      .orderBy(desc(posts.createdAt))
-      .limit(limit);
+    // Return test posts with user info for demo
+    return testPosts.map((post) => {
+      const user = testUsers.find(u => u.id === post.userId);
+      return {
+        ...post,
+        status: 'published',
+        username: user?.username || 'unknown',
+        displayName: user?.displayName || 'Unknown User',
+        profileImageUrl: user?.profileImageUrl || '',
+        updatedAt: new Date(),
+      };
+    }) as Post[];
   }
 
   async getUserPosts(userId: string, limit = 20): Promise<Post[]> {
@@ -313,12 +344,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getEvents(filters?: any): Promise<Event[]> {
-    return await db
-      .select()
-      .from(events)
-      .where(eq(events.status, "active"))
-      .orderBy(asc(events.startsAt))
-      .limit(50);
+    // Return test events for demo
+    return testEvents.map(event => ({
+      ...event,
+      status: 'active',
+      startsAt: event.date,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })) as Event[];
   }
 
   async createEventRsvp(eventId: string, userId: string, status: string): Promise<EventRsvp> {
@@ -354,12 +387,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAds(filters?: any): Promise<Ad[]> {
-    return await db
-      .select()
-      .from(ads)
-      .where(eq(ads.status, "active"))
-      .orderBy(desc(ads.createdAt))
-      .limit(50);
+    // Return test ads for demo
+    return testAds.map(ad => ({
+      ...ad,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })) as Ad[];
   }
 
   async getAd(id: string): Promise<Ad | undefined> {
