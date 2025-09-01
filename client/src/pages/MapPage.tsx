@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Filter, Users, Search } from "lucide-react";
+import { MapPin, Filter, Users, Search, Shield } from "lucide-react";
 import type { User } from "@shared/schema";
 
 export default function MapPage() {
