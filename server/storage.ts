@@ -1,6 +1,7 @@
 import {
   users,
   connectRequests,
+  conversations,
   messages,
   posts,
   events,
@@ -18,6 +19,7 @@ import {
   type User,
   type UpsertUser,
   type ConnectRequest,
+  type Conversation,
   type Message,
   type Post,
   type Event,
@@ -56,10 +58,15 @@ export interface IStorage {
   updateConnectRequestStatus(id: string, status: string): Promise<ConnectRequest>;
   getUserConnectRequests(userId: string, type: 'sent' | 'received'): Promise<ConnectRequest[]>;
   
+  // Conversations
+  createConversation(data: { user1Id: string; user2Id: string }): Promise<Conversation>;
+  getUserConversations(userId: string): Promise<Conversation[]>;
+  getConversation(user1Id: string, user2Id: string): Promise<Conversation | undefined>;
+  
   // Messaging
-  createMessage(data: { threadId: string; fromUserId: string; toUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<Message>;
-  getThreadMessages(threadId: string, limit?: number): Promise<Message[]>;
-  getUserThreads(userId: string): Promise<Array<{ threadId: string; otherUser: User; lastMessage: Message }>>;
+  createMessage(data: { conversationId: string; fromUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<Message>;
+  getConversationMessages(conversationId: string, limit?: number): Promise<Message[]>;
+  updateConversationLastMessage(conversationId: string, messageId: string): Promise<void>;
   
   // Posts and Feed
   createPost(data: { userId: string; body?: string; mediaType?: string; mediaUrls?: string[]; country?: string; city?: string; visibility?: string }): Promise<Post>;
@@ -272,28 +279,77 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(connectRequests.createdAt));
   }
 
+  // Conversations
+  async createConversation(data: { user1Id: string; user2Id: string }): Promise<Conversation> {
+    // Check if conversation already exists
+    const existing = await this.getConversation(data.user1Id, data.user2Id);
+    if (existing) {
+      return existing;
+    }
+
+    const [conversation] = await db
+      .insert(conversations)
+      .values(data)
+      .returning();
+    return conversation;
+  }
+
+  async getUserConversations(userId: string): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(
+        or(
+          eq(conversations.user1Id, userId),
+          eq(conversations.user2Id, userId)
+        )
+      )
+      .orderBy(desc(conversations.lastMessageAt));
+  }
+
+  async getConversation(user1Id: string, user2Id: string): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(
+        or(
+          and(eq(conversations.user1Id, user1Id), eq(conversations.user2Id, user2Id)),
+          and(eq(conversations.user1Id, user2Id), eq(conversations.user2Id, user1Id))
+        )
+      );
+    return conversation;
+  }
+
   // Messaging
-  async createMessage(data: { threadId: string; fromUserId: string; toUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<Message> {
+  async createMessage(data: { conversationId: string; fromUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<Message> {
     const [message] = await db
       .insert(messages)
       .values(data)
       .returning();
+    
+    // Update conversation last message
+    await this.updateConversationLastMessage(data.conversationId, message.id);
+    
     return message;
   }
 
-  async getThreadMessages(threadId: string, limit = 50): Promise<Message[]> {
+  async getConversationMessages(conversationId: string, limit = 50): Promise<Message[]> {
     return await db
       .select()
       .from(messages)
-      .where(eq(messages.threadId, threadId))
+      .where(eq(messages.conversationId, conversationId))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
   }
 
-  async getUserThreads(userId: string): Promise<Array<{ threadId: string; otherUser: User; lastMessage: Message }>> {
-    // This is a complex query that would need proper implementation
-    // For now, return empty array
-    return [];
+  async updateConversationLastMessage(conversationId: string, messageId: string): Promise<void> {
+    await db
+      .update(conversations)
+      .set({ 
+        lastMessageId: messageId,
+        lastMessageAt: new Date()
+      })
+      .where(eq(conversations.id, conversationId));
   }
 
   // Posts and Feed

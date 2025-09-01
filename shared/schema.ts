@@ -89,15 +89,25 @@ export const connectRequests = pgTable("connect_requests", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Conversations
+export const conversations = pgTable("conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user1Id: varchar("user1_id").references(() => users.id, { onDelete: "cascade" }),
+  user2Id: varchar("user2_id").references(() => users.id, { onDelete: "cascade" }),
+  lastMessageId: varchar("last_message_id"),
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Messages
 export const messages = pgTable("messages", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  threadId: varchar("thread_id").notNull(),
+  conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "cascade" }),
   fromUserId: varchar("from_user_id").references(() => users.id, { onDelete: "cascade" }),
-  toUserId: varchar("to_user_id").references(() => users.id, { onDelete: "cascade" }),
   body: text("body"),
   mediaUrl: varchar("media_url"),
   mediaType: varchar("media_type"), // image, video, file
+  readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -262,8 +272,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   followers: many(follows, { relationName: "followee" }),
   sentConnectRequests: many(connectRequests, { relationName: "fromUser" }),
   receivedConnectRequests: many(connectRequests, { relationName: "toUser" }),
+  conversations1: many(conversations, { relationName: "user1" }),
+  conversations2: many(conversations, { relationName: "user2" }),
   sentMessages: many(messages, { relationName: "fromUser" }),
-  receivedMessages: many(messages, { relationName: "toUser" }),
   posts: many(posts),
   reports: many(reports),
   hostedEvents: many(events),
@@ -289,9 +300,16 @@ export const connectRequestsRelations = relations(connectRequests, ({ one }) => 
   toUser: one(users, { fields: [connectRequests.toUserId], references: [users.id], relationName: "toUser" }),
 }));
 
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  user1: one(users, { fields: [conversations.user1Id], references: [users.id], relationName: "user1" }),
+  user2: one(users, { fields: [conversations.user2Id], references: [users.id], relationName: "user2" }),
+  messages: many(messages),
+  lastMessage: one(messages, { fields: [conversations.lastMessageId], references: [messages.id], relationName: "lastMessage" }),
+}));
+
 export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, { fields: [messages.conversationId], references: [conversations.id] }),
   fromUser: one(users, { fields: [messages.fromUserId], references: [users.id], relationName: "fromUser" }),
-  toUser: one(users, { fields: [messages.toUserId], references: [users.id], relationName: "toUser" }),
 }));
 
 export const postsRelations = relations(posts, ({ one }) => ({
@@ -379,9 +397,13 @@ export const insertConnectRequestSchema = createInsertSchema(connectRequests).pi
   message: true,
 });
 
+export const insertConversationSchema = createInsertSchema(conversations).pick({
+  user1Id: true,
+  user2Id: true,
+});
+
 export const insertMessageSchema = createInsertSchema(messages).pick({
-  threadId: true,
-  toUserId: true,
+  conversationId: true,
   body: true,
   mediaUrl: true,
   mediaType: true,
@@ -437,6 +459,7 @@ export const insertReportSchema = createInsertSchema(reports).pick({
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type ConnectRequest = typeof connectRequests.$inferSelect;
+export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Event = typeof events.$inferSelect;

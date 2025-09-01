@@ -13,13 +13,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { MessageCircle, Send, Image, Video, Users, UserPlus, UserCheck, UserX, Search, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import type { ConnectRequest, Message } from "@shared/schema";
+import { Link } from "wouter";
+import type { ConnectRequest, Message, Conversation } from "@shared/schema";
 
 export default function Messages() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedThread, setSelectedThread] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -41,26 +42,32 @@ export default function Messages() {
   }, [isAuthenticated, isLoading, toast]);
 
   // Fetch connect requests
-  const { data: receivedRequests = [], isLoading: requestsLoading } = useQuery({
+  const { data: receivedRequests = [], isLoading: requestsLoading } = useQuery<ConnectRequest[]>({
     queryKey: ["/api/connect-requests", { type: 'received' }],
     retry: false,
   });
 
-  const { data: sentRequests = [] } = useQuery({
+  const { data: sentRequests = [] } = useQuery<ConnectRequest[]>({
     queryKey: ["/api/connect-requests", { type: 'sent' }],
     retry: false,
   });
 
-  // Fetch messages for selected thread
-  const { data: messages = [], isLoading: messagesLoading } = useQuery({
-    queryKey: ["/api/messages", selectedThread],
-    enabled: !!selectedThread,
+  // Fetch conversations
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations"],
+    retry: false,
+  });
+
+  // Fetch messages for selected conversation
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
+    queryKey: ["/api/messages", selectedConversation],
+    enabled: !!selectedConversation,
     retry: false,
   });
 
   // Setup WebSocket connection
   useEffect(() => {
-    if (!isAuthenticated || !selectedThread) return;
+    if (!isAuthenticated || !selectedConversation) return;
 
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const wsUrl = `${protocol}//${window.location.host}/ws`;
@@ -69,15 +76,16 @@ export default function Messages() {
     
     wsRef.current.onopen = () => {
       wsRef.current?.send(JSON.stringify({
-        type: 'join_thread',
-        threadId: selectedThread
+        type: 'join_conversation',
+        conversationId: selectedConversation
       }));
     };
 
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'new_message' && data.threadId === selectedThread) {
-        queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedThread] });
+      if (data.type === 'new_message' && data.conversationId === selectedConversation) {
+        queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedConversation] });
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       }
     };
 
@@ -88,7 +96,7 @@ export default function Messages() {
     return () => {
       wsRef.current?.close();
     };
-  }, [selectedThread, isAuthenticated, queryClient]);
+  }, [selectedConversation, isAuthenticated, queryClient]);
 
   // Auto-scroll to bottom of messages
   useEffect(() => {
@@ -107,6 +115,7 @@ export default function Messages() {
           : "The connect request has been declined.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/connect-requests"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
     },
     onError: (error) => {
       toast({
@@ -118,18 +127,19 @@ export default function Messages() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (data: { threadId: string; body: string; mediaUrl?: string }) => {
-      return await apiRequest("POST", `/api/messages/${data.threadId}`, data);
+    mutationFn: async (data: { conversationId: string; body: string; mediaUrl?: string }) => {
+      return await apiRequest("POST", `/api/messages/${data.conversationId}`, data);
     },
     onSuccess: () => {
       setMessageInput("");
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedThread] });
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", selectedConversation] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       
       // Send via WebSocket for real-time delivery
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           type: 'send_message',
-          threadId: selectedThread,
+          conversationId: selectedConversation,
           data: { body: messageInput }
         }));
       }
@@ -156,10 +166,10 @@ export default function Messages() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!messageInput.trim() || !selectedThread) return;
+    if (!messageInput.trim() || !selectedConversation) return;
 
     sendMessageMutation.mutate({
-      threadId: selectedThread,
+      conversationId: selectedConversation,
       body: messageInput.trim()
     });
   };
@@ -180,7 +190,7 @@ export default function Messages() {
   };
 
   const handleMediaComplete = async (result: any) => {
-    if (result.successful && result.successful.length > 0 && selectedThread) {
+    if (result.successful && result.successful.length > 0 && selectedConversation) {
       const uploadedFile = result.successful[0];
       try {
         const response = await apiRequest("PUT", "/api/media", {
@@ -189,7 +199,7 @@ export default function Messages() {
         const { objectPath } = await response.json();
         
         sendMessageMutation.mutate({
-          threadId: selectedThread,
+          conversationId: selectedConversation,
           body: "",
           mediaUrl: objectPath
         });
@@ -355,25 +365,78 @@ export default function Messages() {
 
               {/* Conversations */}
               <TabsContent value="conversations" className="space-y-4">
-                <Card data-testid="card-no-conversations">
-                  <CardContent className="p-8 text-center">
-                    <MessageCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <h3 className="font-semibold text-foreground mb-2">No conversations yet</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
-                      Accept connect requests to start messaging with other travelers.
-                    </p>
-                    <Button variant="outline" size="sm" data-testid="button-find-travelers">
-                      Find Travelers
-                    </Button>
-                  </CardContent>
-                </Card>
+                {conversationsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardContent className="p-4 space-y-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-muted rounded-full"></div>
+                            <div className="space-y-2">
+                              <div className="h-4 bg-muted rounded w-24"></div>
+                              <div className="h-3 bg-muted rounded w-16"></div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : conversations.length > 0 ? (
+                  <div className="space-y-4">
+                    {conversations.map((conversation: Conversation) => {
+                      const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
+                      return (
+                        <Card 
+                          key={conversation.id} 
+                          className={`cursor-pointer border-accent/20 hover:border-accent/50 ${selectedConversation === conversation.id ? 'border-accent bg-accent/10' : ''}`}
+                          onClick={() => setSelectedConversation(conversation.id)}
+                          data-testid={`card-conversation-${conversation.id}`}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-center space-x-3">
+                              <Avatar>
+                                <AvatarFallback data-testid={`text-conversation-user-initials-${conversation.id}`}>
+                                  {otherUserId?.charAt(0)?.toUpperCase() || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="font-medium text-card-foreground" data-testid={`text-conversation-user-${conversation.id}`}>
+                                  @{otherUserId}
+                                </div>
+                                <div className="text-xs text-muted-foreground" data-testid={`text-conversation-time-${conversation.id}`}>
+                                  {conversation.lastMessageAt 
+                                    ? formatDistanceToNow(new Date(conversation.lastMessageAt)) + ' ago'
+                                    : 'No messages yet'
+                                  }
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <Card data-testid="card-no-conversations">
+                    <CardContent className="p-8 text-center">
+                      <MessageCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                      <h3 className="font-semibold text-foreground mb-2">No conversations yet</h3>
+                      <p className="text-muted-foreground text-sm mb-4">
+                        Accept connect requests to start messaging with other travelers.
+                      </p>
+                      <Button variant="outline" size="sm" asChild data-testid="button-find-travelers">
+                        <Link href="/map">Find Travelers</Link>
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
               </TabsContent>
             </Tabs>
           </div>
 
           {/* Main Chat Area */}
           <div className="lg:col-span-2">
-            {selectedThread ? (
+            {selectedConversation ? (
               <Card className="h-[600px] flex flex-col" data-testid="card-chat-area">
                 <CardHeader className="border-b border-border">
                   <CardTitle className="flex items-center space-x-2">

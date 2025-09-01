@@ -139,10 +139,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const request = await storage.updateConnectRequestStatus(requestId, status);
       
-      // If accepted, create follow relationship
+      // If accepted, create follow relationship and conversation
       if (status === 'accepted') {
         await storage.createFollow(request.fromUserId!, request.toUserId!);
         await storage.createFollow(request.toUserId!, request.fromUserId!);
+        
+        // Create conversation for messaging
+        await storage.createConversation({
+          user1Id: request.fromUserId!,
+          user2Id: request.toUserId!,
+        });
       }
       
       await storage.createAuditLog({
@@ -173,11 +179,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Messaging routes
-  app.get('/api/messages/:threadId', isAuthenticated, async (req: any, res) => {
+  // Conversations routes
+  app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {
-      const { threadId } = req.params;
-      const messages = await storage.getThreadMessages(threadId);
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getUserConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  // Messaging routes
+  app.get('/api/messages/:conversationId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { conversationId } = req.params;
+      const messages = await storage.getConversationMessages(conversationId);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
@@ -185,11 +203,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/messages/:threadId', isAuthenticated, async (req: any, res) => {
+  app.post('/api/messages/:conversationId', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { threadId } = req.params;
-      const data = insertMessageSchema.parse({ threadId, ...req.body });
+      const { conversationId } = req.params;
+      const data = insertMessageSchema.parse({ conversationId, ...req.body });
       
       const message = await storage.createMessage({
         fromUserId: userId,
@@ -714,19 +732,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Handle different message types
         switch (message.type) {
-          case 'join_thread':
-            // Join a message thread room
+          case 'join_conversation':
+            // Join a conversation room
             ws.on('close', () => {
               console.log('WebSocket connection closed');
             });
             break;
           case 'send_message':
-            // Broadcast message to thread participants
+            // Broadcast message to conversation participants
             wss.clients.forEach((client) => {
               if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                   type: 'new_message',
-                  threadId: message.threadId,
+                  conversationId: message.conversationId,
                   message: message.data
                 }));
               }
