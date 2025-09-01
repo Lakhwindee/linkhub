@@ -146,6 +146,33 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Interactive Map Section */}
+            <Card data-testid="card-interactive-map">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Globe className="w-5 h-5 text-blue-600" />
+                    <span>Discover Travelers - Interactive Map</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></div>
+                      <span>Live Location Sharing</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">Location sharing enabled</Badge>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Map with controls - Full Google Earth like experience */}
+                  <Map 
+                    onUserSelect={(user) => console.log('Selected user:', user)}
+                    height="h-96"
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Recent Posts */}
             <Card data-testid="card-recent-posts">
