@@ -20,7 +20,9 @@ import Events from "@/pages/Events";
 import Billing from "@/pages/Billing";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  // Temporarily disable auth to show the landing page
+  const isAuthenticated = false;
+  const isLoading = false;
 
   if (isLoading) {
     return (
@@ -36,7 +38,10 @@ function Router() {
       <main className={isAuthenticated ? "pt-16" : ""}>
         <Switch>
           {!isAuthenticated ? (
-            <Route path="/" component={Landing} />
+            <>
+              <Route path="/" component={Landing} />
+              <Route path="/subscribe" component={Subscribe} />
+            </>
           ) : (
             <>
               <Route path="/" component={Home} />

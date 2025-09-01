@@ -8,7 +8,9 @@ import { MapPin, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, M
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navigation() {
-  const { user, isAuthenticated } = useAuth();
+  // Temporarily disable auth for demo
+  const user = null;
+  const isAuthenticated = false;
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
 
@@ -38,10 +40,10 @@ export function Navigation() {
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
               <Button variant="ghost" asChild data-testid="button-sign-in">
-                <a href="/api/login">Sign In</a>
+                <Link href="/subscribe">Sign In</Link>
               </Button>
               <Button asChild data-testid="button-get-started">
-                <a href="/api/login">Get Started</a>
+                <Link href="/subscribe">Get Started</Link>
               </Button>
             </div>
           </div>
