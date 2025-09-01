@@ -71,11 +71,10 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   }
 
   const navItems = [
-    { href: "/home", icon: Home, label: "Home", testId: "nav-home" },
     { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
+    { href: "/discover", icon: MapPin, label: "Discover Travelers", testId: "nav-discover" },
     { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
     { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
-    { href: "/map", icon: MapPin, label: "Map", testId: "nav-map" },
     { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
   ];
 
