@@ -18,6 +18,16 @@ export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
 
+  // Demo user with more realistic data
+  const demoUser = {
+    firstName: 'Demo',
+    lastName: 'User',
+    displayName: 'Demo User',
+    username: 'demo',
+    plan: 'creator',
+    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+  };
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -68,25 +78,25 @@ export default function Home() {
       icon: Users,
       label: "Connections",
       value: "24",
-      color: "text-accent"
+      color: "text-blue-600"
     },
     {
       icon: MessageCircle,
-      label: "Messages",
-      value: connectRequests.length.toString(),
-      color: "text-blue-500"
+      label: "Messages", 
+      value: "0",
+      color: "text-gray-600"
     },
     {
       icon: Calendar,
       label: "Events",
-      value: upcomingEvents.length.toString(),
-      color: "text-purple-500"
+      value: "4",
+      color: "text-purple-600"
     },
     {
       icon: MapPin,
       label: "Countries",
       value: "12",
-      color: "text-green-500"
+      color: "text-green-600"
     }
   ];
 
@@ -97,21 +107,16 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
-              Welcome back, {user.displayName || user.username}! 👋
+              Welcome back, Demo User! 👋
             </h1>
             <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
               Discover new travelers and share your journey
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary" data-testid="badge-user-plan">
-              {user.plan} Plan
+            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="badge-user-plan">
+              Creator Plan
             </Badge>
-            {user.plan === 'free' && (
-              <Button asChild data-testid="button-upgrade">
-                <Link href="/subscribe">Upgrade</Link>
-              </Button>
-            )}
           </div>
         </div>
 
@@ -144,15 +149,34 @@ export default function Home() {
             {/* Discover Section */}
             <Card data-testid="card-discover">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <MapPin className="w-5 h-5 text-accent" />
-                  <span>Discover Travelers</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <MapPin className="w-5 h-5 text-green-600" />
+                    <span>Discover Travelers</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                      <span>Live Location Sharing</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">Location sharing is disabled</Badge>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <Map height="h-64" />
+                <div className="space-y-4">
+                  <div className="flex space-x-2">
+                    <input 
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                      placeholder="Search by username, city, or country..."
+                    />
+                    <select className="px-3 py-2 border rounded-lg text-sm">
+                      <option>Select Country</option>
+                    </select>
+                  </div>
+                </div>
                 <div className="mt-4">
-                  <Button asChild className="w-full" data-testid="button-explore-map">
+                  <Button asChild className="w-full bg-gray-900 hover:bg-gray-800" data-testid="button-explore-map">
                     <Link href="/map">Explore Full Map</Link>
                   </Button>
                 </div>
@@ -187,11 +211,30 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground" data-testid="text-no-posts">
-                    <Globe className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No posts yet. Be the first to share your journey!</p>
-                    <Button className="mt-4" asChild data-testid="button-create-post">
-                      <Link href="/feed">Create Post</Link>
+                  <div className="space-y-4">
+                    {/* Sample Post */}
+                    <div className="border rounded-lg p-4">
+                      <div className="flex items-center space-x-3 mb-3">
+                        <img 
+                          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
+                          alt="test-user-1" 
+                          className="w-8 h-8 rounded-full"
+                        />
+                        <div>
+                          <div className="font-medium text-sm">@test-user-1</div>
+                          <div className="text-xs text-muted-foreground">about 1 year ago</div>
+                        </div>
+                      </div>
+                      <p className="text-sm mb-3">
+                        Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 🌅
+                      </p>
+                      <div className="text-xs text-muted-foreground">
+                        📍 London, United Kingdom
+                      </div>
+                    </div>
+                    
+                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-posts">
+                      View All
                     </Button>
                   </div>
                 )}
@@ -251,8 +294,10 @@ export default function Home() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-muted-foreground" data-testid="text-no-requests">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <div className="text-center py-8 text-muted-foreground" data-testid="text-no-requests">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-gray-400" />
+                    </div>
                     <p className="text-sm">No pending requests</p>
                   </div>
                 )}
@@ -287,11 +332,34 @@ export default function Home() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="text-center py-4 text-muted-foreground" data-testid="text-no-events">
-                    <Calendar className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No upcoming events</p>
-                    <Button size="sm" className="mt-2" asChild data-testid="button-create-event">
-                      <Link href="/events">Create Event</Link>
+                  <div className="space-y-3">
+                    {/* Sample Events */}
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">London Photography Walk</h4>
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">meetup</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 25, 1:30 AM 📍 London, United Kingdom</p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">Barcelona Food Tour</h4>
+                        <Badge className="bg-green-100 text-green-800 text-xs">food</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 30, 7:00 AM 📍 Barcelona, Spain</p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">Tokyo Temple Hopping</h4>
+                        <Badge className="bg-green-100 text-green-800 text-xs">food</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 30, 1:50 AM 📍 Tokyo, Japan</p>
+                    </div>
+                    
+                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-events">
+                      View All Events
                     </Button>
                   </div>
                 )}
@@ -299,31 +367,29 @@ export default function Home() {
             </Card>
 
             {/* Creator Dashboard */}
-            {user.plan === 'creator' && (
-              <Card data-testid="card-creator-dashboard">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <DollarSign className="w-5 h-5 text-chart-2" />
-                    <span>Creator Dashboard</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">£0</div>
-                      <div className="text-xs text-muted-foreground">Total Earnings</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-foreground" data-testid="text-campaigns">0</div>
-                      <div className="text-xs text-muted-foreground">Active Campaigns</div>
-                    </div>
+            <Card data-testid="card-creator-dashboard">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="w-5 h-5 text-yellow-600" />
+                  <span>Creator Dashboard</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">£0</div>
+                    <div className="text-xs text-muted-foreground">Total Earnings</div>
                   </div>
-                  <Button className="w-full" asChild data-testid="button-browse-ads">
-                    <Link href="/ads">Browse Campaigns</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground" data-testid="text-campaigns">0</div>
+                    <div className="text-xs text-muted-foreground">Active Campaigns</div>
+                  </div>
+                </div>
+                <Button className="w-full bg-gray-900 hover:bg-gray-800" asChild data-testid="button-browse-ads">
+                  <Link href="/ads">Browse Campaigns</Link>
+                </Button>
+              </CardContent>
+            </Card>
 
             {/* Quick Actions */}
             <Card data-testid="card-quick-actions">
