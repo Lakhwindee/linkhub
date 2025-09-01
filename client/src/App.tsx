@@ -20,9 +20,7 @@ import Events from "@/pages/Events";
 import Billing from "@/pages/Billing";
 
 function Router() {
-  // Temporarily disable auth to show the landing page
-  const isAuthenticated = false;
-  const isLoading = false;
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -34,7 +32,7 @@ function Router() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Navigation isAuthenticated={isAuthenticated} />
       <main className={isAuthenticated ? "pt-16" : ""}>
         <Switch>
           {!isAuthenticated ? (

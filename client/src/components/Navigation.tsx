@@ -7,12 +7,26 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MapPin, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
-export function Navigation() {
-  // Temporarily disable auth for demo
-  const user = null;
-  const isAuthenticated = false;
+export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
+  // Demo user data
+  const user = isAuthenticated ? { 
+    firstName: 'Demo', 
+    lastName: 'User', 
+    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' 
+  } : null;
+  
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
+
+  const handleLogin = () => {
+    localStorage.setItem('hublink_demo_user', 'true');
+    window.location.reload(); // Reload to update auth state
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('hublink_demo_user');
+    window.location.reload(); // Reload to update auth state
+  };
 
   if (!isAuthenticated) {
     return (
@@ -39,11 +53,11 @@ export function Navigation() {
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
-              <Button variant="ghost" asChild data-testid="button-sign-in">
-                <Link href="/subscribe">Sign In</Link>
+              <Button variant="ghost" onClick={handleLogin} data-testid="button-sign-in">
+                Sign In (Demo)
               </Button>
-              <Button asChild data-testid="button-get-started">
-                <Link href="/subscribe">Get Started</Link>
+              <Button onClick={handleLogin} data-testid="button-get-started">
+                Get Started
               </Button>
             </div>
           </div>
@@ -156,11 +170,9 @@ export function Navigation() {
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem asChild>
-                  <a href="/api/logout" data-testid="link-logout">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
-                  </a>
+                <DropdownMenuItem onClick={handleLogout} data-testid="link-logout">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

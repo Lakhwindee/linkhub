@@ -1,20 +1,28 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 export function useAuth() {
-  const { data: user, isLoading, error } = useQuery({
-    queryKey: ["/api/auth/user"],
-    enabled: false, // Disable automatic query execution
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-    staleTime: Infinity,
-    retry: false,
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // For now, since auth is disabled, return not authenticated
+  useEffect(() => {
+    // Check localStorage for demo auth
+    const demoUser = localStorage.getItem('hublink_demo_user') === 'true';
+    setIsAuthenticated(demoUser);
+    setIsLoading(false);
+  }, []);
+
+  const user = isAuthenticated ? {
+    id: 'demo-user-1',
+    firstName: 'Demo',
+    lastName: 'User',
+    email: 'demo@hublink.com',
+    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    plan: 'creator' // Give demo user creator access
+  } : null;
+
   return {
-    user: null,
-    isLoading: false,
-    isAuthenticated: false,
+    user,
+    isLoading,
+    isAuthenticated,
   };
 }
