@@ -13,8 +13,8 @@ import type { User } from "@shared/schema";
 export default function MapPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedCity, setSelectedCity] = useState("all");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
 
   const handleUserSelect = (user: User) => {
@@ -22,7 +22,7 @@ export default function MapPage() {
   };
 
   const countries = [
-    { value: "", label: "Select Country" },
+    { value: "all", label: "Select Country" },
     { value: "GB", label: "United Kingdom" },
     { value: "IN", label: "India" },
     { value: "US", label: "United States" },
@@ -109,7 +109,7 @@ export default function MapPage() {
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Cities</SelectItem>
+                  <SelectItem value="all">All Cities</SelectItem>
                   {cities[selectedCountry as keyof typeof cities]?.map((city) => (
                     <SelectItem key={city} value={city}>
                       {city}
