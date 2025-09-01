@@ -4,7 +4,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MapPin, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu } from "lucide-react";
+import { MapPin, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
@@ -71,6 +71,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   }
 
   const navItems = [
+    { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
     { href: "/map", icon: MapPin, label: "Discover", testId: "nav-map" },
     { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
     { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },

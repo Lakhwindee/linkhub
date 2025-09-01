@@ -8,6 +8,7 @@ import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
+import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import MapPage from "@/pages/MapPage";
 import Profile from "@/pages/Profile";
@@ -43,6 +44,7 @@ function Router() {
           ) : (
             <>
               <Route path="/" component={Home} />
+              <Route path="/dashboard" component={Dashboard} />
               <Route path="/map" component={MapPage} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
