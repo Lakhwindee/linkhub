@@ -293,7 +293,7 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
 
   // Update markers when users data changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !users.length || !L) return;
+    if (!mapInstanceRef.current || !users || !Array.isArray(users) || !users.length || !L) return;
 
     // Clear existing markers (except user location)
     mapInstanceRef.current.eachLayer((layer: any) => {
