@@ -165,14 +165,30 @@ export default function MapPage() {
           selectedCity={selectedCity}
         />
         
-        {/* Explore Full Map Button */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
-          <Button 
-            className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 text-lg shadow-lg"
-            data-testid="button-explore-full-map"
-          >
-            Explore Full Map
-          </Button>
+        {/* Debug and Action Buttons */}
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 space-y-2">
+          <div>
+            <Button 
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-sm shadow-lg mr-2"
+              onClick={() => {
+                console.log("Current map state:", {
+                  selectedCountry,
+                  selectedCity,
+                  mapCenter,
+                  mapZoom
+                });
+                alert(`Map Debug: Country=${selectedCountry}, City=${selectedCity}, Center=${mapCenter.lat},${mapCenter.lng}, Zoom=${mapZoom}`);
+              }}
+            >
+              DEBUG MAP
+            </Button>
+            <Button 
+              className="bg-gray-800 hover:bg-gray-700 text-white px-8 py-3 text-lg shadow-lg"
+              data-testid="button-explore-full-map"
+            >
+              Explore Full Map
+            </Button>
+          </div>
         </div>
 
         {/* User Details Overlay */}

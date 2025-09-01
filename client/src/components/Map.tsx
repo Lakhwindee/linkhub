@@ -303,7 +303,8 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     });
 
     // Add user markers with custom icons
-    (users as User[]).forEach((user: User) => {
+    if (Array.isArray(users)) {
+      (users as User[]).forEach((user: User) => {
       if (user.lat && user.lng && user.showOnMap) {
         // Create custom icon based on user plan
         const plan = user.plan || 'free';
@@ -353,6 +354,7 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
         });
       }
     });
+    }
   }, [users, onUserSelect]);
 
   return (
