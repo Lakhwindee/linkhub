@@ -1,0 +1,285 @@
+Hub Link — Professional Product Plan & Prd (v1
+
+HubLink — Product Requirements & Implementation Plan (v1.0)
+
+Date: 01 Sep 2025 (Europe/London)
+Owner: Judge (Product Founder)
+Prepared by: Alina (Product/Tech)
+
+1) Executive Summary
+
+HubLink is a tourism‑social platform that connects travelers and creators globally. Users can discover each other on a live map, follow profiles, send connect requests, chat, post to a global feed, plan/attend events, and (for premium earners) pick up brand ads to showcase in their videos. Admins curate ads, verify posts, and release payouts. Monetization is via subscriptions: Traveler (£25/mo) and Creator/Earner (£45/mo).
+
+This document is a full PRD + engineering handoff designed so a Replit developer/agent can implement the MVP and v1.0 without ambiguity.
+
+2) Goals & Core KPIs
+
+Primary Goals:
+
+Launch a stable MVP that onboards first 1,000 users across UK & India.
+Enable premium creators to pick ads and get paid after admin approval.
+KPIs:
+
+D1/7/30 retention, DAU/MAU ratio
+Profile completeness rate
+Connect request acceptance rate
+Map → Profile → Follow conversion
+Ad pickup to approved‑payout conversion
+Subscription conversion (free→Traveler→Creator)
+3) Plans & Pricing
+
+Free (Browse‑Only): View global feed, limited map preview, cannot DM, cannot create events, limited profile fields.
+Traveler – £25/mo: Full map access, connect requests, DM, create/join events, basic analytics.
+Creator/Earner – £45/mo: Everything in Traveler + access to Ad Marketplace, campaign pickup, earnings dashboard, payout requests, priority support.
+Currency support: show £ for UK, ₹ for India. Back office reports in base currency (GBP) with FX notes.
+4) User Personas
+
+Backpacker (Free→Traveler): Wants to meet travelers nearby and attend events. Privacy‑conscious.
+Travel Creator (Creator/Earner): Wants to pick brand ads, post proof videos, grow following, and get paid.
+City Host (Traveler): Organizes local events/tours, needs RSVP management.
+Admin/Moderator: Reviews ad posts, handles payouts, flags abuse.
+5) Key User Journeys (Happy Paths)
+
+Discover & Connect: Map → filter by city/country → open profile → send connect request → accept → start DM.
+Ad Pickup & Payout: Creator opens Ad Marketplace → reads brief → reserves an ad → uploads video proof → admin approves → funds released to wallet → payout to bank.
+Event Flow: Create event → auto‑generated RSVP link → attendees join → reminders → event happens → post highlights.
+6) Scope: MVP vs v1.0
+
+MVP (Weeks 1–4):
+
+Auth (email OTP; optional Google/Apple)
+Unique username/ID (e.g., @hublink/UK/000123)
+Profile (bio, location, languages, interests, media)
+Discover Map (OSM/Leaflet, clustering, city/country filters, privacy radius)
+Connect Requests + basic DM
+Global Feed (text + image/video, rate‑limited)
+Subscriptions (Stripe test/live) & plan gating
+Ad Marketplace (reserve → submit proof → admin approve)
+Admin Panel (content moderation, user roles, approve ads/payouts)
+v1.0 (Weeks 5–8):
+
+Events (create, RSVP, reminders, export ICS)
+Analytics mini‑dashboards (profile views, reach)
+Creator payouts (Stripe Connect Express / alternative)
+Notifications (email + web push)
+Reporting & logs, basic anti‑fraud, audit trails
+7) Detailed Feature Specs
+
+7.1 Authentication & Accounts
+Email OTP primary (no SMS dependency); optional Google/Apple OAuth.
+Username/Handle required; generated suggestion with geo prefix.
+KYC (Creators only, optional for MVP): name, country, government ID for payouts.
+RBAC Roles: user, creator, moderator, admin, superadmin.
+7.2 Profiles
+Fields: display name, username, avatar, cover, country/city, home vs current location, languages, interests (tags), bio, links (IG, YT, TikTok), media gallery.
+Privacy controls: show on map (on/off), city precision (city, 5‑km radius, exact off), who can DM (followers only / all / none).
+7.3 Discover Map (Leaflet + OpenStreetMap)
+Map clustering, search by city/country, filter by plan, interests, languages.
+Connect Request from map card or profile. Users must accept to unlock DM.
+Live presence indicator (optional): last active + green dot.
+7.4 Connect Requests & DM
+Request with short intro message (140 chars). Accept/Reject/Block.
+DM: 1‑to‑1, text + image/video attachment, read receipts off by default.
+7.5 Global Feed
+Tabs: Global, Country, Following.
+Post: text (500), up to 4 images or 1 video (≤ 60s @ 1080p), location tag optional.
+Moderation: auto‑scan on upload; report post; admin review queue.
+7.6 Events (v1.0)
+Types: meetup, tour, collab, party, other. Capacity & RSVP.
+Visibility: public / followers / invite‑only.
+Reminders: email + in‑app 24h and 2h before.
+Export: ICS download; add to Google/Apple Calendar.
+7.7 Ad Marketplace
+Ad cards: brand name, brief, allowed locations, required hashtags, media specs, payout, deadline, quota.
+Creator action: Reserve → countdown (e.g., 72h) → Upload Proof (post URL + raw file) → Admin Review → Approved (funds escrowed to wallet) → Payout request.
+Limits: creators can hold N active reservations; penalties for lapse.
+7.8 Subscriptions, Billing & Payouts
+Billing: Stripe (UK/IN). Show GBP/INR; store canonical GBP.
+Payouts (Creators): Stripe Connect Express (preferred) or manual bank transfer (admin tool + evidence).
+Invoices & receipts PDF.
+7.9 Notifications
+Email via SMTP (Brevo/SendGrid) free tier; Web Push via VAPID (self‑hosted) or OneSignal (free tier) for MVP.
+7.10 Admin Panel
+Sections: Dashboard, Users, Posts, Reports, Ads, Subscriptions, Payouts, Events, Settings, Logs.
+Actions: verify post, approve/reject ad proofs, release funds, ban users, refund, impersonate user (support), export CSV.
+Audit trail on every sensitive action.
+7.11 Trust, Safety & Compliance
+Age gate 16+. To be an earner: 18+ and KYC.
+Automated moderation (e.g., image nudity filter, language toxicity) + human review.
+GDPR & UK‑GDPR compliant: data export & delete, privacy policy, cookie consent.
+8) Information Architecture (Sitemap)
+
+Home (logged‑out): hero + plans + screenshots + CTA.
+App:
+/map (Discover)
+/feed (Global/Country/Following)
+/ads (Marketplace)
+/events (index + create)
+/messages (DM)
+/profile/:handle (public) / /me (edit)
+/billing (plans, invoices)
+/wallet (earnings, payouts)
+/admin/* (role‑gated)
+9) Data Model (Relational – PostgreSQL)
+
+Tables (primary fields only):
+
+users(id, email, username, role, country, city, lat, lng, show_on_map, bio, avatar_url, cover_url, languages[], interests[], created_at)
+auth_providers(id, user_id, provider, provider_id)
+follows(id, follower_id, followee_id, created_at, status)
+connect_requests(id, from_user, to_user, message, status, created_at)
+messages(id, thread_id, from_user, to_user, body, media_url, created_at)
+posts(id, user_id, body, media_type, media_urls[], country, city, visibility, created_at, status)
+reports(id, reporter_id, target_type, target_id, reason, created_at, status)
+events(id, host_id, title, type, country, city, venue, starts_at, ends_at, capacity, visibility, description)
+event_rsvps(id, event_id, user_id, status, created_at)
+ads(id, brand, title, brief_md, countries[], hashtags[], payout_amount, currency, deadline_at, quota, status)
+ad_reservations(id, ad_id, user_id, expires_at, status)
+ad_submissions(id, reservation_id, post_id, raw_file_url, status, reviewed_by, reviewed_at)
+wallets(id, user_id, balance_minor, currency)
+payouts(id, user_id, amount_minor, currency, method, reference, status, created_at)
+subscriptions(id, user_id, plan, provider, status, started_at, renews_at)
+invoices(id, user_id, subscription_id, amount_minor, currency, pdf_url, created_at)
+audit_logs(id, actor_id, action, target_type, target_id, meta_json, created_at)
+Indexes on geo (lat/lng), username, created_at, foreign keys.
+
+10) API Specification (REST; JSON)
+
+Auth
+
+POST /api/auth/otp/start → { email }
+POST /api/auth/otp/verify → { email, code }
+Profiles
+
+GET /api/users/:handle
+PATCH /api/me → profile update
+Discover
+
+GET /api/discover?country=GB&city=London&interests=photography&radius_km=5
+Connect & DM
+
+POST /api/connect/:to_user_id { message }
+GET /api/messages/:thread_id
+POST /api/messages/:thread_id { body, media }
+Feed
+
+GET /api/feed?tab=global|country|following
+POST /api/posts { body, media }
+Events
+
+POST /api/events { title, time, visibility, … }
+POST /api/events/:id/rsvp { status }
+Ads & Earnings
+
+GET /api/ads (filters)
+POST /api/ads/:id/reserve
+POST /api/ads/:id/submit { post_id, file }
+POST /api/wallet/payouts { amount, method }
+Billing
+
+POST /api/billing/checkout { plan }
+POST /api/billing/webhooks/stripe
+Admin
+
+GET /api/admin/review/ads
+POST /api/admin/review/ads/:submission_id { approve|reject, note }
+POST /api/admin/users/:id/ban
+11) Tech Stack & Integrations (Cost‑Conscious)
+
+Frontend: Next.js 14 (App Router), React, TailwindCSS, shadcn/ui, Framer Motion.
+Map: Leaflet + OpenStreetMap (free) or MapTiler (free tier). Geocoding via Nominatim (respect rate limits) or MapTiler.
+Backend: Node.js (NestJS or Express). Auth.js (NextAuth) for sessions.
+DB: PostgreSQL (Neon/DO Managed). ORM: Prisma.
+Cache/Realtime: Redis + Socket.IO (self‑host) or Pusher (free tier to start).
+Storage/CDN: Cloudflare R2 (cheap) or DO Spaces; Cloudflare CDN.
+Email: Brevo (free tier) or Resend (dev plan). Avoid SMS to cut cost.
+Payments: Stripe (multi‑currency GBP/INR). Payouts via Stripe Connect.
+Analytics/Logging: Plausible (self‑hosted) / Umami + Sentry + Logtail.
+CI/CD: GitHub Actions → DO Droplet (via SSH) or DO App Platform.
+12) DevOps & Environments
+
+Envs: dev, staging, prod. Feature flags via DB table feature_flags.
+.env keys (examples):
+DATABASE_URL=postgres://…
+NEXTAUTH_SECRET=…, NEXTAUTH_URL=…
+STRIPE_SECRET_KEY=…, STRIPE_WEBHOOK_SECRET=…
+R2_ACCESS_KEY_ID=…, R2_SECRET_ACCESS_KEY=…
+EMAIL_SMTP_HOST=…, EMAIL_SMTP_USER=…, EMAIL_SMTP_PASS=…
+Migrations: Prisma prisma migrate deploy on release.
+Backups: daily DB snapshot; R2 lifecycle rules.
+13) Admin Workflows (Step‑by‑Step)
+
+Ad Approval: Ads → Submissions → open detail → verify hashtags/geos → Approve → funds → wallet → payout when requested.
+
+Content Moderation: Reports → sort by severity → view content → warn/ban → log in audit_logs.
+
+Payouts: Wallet → pending payouts → verify KYC → release via Stripe Connect → mark paid.
+
+Subscriptions: Billing → list → filter failed payments → email dunning.
+
+14) QA & Acceptance Criteria (Samples)
+
+Map renders clustered pins ≤ 300ms after tiles loaded; filters return results < 1s.
+Connect request cannot be sent twice if pending.
+DM images/videos scan and store safely; private URLs.
+Ad submission cannot be approved without a valid linked post.
+Stripe webhook retries are idempotent; invoices stored.
+15) Security, Privacy & Legal
+
+Rate limits per IP/user for posts, DMs, ad actions.
+CSRF protection, JWT rotation, passwordless OTP anti‑brute force.
+GDPR: data export, account deletion, DPA with processors.
+Content policy & community guidelines page.
+16) Risks & Mitigations
+
+Fraudulent ad proofs → watermarks + random review + payout delay.
+Map stalking → coarse location radius, opt‑out from map, DM only after acceptance.
+Payment disputes → escrow until admin approval, clear ToS.
+Cost overruns → prefer free tiers; monitor usage and cap.
+17) Brand & UI
+
+Name: HubLink. Tone: friendly, trustworthy, travel‑centric.
+Colors: deep blue (#0F172A), accent teal (#14B8A6), warm yellow (#F59E0B). Light & dark modes.
+Typography: Inter/Geist; rounded corners, soft shadows, generous spacing.
+Accessibility: AA contrast, large tap targets.
+18) Project Plan & Milestones (Indicative)
+
+Week 1: Repo setup, auth, profiles, map base, DB schema.
+Week 2: Connect requests + DM, feed (global), storage, moderation basics.
+Week 3: Billing + subscriptions; Ad Marketplace (reserve → submit).
+Week 4: Admin panel core, QA, deploy MVP.
+Weeks 5–6: Events, notifications, analytics, payouts, polish.
+Week 7: Security hardening, load tests, docs.
+Week 8: v1.0 release.
+
+19) Engineering Handoff — Replit Agent Brief (Step‑by‑Step)
+
+Bootstrap Next.js 14 + TS + Tailwind + Auth.js.
+Install deps: next, react, typescript, tailwindcss, @prisma/client, prisma, next-auth, zod, uploadthing (or custom S3/R2 client), stripe, socket.io, socket.io-client, leaflet, supercluster, zustand, shadcn/ui.
+Configure Prisma with the schema from §9; run prisma migrate dev.
+Implement OTP auth routes and session callbacks.
+Build Profile pages and edit forms; username validation.
+Add Map (/map) with Leaflet, clustering; server API /api/discover with DB geo queries and plan gating.
+Connect & DM: threads table + Socket.IO rooms; basic file upload (R2) for media.
+Feed: /feed tabs; post create API; rate limit with Redis.
+Billing: Stripe checkout sessions; webhooks for invoice.paid; store subscriptions.
+Ad Marketplace: CRUD ads (admin), list to creators, reserve → submit → review flow.
+Admin Panel: role‑gated routes using middleware; queues for reports & ad submissions.
+Deploy to DO droplet (Node 20, PM2/Nginx) with .env from §12; set up SSL (Certbot).
+Docs: README with env vars, seed script, test users.
+20) Sample Copy (Marketing)
+
+Hero: “Meet travelers. Collaborate with creators. Earn from brand collabs. All in one map.”
+CTA Buttons: Explore Map / Start Earning
+Value Props: Real travelers, real collabs; Private until you connect; Earn by promoting ads you believe in.
+21) Definition of Done (MVP)
+
+End‑to‑end: New user can sign up, edit profile, appear on map, send/accept connect request, DM, post to global feed, upgrade to Traveler/Creator, creator can reserve an ad, submit proof, admin can approve and pay out (test mode), and logs/audits are captured.
+22) Next Ideas (Post‑v1.0)
+
+Group chats; city channels
+Creator tiers & brand portal for advertisers
+Event ticketing & payments
+In‑app video editor; story format
+AI safety filters (on‑device for latency)
+End of Document
