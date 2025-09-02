@@ -281,7 +281,6 @@ export default function Globe3D({
     if (mapInstanceRef.current && !isLoading) {
       const map = mapInstanceRef.current;
       
-      console.log('🔍 Auto-zoom triggered:', { selectedCountry, selectedCity });
       
       if (selectedCountry && selectedCountry !== 'all') {
         // Comprehensive country coordinates
@@ -589,26 +588,210 @@ export default function Globe3D({
             'Ras Al Khaimah': { lat: 25.7889, lng: 55.9598, zoom: 13 },
             'Fujairah': { lat: 25.1164, lng: 56.3398, zoom: 13 },
             'Umm Al Quwain': { lat: 25.5644, lng: 55.5533, zoom: 13 }
+          },
+          'BE': {
+            'Brussels': { lat: 50.8503, lng: 4.3517, zoom: 13 },
+            'Antwerp': { lat: 51.2194, lng: 4.4025, zoom: 13 },
+            'Ghent': { lat: 51.0543, lng: 3.7174, zoom: 13 },
+            'Charleroi': { lat: 50.4108, lng: 4.4446, zoom: 13 },
+            'Liège': { lat: 50.6326, lng: 5.5797, zoom: 13 },
+            'Bruges': { lat: 51.2093, lng: 3.2247, zoom: 13 }
+          },
+          'FI': {
+            'Helsinki': { lat: 60.1699, lng: 24.9384, zoom: 13 },
+            'Espoo': { lat: 60.2055, lng: 24.6559, zoom: 13 },
+            'Tampere': { lat: 61.4991, lng: 23.7871, zoom: 13 },
+            'Vantaa': { lat: 60.2934, lng: 25.0378, zoom: 13 },
+            'Oulu': { lat: 65.0121, lng: 25.4651, zoom: 13 },
+            'Turku': { lat: 60.4518, lng: 22.2666, zoom: 13 }
+          },
+          'PL': {
+            'Warsaw': { lat: 52.2297, lng: 21.0122, zoom: 13 },
+            'Kraków': { lat: 50.0647, lng: 19.9450, zoom: 13 },
+            'Łódź': { lat: 51.7592, lng: 19.4560, zoom: 13 },
+            'Wrocław': { lat: 51.1079, lng: 17.0385, zoom: 13 },
+            'Poznań': { lat: 52.4064, lng: 16.9252, zoom: 13 },
+            'Gdańsk': { lat: 54.3520, lng: 18.6466, zoom: 13 }
+          },
+          'CZ': {
+            'Prague': { lat: 50.0755, lng: 14.4378, zoom: 13 },
+            'Brno': { lat: 49.1951, lng: 16.6068, zoom: 13 },
+            'Ostrava': { lat: 49.8209, lng: 18.2625, zoom: 13 },
+            'Plzen': { lat: 49.7384, lng: 13.3736, zoom: 13 },
+            'Liberec': { lat: 50.7663, lng: 15.0543, zoom: 13 }
+          },
+          'PT': {
+            'Lisbon': { lat: 38.7223, lng: -9.1393, zoom: 13 },
+            'Porto': { lat: 41.1579, lng: -8.6291, zoom: 13 },
+            'Vila Nova de Gaia': { lat: 41.1239, lng: -8.6118, zoom: 13 },
+            'Amadora': { lat: 38.7536, lng: -9.2302, zoom: 13 },
+            'Braga': { lat: 41.5518, lng: -8.4229, zoom: 13 },
+            'Funchal': { lat: 32.6669, lng: -16.9241, zoom: 13 }
+          },
+          'GR': {
+            'Athens': { lat: 37.9838, lng: 23.7275, zoom: 13 },
+            'Thessaloniki': { lat: 40.6401, lng: 22.9444, zoom: 13 },
+            'Patras': { lat: 38.2466, lng: 21.7346, zoom: 13 },
+            'Piraeus': { lat: 37.9755, lng: 23.6348, zoom: 13 },
+            'Larissa': { lat: 39.6390, lng: 22.4194, zoom: 13 },
+            'Heraklion': { lat: 35.3387, lng: 25.1442, zoom: 13 }
+          },
+          'LK': {
+            'Colombo': { lat: 6.9271, lng: 79.8612, zoom: 13 },
+            'Kandy': { lat: 7.2906, lng: 80.6337, zoom: 13 },
+            'Galle': { lat: 6.0535, lng: 80.2210, zoom: 13 },
+            'Jaffna': { lat: 9.6615, lng: 80.0255, zoom: 13 }
+          },
+          'IR': {
+            'Tehran': { lat: 35.6892, lng: 51.3890, zoom: 13 },
+            'Mashhad': { lat: 36.2605, lng: 59.6168, zoom: 13 },
+            'Isfahan': { lat: 32.6546, lng: 51.6680, zoom: 13 },
+            'Shiraz': { lat: 29.5918, lng: 52.5837, zoom: 13 },
+            'Tabriz': { lat: 38.0804, lng: 46.2919, zoom: 13 }
+          },
+          'IL': {
+            'Jerusalem': { lat: 31.7683, lng: 35.2137, zoom: 13 },
+            'Tel Aviv': { lat: 32.0853, lng: 34.7818, zoom: 13 },
+            'Haifa': { lat: 32.7940, lng: 34.9896, zoom: 13 },
+            'Rishon LeZion': { lat: 31.9730, lng: 34.8065, zoom: 13 },
+            'Petah Tikva': { lat: 32.0878, lng: 34.8878, zoom: 13 }
+          },
+          'SA': {
+            'Riyadh': { lat: 24.7136, lng: 46.6753, zoom: 13 },
+            'Jeddah': { lat: 21.4858, lng: 39.1925, zoom: 13 },
+            'Mecca': { lat: 21.3891, lng: 39.8579, zoom: 13 },
+            'Medina': { lat: 24.5247, lng: 39.5692, zoom: 13 },
+            'Dammam': { lat: 26.4282, lng: 50.1020, zoom: 13 }
+          },
+          'VE': {
+            'Caracas': { lat: 10.4806, lng: -66.9036, zoom: 13 },
+            'Maracaibo': { lat: 10.6666, lng: -71.6333, zoom: 13 },
+            'Valencia': { lat: 10.1621, lng: -68.0078, zoom: 13 },
+            'Barquisimeto': { lat: 10.0647, lng: -69.3570, zoom: 13 }
+          },
+          'NG': {
+            'Lagos': { lat: 6.5244, lng: 3.3792, zoom: 13 },
+            'Kano': { lat: 12.0022, lng: 8.5920, zoom: 13 },
+            'Ibadan': { lat: 7.3775, lng: 3.9470, zoom: 13 },
+            'Abuja': { lat: 9.0579, lng: 7.4951, zoom: 13 },
+            'Port Harcourt': { lat: 4.8156, lng: 7.0498, zoom: 13 }
+          },
+          'GH': {
+            'Accra': { lat: 5.6037, lng: -0.1870, zoom: 13 },
+            'Kumasi': { lat: 6.6885, lng: -1.6244, zoom: 13 },
+            'Tamale': { lat: 9.4008, lng: -0.8393, zoom: 13 },
+            'Cape Coast': { lat: 5.1053, lng: -1.2466, zoom: 13 }
+          },
+          'NL': {
+            'Amsterdam': { lat: 52.3676, lng: 4.9041, zoom: 13 },
+            'Rotterdam': { lat: 51.9225, lng: 4.4792, zoom: 13 },
+            'The Hague': { lat: 52.0705, lng: 4.3007, zoom: 13 },
+            'Utrecht': { lat: 52.0907, lng: 5.1214, zoom: 13 },
+            'Eindhoven': { lat: 51.4416, lng: 5.4697, zoom: 13 },
+            'Tilburg': { lat: 51.5555, lng: 5.0913, zoom: 13 }
+          },
+          'CH': {
+            'Zurich': { lat: 47.3769, lng: 8.5417, zoom: 13 },
+            'Geneva': { lat: 46.2044, lng: 6.1432, zoom: 13 },
+            'Basel': { lat: 47.5596, lng: 7.5886, zoom: 13 },
+            'Lausanne': { lat: 46.5197, lng: 6.6323, zoom: 13 },
+            'Bern': { lat: 46.9481, lng: 7.4474, zoom: 13 },
+            'Winterthur': { lat: 47.4979, lng: 8.7240, zoom: 13 }
+          },
+          'AT': {
+            'Vienna': { lat: 48.2082, lng: 16.3738, zoom: 13 },
+            'Graz': { lat: 47.0707, lng: 15.4395, zoom: 13 },
+            'Linz': { lat: 48.3069, lng: 14.2858, zoom: 13 },
+            'Salzburg': { lat: 47.8095, lng: 13.0550, zoom: 13 },
+            'Innsbruck': { lat: 47.2692, lng: 11.4041, zoom: 13 },
+            'Klagenfurt': { lat: 46.6247, lng: 14.3055, zoom: 13 }
+          },
+          'SE': {
+            'Stockholm': { lat: 59.3293, lng: 18.0686, zoom: 13 },
+            'Gothenburg': { lat: 57.7089, lng: 11.9746, zoom: 13 },
+            'Malmö': { lat: 55.6050, lng: 13.0038, zoom: 13 },
+            'Uppsala': { lat: 59.8586, lng: 17.6389, zoom: 13 },
+            'Västerås': { lat: 59.6162, lng: 16.5528, zoom: 13 },
+            'Örebro': { lat: 59.2741, lng: 15.2066, zoom: 13 }
+          },
+          'NO': {
+            'Oslo': { lat: 59.9139, lng: 10.7522, zoom: 13 },
+            'Bergen': { lat: 60.3913, lng: 5.3221, zoom: 13 },
+            'Trondheim': { lat: 63.4305, lng: 10.3951, zoom: 13 },
+            'Stavanger': { lat: 58.9700, lng: 5.7331, zoom: 13 },
+            'Kristiansand': { lat: 58.1599, lng: 7.9956, zoom: 13 },
+            'Tromsø': { lat: 69.6492, lng: 18.9553, zoom: 13 }
+          },
+          'DK': {
+            'Copenhagen': { lat: 55.6761, lng: 12.5683, zoom: 13 },
+            'Aarhus': { lat: 56.1629, lng: 10.2039, zoom: 13 },
+            'Odense': { lat: 55.4038, lng: 10.4024, zoom: 13 },
+            'Aalborg': { lat: 57.0488, lng: 9.9217, zoom: 13 },
+            'Esbjerg': { lat: 55.4669, lng: 8.4520, zoom: 13 },
+            'Randers': { lat: 56.4607, lng: 10.0369, zoom: 13 }
+          },
+          'VN': {
+            'Ho Chi Minh City': { lat: 10.8231, lng: 106.6297, zoom: 13 },
+            'Hanoi': { lat: 21.0285, lng: 105.8542, zoom: 13 },
+            'Da Nang': { lat: 16.0471, lng: 108.2068, zoom: 13 },
+            'Hai Phong': { lat: 20.8449, lng: 106.6881, zoom: 13 },
+            'Can Tho': { lat: 10.0452, lng: 105.7469, zoom: 13 },
+            'Hue': { lat: 16.4637, lng: 107.5909, zoom: 13 }
+          },
+          'SG': {
+            'Singapore': { lat: 1.3521, lng: 103.8198, zoom: 13 }
+          },
+          'MY': {
+            'Kuala Lumpur': { lat: 3.1390, lng: 101.6869, zoom: 13 },
+            'George Town': { lat: 5.4164, lng: 100.3327, zoom: 13 },
+            'Johor Bahru': { lat: 1.4927, lng: 103.7414, zoom: 13 },
+            'Ipoh': { lat: 4.5975, lng: 101.0901, zoom: 13 },
+            'Shah Alam': { lat: 3.0733, lng: 101.5185, zoom: 13 },
+            'Petaling Jaya': { lat: 3.1073, lng: 101.6067, zoom: 13 }
+          },
+          'ID': {
+            'Jakarta': { lat: -6.2088, lng: 106.8456, zoom: 13 },
+            'Surabaya': { lat: -7.2575, lng: 112.7521, zoom: 13 },
+            'Medan': { lat: 3.5952, lng: 98.6722, zoom: 13 },
+            'Bandung': { lat: -6.9175, lng: 107.6191, zoom: 13 },
+            'Bekasi': { lat: -6.2383, lng: 106.9756, zoom: 13 },
+            'Tangerang': { lat: -6.1783, lng: 106.6319, zoom: 13 }
+          },
+          'PH': {
+            'Manila': { lat: 14.5995, lng: 120.9842, zoom: 13 },
+            'Quezon City': { lat: 14.6760, lng: 121.0437, zoom: 13 },
+            'Caloocan': { lat: 14.6507, lng: 120.9668, zoom: 13 },
+            'Davao': { lat: 7.1907, lng: 125.4553, zoom: 13 },
+            'Cebu City': { lat: 10.3157, lng: 123.8854, zoom: 13 },
+            'Zamboanga': { lat: 6.9214, lng: 122.0790, zoom: 13 }
+          },
+          'PK': {
+            'Karachi': { lat: 24.8607, lng: 67.0011, zoom: 13 },
+            'Lahore': { lat: 31.5204, lng: 74.3587, zoom: 13 },
+            'Faisalabad': { lat: 31.4504, lng: 73.1350, zoom: 13 },
+            'Rawalpindi': { lat: 33.5651, lng: 73.0169, zoom: 13 },
+            'Gujranwala': { lat: 32.1877, lng: 74.1945, zoom: 13 },
+            'Peshawar': { lat: 34.0151, lng: 71.5249, zoom: 13 }
+          },
+          'BD': {
+            'Dhaka': { lat: 23.8103, lng: 90.4125, zoom: 13 },
+            'Chittagong': { lat: 22.3569, lng: 91.7832, zoom: 13 },
+            'Khulna': { lat: 22.8456, lng: 89.5403, zoom: 13 },
+            'Rajshahi': { lat: 24.3745, lng: 88.6042, zoom: 13 },
+            'Sylhet': { lat: 24.8949, lng: 91.8687, zoom: 13 },
+            'Barisal': { lat: 22.7010, lng: 90.3535, zoom: 13 }
           }
         };
         
         if (selectedCity && selectedCity !== 'all') {
-          console.log('🏙️ Searching for city:', selectedCity, 'in country:', selectedCountry);
-          console.log('🗺️ Available cityCoords for country:', cityCoords[selectedCountry]);
-          
           // Zoom to specific city
           const cityCoord = cityCoords[selectedCountry]?.[selectedCity];
           
-          console.log('🎯 Found city coordinate:', cityCoord);
-          
           if (cityCoord) {
-            console.log('✅ Zooming to city:', selectedCity, cityCoord);
             map.panTo({ lat: cityCoord.lat, lng: cityCoord.lng });
             map.setZoom(cityCoord.zoom);
             map.setTilt(45); // 3D view for cities
             return;
-          } else {
-            console.log('❌ City coordinate not found for:', selectedCity);
           }
         }
         
