@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
-import Globe3D from "@/components/Globe3D";
 
 // Define comprehensive world countries and cities
 const COUNTRIES = [

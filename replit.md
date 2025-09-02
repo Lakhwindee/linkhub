@@ -1,11 +1,10 @@
 # Overview
 
-HubLink is a tourism-social platform that connects travelers and creators globally. The application enables users to discover each other on a live map, follow profiles, send connect requests, chat, post to a global feed, plan events, and earn money through brand advertising campaigns. The platform operates on a freemium model with three tiers: Free (browse-only), Traveler (£25/mo), and Creator/Earner (£45/mo), supporting both UK (£) and India (₹) markets.
+HubLink is a tourism-social platform that connects travelers and creators globally. The application enables users to discover each other, follow profiles, send connect requests, chat, post to a global feed, plan events, and earn money through brand advertising campaigns. The platform operates on a freemium model with three tiers: Free (browse-only), Traveler (£25/mo), and Creator/Earner (£45/mo), supporting both UK (£) and India (₹) markets.
 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
-Globe3D component fixed size: 2400x2400 pixels for optimal display.
 
 # System Architecture
 
@@ -16,7 +15,6 @@ Globe3D component fixed size: 2400x2400 pixels for optimal display.
 - **State Management**: TanStack Query (React Query) for server state, React hooks for local state
 - **Routing**: Wouter for lightweight client-side routing
 - **Form Handling**: React Hook Form with Zod validation
-- **Maps**: Dynamic Leaflet integration for interactive map features
 - **File Uploads**: Custom ObjectUploader component with Uppy integration
 
 ## Backend Architecture
@@ -55,9 +53,7 @@ Globe3D component fixed size: 2400x2400 pixels for optimal display.
 - **Authentication**: Replit OpenID Connect service
 - **Hosting**: Replit deployment platform with development tooling
 
-## Maps & Location
-- **Mapping**: Leaflet for interactive maps with clustering and filtering
-- **CDN Delivery**: Unpkg for Leaflet assets loaded dynamically
+## Location Services
 - **Geolocation**: Browser geolocation API for user positioning
 
 ## Development Tools

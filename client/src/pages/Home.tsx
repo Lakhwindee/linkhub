@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star } from "lucide-react";
 import { Link } from "wouter";
-import { Map } from "@/components/Map";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import type { User, Post, Event } from "@shared/schema";
@@ -146,42 +145,6 @@ export default function Home() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Discover Section */}
-            <Card data-testid="card-discover">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-5 h-5 text-green-600" />
-                    <span>Discover Travelers</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      <span>Live Location Sharing</span>
-                    </div>
-                    <Badge variant="outline" className="text-xs">Location sharing is disabled</Badge>
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex space-x-2">
-                    <input 
-                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
-                      placeholder="Search by username, city, or country..."
-                    />
-                    <select className="px-3 py-2 border rounded-lg text-sm">
-                      <option>Select Country</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <Button asChild className="w-full bg-gray-900 hover:bg-gray-800" data-testid="button-explore-map">
-                    <Link href="/map">Explore Full Map</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Recent Posts */}
             <Card data-testid="card-recent-posts">
@@ -407,12 +370,6 @@ export default function Home() {
                   <Link href="/events">
                     <Calendar className="w-4 h-4 mr-2" />
                     Create Event
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-find-travelers">
-                  <Link href="/map">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Find Travelers
                   </Link>
                 </Button>
                 {user.plan === 'free' && (

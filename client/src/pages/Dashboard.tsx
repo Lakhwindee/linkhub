@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star } from "lucide-react";
 import { Link } from "wouter";
-import { Map } from "@/components/Map";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import type { User, Post, Event } from "@shared/schema";
@@ -371,12 +370,6 @@ export default function Dashboard() {
                   <Link href="/events">
                     <Calendar className="w-4 h-4 mr-2" />
                     Create Event
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-find-travelers">
-                  <Link href="/map">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Find Travelers
                   </Link>
                 </Button>
                 <Button className="w-full justify-start" asChild data-testid="button-upgrade-quick">
