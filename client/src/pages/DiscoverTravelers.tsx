@@ -406,7 +406,7 @@ export default function DiscoverTravelers() {
   const initializeMap = () => {
     if (!mapRef.current || mapInstanceRef.current || !L) return;
 
-    // Create map with zoom limits and globe-like appearance
+    // Create map with optimized performance settings
     const map = L.map(mapRef.current, {
       center: [20, 0],
       zoom: 3,
@@ -418,12 +418,12 @@ export default function DiscoverTravelers() {
       maxBounds: [[-80, -170], [80, 170]],
       maxBoundsViscosity: 1.0,
       preferCanvas: true,
-      zoomSnap: 0.25, // Smoother zoom steps
-      zoomDelta: 0.5, // Smoother zoom increments
-      wheelPxPerZoomLevel: 60, // Smoother wheel zoom
-      zoomAnimation: true, // Enable zoom animations
-      fadeAnimation: true, // Enable fade animations
-      markerZoomAnimation: true, // Smooth marker animations
+      zoomSnap: 1, // Simplified zoom steps for better performance
+      zoomDelta: 1, // Standard zoom increments
+      wheelPxPerZoomLevel: 40, // Faster zoom response
+      zoomAnimation: false, // Disable animations to prevent hanging
+      fadeAnimation: false, // Disable fade to improve performance
+      markerZoomAnimation: false, // Disable marker animations
     });
     
     // Add globe-like styling
@@ -435,38 +435,38 @@ export default function DiscoverTravelers() {
       mapRef.current.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
     }
 
-    // Default satellite layer with performance optimization
+    // Optimized satellite layer to prevent hanging
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
       minZoom: 3,
       maxZoom: 18,
-      updateWhenIdle: false, // Update immediately for smooth movement
-      updateWhenZooming: false, // Don't update while zooming
-      keepBuffer: 4, // Larger buffer for smoother scrolling
-      updateInterval: 50, // Faster update interval
+      updateWhenIdle: true, // Wait for zoom to finish
+      updateWhenZooming: true, // Continue updating while zooming
+      keepBuffer: 1, // Smaller buffer to reduce memory usage
+      updateInterval: 200, // Slower update for stability
     });
 
-    // Street map layer with labels
+    // Street map layer with performance optimization
     const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       minZoom: 3,
       maxZoom: 18,
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      keepBuffer: 4,
-      updateInterval: 50,
+      updateWhenIdle: true,
+      updateWhenZooming: true,
+      keepBuffer: 1,
+      updateInterval: 200,
     });
 
-    // Satellite with labels overlay
+    // Labels overlay with minimal settings
     const labels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
       minZoom: 3,
       maxZoom: 18,
       opacity: 0.8,
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      keepBuffer: 4,
-      updateInterval: 50,
+      updateWhenIdle: true,
+      updateWhenZooming: true,
+      keepBuffer: 1,
+      updateInterval: 200,
     });
 
     // Add default layers (satellite + labels)
@@ -615,15 +615,13 @@ export default function DiscoverTravelers() {
       const country = COUNTRIES.find(c => c.code === value);
       if (country) {
         mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: true,
-          duration: 1.0
+          animate: false // Disable animation for instant response
         });
       }
     } else if (mapInstanceRef.current && value === "all") {
       // Reset to world view
       mapInstanceRef.current.setView([20, 0], 3, {
-        animate: true,
-        duration: 1.0
+        animate: false // Disable animation for instant response
       });
     }
   };
@@ -637,8 +635,7 @@ export default function DiscoverTravelers() {
       const city = cities.find(c => c.name === value);
       if (city) {
         mapInstanceRef.current.setView([city.lat, city.lng], city.zoom, {
-          animate: true,
-          duration: 1.0
+          animate: false // Disable animation for instant response
         });
       }
     } else if (mapInstanceRef.current && value === "all" && selectedCountry !== "all") {
@@ -646,8 +643,7 @@ export default function DiscoverTravelers() {
       const country = COUNTRIES.find(c => c.code === selectedCountry);
       if (country) {
         mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: true,
-          duration: 1.0
+          animate: false // Disable animation for instant response
         });
       }
     }
