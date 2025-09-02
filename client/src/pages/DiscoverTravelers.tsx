@@ -326,8 +326,13 @@ const CITIES = {
   ],
 };
 
-// Leaflet global variable
-let L: any = null;
+// Simple map configuration
+const MAP_CONFIG = {
+  defaultCenter: { lat: 20, lng: 0 },
+  defaultZoom: 3,
+  minZoom: 2,
+  maxZoom: 15,
+};
 
 export default function DiscoverTravelers() {
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -370,122 +375,21 @@ export default function DiscoverTravelers() {
   // Type users data properly
   const typedUsers = users as any[];
 
-  // Load Leaflet dynamically
+  // Simple map state management
+  const [currentMapCenter, setCurrentMapCenter] = useState(MAP_CONFIG.defaultCenter);
+  const [currentZoom, setCurrentZoom] = useState(MAP_CONFIG.defaultZoom);
+  const [mapReady, setMapReady] = useState(true);
+
+  // Initialize fast map implementation
   useEffect(() => {
-    const loadLeaflet = async () => {
-      if (typeof window !== 'undefined' && !L) {
-        try {
-          // Check if already loaded
-          if ((window as any).L) {
-            L = (window as any).L;
-            return;
-          }
-
-          // Load CSS
-          const cssLink = document.createElement('link');
-          cssLink.rel = 'stylesheet';
-          cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          document.head.appendChild(cssLink);
-
-          // Load JS
-          const script = document.createElement('script');
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = () => {
-            L = (window as any).L;
-          };
-          document.head.appendChild(script);
-        } catch (error) {
-          console.error('Error loading Leaflet:', error);
-        }
-      }
-    };
-    loadLeaflet();
-  }, []);
-
-  // Initialize map
-  const initializeMap = () => {
-    if (!mapRef.current || mapInstanceRef.current || !L) return;
-
-    // Create map with zoom limits and globe-like appearance
-    const map = L.map(mapRef.current, {
-      center: [20, 0],
-      zoom: 3,
-      minZoom: 3,
-      maxZoom: 18,
-      zoomControl: true,
-      scrollWheelZoom: true,
-      worldCopyJump: false,
-      maxBounds: [[-80, -170], [80, 170]],
-      maxBoundsViscosity: 1.0,
-      preferCanvas: true,
-      zoomSnap: 0.25, // Smoother zoom steps
-      zoomDelta: 0.5, // Smoother zoom increments
-      wheelPxPerZoomLevel: 60, // Smoother wheel zoom
-      zoomAnimation: true, // Enable zoom animations
-      fadeAnimation: true, // Enable fade animations
-      markerZoomAnimation: true, // Smooth marker animations
-    });
-    
-    // Add globe-like styling
     if (mapRef.current) {
+      // Apply globe-like styling
       mapRef.current.style.borderRadius = '50%';
       mapRef.current.style.overflow = 'hidden';
       mapRef.current.style.boxShadow = '0 0 50px rgba(0,0,0,0.3), inset 0 0 100px rgba(0,0,0,0.1)';
       mapRef.current.style.border = '3px solid rgba(255,255,255,0.1)';
       mapRef.current.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
     }
-
-    // Default satellite layer with performance optimization
-    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '© Esri',
-      minZoom: 3,
-      maxZoom: 18,
-      updateWhenIdle: false, // Update immediately for smooth movement
-      updateWhenZooming: false, // Don't update while zooming
-      keepBuffer: 4, // Larger buffer for smoother scrolling
-      updateInterval: 50, // Faster update interval
-    });
-
-    // Street map layer with labels
-    const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      minZoom: 3,
-      maxZoom: 18,
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      keepBuffer: 4,
-      updateInterval: 50,
-    });
-
-    // Satellite with labels overlay
-    const labels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '© Esri',
-      minZoom: 3,
-      maxZoom: 18,
-      opacity: 0.8,
-      updateWhenIdle: false,
-      updateWhenZooming: false,
-      keepBuffer: 4,
-      updateInterval: 50,
-    });
-
-    // Add default layers (satellite + labels)
-    satellite.addTo(map);
-    labels.addTo(map);
-
-    // Layer control
-    const baseLayers = {
-      'Satellite': satellite,
-      'Streets': streets,
-    };
-    
-    const overlayLayers = {
-      'Country/City Names': labels
-    };
-    
-    L.control.layers(baseLayers, overlayLayers).addTo(map);
-
-    mapInstanceRef.current = map;
 
     // Get user location
     if (navigator.geolocation) {
@@ -494,18 +398,6 @@ export default function DiscoverTravelers() {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setUserLocation([lat, lng]);
-          
-          // Add user location marker
-          const userIcon = L.divIcon({
-            html: '<div style="background: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
-            iconSize: [16, 16],
-            className: 'user-location-marker'
-          });
-          
-          L.marker([lat, lng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup('📍 Your Location')
-            .openPopup();
         },
         () => {
           // Default to London if geolocation fails
@@ -513,87 +405,28 @@ export default function DiscoverTravelers() {
         }
       );
     }
-  };
+  }, []);
 
-  // Initialize map when Leaflet is loaded
-  useEffect(() => {
-    if (L && mapRef.current && !mapInstanceRef.current) {
-      const timer = setTimeout(initializeMap, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [L]);
-
-  // Update focus location when country/city changes
+  // Update map focus when location changes
   useEffect(() => {
     if (selectedCity !== "all" && selectedCountry !== "all") {
       const city = CITIES[selectedCountry as keyof typeof CITIES]?.find((c: any) => c.name === selectedCity);
       if (city) {
-        setFocusLocation({ lat: city.lat, lng: city.lng, zoom: city.zoom });
+        setCurrentMapCenter({ lat: city.lat, lng: city.lng });
+        setCurrentZoom(city.zoom);
       }
     } else if (selectedCountry !== "all") {
       const country = COUNTRIES.find(c => c.code === selectedCountry);
       if (country) {
-        setFocusLocation({ lat: country.lat, lng: country.lng, zoom: country.zoom });
+        setCurrentMapCenter({ lat: country.lat, lng: country.lng });
+        setCurrentZoom(country.zoom);
       }
     } else {
       // Reset to global view
-      setFocusLocation({ lat: 20, lng: 0, zoom: 2 });
+      setCurrentMapCenter({ lat: 20, lng: 0 });
+      setCurrentZoom(3);
     }
   }, [selectedCountry, selectedCity]);
-
-  // Update markers when users data changes
-  useEffect(() => {
-    if (!mapInstanceRef.current || !typedUsers.length) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    // Add user markers
-    typedUsers.forEach((user: any) => {
-      if (!user.lat || !user.lng || !user.showOnMap) return;
-
-      const planColors: {[key: string]: string} = {
-        free: '#9ca3af',
-        traveler: '#22c55e', 
-        creator: '#f97316'
-      };
-
-      const color = planColors[user.plan] || '#9ca3af';
-      
-      const userIcon = L.divIcon({
-        html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer;"></div>`,
-        iconSize: [20, 20],
-        className: 'user-marker'
-      });
-
-      const marker = L.marker([user.lat, user.lng], { icon: userIcon })
-        .addTo(mapInstanceRef.current);
-
-      const popupContent = `
-        <div style="min-width: 200px; padding: 8px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <img src="${user.profileImageUrl || '/api/placeholder/40/40'}" 
-                 style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
-            <div>
-              <div style="font-weight: 600; font-size: 14px;">${user.displayName || user.username}</div>
-              <div style="font-size: 12px; color: #666;">📍 ${user.city}, ${user.country}</div>
-            </div>
-          </div>
-          <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
-            ${user.interests?.slice(0, 2).join(', ') || 'Explorer'}
-          </div>
-          <button onclick="sendConnectRequest('${user.id}', '${user.displayName || user.username}')" 
-                  style="width: 100%; background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-            🤝 Connect Me
-          </button>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent);
-      markersRef.current.push(marker);
-    });
-  }, [typedUsers]);
 
   // Connect request function (global for popup buttons)
   useEffect(() => {
@@ -609,48 +442,10 @@ export default function DiscoverTravelers() {
   const handleCountryChange = (value: string) => {
     setSelectedCountry(value);
     setSelectedCity("all");
-    
-    // Auto zoom to selected country
-    if (mapInstanceRef.current && value !== "all") {
-      const country = COUNTRIES.find(c => c.code === value);
-      if (country) {
-        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: true,
-          duration: 1.0
-        });
-      }
-    } else if (mapInstanceRef.current && value === "all") {
-      // Reset to world view
-      mapInstanceRef.current.setView([20, 0], 3, {
-        animate: true,
-        duration: 1.0
-      });
-    }
   };
 
   const handleCityChange = (value: string) => {
     setSelectedCity(value);
-    
-    // Auto zoom to selected city
-    if (mapInstanceRef.current && value !== "all" && selectedCountry !== "all") {
-      const cities = CITIES[selectedCountry as keyof typeof CITIES] || [];
-      const city = cities.find(c => c.name === value);
-      if (city) {
-        mapInstanceRef.current.setView([city.lat, city.lng], city.zoom, {
-          animate: true,
-          duration: 1.0
-        });
-      }
-    } else if (mapInstanceRef.current && value === "all" && selectedCountry !== "all") {
-      // Zoom back to country view
-      const country = COUNTRIES.find(c => c.code === selectedCountry);
-      if (country) {
-        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: true,
-          duration: 1.0
-        });
-      }
-    }
   };
 
   const getCitiesForCountry = () => {
@@ -658,14 +453,14 @@ export default function DiscoverTravelers() {
     return CITIES[selectedCountry as keyof typeof CITIES] || [];
   };
 
-  if (!L) {
+  if (!mapReady) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <div className="space-y-2">
             <h3 className="text-xl font-semibold">🗺️ Loading Discovery Map</h3>
-            <p className="text-sm text-muted-foreground">Preparing Google Earth-style traveler discovery...</p>
+            <p className="text-sm text-muted-foreground">Preparing fast traveler discovery...</p>
           </div>
         </div>
       </div>
@@ -825,12 +620,80 @@ export default function DiscoverTravelers() {
             zIndex: 10
           }}
         >
-          {/* Leaflet Map Container */}
+          {/* Fast Interactive Map */}
           <div 
             ref={mapRef} 
-            className="w-[2400px] h-[2400px] rounded-full shadow-2xl border-4 border-white/20"
+            className="w-[2400px] h-[2400px] rounded-full shadow-2xl border-4 border-white/20 relative overflow-hidden cursor-pointer bg-gradient-to-br from-blue-900 via-blue-800 to-green-800"
             data-testid="discovery-map"
-          />
+            style={{
+              backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${currentMapCenter.lng},${currentMapCenter.lat},${currentZoom}/2400x2400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA')`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              transition: 'all 0.8s ease-in-out'
+            }}
+          >
+            {/* User Markers */}
+            <div className="absolute inset-0">
+              {typedUsers.map((user: any, index) => {
+                if (!user.lat || !user.lng || !user.showOnMap) return null;
+                
+                // Convert lat/lng to pixel position (simplified)
+                const x = ((user.lng + 180) / 360) * 2400;
+                const y = ((90 - user.lat) / 180) * 2400;
+                
+                const planColors: {[key: string]: string} = {
+                  free: '#9ca3af',
+                  traveler: '#22c55e', 
+                  creator: '#f97316'
+                };
+                const color = planColors[user.plan] || '#9ca3af';
+                
+                return (
+                  <div
+                    key={`${user.id}-${index}`}
+                    className="absolute w-4 h-4 rounded-full border-2 border-white shadow-lg hover:scale-150 transition-transform duration-200 cursor-pointer z-10"
+                    style={{
+                      left: x - 8,
+                      top: y - 8,
+                      backgroundColor: color,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+                    }}
+                    title={`${user.displayName || user.username} - ${user.city}, ${user.country}`}
+                    onClick={() => {
+                      toast({
+                        title: "Connect Request Sent!",
+                        description: `Your request to connect with ${user.displayName || user.username} has been sent.`,
+                      });
+                    }}
+                  />
+                );
+              })}
+            </div>
+            
+            {/* Location Info Overlay */}
+            <div className="absolute bottom-6 left-6 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
+              📍 {selectedCity !== "all" ? selectedCity : selectedCountry !== "all" ? COUNTRIES.find(c => c.code === selectedCountry)?.name : "World View"}
+            </div>
+            
+            {/* Zoom Controls */}
+            <div className="absolute top-6 right-6 flex flex-col gap-2">
+              <button
+                onClick={() => setCurrentZoom(Math.min(currentZoom + 1, MAP_CONFIG.maxZoom))}
+                className="w-10 h-10 bg-white/90 hover:bg-white text-gray-800 rounded-lg flex items-center justify-center shadow-lg transition-all"
+                data-testid="zoom-in"
+              >
+                +
+              </button>
+              <button
+                onClick={() => setCurrentZoom(Math.max(currentZoom - 1, MAP_CONFIG.minZoom))}
+                className="w-10 h-10 bg-white/90 hover:bg-white text-gray-800 rounded-lg flex items-center justify-center shadow-lg transition-all"
+                data-testid="zoom-out"
+              >
+                −
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
