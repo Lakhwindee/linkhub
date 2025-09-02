@@ -54,6 +54,7 @@ export default function Trips() {
   // Create trip mutation
   const createTripMutation = useMutation({
     mutationFn: async (tripData: any) => {
+      console.log("Creating trip with data:", tripData);
       const response = await fetch("/api/trips", {
         method: "POST",
         headers: { 
@@ -66,9 +67,15 @@ export default function Trips() {
       if (!response.ok) throw new Error("Failed to create trip");
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/trips"] });
       setIsCreateModalOpen(false);
+      alert("🎉 Trip created successfully! Group chat has been set up for participants.");
+      console.log("Trip created:", data);
+    },
+    onError: (error) => {
+      console.error("Failed to create trip:", error);
+      alert("❌ Failed to create trip. Please try again.");
     },
   });
 
@@ -87,8 +94,15 @@ export default function Trips() {
       if (!response.ok) throw new Error("Failed to join trip");
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/trips"] });
+      // Show success message
+      console.log(`Successfully joined trip: ${variables.tripId}`);
+      alert("🎉 Trip joined successfully! You've been added to the group chat.");
+    },
+    onError: (error) => {
+      console.error("Failed to join trip:", error);
+      alert("❌ Failed to join trip. Please try again.");
     },
   });
 
@@ -200,10 +214,13 @@ export default function Trips() {
           <Button 
             size="sm" 
             className="flex-1"
-            onClick={() => joinTripMutation.mutate({ tripId: trip.id })}
+            onClick={() => {
+              console.log(`Attempting to join trip: ${trip.id}`);
+              joinTripMutation.mutate({ tripId: trip.id });
+            }}
             disabled={joinTripMutation.isPending || (trip.currentTravelers || 1) >= (trip.maxTravelers || 10)}
           >
-            {(trip.currentTravelers || 1) >= (trip.maxTravelers || 10) ? 'Full' : 'Join Trip'}
+            {joinTripMutation.isPending ? 'Joining...' : (trip.currentTravelers || 1) >= (trip.maxTravelers || 10) ? 'Full' : 'Join Trip'}
           </Button>
           <Button 
             size="sm" 
