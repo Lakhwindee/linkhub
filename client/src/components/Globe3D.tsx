@@ -113,8 +113,8 @@ export default function Globe3D({
             controls.zoomSpeed = 1.2;
             controls.panSpeed = 1.0;
             
-            // Set default view to show full Earth properly
-            globe.pointOfView({ lat: 0, lng: 0, altitude: 2.2 }, 1000);
+            // Set default view to show FULL Earth - much farther back
+            globe.pointOfView({ lat: 0, lng: 0, altitude: 3.5 }, 100);
             
             setIsLoading(false);
           }
@@ -171,7 +171,7 @@ export default function Globe3D({
         }
       } else {
         // Reset to global view - show full Earth
-        globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 2000);
+        globe.pointOfView({ lat: 0, lng: 0, altitude: 3.5 }, 1000);
       }
     }
   }, [selectedCountry, selectedCity, isLoading]);
