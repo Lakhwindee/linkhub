@@ -28,7 +28,7 @@ const COUNTRIES = [
   { code: "ES", name: "Spain", lat: 40.4637, lng: -3.7492, zoom: 6 },
 ];
 
-const CITIES = {
+const CITIES: Record<string, { name: string; lat: number; lng: number; zoom: number }[]> = {
   "GB": [
     { name: "London", lat: 51.5074, lng: -0.1278, zoom: 10 },
     { name: "Manchester", lat: 53.4808, lng: -2.2426, zoom: 10 },
@@ -241,7 +241,7 @@ export default function DiscoverTravelers() {
     if (!mapInstanceRef.current) return;
 
     if (selectedCity !== "all" && selectedCountry !== "all") {
-      const city = CITIES[selectedCountry]?.find(c => c.name === selectedCity);
+      const city = CITIES[selectedCountry]?.find((c: any) => c.name === selectedCity);
       if (city) {
         mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
       }
@@ -441,14 +441,14 @@ export default function DiscoverTravelers() {
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     Travelers
                   </span>
-                  <span>{users.filter(u => u.plan === 'traveler').length}</span>
+                  <span>{users.filter((u: any) => u.plan === 'traveler').length}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     Creators
                   </span>
-                  <span>{users.filter(u => u.plan === 'creator').length}</span>
+                  <span>{users.filter((u: any) => u.plan === 'creator').length}</span>
                 </div>
               </div>
             </div>
@@ -619,7 +619,7 @@ export default function DiscoverTravelers() {
             <CardContent>
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedUser.profileImageUrl} />
+                  <AvatarImage src={selectedUser.profileImageUrl || undefined} />
                   <AvatarFallback>{selectedUser.displayName?.[0] || selectedUser.username[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
