@@ -360,15 +360,41 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     }
   }, [users, onUserSelect]);
 
-  // Debug loading state - Only block if Leaflet is not loaded, allow map to show even without location
+  // Simple fallback map if Leaflet doesn't load
   if (!L) {
     return (
-      <div className={`${height} w-full flex items-center justify-center bg-muted border border-border rounded-lg`}>
-        <div className="text-center space-y-2">
-          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Loading map library...</p>
-          <p className="text-xs text-muted-foreground">Setting up interactive map...</p>
+      <div className={`${height} w-full bg-gradient-to-br from-blue-100 to-green-100 border border-border rounded-lg relative overflow-hidden`}>
+        {/* Static World Map Placeholder */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-32 h-32 mx-auto bg-blue-500 rounded-full opacity-20 animate-pulse"></div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">🌍 Interactive World Map</h3>
+              <p className="text-sm text-muted-foreground">Discover travelers around the globe</p>
+              <div className="flex justify-center space-x-4 mt-4">
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-xs">Traveler</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                  <span className="text-xs">Creator</span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                  <span className="text-xs">Free</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+        
+        {/* Mock pins scattered around */}
+        <div className="absolute top-1/4 left-1/3 w-4 h-4 bg-green-500 rounded-full animate-bounce" style={{animationDelay: '0s'}}></div>
+        <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-orange-500 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-2/3 left-1/4 w-4 h-4 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '2s'}}></div>
+        <div className="absolute top-1/3 right-1/4 w-4 h-4 bg-green-500 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
+        <div className="absolute bottom-1/4 right-1/3 w-4 h-4 bg-orange-500 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
       </div>
     );
   }
