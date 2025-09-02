@@ -495,8 +495,8 @@ export default function DiscoverTravelers() {
         >
           <Globe3D 
             users={typedUsers} 
-            width={1800} 
-            height={1800}
+            width={2000} 
+            height={2000}
             userLocation={userLocation}
             focusLocation={focusLocation}
           />
