@@ -144,8 +144,9 @@ export default function DiscoverTravelers() {
       maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: true,
-      worldCopyJump: true,
+      worldCopyJump: false, // Disable world wrapping to prevent duplicates
       maxBounds: [[-85, -180], [85, 180]],
+      maxBoundsViscosity: 1.0, // Strict bounds enforcement
     });
     
     // Add globe-like styling
