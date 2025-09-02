@@ -16,6 +16,9 @@ import {
   reports,
   auditLogs,
   follows,
+  stays,
+  stayBookings,
+  stayReviews,
   type User,
   type UpsertUser,
   type ConnectRequest,
@@ -33,6 +36,12 @@ import {
   type Invoice,
   type Report,
   type AuditLog,
+  type Stay,
+  type StayBooking,
+  type StayReview,
+  insertStaySchema,
+  insertStayBookingSchema,
+  insertStayReviewSchema,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql, count, like, ilike } from "drizzle-orm";
@@ -117,6 +126,25 @@ export interface IStorage {
   isFollowing(followerId: string, followeeId: string): Promise<boolean>;
   getFollowers(userId: string): Promise<User[]>;
   getFollowing(userId: string): Promise<User[]>;
+  
+  // Stays
+  getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]>;
+  getStayById(id: string): Promise<Stay | undefined>;
+  createStay(data: any): Promise<Stay>;
+  updateStay(id: string, data: any): Promise<Stay>;
+  deleteStay(id: string): Promise<void>;
+  getUserStays(userId: string): Promise<Stay[]>;
+  
+  // Stay bookings
+  createStayBooking(data: any): Promise<StayBooking>;
+  getStayBookings(stayId: string): Promise<StayBooking[]>;
+  getUserBookings(userId: string): Promise<StayBooking[]>;
+  getHostBookings(hostId: string): Promise<StayBooking[]>;
+  updateStayBookingStatus(id: string, status: string): Promise<StayBooking>;
+  
+  // Stay reviews
+  createStayReview(data: any): Promise<StayReview>;
+  getStayReviews(stayId: string): Promise<StayReview[]>;
 }
 
 // Test data for demo/development
@@ -664,6 +692,90 @@ export class DatabaseStorage implements IStorage {
       .where(eq(follows.followerId, userId));
     
     return result.map(r => r.user);
+  }
+  
+  // Stays implementation
+  async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]> {
+    const conditions = [eq(stays.status, 'active')];
+    
+    if (filters?.country) {
+      conditions.push(eq(stays.country, filters.country));
+    }
+    if (filters?.city) {
+      conditions.push(eq(stays.city, filters.city));
+    }
+    if (filters?.type) {
+      conditions.push(eq(stays.type, filters.type));
+    }
+    if (filters?.guests) {
+      conditions.push(sql`${stays.maxGuests} >= ${filters.guests}`);
+    }
+    
+    return await db.select().from(stays)
+      .where(and(...conditions))
+      .limit(filters?.limit || 20);
+  }
+  
+  async getStayById(id: string): Promise<Stay | undefined> {
+    const [stay] = await db.select().from(stays).where(eq(stays.id, id));
+    return stay;
+  }
+  
+  async createStay(data: any): Promise<Stay> {
+    const [stay] = await db.insert(stays).values(data).returning();
+    return stay;
+  }
+  
+  async updateStay(id: string, data: any): Promise<Stay> {
+    const [stay] = await db.update(stays).set(data).where(eq(stays.id, id)).returning();
+    return stay;
+  }
+  
+  async deleteStay(id: string): Promise<void> {
+    await db.delete(stays).where(eq(stays.id, id));
+  }
+  
+  async getUserStays(userId: string): Promise<Stay[]> {
+    return await db.select().from(stays).where(eq(stays.hostId, userId));
+  }
+  
+  // Stay bookings implementation
+  async createStayBooking(data: any): Promise<StayBooking> {
+    const [booking] = await db.insert(stayBookings).values(data).returning();
+    return booking;
+  }
+  
+  async getStayBookings(stayId: string): Promise<StayBooking[]> {
+    return await db.select().from(stayBookings).where(eq(stayBookings.stayId, stayId));
+  }
+  
+  async getUserBookings(userId: string): Promise<StayBooking[]> {
+    return await db.select().from(stayBookings).where(eq(stayBookings.guestId, userId));
+  }
+  
+  async getHostBookings(hostId: string): Promise<StayBooking[]> {
+    const result = await db
+      .select({ booking: stayBookings, stay: stays })
+      .from(stayBookings)
+      .innerJoin(stays, eq(stayBookings.stayId, stays.id))
+      .where(eq(stays.hostId, hostId));
+    
+    return result.map(r => r.booking);
+  }
+  
+  async updateStayBookingStatus(id: string, status: string): Promise<StayBooking> {
+    const [booking] = await db.update(stayBookings).set({ status }).where(eq(stayBookings.id, id)).returning();
+    return booking;
+  }
+  
+  // Stay reviews implementation
+  async createStayReview(data: any): Promise<StayReview> {
+    const [review] = await db.insert(stayReviews).values(data).returning();
+    return review;
+  }
+  
+  async getStayReviews(stayId: string): Promise<StayReview[]> {
+    return await db.select().from(stayReviews).where(eq(stayReviews.stayId, stayId));
   }
 }
 

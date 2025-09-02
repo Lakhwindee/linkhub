@@ -19,6 +19,7 @@ import Admin from "@/pages/Admin";
 import Subscribe from "@/pages/Subscribe";
 import Events from "@/pages/Events";
 import Billing from "@/pages/Billing";
+import Stays from "@/pages/Stays";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -46,6 +47,7 @@ function Router() {
               <Route path="/" component={Dashboard} />
               <Route path="/dashboard" component={Dashboard} />
               <Route path="/discover" component={DiscoverTravelers} />
+              <Route path="/stays" component={Stays} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
               <Route path="/ads" component={AdMarketplace} />

@@ -19,7 +19,7 @@ import {
   Wifi,
   Car,
   Coffee,
-  Pool,
+  Waves,
   Heart
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -98,7 +98,7 @@ const amenityIcons: Record<string, any> = {
   wifi: Wifi,
   kitchen: Coffee,
   parking: Car,
-  pool: Pool,
+  pool: Waves,
   tv: "📺",
   heating: "🔥",
   aircon: "❄️",
@@ -305,11 +305,16 @@ export default function Stays() {
 
                   <div className="flex flex-wrap gap-1 mb-3">
                     {stay.amenities?.slice(0, 4).map((amenity) => {
-                      const Icon = amenityIcons[amenity];
+                      const IconComponent = amenityIcons[amenity];
                       return (
-                        <Badge key={amenity} variant="secondary" className="text-xs">
-                          {Icon && typeof Icon === 'function' ? <Icon className="w-3 h-3 mr-1" /> : Icon}
-                          {amenity}
+                        <Badge key={amenity} variant="secondary" className="text-xs flex items-center">
+                          {IconComponent && typeof IconComponent === 'function' && (
+                            <IconComponent className="w-3 h-3 mr-1" />
+                          )}
+                          {typeof IconComponent === 'string' && (
+                            <span className="mr-1">{IconComponent}</span>
+                          )}
+                          <span>{amenity}</span>
                         </Badge>
                       );
                     })}
