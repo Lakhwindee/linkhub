@@ -207,7 +207,7 @@ export default function Globe3D({
             position: window.google.maps.ControlPosition.TOP_RIGHT
           },
           
-          // Styling for premium look
+          // Clean styling - only countries and cities
           styles: [
             {
               featureType: 'all',
@@ -218,6 +218,85 @@ export default function Globe3D({
               featureType: 'water',
               elementType: 'geometry.fill',
               stylers: [{ color: '#0077be' }]
+            },
+            // Hide all POI (points of interest) - shops, restaurants, etc
+            {
+              featureType: 'poi',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.business',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.park',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.school',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.medical',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.government',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.attraction',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.place_of_worship',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'poi.sports_complex',
+              stylers: [{ visibility: 'off' }]
+            },
+            // Hide detailed road labels
+            {
+              featureType: 'road',
+              elementType: 'labels',
+              stylers: [{ visibility: 'off' }]
+            },
+            // Show highways only simplified
+            {
+              featureType: 'road.highway',
+              stylers: [{ visibility: 'simplified' }]
+            },
+            // Hide local roads  
+            {
+              featureType: 'road.arterial',
+              stylers: [{ visibility: 'off' }]
+            },
+            {
+              featureType: 'road.local',
+              stylers: [{ visibility: 'off' }]
+            },
+            // Hide transit systems
+            {
+              featureType: 'transit',
+              stylers: [{ visibility: 'off' }]
+            },
+            // Keep country labels visible
+            {
+              featureType: 'administrative.country',
+              elementType: 'labels.text',
+              stylers: [{ visibility: 'on' }]
+            },
+            // Keep city labels visible
+            {
+              featureType: 'administrative.locality',
+              elementType: 'labels.text',
+              stylers: [{ visibility: 'on' }]
+            },
+            // Simplify province/state borders
+            {
+              featureType: 'administrative.province',
+              stylers: [{ visibility: 'simplified' }]
             }
           ],
           
