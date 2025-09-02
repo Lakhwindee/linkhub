@@ -39,9 +39,8 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
         // Wait for globe to load
         setTimeout(() => {
           if (globeInstanceRef.current) {
-            // Auto-rotate
-            globe.controls().autoRotate = true;
-            globe.controls().autoRotateSpeed = 0.5;
+            // Disable auto-rotate
+            globe.controls().autoRotate = false;
             globe.controls().enableZoom = true;
             globe.controls().minDistance = 150;
             globe.controls().maxDistance = 800;
