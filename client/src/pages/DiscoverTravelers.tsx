@@ -491,11 +491,11 @@ export default function DiscoverTravelers() {
             zIndex: 10
           }}
         >
-          {/* Map Container */}
-          <div 
-            ref={mapRef} 
-            className="w-[600px] h-[600px] rounded-full shadow-2xl border-4 border-white/20"
-            data-testid="discovery-map"
+          <Globe3D 
+            users={typedUsers} 
+            width={600} 
+            height={600}
+            userLocation={userLocation}
           />
         </div>
       </div>
