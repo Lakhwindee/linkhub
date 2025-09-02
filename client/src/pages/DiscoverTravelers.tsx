@@ -348,6 +348,16 @@ export default function DiscoverTravelers() {
           <p className="text-muted-foreground">Find and connect with travelers around the world using our interactive map</p>
         </div>
 
+        {/* 3D Globe */}
+        <div className="relative w-full h-[600px] flex items-center justify-center">
+          <Globe3D 
+            users={typedUsers} 
+            width={800} 
+            height={600}
+            userLocation={userLocation}
+          />
+        </div>
+
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
           <Card>
@@ -474,15 +484,6 @@ export default function DiscoverTravelers() {
           </Card>
         </div>
 
-        {/* 3D Globe */}
-        <div className="relative w-full h-[1200px] flex items-start justify-center -mt-20">
-          <Globe3D 
-            users={typedUsers} 
-            width={1600} 
-            height={1600}
-            userLocation={userLocation}
-          />
-        </div>
 
         {/* Selected User Details */}
         {selectedUser && (
