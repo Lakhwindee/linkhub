@@ -286,23 +286,23 @@ export default function Trips() {
               value={searchFilters.city}
               onChange={(e) => setSearchFilters(prev => ({ ...prev, city: e.target.value }))}
             />
-            <Select value={searchFilters.budget} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, budget: value }))}>
+            <Select value={searchFilters.budget} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, budget: value === "all" ? "" : value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Budget" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Budgets</SelectItem>
+                <SelectItem value="all">All Budgets</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={searchFilters.travelStyle} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, travelStyle: value }))}>
+            <Select value={searchFilters.travelStyle} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, travelStyle: value === "all" ? "" : value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Style" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Styles</SelectItem>
+                <SelectItem value="all">All Styles</SelectItem>
                 <SelectItem value="backpacker">Backpacker</SelectItem>
                 <SelectItem value="comfort">Comfort</SelectItem>
                 <SelectItem value="luxury">Luxury</SelectItem>
