@@ -663,9 +663,10 @@ export default function Trips() {
                 Create Trip
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Create New Trip</DialogTitle>
+            <DialogContent className="max-w-none w-[95vw] h-[90vh] overflow-y-auto">
+              <DialogHeader className="pb-6">
+                <DialogTitle className="text-2xl font-bold">Create New Professional Trip</DialogTitle>
+                <p className="text-muted-foreground">Plan your multi-destination journey with detailed itinerary</p>
               </DialogHeader>
               
               <form onSubmit={(e) => {
@@ -690,21 +691,21 @@ export default function Trips() {
                   itinerary: itineraryDestinations.filter(dest => dest.country && dest.city),
                 };
                 createTripMutation.mutate(tripData);
-              }} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Trip Title *</Label>
-                    <Input id="title" name="title" placeholder="Europe Photography Tour" required />
+              }} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="title" className="text-base font-semibold">Trip Title *</Label>
+                    <Input id="title" name="title" placeholder="Europe Photography Tour" required className="h-12" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="maxTravelers">Max Travelers</Label>
-                    <Input id="maxTravelers" name="maxTravelers" type="number" defaultValue="6" min="2" max="20" />
+                  <div className="space-y-3">
+                    <Label htmlFor="maxTravelers" className="text-base font-semibold">Max Travelers</Label>
+                    <Input id="maxTravelers" name="maxTravelers" type="number" defaultValue="6" min="2" max="20" className="h-12" />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea id="description" name="description" placeholder="Tell others about your amazing trip plans..." rows={3} />
+                <div className="space-y-3">
+                  <Label htmlFor="description" className="text-base font-semibold">Description</Label>
+                  <Textarea id="description" name="description" placeholder="Tell others about your amazing trip plans..." rows={4} className="min-h-[100px]" />
                 </div>
 
                 {/* Multi-Destination Itinerary Builder */}
@@ -722,11 +723,11 @@ export default function Trips() {
                     </Button>
                   </div>
                   
-                  <div className="space-y-4 max-h-64 overflow-y-auto border rounded-lg p-4">
+                  <div className="space-y-6 max-h-96 overflow-y-auto border rounded-lg p-6 bg-muted/20">
                     {itineraryDestinations.map((destination, index) => (
-                      <div key={index} className="border rounded-lg p-4 bg-muted/50">
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="font-medium">Destination {index + 1}</span>
+                      <div key={index} className="border rounded-lg p-6 bg-background shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="font-semibold text-lg text-primary">Destination {index + 1}</span>
                           {itineraryDestinations.length > 1 && (
                             <Button 
                               type="button" 
@@ -739,9 +740,9 @@ export default function Trips() {
                           )}
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-3 mb-3">
-                          <div className="space-y-2">
-                            <Label>Country *</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-3">
+                            <Label className="text-base font-medium">Country *</Label>
                             <Input 
                               placeholder="e.g., United Kingdom"
                               value={destination.country}
@@ -751,10 +752,11 @@ export default function Trips() {
                                 setItineraryDestinations(updated);
                               }}
                               required
+                              className="h-11"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label>City *</Label>
+                          <div className="space-y-3">
+                            <Label className="text-base font-medium">City *</Label>
                             <Input 
                               placeholder="e.g., London"
                               value={destination.city}
@@ -764,13 +766,14 @@ export default function Trips() {
                                 setItineraryDestinations(updated);
                               }}
                               required
+                              className="h-11"
                             />
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="space-y-2">
-                            <Label>Start Date *</Label>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="space-y-3">
+                            <Label className="text-base font-medium">Start Date *</Label>
                             <Input 
                               type="date"
                               value={destination.startDate}
@@ -780,10 +783,11 @@ export default function Trips() {
                                 setItineraryDestinations(updated);
                               }}
                               required
+                              className="h-11"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label>End Date *</Label>
+                          <div className="space-y-3">
+                            <Label className="text-base font-medium">End Date *</Label>
                             <Input 
                               type="date"
                               value={destination.endDate}
@@ -793,10 +797,11 @@ export default function Trips() {
                                 setItineraryDestinations(updated);
                               }}
                               required
+                              className="h-11"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label>Duration (days)</Label>
+                          <div className="space-y-3">
+                            <Label className="text-base font-medium">Duration (days)</Label>
                             <Input 
                               type="number"
                               min="1"
@@ -806,6 +811,7 @@ export default function Trips() {
                                 updated[index].duration = Number(e.target.value);
                                 setItineraryDestinations(updated);
                               }}
+                              className="h-11"
                             />
                           </div>
                         </div>
