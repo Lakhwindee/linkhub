@@ -610,23 +610,15 @@ export default function DiscoverTravelers() {
       </div>
 
       {/* Full Screen Map Area */}
-      <div className="flex-1 relative bg-background overflow-hidden">
-        <div 
-          className="absolute"
-          style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10
-          }}
-        >
+      <div className="flex-1 relative bg-slate-900 overflow-hidden">
+        <div className="w-full h-full flex items-center justify-center p-8">
           {/* Fast Interactive Map */}
           <div 
             ref={mapRef} 
-            className="w-[2400px] h-[2400px] rounded-full shadow-2xl border-4 border-white/20 relative overflow-hidden cursor-pointer bg-gradient-to-br from-blue-900 via-blue-800 to-green-800"
+            className="w-[800px] h-[800px] max-w-[90vw] max-h-[90vh] rounded-full shadow-2xl border-4 border-white/20 relative overflow-hidden cursor-pointer bg-gradient-to-br from-blue-900 via-blue-800 to-green-800"
             data-testid="discovery-map"
             style={{
-              backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${currentMapCenter.lng},${currentMapCenter.lat},${currentZoom}/2400x2400@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA')`,
+              backgroundImage: `url('https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${currentMapCenter.lng},${currentMapCenter.lat},${currentZoom}/800x800@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZmangifQ.-g_vE53SD2WrJ6tFX7QHmA')`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
@@ -639,8 +631,8 @@ export default function DiscoverTravelers() {
                 if (!user.lat || !user.lng || !user.showOnMap) return null;
                 
                 // Convert lat/lng to pixel position (simplified)
-                const x = ((user.lng + 180) / 360) * 2400;
-                const y = ((90 - user.lat) / 180) * 2400;
+                const x = ((user.lng + 180) / 360) * 800;
+                const y = ((90 - user.lat) / 180) * 800;
                 
                 const planColors: {[key: string]: string} = {
                   free: '#9ca3af',
