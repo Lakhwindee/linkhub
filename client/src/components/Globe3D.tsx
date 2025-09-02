@@ -43,8 +43,8 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
             // Disable auto-rotate
             globe.controls().autoRotate = false;
             globe.controls().enableZoom = true;
-            globe.controls().minDistance = 150;
-            globe.controls().maxDistance = 800;
+            globe.controls().minDistance = 100; // Allow closer zoom for city details
+            globe.controls().maxDistance = 1000; // Allow further zoom for global view
             
             // Enable pointer interactions
             globe.controls().enableDamping = true;
@@ -136,10 +136,23 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
   // Handle focus location changes
   useEffect(() => {
     if (focusLocation && globeInstanceRef.current) {
-      // Calculate altitude based on zoom level
-      const altitude = focusLocation.zoom ? Math.max(1.5, 5 - (focusLocation.zoom / 3)) : 2;
+      // Calculate altitude based on zoom level for better detail views
+      let altitude = 2.5; // Default global view
       
-      // Rotate globe to focus location
+      if (focusLocation.zoom) {
+        if (focusLocation.zoom >= 10) {
+          // City level - very close view
+          altitude = 1.2;
+        } else if (focusLocation.zoom >= 6) {
+          // Country level - medium close view  
+          altitude = 1.8;
+        } else {
+          // Regional level - moderate view
+          altitude = 2.2;
+        }
+      }
+      
+      // Rotate globe to focus location with better detail
       globeInstanceRef.current.pointOfView({ 
         lat: focusLocation.lat, 
         lng: focusLocation.lng, 
