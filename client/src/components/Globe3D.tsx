@@ -34,7 +34,7 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
           .height(height);
         
         globeInstanceRef.current = globe;
-        globe(globeRef.current);
+        globe(globeRef.current!);
         
         // Wait for globe to load
         setTimeout(() => {
