@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Globe3D from "@/components/Globe3D";
 import type { User } from "@shared/schema";
 
 // Define comprehensive world countries and cities
@@ -325,8 +326,6 @@ const CITIES = {
   ],
 };
 
-// Map global variable
-let MapAPI: any = null;
 
 export default function DiscoverTravelers() {
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -335,13 +334,6 @@ export default function DiscoverTravelers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
-  const [focusLocation, setFocusLocation] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
-  
-  
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
   
   const { toast } = useToast();
 
@@ -369,206 +361,14 @@ export default function DiscoverTravelers() {
   // Type users data properly
   const typedUsers = users as any[];
 
-  // Realistic map state with iframe approach
-  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number}>({ lat: 20, lng: 0 });
-  const [mapZoom, setMapZoom] = useState<number>(3);
-
-  // Generate realistic map URL
-  const getMapUrl = () => {
-    const zoom = Math.max(3, Math.min(15, mapZoom));
-    const lat = Math.max(-80, Math.min(80, mapCenter.lat));
-    const lng = Math.max(-170, Math.min(170, mapCenter.lng));
-    
-    // Use OpenStreetMap embedded map
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-10}%2C${lat-10}%2C${lng+10}%2C${lat+10}&amp;layer=mapnik`;
-  };
-
-  // Initialize realistic map
-  const initializeMap = () => {
-    if (!mapRef.current || mapInstanceRef.current) return;
-
-    const mapContainer = mapRef.current;
-    
-    // Create iframe with realistic map
-    const iframe = document.createElement('iframe');
-    iframe.src = getMapUrl();
-    iframe.style.width = '2400px';
-    iframe.style.height = '2400px';
-    iframe.style.border = 'none';
-    iframe.style.borderRadius = '50%';
-    iframe.style.transform = 'scale(1)';
-    iframe.style.transformOrigin = 'center';
-    iframe.style.boxShadow = '0 0 50px rgba(0,0,0,0.3), inset 0 0 100px rgba(0,0,0,0.1)';
-    iframe.frameBorder = '0';
-    iframe.scrolling = 'no';
-    
-    // Add smooth overlay for better performance
-    const overlay = document.createElement('div');
-    overlay.style.position = 'absolute';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.right = '0';
-    overlay.style.bottom = '0';
-    overlay.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 50%)';
-    overlay.style.borderRadius = '50%';
-    overlay.style.pointerEvents = 'none';
-    
-    // Clear and setup container
-    mapContainer.innerHTML = '';
-    mapContainer.style.position = 'relative';
-    mapContainer.style.borderRadius = '50%';
-    mapContainer.style.overflow = 'hidden';
-    mapContainer.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
-    
-    mapContainer.appendChild(iframe);
-    mapContainer.appendChild(overlay);
-    
-    // Add user markers overlay
-    const markersLayer = document.createElement('div');
-    markersLayer.style.position = 'absolute';
-    markersLayer.style.top = '0';
-    markersLayer.style.left = '0';
-    markersLayer.style.right = '0';
-    markersLayer.style.bottom = '0';
-    markersLayer.style.pointerEvents = 'none';
-    markersLayer.style.borderRadius = '50%';
-    
-    // Add user markers
-    typedUsers.forEach((user: any, index: number) => {
-      if (user.location?.lat && user.location?.lng) {
-        const marker = document.createElement('div');
-        marker.style.position = 'absolute';
-        marker.style.width = '12px';
-        marker.style.height = '12px';
-        marker.style.background = '#ef4444';
-        marker.style.borderRadius = '50%';
-        marker.style.border = '2px solid white';
-        marker.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-        marker.style.cursor = 'pointer';
-        marker.style.pointerEvents = 'auto';
-        
-        // Calculate position (simple projection)
-        const x = ((user.location.lng + 180) / 360) * 100;
-        const y = ((90 - user.location.lat) / 180) * 100;
-        marker.style.left = `${x}%`;
-        marker.style.top = `${y}%`;
-        marker.style.transform = 'translate(-50%, -50%)';
-        
-        marker.title = `${user.displayName || user.username} - ${user.city}, ${user.country}`;
-        markersLayer.appendChild(marker);
-      }
-    });
-    
-    mapContainer.appendChild(markersLayer);
-    mapInstanceRef.current = { iframe, markersLayer };
-  };
-
-  // Initialize map when component mounts
-  useEffect(() => {
-    if (mapRef.current && !mapInstanceRef.current) {
-      const timer = setTimeout(initializeMap, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [typedUsers]);
-
-  // Update focus location when country/city changes
-  useEffect(() => {
-    if (selectedCity !== "all" && selectedCountry !== "all") {
-      const city = CITIES[selectedCountry as keyof typeof CITIES]?.find((c: any) => c.name === selectedCity);
-      if (city) {
-        setFocusLocation({ lat: city.lat, lng: city.lng, zoom: city.zoom });
-      }
-    } else if (selectedCountry !== "all") {
-      const country = COUNTRIES.find(c => c.code === selectedCountry);
-      if (country) {
-        setFocusLocation({ lat: country.lat, lng: country.lng, zoom: country.zoom });
-      }
-    } else {
-      // Reset to global view
-      setFocusLocation({ lat: 20, lng: 0, zoom: 2 });
-    }
-  }, [selectedCountry, selectedCity]);
-
-  // Update iframe map when users data changes
-  useEffect(() => {
-    if (mapInstanceRef.current && typedUsers.length > 0) {
-      // Re-initialize map to update markers
-      mapInstanceRef.current = null;
-      initializeMap();
-    }
-  }, [typedUsers]);
-
-  // Connect request function (global for popup buttons)
-  useEffect(() => {
-    (window as any).sendConnectRequest = (userId: string, userName: string) => {
-      toast({
-        title: "Connection Request Sent!",
-        description: `Your request to connect with ${userName} has been sent.`,
-      });
-      console.log(`Connect request sent to ${userId}`);
-    };
-  }, [toast]);
 
   const handleCountryChange = (value: string) => {
     setSelectedCountry(value);
     setSelectedCity("all");
-    
-    // Auto zoom to selected country
-    if (value !== "all") {
-      const country = COUNTRIES.find(c => c.code === value);
-      if (country) {
-        setMapCenter({ lat: country.lat, lng: country.lng });
-        setMapZoom(country.zoom);
-        // Update iframe URL
-        if (mapInstanceRef.current?.iframe) {
-          const zoom = Math.max(3, Math.min(15, country.zoom));
-          const lat = Math.max(-80, Math.min(80, country.lat));
-          const lng = Math.max(-170, Math.min(170, country.lng));
-          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-5}%2C${lat-5}%2C${lng+5}%2C${lat+5}&amp;layer=mapnik`;
-        }
-      }
-    } else {
-      // Reset to world view
-      setMapCenter({ lat: 20, lng: 0 });
-      setMapZoom(3);
-      if (mapInstanceRef.current?.iframe) {
-        mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=-170%2C-80%2C170%2C80&amp;layer=mapnik`;
-      }
-    }
   };
 
   const handleCityChange = (value: string) => {
     setSelectedCity(value);
-    
-    // Auto zoom to selected city
-    if (value !== "all" && selectedCountry !== "all") {
-      const cities = CITIES[selectedCountry as keyof typeof CITIES] || [];
-      const city = cities.find(c => c.name === value);
-      if (city) {
-        setMapCenter({ lat: city.lat, lng: city.lng });
-        setMapZoom(city.zoom);
-        // Update iframe URL
-        if (mapInstanceRef.current?.iframe) {
-          const zoom = Math.max(3, Math.min(15, city.zoom));
-          const lat = Math.max(-80, Math.min(80, city.lat));
-          const lng = Math.max(-170, Math.min(170, city.lng));
-          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-2}%2C${lat-2}%2C${lng+2}%2C${lat+2}&amp;layer=mapnik`;
-        }
-      }
-    } else if (value === "all" && selectedCountry !== "all") {
-      // Zoom back to country view
-      const country = COUNTRIES.find(c => c.code === selectedCountry);
-      if (country) {
-        setMapCenter({ lat: country.lat, lng: country.lng });
-        setMapZoom(country.zoom);
-        if (mapInstanceRef.current?.iframe) {
-          const zoom = Math.max(3, Math.min(15, country.zoom));
-          const lat = Math.max(-80, Math.min(80, country.lat));
-          const lng = Math.max(-170, Math.min(170, country.lng));
-          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-5}%2C${lat-5}%2C${lng+5}%2C${lat+5}&amp;layer=mapnik`;
-        }
-      }
-    }
   };
 
   const getCitiesForCountry = () => {
@@ -732,24 +532,9 @@ export default function DiscoverTravelers() {
 
       </div>
 
-      {/* Full Screen Map Area */}
+      {/* Google Maps Integration */}
       <div className="flex-1 relative bg-background overflow-hidden">
-        <div 
-          className="absolute"
-          style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10
-          }}
-        >
-          {/* Leaflet Map Container */}
-          <div 
-            ref={mapRef} 
-            className="w-[2400px] h-[2400px] rounded-full shadow-2xl border-4 border-white/20"
-            data-testid="discovery-map"
-          />
-        </div>
+        <Globe3D users={typedUsers} />
       </div>
 
       {/* Selected User Details - Hidden for now */}
