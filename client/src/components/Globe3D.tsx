@@ -453,14 +453,14 @@ export default function Globe3D({
     stays.forEach((stay) => {
       if (!stay.lat || !stay.lng) return;
 
-      // Create custom bed icon marker
+      // Create custom bed icon marker with better visibility
       const bedIcon = {
-        path: 'M2 12h20l-2-2V7c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v3l-2 2z M6 9h4v2H6z M14 9h4v2h-4z M8 15v2h8v-2z', // Bed icon path
-        fillColor: '#8B5CF6', // Purple color for stays
+        path: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm2 6h12v6H6v-6zm2-3h8v2H8V7z', // Better bed icon
+        fillColor: '#EC4899', // Bright pink color for stays  
         fillOpacity: 1,
-        strokeWeight: 2,
+        strokeWeight: 3,
         strokeColor: '#FFFFFF',
-        scale: 1.2,
+        scale: 1.8, // Larger size
         anchor: new window.google.maps.Point(12, 12)
       };
 
@@ -468,8 +468,8 @@ export default function Globe3D({
         position: { lat: stay.lat, lng: stay.lng },
         map: map,
         icon: bedIcon,
-        title: stay.title,
-        zIndex: 100
+        title: `🛏️ ${stay.title}`,
+        zIndex: 999 // Higher z-index to appear above user markers
       });
 
       // Create info window for stay
@@ -496,7 +496,7 @@ export default function Globe3D({
           ">
             <!-- Header -->
             <div style="
-              background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+              background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
               padding: 16px;
               text-align: center;
               position: relative;
@@ -533,13 +533,13 @@ export default function Globe3D({
                 padding: 12px;
                 border-radius: 12px;
                 margin-bottom: 12px;
-                border-left: 4px solid #8B5CF6;
+                border-left: 4px solid #EC4899;
               ">
                 <div style="font-size: 14px; color: #334155; margin-bottom: 6px;">
                   <strong>📍 ${stay.city}, ${stay.country}</strong>
                 </div>
                 ${stay.pricePerNight ? `
-                  <div style="font-size: 16px; color: #8B5CF6; font-weight: 700;">
+                  <div style="font-size: 16px; color: #EC4899; font-weight: 700;">
                     ${currencySymbol}${stay.pricePerNight}/night
                   </div>
                 ` : `
@@ -561,7 +561,7 @@ export default function Globe3D({
                 onclick="window.viewStayDetails && window.viewStayDetails('${stay.id}')" 
                 style="
                   width: 100%;
-                  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+                  background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%);
                   color: white;
                   border: none;
                   padding: 12px 16px;
@@ -569,11 +569,11 @@ export default function Globe3D({
                   font-size: 14px;
                   font-weight: 600;
                   cursor: pointer;
-                  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+                  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
                   transition: all 0.2s ease;
                 "
-                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(139, 92, 246, 0.4)';"
-                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)';"
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(236, 72, 153, 0.4)';"
+                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 12px rgba(236, 72, 153, 0.3)';"
               >
                 🏠 View Stay Details
               </button>
