@@ -26,9 +26,8 @@ export default function Messages() {
   useEffect(() => {
     console.log('=== STATE CHANGE ===');
     console.log('Selected conversation state changed to:', selectedConversation);
-    console.log('Conversations available:', conversations.length, conversations);
     console.log('=== STATE CHANGE COMPLETE ===');
-  }, [selectedConversation, conversations]);
+  }, [selectedConversation]);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -71,13 +70,14 @@ export default function Messages() {
     queryKey: ["/api/messages", selectedConversation],
     enabled: !!selectedConversation,
     retry: false,
-    onSuccess: (data) => {
-      console.log('Messages fetched for conversation:', selectedConversation, 'Messages:', data);
-    },
-    onError: (error) => {
-      console.log('Error fetching messages:', error);
-    }
   });
+  
+  // Debug effect for messages
+  useEffect(() => {
+    if (selectedConversation && messages) {
+      console.log('Messages fetched for conversation:', selectedConversation, 'Messages:', messages);
+    }
+  }, [selectedConversation, messages]);
 
   // Setup WebSocket connection
   useEffect(() => {
@@ -417,8 +417,8 @@ export default function Messages() {
                 ) : conversations.length > 0 ? (
                   <div className="space-y-1">
                     {(() => {
-                      console.log('Rendering conversations:', conversations.length, conversations);
-                      return conversations;
+                      console.log('Rendering conversations:', conversations?.length || 0, conversations);
+                      return conversations || [];
                     })().map((conversation: Conversation) => {
                       const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
                       
