@@ -301,7 +301,7 @@ export default function DiscoverTravelers() {
         </div>
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -316,7 +316,7 @@ export default function DiscoverTravelers() {
                   <SelectTrigger className="h-8">
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     {COUNTRIES.map((country) => (
                       <SelectItem key={country.code} value={country.code}>
                         {country.name}
@@ -332,7 +332,7 @@ export default function DiscoverTravelers() {
                   <SelectTrigger className="h-8">
                     <SelectValue placeholder="Select City" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[9999]">
                     <SelectItem value="all">All Cities</SelectItem>
                     {getCitiesForCountry().map((city) => (
                       <SelectItem key={city.name} value={city.name}>
@@ -427,11 +427,11 @@ export default function DiscoverTravelers() {
         </div>
 
         {/* Map */}
-        <Card>
+        <Card className="relative">
           <CardContent className="p-0">
             <div 
               ref={mapRef} 
-              className="w-full h-[500px] rounded-lg"
+              className="w-full h-[500px] rounded-lg relative z-0"
               style={{ minHeight: '500px' }}
             />
           </CardContent>
