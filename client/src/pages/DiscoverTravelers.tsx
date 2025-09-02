@@ -483,8 +483,8 @@ export default function DiscoverTravelers() {
       <div className="flex-1 relative bg-background overflow-hidden flex items-center justify-center">
         <Globe3D 
           users={typedUsers} 
-          width={700} 
-          height={700}
+          width={3500} 
+          height={3500}
           userLocation={userLocation}
         />
       </div>
