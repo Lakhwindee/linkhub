@@ -43,49 +43,42 @@ export default function Globe3D({
       size: user.plan === 'creator' ? 0.8 : 0.6
     }));
 
-  // Initialize 3D Globe with Google Earth-style appearance
+  // Initialize 3D Globe with error handling
   useEffect(() => {
     if (!globeRef.current || globeInstanceRef.current) return;
     
-    const initGlobe = async () => {
+    const initGlobe = () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        const globe = (Globe as any)()
-          // Use Google Earth-style satellite texture
-          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-          .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-          
-          // Dimensions and setup
-          .width(width)
-          .height(height)
-          .backgroundColor('rgba(0, 0, 30, 0.9)')
-          
-          // Enhanced atmosphere for realistic look
+        // Check if Globe is available
+        if (typeof Globe === 'undefined' || !Globe) {
+          throw new Error('Globe.gl library not loaded');
+        }
+        
+        console.log('Initializing globe with markers:', markers.length);
+        
+        const globe = Globe()
+          // Use reliable satellite imagery
+          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
           .showAtmosphere(true)
           .atmosphereColor('#4FC3F7')
-          .atmosphereAltitude(0.15)
-          
-          // Enable interactions
+          .atmosphereAltitude(0.1)
+          .backgroundColor('rgba(0, 0, 20, 0.9)')
+          .width(width)
+          .height(height)
           .enablePointerInteraction(true)
           
-          // Performance settings
-          .rendererConfig({ 
-            antialias: false, // Disable for better performance
-            alpha: true,
-            powerPreference: 'high-performance'
-          })
-          
-          // User markers on globe
+          // Add user markers
           .pointsData(markers)
           .pointAltitude(0.01)
           .pointColor('color')
           .pointRadius('size')
-          .pointResolution(8)
-          .pointsMerge(true)
+          .pointResolution(6)
+          .pointsMerge(false)
           
-          // Click and hover interactions
+          // Event handlers
           .onPointClick((point: any) => {
             if (onUserClick && point.user) {
               onUserClick(point.user);
@@ -100,41 +93,58 @@ export default function Globe3D({
           });
         
         globeInstanceRef.current = globe;
-        globe(globeRef.current);
         
-        // Configure controls for Google Earth-like experience
+        // Mount the globe
+        if (globeRef.current) {
+          globe(globeRef.current);
+        }
+        
+        // Setup controls after a delay
         setTimeout(() => {
-          if (globeInstanceRef.current) {
-            const controls = globe.controls();
-            controls.autoRotate = true; // Auto-rotate like Google Earth screensaver
-            controls.autoRotateSpeed = 0.5;
-            controls.enableZoom = true;
-            controls.enablePan = true;
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.1;
-            controls.minDistance = 150;
-            controls.maxDistance = 1000;
-            
-            // Start with a nice view showing the full Earth sphere
-            globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 1000);
-            
-            setIsLoading(false);
+          try {
+            if (globeInstanceRef.current) {
+              const controls = globe.controls();
+              if (controls) {
+                controls.autoRotate = true;
+                controls.autoRotateSpeed = 0.3;
+                controls.enableZoom = true;
+                controls.enablePan = true;
+                controls.enableDamping = true;
+                controls.dampingFactor = 0.1;
+                controls.minDistance = 150;
+                controls.maxDistance = 800;
+              }
+              
+              // Set initial view
+              globe.pointOfView({ lat: 0, lng: 0, altitude: 3 }, 1000);
+              
+              console.log('Globe initialized successfully');
+              setIsLoading(false);
+            }
+          } catch (controlsErr) {
+            console.warn('Controls setup failed:', controlsErr);
+            setIsLoading(false); // Still show the globe even if controls fail
           }
-        }, 1500);
+        }, 2000);
         
       } catch (err) {
-        console.error('Globe initialization error:', err);
-        setError('Failed to load 3D Globe');
+        console.error('Globe initialization failed:', err);
+        setError('Failed to load 3D Globe. Please refresh the page.');
         setIsLoading(false);
       }
     };
     
-    initGlobe();
+    // Add a small delay to ensure DOM is ready
+    const timer = setTimeout(initGlobe, 100);
     
     return () => {
+      clearTimeout(timer);
       if (globeInstanceRef.current) {
         try {
-          globeInstanceRef.current._destructor?.();
+          const globe = globeInstanceRef.current;
+          if (globe._destructor) {
+            globe._destructor();
+          }
           globeInstanceRef.current = null;
         } catch (err) {
           console.error('Globe cleanup error:', err);
