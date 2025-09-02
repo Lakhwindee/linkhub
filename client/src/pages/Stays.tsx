@@ -366,12 +366,43 @@ export default function Stays() {
                     <SelectValue placeholder="Type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="room">Room</SelectItem>
-                    <SelectItem value="apartment">Apartment</SelectItem>
-                    <SelectItem value="house">House</SelectItem>
-                    <SelectItem value="studio">Studio</SelectItem>
-                    <SelectItem value="villa">Villa</SelectItem>
+                    <SelectItem value="all">🏠 All Types</SelectItem>
+                    
+                    {/* Room Categories */}
+                    <SelectItem value="guest-room">🏠 Guest Room (in Home)</SelectItem>
+                    <SelectItem value="private-room">🚪 Private Room</SelectItem>
+                    <SelectItem value="shared-room">👥 Shared Room</SelectItem>
+                    <SelectItem value="hostel-bed">🛏️ Hostel Bed</SelectItem>
+                    
+                    {/* Entire Places */}
+                    <SelectItem value="studio">🏢 Studio Apartment</SelectItem>
+                    <SelectItem value="apartment">🏠 Entire Apartment</SelectItem>
+                    <SelectItem value="house">🏘️ Entire House</SelectItem>
+                    <SelectItem value="villa">🏖️ Villa</SelectItem>
+                    <SelectItem value="cottage">🏡 Cottage</SelectItem>
+                    <SelectItem value="loft">🏭 Loft</SelectItem>
+                    <SelectItem value="townhouse">🏘️ Townhouse</SelectItem>
+                    <SelectItem value="penthouse">🏢 Penthouse</SelectItem>
+                    
+                    {/* Unique Stays */}
+                    <SelectItem value="tiny-house">🏘️ Tiny House</SelectItem>
+                    <SelectItem value="cabin">🏕️ Cabin</SelectItem>
+                    <SelectItem value="boat">🚤 Boat/Yacht</SelectItem>
+                    <SelectItem value="treehouse">🌳 Treehouse</SelectItem>
+                    <SelectItem value="castle">🏰 Castle</SelectItem>
+                    <SelectItem value="farmhouse">🚜 Farmhouse</SelectItem>
+                    <SelectItem value="beachhouse">🏖️ Beach House</SelectItem>
+                    
+                    {/* Hostels & Budget */}
+                    <SelectItem value="hostel">🏨 Hostel</SelectItem>
+                    <SelectItem value="guesthouse">🏡 Guesthouse</SelectItem>
+                    <SelectItem value="b&b">🛏️ Bed & Breakfast</SelectItem>
+                    <SelectItem value="homestay">👨‍👩‍👧‍👦 Traditional Homestay</SelectItem>
+                    
+                    {/* Luxury */}
+                    <SelectItem value="resort">🌴 Resort</SelectItem>
+                    <SelectItem value="boutique-hotel">✨ Boutique Hotel</SelectItem>
+                    <SelectItem value="luxury-suite">💎 Luxury Suite</SelectItem>
                   </SelectContent>
                 </Select>
 
