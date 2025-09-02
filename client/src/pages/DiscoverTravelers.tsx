@@ -348,61 +348,8 @@ export default function DiscoverTravelers() {
           <p className="text-muted-foreground">Find and connect with travelers around the world using our interactive map</p>
         </div>
 
-        {/* 3D Globe */}
-        <div className="relative w-full h-[1000px] flex items-center justify-center bg-transparent">
-          <Globe3D 
-            users={typedUsers} 
-            width={1400} 
-            height={1000}
-            userLocation={userLocation}
-          />
-        </div>
-
-
-
-        {/* Selected User Details */}
-        {selectedUser && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <UserIcon className="w-5 h-5" />
-                Selected Traveler
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedUser.profileImageUrl} />
-                  <AvatarFallback>{selectedUser.displayName?.[0] || selectedUser.username[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold">{selectedUser.displayName || selectedUser.username}</h3>
-                  <p className="text-sm text-muted-foreground">📍 {selectedUser.city}, {selectedUser.country}</p>
-                  <div className="flex gap-2 mt-2">
-                    {selectedUser.interests?.map((interest) => (
-                      <Badge key={interest} variant="outline" className="text-xs">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <div className="space-x-2">
-                  <Button variant="outline" size="sm">
-                    <UserIcon className="w-4 h-4 mr-1" />
-                    View Profile
-                  </Button>
-                  <Button size="sm">
-                    <MessageCircle className="w-4 h-4 mr-1" />
-                    Connect
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Controls - Moved to Bottom */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10 mt-12">
+        {/* Controls */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative z-10">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -526,6 +473,60 @@ export default function DiscoverTravelers() {
             </CardContent>
           </Card>
         </div>
+
+        {/* 3D Globe */}
+        <div className="relative w-full h-[1000px] flex items-center justify-center bg-transparent">
+          <Globe3D 
+            users={typedUsers} 
+            width={1400} 
+            height={1000}
+            userLocation={userLocation}
+          />
+        </div>
+
+
+
+        {/* Selected User Details */}
+        {selectedUser && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserIcon className="w-5 h-5" />
+                Selected Traveler
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={selectedUser.profileImageUrl} />
+                  <AvatarFallback>{selectedUser.displayName?.[0] || selectedUser.username[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="font-semibold">{selectedUser.displayName || selectedUser.username}</h3>
+                  <p className="text-sm text-muted-foreground">📍 {selectedUser.city}, {selectedUser.country}</p>
+                  <div className="flex gap-2 mt-2">
+                    {selectedUser.interests?.map((interest) => (
+                      <Badge key={interest} variant="outline" className="text-xs">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-x-2">
+                  <Button variant="outline" size="sm">
+                    <UserIcon className="w-4 h-4 mr-1" />
+                    View Profile
+                  </Button>
+                  <Button size="sm">
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    Connect
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
       </div>
     </div>
   );
