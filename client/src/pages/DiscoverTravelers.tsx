@@ -67,11 +67,6 @@ export default function DiscoverTravelers() {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
   
-  // Globe positioning and sizing states
-  const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
-  const [globeSize, setGlobeSize] = useState(1000);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -482,79 +477,16 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-        {/* Globe Size Controls */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              Globe Controls
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex flex-col gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setGlobeSize(Math.max(800, globeSize - 200))}
-                data-testid="button-globe-smaller"
-              >
-                <Minus className="w-4 h-4 mr-1" />
-                Smaller
-              </Button>
-              <span className="text-xs text-muted-foreground text-center">Size: {globeSize}px</span>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setGlobeSize(Math.min(2000, globeSize + 200))}
-                data-testid="button-globe-larger"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                Larger
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
-      {/* Full Screen Globe Area */}
-      <div className="flex-1 relative bg-background overflow-hidden">
-        <div 
-          className="absolute cursor-move select-none"
-          style={{
-            left: `calc(50% + ${globePosition.x}px)`,
-            top: `calc(50% + ${globePosition.y}px)`,
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10
-          }}
-          onMouseDown={(e) => {
-            setIsDragging(true);
-            setDragOffset({
-              x: e.clientX - globePosition.x,
-              y: e.clientY - globePosition.y
-            });
-          }}
-          onMouseMove={(e) => {
-            if (isDragging) {
-              setGlobePosition({
-                x: e.clientX - dragOffset.x,
-                y: e.clientY - dragOffset.y
-              });
-            }
-          }}
-          onMouseUp={() => setIsDragging(false)}
-          onMouseLeave={() => setIsDragging(false)}
-        >
-          <div className="absolute -top-8 left-0 flex items-center gap-2 text-xs text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
-            <Move className="w-3 h-3" />
-            Drag to move
-          </div>
-          <Globe3D 
-            users={typedUsers} 
-            width={globeSize} 
-            height={globeSize}
-            userLocation={userLocation}
-          />
-        </div>
+      {/* Full Screen Globe Area - Fixed Size */}
+      <div className="flex-1 relative bg-background overflow-hidden flex items-center justify-center">
+        <Globe3D 
+          users={typedUsers} 
+          width={700} 
+          height={700}
+          userLocation={userLocation}
+        />
       </div>
 
 
