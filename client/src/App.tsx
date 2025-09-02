@@ -11,7 +11,6 @@ import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import MapPage from "@/pages/MapPage";
-import DiscoverTravelers from "./pages/DiscoverTravelers";
 import Profile from "@/pages/Profile";
 import Feed from "@/pages/Feed";
 import AdMarketplace from "@/pages/AdMarketplace";
@@ -46,7 +45,6 @@ function Router() {
             <>
               <Route path="/" component={Dashboard} />
               <Route path="/dashboard" component={Dashboard} />
-              <Route path="/discover" component={DiscoverTravelers} />
               <Route path="/map" component={MapPage} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
