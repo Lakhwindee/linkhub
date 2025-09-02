@@ -53,11 +53,11 @@ export default function Globe3D({
         setError(null);
         
         const globe = (Globe as any)()
-          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-          .backgroundColor('rgba(15, 23, 42, 0.8)')
+          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg') // Better night-style texture
+          .backgroundColor('rgba(0, 0, 0, 0.9)') // Darker space-like background
           .showAtmosphere(true)
-          .atmosphereColor('#60a5fa')
-          .atmosphereAltitude(0.12)
+          .atmosphereColor('#4F94CD') // More natural atmosphere color
+          .atmosphereAltitude(0.08) // Thinner atmosphere like Apple Maps
           .width(width)
           .height(height)
           // Fix for preventing multiple globe copies
@@ -98,16 +98,20 @@ export default function Globe3D({
         setTimeout(() => {
           if (globeInstanceRef.current) {
             const controls = globe.controls();
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.3; // Slow rotation
+            controls.autoRotate = false; // Turn off auto-rotate like Apple Maps
             controls.enableZoom = true;
             controls.enablePan = true;
             controls.enableDamping = true;
-            controls.dampingFactor = 0.1;
-            controls.minDistance = 200; // Increased minimum distance
-            controls.maxDistance = 600; // Reduced maximum distance to prevent duplication
+            controls.dampingFactor = 0.05; // Smoother damping like Apple Maps
+            controls.minDistance = 50; // Very close zoom like Apple Maps
+            controls.maxDistance = 2000; // Much more zoom out capability
             controls.minPolarAngle = 0;
             controls.maxPolarAngle = Math.PI;
+            
+            // Apple Maps-like smooth controls
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 1.2;
+            controls.panSpeed = 1.0;
             
             setIsLoading(false);
           }
