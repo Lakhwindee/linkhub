@@ -45,6 +45,9 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
             globe.controls().minDistance = 50; // Allow zoom in closer
             globe.controls().maxDistance = 150; // Prevent zoom out beyond starting position
             
+            // Set default centered view
+            globe.pointOfView({ lat: 0, lng: 0, altitude: 1.2 }, 0);
+            
             // Enable pointer interactions
             globe.controls().enableDamping = true;
             globe.controls().dampingFactor = 0.1;
@@ -123,11 +126,11 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
   // Handle user location
   useEffect(() => {
     if (userLocation && globeInstanceRef.current) {
-      // Rotate globe to user location
+      // Rotate globe to user location and center it properly
       globeInstanceRef.current.pointOfView({ 
         lat: userLocation[0], 
         lng: userLocation[1], 
-        altitude: 2 
+        altitude: 1.2 
       }, 1000);
     }
   }, [userLocation]);
