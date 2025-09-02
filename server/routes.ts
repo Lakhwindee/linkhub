@@ -137,14 +137,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...data
       });
       
-      await storage.createAuditLog({
-        actorId: userId,
-        action: "connect_request_sent",
-        targetType: "user",
-        targetId: toUserId,
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent"),
-      });
+      // Skip audit log for demo users to avoid foreign key constraints
+      const isDemoUser = userId === 'demo-user-1' || userId?.startsWith('test-user-');
+      if (!isDemoUser) {
+        await storage.createAuditLog({
+          actorId: userId,
+          action: "connect_request_sent",
+          targetType: "user",
+          targetId: toUserId,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+        });
+      }
       
       res.json(request);
     } catch (error) {
@@ -184,14 +188,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      await storage.createAuditLog({
-        actorId: userId,
-        action: `connect_request_${status}`,
-        targetType: "connect_request",
-        targetId: requestId,
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent"),
-      });
+      // Skip audit log for demo users to avoid foreign key constraints  
+      const isDemoUser = userId === 'demo-user-1' || userId?.startsWith('test-user-');
+      if (!isDemoUser) {
+        await storage.createAuditLog({
+          actorId: userId,
+          action: `connect_request_${status}`,
+          targetType: "connect_request",
+          targetId: requestId,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+        });
+      }
       
       res.json(request);
     } catch (error) {
