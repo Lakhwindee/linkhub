@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import type { Trip, TripParticipant } from "@shared/schema";
 
-interface TripWithDetails extends Trip {
+interface TripWithDetails extends Omit<Trip, 'itinerary'> {
   itinerary?: any[];
   accommodations?: any;
   transportation?: any;
@@ -49,6 +49,24 @@ export default function Trips() {
   const { data: trips = [], isLoading } = useQuery<TripWithDetails[]>({
     queryKey: ["/api/trips", searchFilters],
     retry: false,
+  });
+
+  // Create trip mutation
+  const createTripMutation = useMutation({
+    mutationFn: async (tripData: any) => {
+      const response = await fetch("/api/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(tripData),
+      });
+      if (!response.ok) throw new Error("Failed to create trip");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/trips"] });
+      setIsCreateModalOpen(false);
+    },
   });
 
   // Join trip mutation
@@ -162,7 +180,7 @@ export default function Trips() {
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-muted-foreground" />
-            <span>{trip.currentTravelers}/{trip.maxTravelers}</span>
+            <span>{trip.currentTravelers || 1}/{trip.maxTravelers || 10}</span>
           </div>
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-muted-foreground" />
@@ -189,9 +207,9 @@ export default function Trips() {
             size="sm" 
             className="flex-1"
             onClick={() => joinTripMutation.mutate({ tripId: trip.id })}
-            disabled={joinTripMutation.isPending || trip.currentTravelers >= trip.maxTravelers}
+            disabled={joinTripMutation.isPending || (trip.currentTravelers || 1) >= (trip.maxTravelers || 10)}
           >
-            {trip.currentTravelers >= trip.maxTravelers ? 'Full' : 'Join Trip'}
+            {(trip.currentTravelers || 1) >= (trip.maxTravelers || 10) ? 'Full' : 'Join Trip'}
           </Button>
           <Button 
             size="sm" 
@@ -627,10 +645,147 @@ export default function Trips() {
             {viewMode === 'grid' ? <Eye className="w-4 h-4 mr-2" /> : <EyeOff className="w-4 h-4 mr-2" />}
             {viewMode === 'grid' ? 'Detailed View' : 'Grid View'}
           </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Trip
-          </Button>
+          
+          <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                Create Trip
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Create New Trip</DialogTitle>
+              </DialogHeader>
+              
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const tripData = {
+                  title: formData.get("title"),
+                  description: formData.get("description"),
+                  fromCountry: formData.get("fromCountry"),
+                  fromCity: formData.get("fromCity"),
+                  toCountry: formData.get("toCountry"),
+                  toCity: formData.get("toCity"),
+                  startDate: formData.get("startDate"),
+                  endDate: formData.get("endDate"),
+                  maxTravelers: Number(formData.get("maxTravelers")),
+                  budget: formData.get("budget"),
+                  travelStyle: formData.get("travelStyle"),
+                  tags: formData.get("tags")?.toString().split(",").map(tag => tag.trim()).filter(Boolean) || [],
+                  meetupLocation: formData.get("meetupLocation"),
+                  requirements: formData.get("requirements"),
+                  isPublic: true,
+                  requiresApproval: formData.get("requiresApproval") === "on",
+                };
+                createTripMutation.mutate(tripData);
+              }} className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Trip Title *</Label>
+                    <Input id="title" name="title" placeholder="Europe Photography Tour" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maxTravelers">Max Travelers</Label>
+                    <Input id="maxTravelers" name="maxTravelers" type="number" defaultValue="6" min="2" max="20" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <Textarea id="description" name="description" placeholder="Tell others about your amazing trip plans..." rows={3} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fromCountry">From Country *</Label>
+                    <Input id="fromCountry" name="fromCountry" placeholder="United Kingdom" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fromCity">From City *</Label>
+                    <Input id="fromCity" name="fromCity" placeholder="London" required />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="toCountry">To Country *</Label>
+                    <Input id="toCountry" name="toCountry" placeholder="Spain" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="toCity">To City *</Label>
+                    <Input id="toCity" name="toCity" placeholder="Barcelona" required />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date *</Label>
+                    <Input id="startDate" name="startDate" type="date" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="endDate">End Date *</Label>
+                    <Input id="endDate" name="endDate" type="date" required />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="budget">Budget Level</Label>
+                    <Select name="budget">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select budget" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">💰 Low Budget</SelectItem>
+                        <SelectItem value="medium">💰💰 Medium Budget</SelectItem>
+                        <SelectItem value="high">💰💰💰 High Budget</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="travelStyle">Travel Style</Label>
+                    <Select name="travelStyle">
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select style" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="backpacker">🎒 Backpacker</SelectItem>
+                        <SelectItem value="comfort">🏨 Comfort</SelectItem>
+                        <SelectItem value="luxury">✨ Luxury</SelectItem>
+                        <SelectItem value="adventure">🏔️ Adventure</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="tags">Tags (comma separated)</Label>
+                  <Input id="tags" name="tags" placeholder="photography, culture, food, nightlife" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="meetupLocation">Meetup Location</Label>
+                  <Input id="meetupLocation" name="meetupLocation" placeholder="London Heathrow Terminal 2" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="requirements">Requirements/Notes</Label>
+                  <Textarea id="requirements" name="requirements" placeholder="Any special requirements or notes for travelers..." rows={2} />
+                </div>
+
+                <div className="flex justify-end gap-3">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={createTripMutation.isPending}>
+                    {createTripMutation.isPending ? "Creating..." : "Create Trip"}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -701,7 +856,7 @@ export default function Trips() {
           <Plane className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-xl font-semibold mb-2">No trips found</h3>
           <p className="text-muted-foreground mb-4">Be the first to create an amazing trip!</p>
-          <Button>
+          <Button onClick={() => setIsCreateModalOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Create First Trip
           </Button>
