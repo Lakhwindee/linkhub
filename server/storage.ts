@@ -183,6 +183,13 @@ const testPosts = [
   { id: 'post-3', userId: 'test-user-3', body: 'Peaceful morning meditation at Senso-ji Temple. Tokyo has the most beautiful blend of traditional and modern culture. 🏯⛩️', mediaUrls: ['https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=600&h=400&fit=crop'], visibility: 'public', country: 'Japan', city: 'Tokyo', createdAt: new Date('2024-09-01T06:00:00Z') }
 ];
 
+// Test connection requests for demo user
+const testConnectRequests = [
+  { id: 'req-1', fromUserId: 'test-user-2', toUserId: 'demo-user-1', message: 'Hi! I found you on HubLink and would love to connect! I see we both love photography and food.', status: 'pending', createdAt: new Date('2024-09-02T10:30:00Z') },
+  { id: 'req-2', fromUserId: 'test-user-3', toUserId: 'demo-user-1', message: 'Hello! I noticed you on the map and thought we could share travel experiences. I love exploring new cultures!', status: 'pending', createdAt: new Date('2024-09-02T14:15:00Z') },
+  { id: 'req-3', fromUserId: 'test-user-5', toUserId: 'demo-user-1', message: 'Bonjour! Fellow food lover here 🍽️ Would love to exchange restaurant recommendations and maybe explore together!', status: 'pending', createdAt: new Date('2024-09-02T16:45:00Z') }
+];
+
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
@@ -293,6 +300,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateConnectRequestStatus(id: string, status: string): Promise<ConnectRequest> {
+    // Handle test requests for demo user
+    const testRequest = testConnectRequests.find(req => req.id === id);
+    if (testRequest) {
+      // Update the test request status
+      testRequest.status = status;
+      return testRequest as ConnectRequest;
+    }
+    
     const [request] = await db
       .update(connectRequests)
       .set({ status })
@@ -302,6 +317,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConnectRequests(userId: string, type: 'sent' | 'received'): Promise<ConnectRequest[]> {
+    // Return test requests for demo user
+    if (userId === 'demo-user-1' && type === 'received') {
+      return testConnectRequests as ConnectRequest[];
+    }
+    
     const field = type === 'sent' ? connectRequests.fromUserId : connectRequests.toUserId;
     return await db
       .select()
