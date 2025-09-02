@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon } from "lucide-react";
 
 export default function Landing() {
+  const handleDemoLogin = () => {
+    localStorage.setItem('hublink_demo_user', 'true');
+    window.location.reload();
+  };
   const features = [
     {
       icon: MapPin,
@@ -146,8 +150,8 @@ export default function Landing() {
 
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="px-8 py-4" asChild data-testid="button-start-exploring">
-                    <a href="/api/login">Start Exploring</a>
+                  <Button size="lg" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
+                    Try Demo (Free)
                   </Button>
                   <Button size="lg" variant="outline" className="px-8 py-4" data-testid="button-learn-more">
                     Learn More

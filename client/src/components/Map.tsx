@@ -220,27 +220,54 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
   useEffect(() => {
     const loadLeaflet = async () => {
       if (typeof window !== 'undefined' && !L) {
-        // Load Leaflet CSS
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-        document.head.appendChild(link);
+        try {
+          // Check if Leaflet is already loaded
+          if ((window as any).L) {
+            L = (window as any).L;
+            setTimeout(initializeMap, 100);
+            return;
+          }
 
-        // Load Leaflet JS
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-        script.onload = () => {
-          L = (window as any).L;
-          initializeMap();
-        };
-        document.head.appendChild(script);
+          // Load Leaflet CSS
+          const existingLink = document.querySelector('link[href*="leaflet"]');
+          if (!existingLink) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            document.head.appendChild(link);
+          }
+
+          // Load Leaflet JS
+          const existingScript = document.querySelector('script[src*="leaflet"]');
+          if (!existingScript) {
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            script.onload = () => {
+              L = (window as any).L;
+              setTimeout(initializeMap, 100);
+            };
+            script.onerror = () => {
+              console.error('Failed to load Leaflet');
+            };
+            document.head.appendChild(script);
+          }
+        } catch (error) {
+          console.error('Error loading Leaflet:', error);
+        }
       } else if (L) {
-        initializeMap();
+        setTimeout(initializeMap, 100);
       }
     };
 
     loadLeaflet();
   }, []);
+
+  // Initialize map when userLocation is available
+  useEffect(() => {
+    if (userLocation && L && mapRef.current) {
+      initializeMap();
+    }
+  }, [userLocation]);
 
   // Get user's location
   useEffect(() => {
@@ -262,7 +289,12 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
   }, []);
 
   const initializeMap = () => {
-    if (!mapRef.current || !L) return;
+    if (!mapRef.current || !L) {
+      console.log('Map initialization skipped - missing mapRef or L', { mapRef: !!mapRef.current, L: !!L });
+      return;
+    }
+    
+    console.log('Initializing map...');
     
     // Use userLocation if available, otherwise default to London
     const mapLocation = userLocation || [51.5074, -0.1278];
@@ -386,17 +418,17 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     }
   }, [users, onUserSelect]);
 
-  // Simple fallback map if Leaflet doesn't load
+  // Loading map if Leaflet isn't ready
   if (!L) {
     return (
-      <div className={`${height} w-full bg-gradient-to-br from-blue-100 to-green-100 border border-border rounded-lg relative overflow-hidden`}>
-        {/* Static World Map Placeholder */}
+      <div className={`${height} w-full bg-gradient-to-br from-blue-100 to-green-100 dark:from-blue-900 dark:to-green-900 border border-border rounded-lg relative overflow-hidden`}>
+        {/* Loading State */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center space-y-4">
-            <div className="w-32 h-32 mx-auto bg-blue-500 rounded-full opacity-20 animate-pulse"></div>
+            <div className="w-16 h-16 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">🌍 Interactive World Map</h3>
-              <p className="text-sm text-muted-foreground">Discover travelers around the globe</p>
+              <h3 className="text-lg font-semibold text-foreground">🗺️ Loading Interactive Map</h3>
+              <p className="text-sm text-muted-foreground">Preparing Google Earth-style traveler discovery...</p>
               <div className="flex justify-center space-x-4 mt-4">
                 <div className="flex items-center space-x-1">
                   <div className="w-3 h-3 bg-green-500 rounded-full"></div>
