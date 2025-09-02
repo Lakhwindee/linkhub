@@ -697,7 +697,6 @@ const CITIES = {
 export default function DiscoverTravelers() {
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedState, setSelectedState] = useState("all");
-  const [selectedCity, setSelectedCity] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -712,7 +711,6 @@ export default function DiscoverTravelers() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCountry !== "all") params.append("country", selectedCountry);
-      if (selectedCity !== "all") params.append("city", selectedCity);
       if (userLocation) {
         params.append("lat", userLocation[0].toString());
         params.append("lng", userLocation[1].toString());
@@ -734,16 +732,16 @@ export default function DiscoverTravelers() {
   const handleCountryChange = (value: string) => {
     setSelectedCountry(value);
     setSelectedState("all");
-    setSelectedCity("all");
+    ("all");
   };
 
   const handleStateChange = (value: string) => {
     setSelectedState(value);
-    setSelectedCity("all");
+    ("all");
   };
 
   const handleCityChange = (value: string) => {
-    setSelectedCity(value);
+    (value);
   };
 
   const getStatesForCountry = () => {
@@ -816,7 +814,7 @@ export default function DiscoverTravelers() {
             <div className="relative">
               <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search countries, states, cities..."
+                placeholder="Search countries and states..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8 h-8"
@@ -870,22 +868,6 @@ export default function DiscoverTravelers() {
               </div>
             )}
             
-            <div>
-              <Label className="text-xs">City</Label>
-              <Select value={selectedCity} onValueChange={handleCityChange} disabled={selectedCountry === "all"}>
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select City" />
-                </SelectTrigger>
-                <SelectContent className="z-[9999]">
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {getFilteredCities().map((city: any) => (
-                    <SelectItem key={city.name} value={city.name}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
           </CardContent>
         </Card>
 
@@ -957,9 +939,9 @@ export default function DiscoverTravelers() {
                 <Badge variant="secondary">{COUNTRIES.length - 1}</Badge>
               </div>
               <div className="flex justify-between">
-                <span>Cities</span>
+                <span>States</span>
                 <Badge variant="secondary">
-                  {Object.values(CITIES).reduce((acc, cities) => acc + cities.length, 0)}
+                  {Object.values(STATES).reduce((acc, states) => acc + states.length, 0)}
                 </Badge>
               </div>
               <div className="flex justify-between">
@@ -980,7 +962,6 @@ export default function DiscoverTravelers() {
           users={typedUsers} 
           selectedCountry={selectedCountry}
           selectedState={selectedState}
-          selectedCity={selectedCity}
         />
       </div>
 

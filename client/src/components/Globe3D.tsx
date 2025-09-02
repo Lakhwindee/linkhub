@@ -16,7 +16,6 @@ interface Globe3DProps {
   onUserClick?: (user: User) => void;
   selectedCountry?: string;
   selectedState?: string;
-  selectedCity?: string;
 }
 
 export default function Globe3D({ 
@@ -25,8 +24,7 @@ export default function Globe3D({
   height = 600, 
   onUserClick,
   selectedCountry,
-  selectedState,
-  selectedCity 
+  selectedState
 }: Globe3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -930,19 +928,7 @@ export default function Globe3D({
           }
         };
         
-        // Hierarchical zoom: City (highest priority) > State > Country
-        
-        if (selectedCity && selectedCity !== 'all') {
-          // Priority 1: Zoom to specific city
-          const cityCoord = cityCoords[selectedCountry]?.[selectedCity];
-          
-          if (cityCoord) {
-            map.panTo({ lat: cityCoord.lat, lng: cityCoord.lng });
-            map.setZoom(cityCoord.zoom);
-            map.setTilt(45); // 3D view for cities
-            return;
-          }
-        }
+        // Hierarchical zoom: State > Country
         
         if (selectedState && selectedState !== 'all') {
           // Priority 2: Zoom to specific state/province
@@ -970,7 +956,7 @@ export default function Globe3D({
         map.setTilt(0);
       }
     }
-  }, [selectedCountry, selectedState, selectedCity, isLoading]);
+  }, [selectedCountry, selectedState, isLoading]);
 
 
   if (error) {
