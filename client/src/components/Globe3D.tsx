@@ -281,6 +281,8 @@ export default function Globe3D({
     if (mapInstanceRef.current && !isLoading) {
       const map = mapInstanceRef.current;
       
+      console.log('🔍 Auto-zoom triggered:', { selectedCountry, selectedCity });
+      
       if (selectedCountry && selectedCountry !== 'all') {
         // Comprehensive country coordinates
         const countryCoords: Record<string, { lat: number, lng: number, zoom: number }> = {
@@ -339,67 +341,274 @@ export default function Globe3D({
           'NZ': { lat: -40.9006, lng: 174.8860, zoom: 6 }
         };
         
-        // City coordinates for zoom functionality
+        // Comprehensive city coordinates for zoom functionality matching DiscoverTravelers CITIES data
         const cityCoords: Record<string, Record<string, { lat: number, lng: number, zoom: number }>> = {
           'GB': {
-            'London': { lat: 51.5074, lng: -0.1278, zoom: 10 },
-            'Manchester': { lat: 53.4808, lng: -2.2426, zoom: 10 },
-            'Birmingham': { lat: 52.4862, lng: -1.8904, zoom: 10 },
-            'Edinburgh': { lat: 55.9533, lng: -3.1883, zoom: 10 },
-            'Liverpool': { lat: 53.4084, lng: -2.9916, zoom: 10 },
-            'Bristol': { lat: 51.4545, lng: -2.5879, zoom: 10 }
+            'London': { lat: 51.5074, lng: -0.1278, zoom: 13 },
+            'Manchester': { lat: 53.4808, lng: -2.2426, zoom: 13 },
+            'Birmingham': { lat: 52.4862, lng: -1.8904, zoom: 13 },
+            'Edinburgh': { lat: 55.9533, lng: -3.1883, zoom: 13 },
+            'Liverpool': { lat: 53.4084, lng: -2.9916, zoom: 13 },
+            'Bristol': { lat: 51.4545, lng: -2.5879, zoom: 13 },
+            'Leeds': { lat: 53.8008, lng: -1.5491, zoom: 13 },
+            'Sheffield': { lat: 53.3811, lng: -1.4701, zoom: 13 },
+            'Newcastle': { lat: 54.9783, lng: -1.6178, zoom: 13 },
+            'Cardiff': { lat: 51.4816, lng: -3.1791, zoom: 13 },
+            'Glasgow': { lat: 55.8642, lng: -4.2518, zoom: 13 },
+            'Brighton': { lat: 50.8225, lng: -0.1372, zoom: 13 },
+            'Nottingham': { lat: 52.9548, lng: -1.1581, zoom: 13 },
+            'Oxford': { lat: 51.7520, lng: -1.2577, zoom: 13 },
+            'Cambridge': { lat: 52.2053, lng: 0.1218, zoom: 13 }
           },
           'US': {
-            'New York': { lat: 40.7128, lng: -74.0060, zoom: 10 },
-            'Los Angeles': { lat: 34.0522, lng: -118.2437, zoom: 10 },
-            'Chicago': { lat: 41.8781, lng: -87.6298, zoom: 10 },
-            'San Francisco': { lat: 37.7749, lng: -122.4194, zoom: 10 },
-            'Miami': { lat: 25.7617, lng: -80.1918, zoom: 10 },
-            'Las Vegas': { lat: 36.1699, lng: -115.1398, zoom: 10 },
-            'Seattle': { lat: 47.6062, lng: -122.3321, zoom: 10 },
-            'Boston': { lat: 42.3601, lng: -71.0589, zoom: 10 }
+            'New York': { lat: 40.7128, lng: -74.0060, zoom: 13 },
+            'Los Angeles': { lat: 34.0522, lng: -118.2437, zoom: 13 },
+            'Chicago': { lat: 41.8781, lng: -87.6298, zoom: 13 },
+            'San Francisco': { lat: 37.7749, lng: -122.4194, zoom: 13 },
+            'Miami': { lat: 25.7617, lng: -80.1918, zoom: 13 },
+            'Las Vegas': { lat: 36.1699, lng: -115.1398, zoom: 13 },
+            'Seattle': { lat: 47.6062, lng: -122.3321, zoom: 13 },
+            'Boston': { lat: 42.3601, lng: -71.0589, zoom: 13 },
+            'Houston': { lat: 29.7604, lng: -95.3698, zoom: 13 },
+            'Phoenix': { lat: 33.4484, lng: -112.0740, zoom: 13 },
+            'Philadelphia': { lat: 39.9526, lng: -75.1652, zoom: 13 },
+            'San Antonio': { lat: 29.4241, lng: -98.4936, zoom: 13 },
+            'San Diego': { lat: 32.7157, lng: -117.1611, zoom: 13 },
+            'Dallas': { lat: 32.7767, lng: -96.7970, zoom: 13 },
+            'San Jose': { lat: 37.3382, lng: -121.8863, zoom: 13 },
+            'Austin': { lat: 30.2672, lng: -97.7431, zoom: 13 },
+            'Denver': { lat: 39.7392, lng: -104.9903, zoom: 13 },
+            'Washington DC': { lat: 38.9072, lng: -77.0369, zoom: 13 },
+            'Nashville': { lat: 36.1627, lng: -86.7816, zoom: 13 },
+            'Portland': { lat: 45.5152, lng: -122.6784, zoom: 13 }
           },
           'IN': {
-            'Mumbai': { lat: 19.0760, lng: 72.8777, zoom: 10 },
-            'Delhi': { lat: 28.7041, lng: 77.1025, zoom: 10 },
-            'Bangalore': { lat: 12.9716, lng: 77.5946, zoom: 10 },
-            'Chennai': { lat: 13.0827, lng: 80.2707, zoom: 10 },
-            'Kolkata': { lat: 22.5726, lng: 88.3639, zoom: 10 },
-            'Hyderabad': { lat: 17.3850, lng: 78.4867, zoom: 10 },
-            'Pune': { lat: 18.5204, lng: 73.8567, zoom: 10 },
-            'Ahmedabad': { lat: 23.0225, lng: 72.5714, zoom: 10 }
+            'Mumbai': { lat: 19.0760, lng: 72.8777, zoom: 13 },
+            'Delhi': { lat: 28.7041, lng: 77.1025, zoom: 13 },
+            'Bangalore': { lat: 12.9716, lng: 77.5946, zoom: 13 },
+            'Chennai': { lat: 13.0827, lng: 80.2707, zoom: 13 },
+            'Kolkata': { lat: 22.5726, lng: 88.3639, zoom: 13 },
+            'Hyderabad': { lat: 17.3850, lng: 78.4867, zoom: 13 },
+            'Pune': { lat: 18.5204, lng: 73.8567, zoom: 13 },
+            'Ahmedabad': { lat: 23.0225, lng: 72.5714, zoom: 13 },
+            'Jaipur': { lat: 26.9124, lng: 75.7873, zoom: 13 },
+            'Lucknow': { lat: 26.8467, lng: 80.9462, zoom: 13 },
+            'Kanpur': { lat: 26.4499, lng: 80.3319, zoom: 13 },
+            'Nagpur': { lat: 21.1458, lng: 79.0882, zoom: 13 },
+            'Indore': { lat: 22.7196, lng: 75.8577, zoom: 13 },
+            'Bhopal': { lat: 23.2599, lng: 77.4126, zoom: 13 },
+            'Visakhapatnam': { lat: 17.6868, lng: 83.2185, zoom: 13 },
+            'Patna': { lat: 25.5941, lng: 85.1376, zoom: 13 },
+            'Vadodara': { lat: 22.3072, lng: 73.1812, zoom: 13 },
+            'Ludhiana': { lat: 30.9000, lng: 75.8573, zoom: 13 }
           },
           'FR': {
-            'Paris': { lat: 48.8566, lng: 2.3522, zoom: 10 },
-            'Lyon': { lat: 45.7640, lng: 4.8357, zoom: 10 },
-            'Marseille': { lat: 43.2965, lng: 5.3698, zoom: 10 },
-            'Nice': { lat: 43.7102, lng: 7.2620, zoom: 10 },
-            'Toulouse': { lat: 43.6047, lng: 1.4442, zoom: 10 }
+            'Paris': { lat: 48.8566, lng: 2.3522, zoom: 13 },
+            'Lyon': { lat: 45.7640, lng: 4.8357, zoom: 13 },
+            'Marseille': { lat: 43.2965, lng: 5.3698, zoom: 13 },
+            'Nice': { lat: 43.7102, lng: 7.2620, zoom: 13 },
+            'Toulouse': { lat: 43.6047, lng: 1.4442, zoom: 13 },
+            'Nantes': { lat: 47.2184, lng: -1.5536, zoom: 13 },
+            'Montpellier': { lat: 43.6119, lng: 3.8772, zoom: 13 },
+            'Strasbourg': { lat: 48.5734, lng: 7.7521, zoom: 13 },
+            'Bordeaux': { lat: 44.8378, lng: -0.5792, zoom: 13 },
+            'Lille': { lat: 50.6292, lng: 3.0573, zoom: 13 }
           },
           'DE': {
-            'Berlin': { lat: 52.5200, lng: 13.4050, zoom: 10 },
-            'Munich': { lat: 48.1351, lng: 11.5820, zoom: 10 },
-            'Hamburg': { lat: 53.5511, lng: 9.9937, zoom: 10 },
-            'Frankfurt': { lat: 50.1109, lng: 8.6821, zoom: 10 },
-            'Cologne': { lat: 50.9375, lng: 6.9603, zoom: 10 }
+            'Berlin': { lat: 52.5200, lng: 13.4050, zoom: 13 },
+            'Munich': { lat: 48.1351, lng: 11.5820, zoom: 13 },
+            'Hamburg': { lat: 53.5511, lng: 9.9937, zoom: 13 },
+            'Frankfurt': { lat: 50.1109, lng: 8.6821, zoom: 13 },
+            'Cologne': { lat: 50.9375, lng: 6.9603, zoom: 13 },
+            'Stuttgart': { lat: 48.7758, lng: 9.1829, zoom: 13 },
+            'Dusseldorf': { lat: 51.2277, lng: 6.7735, zoom: 13 },
+            'Leipzig': { lat: 51.3397, lng: 12.3731, zoom: 13 },
+            'Dortmund': { lat: 51.5136, lng: 7.4653, zoom: 13 },
+            'Essen': { lat: 51.4556, lng: 7.0116, zoom: 13 },
+            'Bremen': { lat: 53.0793, lng: 8.8017, zoom: 13 },
+            'Dresden': { lat: 51.0504, lng: 13.7373, zoom: 13 },
+            'Hanover': { lat: 52.3759, lng: 9.7320, zoom: 13 },
+            'Nuremberg': { lat: 49.4521, lng: 11.0767, zoom: 13 },
+            'Duisburg': { lat: 51.4344, lng: 6.7623, zoom: 13 }
           },
           'JP': {
-            'Tokyo': { lat: 35.6762, lng: 139.6503, zoom: 10 },
-            'Osaka': { lat: 34.6937, lng: 135.5023, zoom: 10 },
-            'Kyoto': { lat: 35.0116, lng: 135.7681, zoom: 10 },
-            'Nagoya': { lat: 35.1815, lng: 136.9066, zoom: 10 },
-            'Yokohama': { lat: 35.4438, lng: 139.6380, zoom: 10 }
+            'Tokyo': { lat: 35.6762, lng: 139.6503, zoom: 13 },
+            'Osaka': { lat: 34.6937, lng: 135.5023, zoom: 13 },
+            'Kyoto': { lat: 35.0116, lng: 135.7681, zoom: 13 },
+            'Nagoya': { lat: 35.1815, lng: 136.9066, zoom: 13 },
+            'Yokohama': { lat: 35.4438, lng: 139.6380, zoom: 13 },
+            'Sapporo': { lat: 43.0642, lng: 141.3469, zoom: 13 },
+            'Fukuoka': { lat: 33.5904, lng: 130.4017, zoom: 13 },
+            'Kobe': { lat: 34.6901, lng: 135.1956, zoom: 13 },
+            'Kawasaki': { lat: 35.5308, lng: 139.7029, zoom: 13 },
+            'Sendai': { lat: 38.2682, lng: 140.8694, zoom: 13 },
+            'Hiroshima': { lat: 34.3853, lng: 132.4553, zoom: 13 },
+            'Kitakyushu': { lat: 33.8834, lng: 130.8751, zoom: 13 },
+            'Chiba': { lat: 35.6074, lng: 140.1065, zoom: 13 },
+            'Sakai': { lat: 34.5732, lng: 135.4827, zoom: 13 },
+            'Niigata': { lat: 37.9022, lng: 139.0232, zoom: 13 }
+          },
+          'ES': {
+            'Madrid': { lat: 40.4168, lng: -3.7038, zoom: 13 },
+            'Barcelona': { lat: 41.3851, lng: 2.1734, zoom: 13 },
+            'Valencia': { lat: 39.4699, lng: -0.3763, zoom: 13 },
+            'Seville': { lat: 37.3886, lng: -5.9823, zoom: 13 },
+            'Zaragoza': { lat: 41.6488, lng: -0.8891, zoom: 13 },
+            'Málaga': { lat: 36.7213, lng: -4.4214, zoom: 13 },
+            'Murcia': { lat: 37.9922, lng: -1.1307, zoom: 13 },
+            'Palma': { lat: 39.5696, lng: 2.6502, zoom: 13 },
+            'Las Palmas': { lat: 28.1248, lng: -15.4300, zoom: 13 },
+            'Bilbao': { lat: 43.2627, lng: -2.9253, zoom: 13 }
+          },
+          'IT': {
+            'Rome': { lat: 41.9028, lng: 12.4964, zoom: 13 },
+            'Milan': { lat: 45.4642, lng: 9.1900, zoom: 13 },
+            'Naples': { lat: 40.8518, lng: 14.2681, zoom: 13 },
+            'Turin': { lat: 45.0703, lng: 7.6869, zoom: 13 },
+            'Palermo': { lat: 38.1157, lng: 13.3613, zoom: 13 },
+            'Genoa': { lat: 44.4056, lng: 8.9463, zoom: 13 },
+            'Bologna': { lat: 44.4949, lng: 11.3426, zoom: 13 },
+            'Florence': { lat: 43.7696, lng: 11.2558, zoom: 13 },
+            'Bari': { lat: 41.1171, lng: 16.8719, zoom: 13 },
+            'Catania': { lat: 37.5079, lng: 15.0830, zoom: 13 }
+          },
+          'CA': {
+            'Toronto': { lat: 43.6532, lng: -79.3832, zoom: 13 },
+            'Vancouver': { lat: 49.2827, lng: -123.1207, zoom: 13 },
+            'Montreal': { lat: 45.5017, lng: -73.5673, zoom: 13 },
+            'Calgary': { lat: 51.0447, lng: -114.0719, zoom: 13 },
+            'Edmonton': { lat: 53.5461, lng: -113.4938, zoom: 13 },
+            'Ottawa': { lat: 45.4215, lng: -75.6972, zoom: 13 },
+            'Winnipeg': { lat: 49.8951, lng: -97.1384, zoom: 13 },
+            'Quebec City': { lat: 46.8139, lng: -71.2080, zoom: 13 },
+            'Hamilton': { lat: 43.2557, lng: -79.8711, zoom: 13 },
+            'Kitchener': { lat: 43.4516, lng: -80.4925, zoom: 13 }
+          },
+          'AU': {
+            'Sydney': { lat: -33.8688, lng: 151.2093, zoom: 13 },
+            'Melbourne': { lat: -37.8136, lng: 144.9631, zoom: 13 },
+            'Brisbane': { lat: -27.4698, lng: 153.0251, zoom: 13 },
+            'Perth': { lat: -31.9505, lng: 115.8605, zoom: 13 },
+            'Adelaide': { lat: -34.9285, lng: 138.6007, zoom: 13 },
+            'Gold Coast': { lat: -28.0167, lng: 153.4000, zoom: 13 },
+            'Newcastle': { lat: -32.9283, lng: 151.7817, zoom: 13 },
+            'Canberra': { lat: -35.2809, lng: 149.1300, zoom: 13 },
+            'Sunshine Coast': { lat: -26.6500, lng: 153.0667, zoom: 13 },
+            'Wollongong': { lat: -34.4278, lng: 150.8931, zoom: 13 }
+          },
+          'BR': {
+            'São Paulo': { lat: -23.5505, lng: -46.6333, zoom: 13 },
+            'Rio de Janeiro': { lat: -22.9068, lng: -43.1729, zoom: 13 },
+            'Brasília': { lat: -15.7975, lng: -47.8919, zoom: 13 },
+            'Salvador': { lat: -12.9714, lng: -38.5014, zoom: 13 },
+            'Fortaleza': { lat: -3.7172, lng: -38.5434, zoom: 13 },
+            'Belo Horizonte': { lat: -19.9191, lng: -43.9386, zoom: 13 },
+            'Manaus': { lat: -3.1190, lng: -60.0217, zoom: 13 },
+            'Curitiba': { lat: -25.4244, lng: -49.2654, zoom: 13 },
+            'Recife': { lat: -8.0476, lng: -34.8770, zoom: 13 },
+            'Porto Alegre': { lat: -30.0346, lng: -51.2177, zoom: 13 }
+          },
+          'MX': {
+            'Mexico City': { lat: 19.4326, lng: -99.1332, zoom: 13 },
+            'Guadalajara': { lat: 20.6597, lng: -103.3496, zoom: 13 },
+            'Monterrey': { lat: 25.6866, lng: -100.3161, zoom: 13 },
+            'Puebla': { lat: 19.0413, lng: -98.2062, zoom: 13 },
+            'Tijuana': { lat: 32.5149, lng: -117.0382, zoom: 13 },
+            'León': { lat: 21.1619, lng: -101.6921, zoom: 13 },
+            'Juárez': { lat: 31.6904, lng: -106.4245, zoom: 13 },
+            'Zapopan': { lat: 20.7221, lng: -103.3631, zoom: 13 },
+            'Nezahualcóyotl': { lat: 19.4007, lng: -99.0146, zoom: 13 },
+            'Chihuahua': { lat: 28.6353, lng: -106.0889, zoom: 13 }
+          },
+          'CN': {
+            'Beijing': { lat: 39.9042, lng: 116.4074, zoom: 13 },
+            'Shanghai': { lat: 31.2304, lng: 121.4737, zoom: 13 },
+            'Guangzhou': { lat: 23.1291, lng: 113.2644, zoom: 13 },
+            'Shenzhen': { lat: 22.5431, lng: 114.0579, zoom: 13 },
+            'Chongqing': { lat: 29.5630, lng: 106.5516, zoom: 13 },
+            'Tianjin': { lat: 39.3434, lng: 117.3616, zoom: 13 },
+            'Wuhan': { lat: 30.5928, lng: 114.3055, zoom: 13 },
+            'Xi\'an': { lat: 34.3416, lng: 108.9398, zoom: 13 },
+            'Hangzhou': { lat: 30.2741, lng: 120.1551, zoom: 13 },
+            'Chengdu': { lat: 30.5728, lng: 104.0668, zoom: 13 }
+          },
+          'RU': {
+            'Moscow': { lat: 55.7558, lng: 37.6176, zoom: 13 },
+            'Saint Petersburg': { lat: 59.9311, lng: 30.3609, zoom: 13 },
+            'Novosibirsk': { lat: 55.0084, lng: 82.9357, zoom: 13 },
+            'Yekaterinburg': { lat: 56.8431, lng: 60.6454, zoom: 13 },
+            'Nizhny Novgorod': { lat: 56.2965, lng: 43.9361, zoom: 13 },
+            'Kazan': { lat: 55.8304, lng: 49.0661, zoom: 13 },
+            'Chelyabinsk': { lat: 55.1644, lng: 61.4368, zoom: 13 },
+            'Omsk': { lat: 54.9885, lng: 73.3242, zoom: 13 },
+            'Samara': { lat: 53.2001, lng: 50.1500, zoom: 13 },
+            'Rostov-on-Don': { lat: 47.2357, lng: 39.7015, zoom: 13 }
+          },
+          'KR': {
+            'Seoul': { lat: 37.5665, lng: 126.9780, zoom: 13 },
+            'Busan': { lat: 35.1796, lng: 129.0756, zoom: 13 },
+            'Incheon': { lat: 37.4563, lng: 126.7052, zoom: 13 },
+            'Daegu': { lat: 35.8714, lng: 128.6014, zoom: 13 },
+            'Daejeon': { lat: 36.3504, lng: 127.3845, zoom: 13 },
+            'Gwangju': { lat: 35.1595, lng: 126.8526, zoom: 13 },
+            'Suwon': { lat: 37.2636, lng: 127.0286, zoom: 13 },
+            'Ulsan': { lat: 35.5384, lng: 129.3114, zoom: 13 },
+            'Changwon': { lat: 35.2281, lng: 128.6811, zoom: 13 },
+            'Goyang': { lat: 37.6564, lng: 126.8349, zoom: 13 }
+          },
+          'TH': {
+            'Bangkok': { lat: 13.7563, lng: 100.5018, zoom: 13 },
+            'Chiang Mai': { lat: 18.7883, lng: 98.9853, zoom: 13 },
+            'Pattaya': { lat: 12.9236, lng: 100.8825, zoom: 13 },
+            'Phuket': { lat: 7.8804, lng: 98.3923, zoom: 13 },
+            'Hat Yai': { lat: 7.0061, lng: 100.4681, zoom: 13 },
+            'Udon Thani': { lat: 17.4138, lng: 102.7875, zoom: 13 },
+            'Nakhon Ratchasima': { lat: 14.9799, lng: 102.0977, zoom: 13 },
+            'Khon Kaen': { lat: 16.4419, lng: 102.8360, zoom: 13 },
+            'Chiang Rai': { lat: 19.9105, lng: 99.8406, zoom: 13 },
+            'Rayong': { lat: 12.6807, lng: 101.2539, zoom: 13 }
+          },
+          'TR': {
+            'Istanbul': { lat: 41.0082, lng: 28.9784, zoom: 13 },
+            'Ankara': { lat: 39.9334, lng: 32.8597, zoom: 13 },
+            'Izmir': { lat: 38.4237, lng: 27.1428, zoom: 13 },
+            'Bursa': { lat: 40.1826, lng: 29.0665, zoom: 13 },
+            'Adana': { lat: 37.0000, lng: 35.3213, zoom: 13 },
+            'Gaziantep': { lat: 37.0662, lng: 37.3833, zoom: 13 },
+            'Konya': { lat: 37.8667, lng: 32.4833, zoom: 13 },
+            'Antalya': { lat: 36.8969, lng: 30.7133, zoom: 13 },
+            'Kayseri': { lat: 38.7312, lng: 35.4787, zoom: 13 },
+            'Mersin': { lat: 36.8000, lng: 34.6333, zoom: 13 }
+          },
+          'AE': {
+            'Dubai': { lat: 25.2048, lng: 55.2708, zoom: 13 },
+            'Abu Dhabi': { lat: 24.4539, lng: 54.3773, zoom: 13 },
+            'Sharjah': { lat: 25.3463, lng: 55.4209, zoom: 13 },
+            'Al Ain': { lat: 24.2075, lng: 55.7447, zoom: 13 },
+            'Ajman': { lat: 25.4052, lng: 55.5136, zoom: 13 },
+            'Ras Al Khaimah': { lat: 25.7889, lng: 55.9598, zoom: 13 },
+            'Fujairah': { lat: 25.1164, lng: 56.3398, zoom: 13 },
+            'Umm Al Quwain': { lat: 25.5644, lng: 55.5533, zoom: 13 }
           }
         };
         
         if (selectedCity && selectedCity !== 'all') {
+          console.log('🏙️ Searching for city:', selectedCity, 'in country:', selectedCountry);
+          console.log('🗺️ Available cityCoords for country:', cityCoords[selectedCountry]);
+          
           // Zoom to specific city
           const cityCoord = cityCoords[selectedCountry]?.[selectedCity];
+          
+          console.log('🎯 Found city coordinate:', cityCoord);
+          
           if (cityCoord) {
+            console.log('✅ Zooming to city:', selectedCity, cityCoord);
             map.panTo({ lat: cityCoord.lat, lng: cityCoord.lng });
             map.setZoom(cityCoord.zoom);
             map.setTilt(45); // 3D view for cities
             return;
+          } else {
+            console.log('❌ City coordinate not found for:', selectedCity);
           }
         }
         
