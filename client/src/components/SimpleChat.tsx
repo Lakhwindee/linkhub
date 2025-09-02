@@ -3,15 +3,18 @@ import { useAuth } from '../hooks/useAuth';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Send, Image, Paperclip } from "lucide-react";
+import { Send, Image, Paperclip, MapPin } from "lucide-react";
 
 interface Message {
   id: string;
   text?: string;
-  type: 'text' | 'image' | 'file';
+  type: 'text' | 'image' | 'file' | 'location';
   fileData?: string; // base64 for images/files
   fileName?: string;
   fileSize?: number;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
   userId: string;
   userName: string;
   userAvatar?: string;
@@ -36,6 +39,7 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
+  const [sharingLocation, setSharingLocation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -86,10 +90,13 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
           const newMessage: Message = {
             id: `msg-${Date.now()}-${Math.random()}`,
             text: data.text,
-            type: data.type || 'text',
+            type: data.messageType || data.type || 'text',
             fileData: data.fileData,
             fileName: data.fileName,
             fileSize: data.fileSize,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            locationName: data.locationName,
             userId: data.userId,
             userName: data.userName,
             userAvatar: data.userAvatar,
@@ -133,6 +140,9 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
       fileData: messageData?.fileData,
       fileName: messageData?.fileName,
       fileSize: messageData?.fileSize,
+      latitude: messageData?.latitude,
+      longitude: messageData?.longitude,
+      locationName: messageData?.locationName,
       userId: user.id,
       userName: user.displayName || user.username || 'User',
       userAvatar: user.profileImageUrl || '',
@@ -154,6 +164,9 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
         fileData: message.fileData,
         fileName: message.fileName,
         fileSize: message.fileSize,
+        latitude: message.latitude,
+        longitude: message.longitude,
+        locationName: message.locationName,
         userId: message.userId,
         userName: message.userName,
         userAvatar: message.userAvatar
@@ -238,6 +251,98 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
     // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  // Handle location sharing
+  const handleLocationShare = async () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setSharingLocation(true);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Get location name using reverse geocoding (optional)
+        let locationName = `📍 Live Location`;
+        try {
+          // Use a simple reverse geocoding service
+          const response = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          const data = await response.json();
+          if (data.city && data.countryName) {
+            locationName = `📍 ${data.city}, ${data.countryName}`;
+          } else if (data.locality) {
+            locationName = `📍 ${data.locality}`;
+          }
+        } catch (error) {
+          console.log('Could not get location name, using coordinates');
+        }
+
+        await sendMessage({
+          type: 'location',
+          text: locationName,
+          latitude,
+          longitude,
+          locationName: locationName
+        });
+
+        setSharingLocation(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setSharingLocation(false);
+        
+        let errorMessage = 'Could not get your location';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please enable location permissions.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information is unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out.';
+            break;
+        }
+        alert(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000
+      }
+    );
+  };
+
+  // Open Google Maps with directions
+  const openGoogleMapsDirections = (latitude: number, longitude: number) => {
+    // Get user's current location first
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          
+          // Open Google Maps with directions from user's location to shared location
+          const url = `https://www.google.com/maps/dir/${userLat},${userLng}/${latitude},${longitude}`;
+          window.open(url, '_blank');
+        },
+        () => {
+          // If can't get user location, just show the destination
+          const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+          window.open(url, '_blank');
+        }
+      );
+    } else {
+      // Fallback: just show the destination
+      const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+      window.open(url, '_blank');
     }
   };
 
@@ -361,6 +466,55 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
                               Download
                             </Button>
                           </div>
+                        ) : message.type === 'location' && message.latitude && message.longitude ? (
+                          <div className="space-y-3 max-w-xs">
+                            {/* Location preview with map */}
+                            <div 
+                              className="relative bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity group"
+                              onClick={() => openGoogleMapsDirections(message.latitude!, message.longitude!)}
+                            >
+                              {/* Static map image */}
+                              <img 
+                                src={`https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s-l+285A98(${message.longitude},${message.latitude})/${message.longitude},${message.latitude},15,0/300x200@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4M29iazA2Z2gycXA4N2pmbDZuangifQ.-g_vE53SD2WrJ-iGDYLA2A`}
+                                alt="Location"
+                                className="w-full h-32 object-cover"
+                                onError={(e) => {
+                                  // Fallback to a simple location display if map image fails
+                                  e.currentTarget.style.display = 'none';
+                                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                                  if (fallback) fallback.style.display = 'flex';
+                                }}
+                              />
+                              {/* Fallback display */}
+                              <div className="hidden w-full h-32 items-center justify-center bg-blue-50 dark:bg-blue-900/20">
+                                <div className="text-center">
+                                  <MapPin className="w-8 h-8 mx-auto mb-2 text-blue-600" />
+                                  <p className="text-sm font-medium text-blue-600">Location Shared</p>
+                                </div>
+                              </div>
+                              
+                              {/* Overlay with directions hint */}
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                <div className="bg-white/90 dark:bg-gray-800/90 px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <span className="text-xs font-medium">🧭 Get Directions</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Location details */}
+                            <div className="space-y-1">
+                              <div className="flex items-center space-x-2">
+                                <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                                <p className="text-sm font-medium">{message.locationName || 'Live Location'}</p>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {message.latitude?.toFixed(6)}, {message.longitude?.toFixed(6)}
+                              </p>
+                              <p className="text-xs text-blue-600 dark:text-blue-400">
+                                👆 Tap for directions in Google Maps
+                              </p>
+                            </div>
+                          </div>
                         ) : (
                           <p className="text-sm leading-relaxed break-words">{message.text}</p>
                         )}
@@ -427,6 +581,20 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
                 title="Share Image"
               >
                 <Image className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={handleLocationShare}
+                disabled={sharingLocation}
+                title="Share Live Location"
+              >
+                {sharingLocation ? (
+                  <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <MapPin className="w-4 h-4" />
+                )}
               </Button>
               <div className="flex-1 relative">
                 <Input
