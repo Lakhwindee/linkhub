@@ -6,9 +6,10 @@ interface GlobeProps {
   width?: number;
   height?: number;
   userLocation?: [number, number] | null;
+  focusLocation?: { lat: number; lng: number; zoom?: number } | null;
 }
 
-export default function Globe3D({ users, width = 500, height = 500, userLocation }: GlobeProps) {
+export default function Globe3D({ users, width = 500, height = 500, userLocation, focusLocation }: GlobeProps) {
   const globeRef = useRef<HTMLDivElement>(null);
   const globeInstanceRef = useRef<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,6 +132,21 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
       }, 1000);
     }
   }, [userLocation]);
+
+  // Handle focus location changes
+  useEffect(() => {
+    if (focusLocation && globeInstanceRef.current) {
+      // Calculate altitude based on zoom level
+      const altitude = focusLocation.zoom ? Math.max(1.5, 5 - (focusLocation.zoom / 3)) : 2;
+      
+      // Rotate globe to focus location
+      globeInstanceRef.current.pointOfView({ 
+        lat: focusLocation.lat, 
+        lng: focusLocation.lng, 
+        altitude: altitude 
+      }, 1500);
+    }
+  }, [focusLocation]);
 
   if (error) {
     return (

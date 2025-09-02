@@ -67,6 +67,7 @@ export default function DiscoverTravelers() {
   
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
+  const [focusLocation, setFocusLocation] = useState<{ lat: number; lng: number; zoom?: number } | null>(null);
   
   
   const mapRef = useRef<HTMLDivElement>(null);
@@ -232,20 +233,21 @@ export default function DiscoverTravelers() {
     }
   }, [L]);
 
-  // Update map view when country/city changes
+  // Update focus location when country/city changes
   useEffect(() => {
-    if (!mapInstanceRef.current) return;
-
     if (selectedCity !== "all" && selectedCountry !== "all") {
       const city = CITIES[selectedCountry as keyof typeof CITIES]?.find((c: any) => c.name === selectedCity);
       if (city) {
-        mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
+        setFocusLocation({ lat: city.lat, lng: city.lng, zoom: city.zoom });
       }
     } else if (selectedCountry !== "all") {
       const country = COUNTRIES.find(c => c.code === selectedCountry);
       if (country) {
-        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom);
+        setFocusLocation({ lat: country.lat, lng: country.lng, zoom: country.zoom });
       }
+    } else {
+      // Reset to global view
+      setFocusLocation({ lat: 20, lng: 0, zoom: 2 });
     }
   }, [selectedCountry, selectedCity]);
 
@@ -496,6 +498,7 @@ export default function DiscoverTravelers() {
             width={1400} 
             height={1400}
             userLocation={userLocation}
+            focusLocation={focusLocation}
           />
         </div>
       </div>
