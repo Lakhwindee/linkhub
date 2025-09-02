@@ -19,10 +19,7 @@ import {
 } from "lucide-react";
 import type { Trip, TripParticipant } from "@shared/schema";
 
-interface TripWithDetails extends Omit<Trip, 'itinerary'> {
-  itinerary?: any[];
-  accommodations?: any;
-  transportation?: any;
+interface TripWithDetails extends Trip {
   budgetBreakdown?: any;
   activities?: any;
   documents?: string[];
@@ -59,7 +56,10 @@ export default function Trips() {
     mutationFn: async (tripData: any) => {
       const response = await fetch("/api/trips", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-demo-user": "true"
+        },
         credentials: "include",
         body: JSON.stringify(tripData),
       });
@@ -77,7 +77,10 @@ export default function Trips() {
     mutationFn: async ({ tripId, message }: { tripId: string; message?: string }) => {
       const response = await fetch(`/api/trips/${tripId}/join`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-demo-user": "true"
+        },
         credentials: "include",
         body: JSON.stringify({ message }),
       });
