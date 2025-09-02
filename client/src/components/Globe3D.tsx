@@ -321,10 +321,10 @@ export default function Globe3D({
   }
 
   return (
-    <div className="relative bg-slate-900 rounded-lg overflow-hidden">
+    <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-white/10">
       {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 z-10">
-          <div className="animate-spin w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm z-10">
+          <div className="animate-spin w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full mb-4"></div>
           <h3 className="text-xl font-semibold text-white mb-2">Loading Google Maps</h3>
           <p className="text-gray-300 text-sm">High-quality satellite imagery loading...</p>
         </div>
@@ -332,12 +332,11 @@ export default function Globe3D({
       
       <div 
         ref={mapRef} 
+        className="w-full h-full"
         style={{ 
-          width: `${width}px`, 
-          height: `${height}px`,
+          minHeight: '500px',
           opacity: isLoading ? 0.3 : 1,
-          transition: 'opacity 0.5s ease-in-out',
-          borderRadius: '12px'
+          transition: 'opacity 0.5s ease-in-out'
         }}
       />
       
