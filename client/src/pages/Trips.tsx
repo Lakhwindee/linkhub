@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Calendar, MapPin, Users, Clock, DollarSign, Plus, Search, Filter, Plane, Heart, MessageCircle,
   ChevronDown, ChevronRight, CheckCircle2, AlertCircle, Bed, Car, Camera, Utensils,
-  FileText, Backpack, Cloud, Phone, Shield, Star, Eye, EyeOff
+  FileText, Backpack, Cloud, Phone, Shield, Star, Eye, EyeOff, X
 } from "lucide-react";
 import type { Trip, TripParticipant } from "@shared/schema";
 
@@ -42,6 +42,9 @@ export default function Trips() {
     budget: "",
     tags: ""
   });
+  const [itineraryDestinations, setItineraryDestinations] = useState([
+    { country: '', city: '', startDate: '', endDate: '', duration: 1 }
+  ]);
 
   const queryClient = useQueryClient();
 
@@ -98,14 +101,6 @@ export default function Trips() {
     return timeString.slice(0, 5); // "08:00" from "08:00:00"
   };
 
-  const getBudgetIcon = (budget: string) => {
-    switch (budget) {
-      case 'low': return '💰';
-      case 'medium': return '💰💰';
-      case 'high': return '💰💰💰';
-      default: return '💰';
-    }
-  };
 
   const getTravelStyleIcon = (style: string) => {
     switch (style) {
@@ -181,10 +176,6 @@ export default function Trips() {
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-muted-foreground" />
             <span>{trip.currentTravelers || 1}/{trip.maxTravelers || 10}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <DollarSign className="w-4 h-4 text-muted-foreground" />
-            <span>{getBudgetIcon(trip.budget || 'medium')} {trip.budget}</span>
           </div>
           <div className="flex items-center gap-2">
             <Plane className="w-4 h-4 text-muted-foreground" />
@@ -281,7 +272,6 @@ export default function Trips() {
                     </div>
                     <div className="flex justify-between">
                       <span>Budget Level:</span>
-                      <span className="font-medium">{getBudgetIcon(trip.budget || '')} {trip.budget}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Status:</span>
@@ -664,20 +654,20 @@ export default function Trips() {
                 const tripData = {
                   title: formData.get("title"),
                   description: formData.get("description"),
-                  fromCountry: formData.get("fromCountry"),
-                  fromCity: formData.get("fromCity"),
-                  toCountry: formData.get("toCountry"),
-                  toCity: formData.get("toCity"),
-                  startDate: formData.get("startDate"),
-                  endDate: formData.get("endDate"),
+                  fromCountry: itineraryDestinations[0]?.country || "",
+                  fromCity: itineraryDestinations[0]?.city || "",
+                  toCountry: itineraryDestinations[itineraryDestinations.length - 1]?.country || "",
+                  toCity: itineraryDestinations[itineraryDestinations.length - 1]?.city || "",
+                  startDate: itineraryDestinations[0]?.startDate || formData.get("startDate"),
+                  endDate: itineraryDestinations[itineraryDestinations.length - 1]?.endDate || formData.get("endDate"),
                   maxTravelers: Number(formData.get("maxTravelers")),
-                  budget: formData.get("budget"),
                   travelStyle: formData.get("travelStyle"),
                   tags: formData.get("tags")?.toString().split(",").map(tag => tag.trim()).filter(Boolean) || [],
                   meetupLocation: formData.get("meetupLocation"),
                   requirements: formData.get("requirements"),
                   isPublic: true,
                   requiresApproval: formData.get("requiresApproval") === "on",
+                  itinerary: itineraryDestinations.filter(dest => dest.country && dest.city),
                 };
                 createTripMutation.mutate(tripData);
               }} className="space-y-6">
@@ -697,67 +687,126 @@ export default function Trips() {
                   <Textarea id="description" name="description" placeholder="Tell others about your amazing trip plans..." rows={3} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fromCountry">From Country *</Label>
-                    <Input id="fromCountry" name="fromCountry" placeholder="United Kingdom" required />
+                {/* Multi-Destination Itinerary Builder */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-lg font-semibold">Trip Itinerary (Country to Country)</Label>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setItineraryDestinations([...itineraryDestinations, { country: '', city: '', startDate: '', endDate: '', duration: 1 }])}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Destination
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="fromCity">From City *</Label>
-                    <Input id="fromCity" name="fromCity" placeholder="London" required />
+                  
+                  <div className="space-y-4 max-h-64 overflow-y-auto border rounded-lg p-4">
+                    {itineraryDestinations.map((destination, index) => (
+                      <div key={index} className="border rounded-lg p-4 bg-muted/50">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="font-medium">Destination {index + 1}</span>
+                          {itineraryDestinations.length > 1 && (
+                            <Button 
+                              type="button" 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setItineraryDestinations(itineraryDestinations.filter((_, i) => i !== index))}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                          <div className="space-y-2">
+                            <Label>Country *</Label>
+                            <Input 
+                              placeholder="e.g., United Kingdom"
+                              value={destination.country}
+                              onChange={(e) => {
+                                const updated = [...itineraryDestinations];
+                                updated[index].country = e.target.value;
+                                setItineraryDestinations(updated);
+                              }}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>City *</Label>
+                            <Input 
+                              placeholder="e.g., London"
+                              value={destination.city}
+                              onChange={(e) => {
+                                const updated = [...itineraryDestinations];
+                                updated[index].city = e.target.value;
+                                setItineraryDestinations(updated);
+                              }}
+                              required
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="space-y-2">
+                            <Label>Start Date *</Label>
+                            <Input 
+                              type="date"
+                              value={destination.startDate}
+                              onChange={(e) => {
+                                const updated = [...itineraryDestinations];
+                                updated[index].startDate = e.target.value;
+                                setItineraryDestinations(updated);
+                              }}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>End Date *</Label>
+                            <Input 
+                              type="date"
+                              value={destination.endDate}
+                              onChange={(e) => {
+                                const updated = [...itineraryDestinations];
+                                updated[index].endDate = e.target.value;
+                                setItineraryDestinations(updated);
+                              }}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Duration (days)</Label>
+                            <Input 
+                              type="number"
+                              min="1"
+                              value={destination.duration}
+                              onChange={(e) => {
+                                const updated = [...itineraryDestinations];
+                                updated[index].duration = Number(e.target.value);
+                                setItineraryDestinations(updated);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="toCountry">To Country *</Label>
-                    <Input id="toCountry" name="toCountry" placeholder="Spain" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="toCity">To City *</Label>
-                    <Input id="toCity" name="toCity" placeholder="Barcelona" required />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date *</Label>
-                    <Input id="startDate" name="startDate" type="date" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="endDate">End Date *</Label>
-                    <Input id="endDate" name="endDate" type="date" required />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="budget">Budget Level</Label>
-                    <Select name="budget">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select budget" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="low">💰 Low Budget</SelectItem>
-                        <SelectItem value="medium">💰💰 Medium Budget</SelectItem>
-                        <SelectItem value="high">💰💰💰 High Budget</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="travelStyle">Travel Style</Label>
-                    <Select name="travelStyle">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select style" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="backpacker">🎒 Backpacker</SelectItem>
-                        <SelectItem value="comfort">🏨 Comfort</SelectItem>
-                        <SelectItem value="luxury">✨ Luxury</SelectItem>
-                        <SelectItem value="adventure">🏔️ Adventure</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="travelStyle">Travel Style</Label>
+                  <Select name="travelStyle">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="backpacker">🎒 Backpacker</SelectItem>
+                      <SelectItem value="comfort">🏨 Comfort</SelectItem>
+                      <SelectItem value="luxury">✨ Luxury</SelectItem>
+                      <SelectItem value="adventure">🏔️ Adventure</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

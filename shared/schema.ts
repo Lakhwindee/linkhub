@@ -111,6 +111,38 @@ export const messages = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Group conversations for trips
+export const groupConversations = pgTable("group_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: varchar("trip_id").references(() => trips.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  lastMessageId: varchar("last_message_id"),
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Group conversation participants
+export const groupConversationParticipants = pgTable("group_conversation_participants", {
+  conversationId: varchar("conversation_id").references(() => groupConversations.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+  role: varchar("role").default("member"), // admin, member
+}, (table) => ({
+  pk: primaryKey({ columns: [table.conversationId, table.userId] }),
+}));
+
+// Group messages
+export const groupMessages = pgTable("group_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").references(() => groupConversations.id, { onDelete: "cascade" }),
+  fromUserId: varchar("from_user_id").references(() => users.id, { onDelete: "cascade" }),
+  body: text("body"),
+  mediaUrl: varchar("media_url"),
+  mediaType: varchar("media_type"), // image, video, file
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Posts
 export const posts = pgTable("posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -682,6 +714,9 @@ export type User = typeof users.$inferSelect;
 export type ConnectRequest = typeof connectRequests.$inferSelect;
 export type Conversation = typeof conversations.$inferSelect;
 export type Message = typeof messages.$inferSelect;
+export type GroupConversation = typeof groupConversations.$inferSelect;
+export type GroupConversationParticipant = typeof groupConversationParticipants.$inferSelect;
+export type GroupMessage = typeof groupMessages.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type EventRsvp = typeof eventRsvps.$inferSelect;

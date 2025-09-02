@@ -3,6 +3,9 @@ import {
   connectRequests,
   conversations,
   messages,
+  groupConversations,
+  groupConversationParticipants,
+  groupMessages,
   posts,
   events,
   eventRsvps,
@@ -24,6 +27,9 @@ import {
   type ConnectRequest,
   type Conversation,
   type Message,
+  type GroupConversation,
+  type GroupConversationParticipant,
+  type GroupMessage,
   type Post,
   type Event,
   type EventRsvp,
@@ -156,6 +162,16 @@ export interface IStorage {
   leaveTrip(tripId: string, userId: string): Promise<void>;
   getTripParticipants(tripId: string): Promise<TripParticipant[]>;
   getUserTrips(userId: string, type: 'organized' | 'joined' | 'all'): Promise<Trip[]>;
+
+  // Group chats for trips
+  createGroupConversation(tripId: string, title: string): Promise<GroupConversation>;
+  addUserToGroupConversation(conversationId: string, userId: string, role?: string): Promise<GroupConversationParticipant>;
+  removeUserFromGroupConversation(conversationId: string, userId: string): Promise<void>;
+  getGroupConversation(tripId: string): Promise<GroupConversation | undefined>;
+  getUserGroupConversations(userId: string): Promise<GroupConversation[]>;
+  createGroupMessage(data: { conversationId: string; fromUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<GroupMessage>;
+  getGroupConversationMessages(conversationId: string, limit?: number): Promise<GroupMessage[]>;
+  updateGroupConversationLastMessage(conversationId: string, messageId: string): Promise<void>;
 }
 
 // Test data for demo/development
@@ -1238,6 +1254,17 @@ export class DatabaseStorage implements IStorage {
       updatedAt: new Date()
     };
     testTrips.push(newTrip);
+
+    // Auto-create group chat for the trip
+    try {
+      const groupChat = await this.createGroupConversation(newTrip.id, `${newTrip.title} - Trip Chat`);
+      // Add trip organizer to the group chat as admin
+      await this.addUserToGroupConversation(groupChat.id, newTrip.organizerId, 'admin');
+      console.log(`Created group chat for trip: ${newTrip.title}`);
+    } catch (error) {
+      console.error(`Failed to create group chat for trip ${newTrip.id}:`, error);
+    }
+
     return newTrip;
   }
 
@@ -1297,6 +1324,17 @@ export class DatabaseStorage implements IStorage {
       trip.currentTravelers = (trip.currentTravelers || 1) + 1;
     }
 
+    // Auto-add user to group chat
+    try {
+      const groupChat = await this.getGroupConversation(tripId);
+      if (groupChat) {
+        await this.addUserToGroupConversation(groupChat.id, userId, 'member');
+        console.log(`Added user ${userId} to group chat for trip: ${tripId}`);
+      }
+    } catch (error) {
+      console.error(`Failed to add user to group chat for trip ${tripId}:`, error);
+    }
+
     return newParticipant;
   }
 
@@ -1334,6 +1372,95 @@ export class DatabaseStorage implements IStorage {
         const joinedTrips = testTrips.filter(trip => joinedTripIds2.includes(trip.id));
         return [...organizedTrips, ...joinedTrips];
     }
+  }
+
+  // Group chat implementation
+  async createGroupConversation(tripId: string, title: string): Promise<GroupConversation> {
+    const [groupConversation] = await db
+      .insert(groupConversations)
+      .values({
+        tripId,
+        title,
+      })
+      .returning();
+    return groupConversation;
+  }
+
+  async addUserToGroupConversation(conversationId: string, userId: string, role: string = 'member'): Promise<GroupConversationParticipant> {
+    const [participant] = await db
+      .insert(groupConversationParticipants)
+      .values({
+        conversationId,
+        userId,
+        role,
+      })
+      .returning();
+    return participant;
+  }
+
+  async removeUserFromGroupConversation(conversationId: string, userId: string): Promise<void> {
+    await db
+      .update(groupConversationParticipants)
+      .set({ leftAt: new Date() })
+      .where(
+        and(
+          eq(groupConversationParticipants.conversationId, conversationId),
+          eq(groupConversationParticipants.userId, userId)
+        )
+      );
+  }
+
+  async getGroupConversation(tripId: string): Promise<GroupConversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(groupConversations)
+      .where(eq(groupConversations.tripId, tripId));
+    return conversation;
+  }
+
+  async getUserGroupConversations(userId: string): Promise<GroupConversation[]> {
+    const result = await db
+      .select({ conversation: groupConversations })
+      .from(groupConversationParticipants)
+      .innerJoin(groupConversations, eq(groupConversationParticipants.conversationId, groupConversations.id))
+      .where(
+        and(
+          eq(groupConversationParticipants.userId, userId),
+          eq(groupConversationParticipants.leftAt, null)
+        )
+      );
+    return result.map(r => r.conversation);
+  }
+
+  async createGroupMessage(data: { conversationId: string; fromUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<GroupMessage> {
+    const [message] = await db
+      .insert(groupMessages)
+      .values(data)
+      .returning();
+
+    // Update group conversation's last message
+    await this.updateGroupConversationLastMessage(data.conversationId, message.id);
+
+    return message;
+  }
+
+  async getGroupConversationMessages(conversationId: string, limit: number = 50): Promise<GroupMessage[]> {
+    return await db
+      .select()
+      .from(groupMessages)
+      .where(eq(groupMessages.conversationId, conversationId))
+      .orderBy(desc(groupMessages.createdAt))
+      .limit(limit);
+  }
+
+  async updateGroupConversationLastMessage(conversationId: string, messageId: string): Promise<void> {
+    await db
+      .update(groupConversations)
+      .set({
+        lastMessageId: messageId,
+        lastMessageAt: new Date(),
+      })
+      .where(eq(groupConversations.id, conversationId));
   }
 }
 
