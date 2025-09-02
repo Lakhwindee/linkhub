@@ -478,8 +478,8 @@ export default function DiscoverTravelers() {
         <div className="relative w-full flex items-center justify-center">
           <Globe3D 
             users={typedUsers} 
-            width={1100} 
-            height={1100}
+            width={1400} 
+            height={1400}
             userLocation={userLocation}
           />
         </div>
