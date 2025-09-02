@@ -139,14 +139,16 @@ export default function DiscoverTravelers() {
     // Create map with zoom limits and globe-like appearance
     const map = L.map(mapRef.current, {
       center: [20, 0],
-      zoom: 2,
-      minZoom: 2,
+      zoom: 3,
+      minZoom: 3, // Higher minimum zoom to prevent going too far out
       maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: true,
-      worldCopyJump: false, // Disable world wrapping to prevent duplicates
-      maxBounds: [[-85, -180], [85, 180]],
-      maxBoundsViscosity: 1.0, // Strict bounds enforcement
+      worldCopyJump: false,
+      maxBounds: [[-80, -170], [80, 170]], // Tighter bounds
+      maxBoundsViscosity: 1.0,
+      preferCanvas: true, // Better performance
+      zoomSnap: 0.5, // Smoother zoom levels
     });
     
     // Add globe-like styling
@@ -158,26 +160,32 @@ export default function DiscoverTravelers() {
       mapRef.current.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
     }
 
-    // Default satellite layer
+    // Default satellite layer with performance optimization
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
-      minZoom: 2,
+      minZoom: 3,
       maxZoom: 18,
+      updateWhenIdle: true,
+      keepBuffer: 2,
     });
 
     // Street map layer with labels
     const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
-      minZoom: 2,
+      minZoom: 3,
       maxZoom: 18,
+      updateWhenIdle: true,
+      keepBuffer: 2,
     });
 
     // Satellite with labels overlay
     const labels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
-      minZoom: 2,
+      minZoom: 3,
       maxZoom: 18,
-      opacity: 0.8
+      opacity: 0.8,
+      updateWhenIdle: true,
+      keepBuffer: 2,
     });
 
     // Add default layers (satellite + labels)
