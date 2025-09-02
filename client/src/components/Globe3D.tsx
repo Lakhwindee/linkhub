@@ -1,6 +1,13 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
-import Globe from 'globe.gl';
+import { useRef, useEffect, useState } from 'react';
 import type { User } from '@shared/schema';
+
+// Google Maps type definitions
+declare global {
+  interface Window {
+    google: any;
+    initGoogleMaps: () => void;
+  }
+}
 
 interface Globe3DProps {
   users: User[];
@@ -11,14 +18,6 @@ interface Globe3DProps {
   selectedCity?: string;
 }
 
-interface GlobeMarker {
-  lat: number;
-  lng: number;
-  user: User;
-  color: string;
-  size: number;
-}
-
 export default function Globe3D({ 
   users, 
   width = 800, 
@@ -27,151 +26,205 @@ export default function Globe3D({
   selectedCountry,
   selectedCity 
 }: Globe3DProps) {
-  const globeRef = useRef<HTMLDivElement>(null);
-  const globeInstanceRef = useRef<any>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
 
-  // Memoize markers to prevent unnecessary recalculations
-  const markers: GlobeMarker[] = users
-    .filter(user => user.lat && user.lng && user.showOnMap)
-    .map(user => ({
-      lat: user.lat!,
-      lng: user.lng!,
-      user,
-      color: user.plan === 'creator' ? '#10b981' : user.plan === 'traveler' ? '#3b82f6' : '#6b7280',
-      size: user.plan === 'creator' ? 0.8 : 0.6
-    }));
-
-  // Initialize globe with performance optimizations
+  // Load Google Maps API
   useEffect(() => {
-    if (!globeRef.current || globeInstanceRef.current) return;
+    const loadGoogleMaps = () => {
+      if (window.google && window.google.maps) {
+        setIsGoogleMapsLoaded(true);
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&map_ids=8e0a97af9386fef&libraries=geometry,places&callback=initGoogleMaps`;
+      script.async = true;
+      script.defer = true;
+
+      window.initGoogleMaps = () => {
+        setIsGoogleMapsLoaded(true);
+      };
+
+      script.onerror = () => {
+        setError('Failed to load Google Maps API');
+        setIsLoading(false);
+      };
+
+      document.head.appendChild(script);
+    };
+
+    loadGoogleMaps();
+  }, []);
+
+  // Initialize Google Earth-style 3D map
+  useEffect(() => {
+    if (!isGoogleMapsLoaded || !mapRef.current || mapInstanceRef.current) return;
     
-    const initGlobe = async () => {
+    const initMap = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        const globe = (Globe as any)()
-          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg') // Better night-style texture
-          .backgroundColor('rgba(0, 0, 0, 0.9)') // Darker space-like background
-          .showAtmosphere(true)
-          .atmosphereColor('#4F94CD') // More natural atmosphere color
-          .atmosphereAltitude(0.08) // Thinner atmosphere like Apple Maps
-          .width(width)
-          .height(height)
-          // Fix for preventing multiple globe copies
-          .showGraticules(false)
-          .enablePointerInteraction(true)
-          // Performance optimizations
-          .rendererConfig({ 
-            antialias: false, // Disable for better performance
-            alpha: true,
-            powerPreference: 'high-performance'
-          })
-          // Optimize points rendering
-          .pointsData(markers)
-          .pointAltitude(0.01)
-          .pointColor('color')
-          .pointRadius('size')
-          .pointResolution(8) // Lower resolution for better performance
-          .pointsMerge(true) // Merge geometries for better performance
-          // Add interaction
-          .onPointClick((point: any) => {
-            if (onUserClick && point.user) {
-              onUserClick(point.user);
+        // Initialize Google Maps with 3D satellite view
+        const map = new window.google.maps.Map(mapRef.current, {
+          zoom: 2,
+          center: { lat: 20, lng: 0 },
+          mapTypeId: 'satellite', // Satellite imagery like Google Earth
+          tilt: 45, // 3D perspective
+          heading: 0,
+          mapId: '8e0a97af9386fef', // Vector map for 3D buildings
+          
+          // Enhanced controls
+          gestureHandling: 'greedy',
+          zoomControl: true,
+          mapTypeControl: true,
+          scaleControl: true,
+          streetViewControl: false,
+          rotateControl: true,
+          fullscreenControl: true,
+          
+          // Styling
+          styles: [
+            {
+              featureType: 'all',
+              elementType: 'geometry.fill',
+              stylers: [{ saturation: 20 }, { lightness: -10 }]
             }
-          })
-          .onPointHover((point: any) => {
-            globe.controls().enabled = !point; // Disable controls on hover for better UX
-            if (point) {
-              document.body.style.cursor = 'pointer';
-            } else {
-              document.body.style.cursor = 'auto';
-            }
-          });
-        
-        globeInstanceRef.current = globe;
-        globe(globeRef.current);
-        
-        // Configure controls for smooth interaction and set default view
-        setTimeout(() => {
-          if (globeInstanceRef.current) {
-            const controls = globe.controls();
-            controls.autoRotate = false; // Turn off auto-rotate like Apple Maps
-            controls.enableZoom = true;
-            controls.enablePan = true;
-            controls.enableDamping = true;
-            controls.dampingFactor = 0.05; // Smoother damping like Apple Maps
-            controls.minDistance = 50; // Very close zoom like Apple Maps
-            controls.maxDistance = 2000; // Much more zoom out capability
-            controls.minPolarAngle = 0;
-            controls.maxPolarAngle = Math.PI;
-            
-            // Apple Maps-like smooth controls
-            controls.rotateSpeed = 0.5;
-            controls.zoomSpeed = 1.2;
-            controls.panSpeed = 1.0;
-            
-            // Set default view to show FULL Earth - much farther back
-            globe.pointOfView({ lat: 0, lng: 0, altitude: 3.5 }, 100);
-            
-            setIsLoading(false);
+          ],
+          
+          // Enable 3D buildings
+          mapTypeControlOptions: {
+            mapTypeIds: ['satellite', 'hybrid', 'terrain']
           }
-        }, 1000);
+        });
+        
+        mapInstanceRef.current = map;
+        
+        // Add user markers
+        addUserMarkers(map);
+        
+        setIsLoading(false);
         
       } catch (err) {
-        console.error('Globe initialization error:', err);
-        setError('Failed to load 3D Globe');
+        console.error('Google Maps initialization error:', err);
+        setError('Failed to load Google Maps');
         setIsLoading(false);
       }
     };
     
-    initGlobe();
+    initMap();
     
     return () => {
-      if (globeInstanceRef.current) {
-        try {
-          globeInstanceRef.current._destructor?.();
-          globeInstanceRef.current = null;
-        } catch (err) {
-          console.error('Globe cleanup error:', err);
-        }
-      }
+      // Cleanup markers
+      markersRef.current.forEach(marker => {
+        if (marker.setMap) marker.setMap(null);
+      });
+      markersRef.current = [];
     };
-  }, [width, height]);
+  }, [isGoogleMapsLoaded]);
 
-  // Update markers when data changes
+  // Function to add user markers
+  const addUserMarkers = (map: any) => {
+    // Clear existing markers
+    markersRef.current.forEach(marker => {
+      if (marker.setMap) marker.setMap(null);
+    });
+    markersRef.current = [];
+
+    users
+      .filter(user => user.lat && user.lng && user.showOnMap)
+      .forEach(user => {
+        const color = user.plan === 'creator' ? '#10b981' : user.plan === 'traveler' ? '#3b82f6' : '#6b7280';
+        
+        // Create custom marker with user avatar
+        const marker = new window.google.maps.Marker({
+          position: { lat: user.lat!, lng: user.lng! },
+          map: map,
+          title: user.displayName,
+          icon: {
+            url: `data:image/svg+xml;base64,${btoa(`
+              <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="20" cy="20" r="18" fill="${color}" stroke="white" stroke-width="3"/>
+                <circle cx="20" cy="20" r="12" fill="white"/>
+                <text x="20" y="26" text-anchor="middle" fill="${color}" font-size="12" font-weight="bold">
+                  ${(user.displayName || user.username || 'U').charAt(0).toUpperCase()}
+                </text>
+              </svg>
+            `)}`,
+            scaledSize: new window.google.maps.Size(40, 40),
+            anchor: new window.google.maps.Point(20, 20)
+          },
+          animation: window.google.maps.Animation.DROP
+        });
+
+        // Add click listener
+        marker.addListener('click', () => {
+          if (onUserClick) {
+            onUserClick(user);
+          }
+          
+          // Show info window
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div style="padding: 10px; font-family: system-ui;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <img src="${user.profileImageUrl}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
+                  <div>
+                    <div style="font-weight: bold; font-size: 14px;">${user.displayName}</div>
+                    <div style="color: ${color}; font-size: 12px; text-transform: capitalize;">${user.plan} • ${user.city || 'Unknown'}</div>
+                  </div>
+                </div>
+              </div>
+            `
+          });
+          
+          infoWindow.open(map, marker);
+        });
+
+        markersRef.current.push(marker);
+      });
+  };
+
+  // Update markers when users change
   useEffect(() => {
-    if (globeInstanceRef.current && !isLoading) {
-      globeInstanceRef.current.pointsData(markers);
+    if (mapInstanceRef.current && !isLoading) {
+      addUserMarkers(mapInstanceRef.current);
     }
-  }, [markers, isLoading]);
+  }, [users, isLoading]);
 
   // Handle country/city focus
   useEffect(() => {
-    if (globeInstanceRef.current && !isLoading) {
-      const globe = globeInstanceRef.current;
+    if (mapInstanceRef.current && !isLoading) {
+      const map = mapInstanceRef.current;
       
       if (selectedCountry && selectedCountry !== 'all') {
         // Country coordinates mapping
-        const countryCoords: Record<string, { lat: number, lng: number, altitude: number }> = {
-          'GB': { lat: 54.7753, lng: -2.3508, altitude: 2.5 },
-          'US': { lat: 39.8283, lng: -98.5795, altitude: 2.5 },
-          'IN': { lat: 20.5937, lng: 78.9629, altitude: 2.5 },
-          'FR': { lat: 46.6034, lng: 1.8883, altitude: 2.5 },
-          'DE': { lat: 51.1657, lng: 10.4515, altitude: 2.5 },
-          'JP': { lat: 36.2048, lng: 138.2529, altitude: 2.5 },
-          'AU': { lat: -25.2744, lng: 133.7751, altitude: 2.5 },
+        const countryCoords: Record<string, { lat: number, lng: number, zoom: number }> = {
+          'GB': { lat: 54.7753, lng: -2.3508, zoom: 6 },
+          'US': { lat: 39.8283, lng: -98.5795, zoom: 4 },
+          'IN': { lat: 20.5937, lng: 78.9629, zoom: 5 },
+          'FR': { lat: 46.6034, lng: 1.8883, zoom: 6 },
+          'DE': { lat: 51.1657, lng: 10.4515, zoom: 6 },
+          'JP': { lat: 36.2048, lng: 138.2529, zoom: 6 },
+          'AU': { lat: -25.2744, lng: 133.7751, zoom: 5 },
         };
         
         const coords = countryCoords[selectedCountry];
         if (coords) {
-          globe.pointOfView(coords, 1500);
+          map.panTo({ lat: coords.lat, lng: coords.lng });
+          map.setZoom(coords.zoom);
+          map.setTilt(45); // Maintain 3D view
         }
       } else {
-        // Reset to global view - show full Earth
-        globe.pointOfView({ lat: 0, lng: 0, altitude: 3.5 }, 1000);
+        // Reset to global view
+        map.panTo({ lat: 20, lng: 0 });
+        map.setZoom(2);
+        map.setTilt(0); // Flat view for global perspective
       }
     }
   }, [selectedCountry, selectedCity, isLoading]);
@@ -184,9 +237,9 @@ export default function Globe3D({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Globe</h3>
+        <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Map</h3>
         <p className="text-gray-400 text-sm text-center max-w-md">
-          The 3D globe could not be initialized. Please refresh the page or try again later.
+          {error}
         </p>
       </div>
     );
@@ -197,13 +250,13 @@ export default function Globe3D({
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10">
           <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4"></div>
-          <h3 className="text-lg font-semibold text-white mb-2">Loading 3D Globe</h3>
-          <p className="text-gray-400 text-sm">Initializing world map...</p>
+          <h3 className="text-lg font-semibold text-white mb-2">Loading Google Earth</h3>
+          <p className="text-gray-400 text-sm">Loading satellite imagery and 3D buildings...</p>
         </div>
       )}
       
       <div 
-        ref={globeRef} 
+        ref={mapRef} 
         style={{ 
           width: `${width}px`, 
           height: `${height}px`,
@@ -228,7 +281,7 @@ export default function Globe3D({
             <span>Free Users</span>
           </div>
           <div className="text-gray-300 mt-2">
-            Drag to rotate • Scroll to zoom
+            Pan • Zoom • Tilt • Rotate for 3D view
           </div>
         </div>
       )}
