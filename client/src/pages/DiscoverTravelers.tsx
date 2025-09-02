@@ -474,25 +474,19 @@ export default function DiscoverTravelers() {
           </Card>
         </div>
 
-        {/* 3D Globe - Full Screen */}
-        <div className="fixed inset-0 z-50 bg-black">
-          <div className="absolute top-4 right-4 z-60">
-            <button 
-              onClick={() => window.history.back()}
-              className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="w-full h-full flex items-center justify-center">
-            <Globe3D 
-              users={typedUsers} 
-              width={Math.min(window.innerWidth - 100, 1200)} 
-              height={Math.min(window.innerHeight - 100, 1000)}
-              userLocation={userLocation}
-            />
-          </div>
-        </div>
+        {/* 3D Globe */}
+        <Card className="relative max-w-none">
+          <CardContent className="p-6">
+            <div className="relative w-full h-[900px] flex items-center justify-center bg-black rounded-xl border-4 border-gray-800">
+              <Globe3D 
+                users={typedUsers} 
+                width={900} 
+                height={900}
+                userLocation={userLocation}
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Selected User Details */}
         {selectedUser && (
