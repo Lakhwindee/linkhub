@@ -341,34 +341,6 @@ export default function Globe3D({
         }}
       />
       
-      {/* Premium Controls Info */}
-      {!isLoading && (
-        <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md rounded-xl p-4 text-white text-xs space-y-2 border border-white/10">
-          <div className="text-sm font-semibold text-blue-300 mb-2">🗺️ Live Users</div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-            <span>⭐ Creators</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-            <span>✈️ Travelers</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-gray-500 rounded-full animate-pulse"></div>
-            <span>👤 Free Users</span>
-          </div>
-          <div className="text-gray-300 mt-3 pt-2 border-t border-white/10">
-            🌍 Google Maps • Satellite View • 3D Buildings
-          </div>
-        </div>
-      )}
-      
-      {/* Premium Branding */}
-      {!isLoading && (
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 text-xs font-semibold text-gray-800">
-          🚀 Powered by Google Maps
-        </div>
-      )}
     </div>
   );
 }
