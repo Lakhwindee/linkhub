@@ -90,6 +90,10 @@ export default function Globe3D({
           center: { lat: 20, lng: 0 },
           mapTypeId: 'hybrid', // High-quality satellite + labels
           
+          // Zoom restrictions to prevent multiple maps
+          minZoom: 2,
+          maxZoom: 18,
+          
           // Enable 3D features
           tilt: 0, // Start flat
           heading: 0,
@@ -123,14 +127,15 @@ export default function Globe3D({
             }
           ],
           
-          // Restrict bounds for better performance
+          // Strict bounds to prevent multiple maps
           restriction: {
             latLngBounds: {
               north: 85,
               south: -85,
               west: -180,
               east: 180
-            }
+            },
+            strictBounds: true
           }
         });
         
