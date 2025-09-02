@@ -180,8 +180,11 @@ export default function Globe3D({
     initMap();
     
     return () => {
-      // Cleanup markers
+      // Cleanup markers and their animations
       markersRef.current.forEach(marker => {
+        if ((marker as any).cleanup) {
+          (marker as any).cleanup(); // Clean up pulse intervals
+        }
         if (marker.setMap) marker.setMap(null);
       });
       markersRef.current = [];
@@ -190,8 +193,11 @@ export default function Globe3D({
 
   // Function to add premium-looking user markers
   const addPremiumMarkers = (map: any) => {
-    // Clear existing markers
+    // Clear existing markers and their animations
     markersRef.current.forEach(marker => {
+      if ((marker as any).cleanup) {
+        (marker as any).cleanup(); // Clean up pulse intervals
+      }
       if (marker.setMap) marker.setMap(null);
     });
     markersRef.current = [];
@@ -202,23 +208,55 @@ export default function Globe3D({
         const color = user.plan === 'creator' ? '#10b981' : user.plan === 'traveler' ? '#3b82f6' : '#6b7280';
         const planIcon = user.plan === 'creator' ? '⭐' : user.plan === 'traveler' ? '✈️' : '👤';
         
+        // Determine if user is "live" (simulate based on recent activity)
+        const isLive = Math.random() > 0.7; // 30% chance of being live for demo
+        const liveColor = isLive ? '#ef4444' : color; // Red for live users
+        
         // Create location pin/needle style marker
         const marker = new window.google.maps.Marker({
           position: { lat: user.lat!, lng: user.lng! },
           map: map,
-          title: `${user.displayName || user.username} - ${user.plan}`,
+          title: `${user.displayName || user.username} - ${user.plan}${isLive ? ' (LIVE)' : ''}`,
           icon: {
             // Custom pin/needle shape using SVG path
             path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-            fillColor: color,
-            fillOpacity: 0.9,
-            strokeColor: 'white',
-            strokeWeight: 2,
-            scale: 1.5,
+            fillColor: liveColor,
+            fillOpacity: isLive ? 1.0 : 0.9,
+            strokeColor: isLive ? '#ffffff' : 'white',
+            strokeWeight: isLive ? 3 : 2,
+            scale: isLive ? 2.0 : 1.5, // Larger for live users
             anchor: new window.google.maps.Point(12, 22) // Anchor at the bottom tip of the pin
           },
-          animation: window.google.maps.Animation.DROP
+          animation: isLive ? window.google.maps.Animation.BOUNCE : window.google.maps.Animation.DROP
         });
+
+        // Add pulsing effect for live users
+        if (isLive) {
+          let pulseInterval: NodeJS.Timeout;
+          let isExpanded = false;
+          
+          const startPulsing = () => {
+            pulseInterval = setInterval(() => {
+              const currentIcon = marker.getIcon();
+              if (currentIcon && typeof currentIcon === 'object') {
+                isExpanded = !isExpanded;
+                marker.setIcon({
+                  ...currentIcon,
+                  scale: isExpanded ? 2.2 : 1.8,
+                  fillOpacity: isExpanded ? 0.8 : 1.0,
+                  strokeWeight: isExpanded ? 4 : 3,
+                });
+              }
+            }, 800); // Pulse every 800ms
+          };
+          
+          startPulsing();
+          
+          // Store cleanup function
+          (marker as any).cleanup = () => {
+            if (pulseInterval) clearInterval(pulseInterval);
+          };
+        }
 
         // Enhanced info window with better styling
         const infoWindow = new window.google.maps.InfoWindow({
