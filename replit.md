@@ -5,6 +5,7 @@ HubLink is a tourism-social platform that connects travelers and creators global
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+Globe3D component fixed size: 2400x2400 pixels for optimal display.
 
 # System Architecture
 
