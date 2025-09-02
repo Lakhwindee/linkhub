@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SimpleChat } from "@/components/SimpleChat";
-import { MessageCircle, Users, UserPlus, UserCheck, UserX, Search } from "lucide-react";
+import { MessageCircle, Users, UserPlus, UserCheck, UserX, Search, Bell, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { ConnectRequest, Conversation } from "@shared/schema";
@@ -21,6 +21,8 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showNewRequestNotification, setShowNewRequestNotification] = useState(false);
+  const [lastRequestCount, setLastRequestCount] = useState(0);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -44,6 +46,25 @@ export default function Messages() {
     retry: false,
     refetchInterval: 5000,
   });
+
+  // Check for new connect requests and show notification
+  useEffect(() => {
+    if (receivedRequests.length > 0) {
+      const currentCount = receivedRequests.filter(req => req.status === 'pending').length;
+      
+      // If we have more pending requests than before, show notification
+      if (currentCount > lastRequestCount && lastRequestCount > 0) {
+        setShowNewRequestNotification(true);
+        
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+          setShowNewRequestNotification(false);
+        }, 5000);
+      }
+      
+      setLastRequestCount(currentCount);
+    }
+  }, [receivedRequests, lastRequestCount]);
 
   // Fetch conversations
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
@@ -162,9 +183,46 @@ export default function Messages() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      {/* New Request Notification */}
+      {showNewRequestNotification && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in slide-in-from-top duration-300">
+          <div className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg border border-blue-600 flex items-center space-x-3 max-w-sm">
+            <div className="bg-white/20 p-1 rounded-full">
+              <Bell className="w-4 h-4" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">New Connect Request!</p>
+              <p className="text-xs opacity-90">Someone wants to connect with you</p>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-6 w-6 p-0 text-white hover:bg-white/20"
+              onClick={() => setShowNewRequestNotification(false)}
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
-        <p className="text-muted-foreground">Connect with travelers around the world</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
+            <p className="text-muted-foreground">Connect with travelers around the world</p>
+          </div>
+          {process.env.NODE_ENV === 'development' && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowNewRequestNotification(true)}
+              className="border-dashed"
+            >
+              🔔 Test Notification
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
