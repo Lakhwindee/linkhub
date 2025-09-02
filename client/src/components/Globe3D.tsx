@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import type { User } from '@shared/schema';
+import type { User, Stay } from '@shared/schema';
 
 // Google Maps type definitions
 declare global {
@@ -14,6 +14,7 @@ interface Globe3DProps {
   width?: number;
   height?: number;
   onUserClick?: (user: User) => void;
+  onStayClick?: (stay: Stay) => void;
   selectedCountry?: string;
   selectedState?: string;
 }
@@ -23,6 +24,7 @@ export default function Globe3D({
   width = 800, 
   height = 600, 
   onUserClick,
+  onStayClick,
   selectedCountry,
   selectedState
 }: Globe3DProps) {
@@ -32,6 +34,25 @@ export default function Globe3D({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
+  const [stays, setStays] = useState<Stay[]>([]);
+
+  // Fetch stays data
+  useEffect(() => {
+    const fetchStays = async () => {
+      try {
+        const response = await fetch('/api/stays');
+        if (response.ok) {
+          const staysData = await response.json();
+          console.log('Fetched stays:', staysData);
+          setStays(staysData);
+        }
+      } catch (error) {
+        console.error('Error fetching stays:', error);
+      }
+    };
+
+    fetchStays();
+  }, []);
 
   // Load Google Maps API
   // Setup global connection request handler
@@ -419,12 +440,171 @@ export default function Globe3D({
       });
   };
 
-  // Update markers when users change
+  // Add stay markers to the map
+  const addStayMarkers = (map: any) => {
+    // Clear existing markers first
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+
+    // Add user markers
+    addPremiumMarkers(map);
+
+    // Add stay markers with bed icons
+    stays.forEach((stay) => {
+      if (!stay.lat || !stay.lng) return;
+
+      // Create custom bed icon marker
+      const bedIcon = {
+        path: 'M2 12h20l-2-2V7c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v3l-2 2z M6 9h4v2H6z M14 9h4v2h-4z M8 15v2h8v-2z', // Bed icon path
+        fillColor: '#8B5CF6', // Purple color for stays
+        fillOpacity: 1,
+        strokeWeight: 2,
+        strokeColor: '#FFFFFF',
+        scale: 1.2,
+        anchor: new window.google.maps.Point(12, 12)
+      };
+
+      const marker = new window.google.maps.Marker({
+        position: { lat: stay.lat, lng: stay.lng },
+        map: map,
+        icon: bedIcon,
+        title: stay.title,
+        zIndex: 100
+      });
+
+      // Create info window for stay
+      const stayTypeIcon = stay.type === 'hostel' ? '🏠' : 
+                           stay.type === 'hotel' ? '🏨' : 
+                           stay.type === 'apartment' ? '🏢' : 
+                           stay.type === 'house' ? '🏡' : '🛏️';
+      
+      const currencySymbol = stay.currency === 'GBP' ? '£' : 
+                             stay.currency === 'USD' ? '$' : 
+                             stay.currency === 'EUR' ? '€' : '₹';
+
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: `
+          <div style="
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 280px;
+            padding: 0;
+            margin: 0;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+          ">
+            <!-- Header -->
+            <div style="
+              background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+              padding: 16px;
+              text-align: center;
+              position: relative;
+            ">
+              <div style="
+                background: rgba(255, 255, 255, 0.2);
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 8px;
+                font-size: 16px;
+              ">🛏️</div>
+              <div style="color: white; font-weight: 700; font-size: 16px; margin-bottom: 4px;">
+                ${stay.title}
+              </div>
+              <div style="
+                color: rgba(255, 255, 255, 0.9); 
+                font-size: 12px; 
+                background: rgba(255, 255, 255, 0.2);
+                padding: 4px 12px;
+                border-radius: 20px;
+                display: inline-block;
+              ">${stayTypeIcon} ${stay.type?.toUpperCase()}</div>
+            </div>
+            
+            <!-- Content -->
+            <div style="padding: 16px;">
+              <!-- Location -->
+              <div style="
+                background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+                padding: 12px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                border-left: 4px solid #8B5CF6;
+              ">
+                <div style="font-size: 14px; color: #334155; margin-bottom: 6px;">
+                  <strong>📍 ${stay.city}, ${stay.country}</strong>
+                </div>
+                ${stay.pricePerNight ? `
+                  <div style="font-size: 16px; color: #8B5CF6; font-weight: 700;">
+                    ${currencySymbol}${stay.pricePerNight}/night
+                  </div>
+                ` : `
+                  <div style="font-size: 14px; color: #059669; font-weight: 600;">
+                    Free Stay Available
+                  </div>
+                `}
+              </div>
+              
+              <!-- Details -->
+              <div style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+                ${stay.maxGuests ? `<div>👥 Max ${stay.maxGuests} guests</div>` : ''}
+                ${stay.bedrooms ? `<div>🛏️ ${stay.bedrooms} bedroom(s)</div>` : ''}
+                ${stay.bathrooms ? `<div>🚿 ${stay.bathrooms} bathroom(s)</div>` : ''}
+              </div>
+              
+              <!-- Action Button -->
+              <button 
+                onclick="window.viewStayDetails && window.viewStayDetails('${stay.id}')" 
+                style="
+                  width: 100%;
+                  background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+                  color: white;
+                  border: none;
+                  padding: 12px 16px;
+                  border-radius: 10px;
+                  font-size: 14px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+                  transition: all 0.2s ease;
+                "
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(139, 92, 246, 0.4)';"
+                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)';"
+              >
+                🏠 View Stay Details
+              </button>
+              
+              <div style="text-align: center; margin-top: 8px; font-size: 11px; color: #94a3b8;">
+                Book your stay with ${stay.title}
+              </div>
+            </div>
+          </div>
+        `,
+        pixelOffset: new window.google.maps.Size(0, -15)
+      });
+
+      // Click handler for stays
+      marker.addListener('click', () => {
+        if (onStayClick) {
+          onStayClick(stay);
+        }
+        infoWindow.open(map, marker);
+      });
+
+      markersRef.current.push(marker);
+    });
+  };
+
+  // Update markers when users or stays change
   useEffect(() => {
     if (mapInstanceRef.current && !isLoading) {
-      addPremiumMarkers(mapInstanceRef.current);
+      addStayMarkers(mapInstanceRef.current);
     }
-  }, [users, isLoading]);
+  }, [users, stays, isLoading]);
 
   // Handle country/city focus with smooth animations
   useEffect(() => {

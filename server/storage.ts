@@ -190,6 +190,129 @@ const testConnectRequests = [
   { id: 'req-3', fromUserId: 'test-user-5', toUserId: 'demo-user-1', message: 'Bonjour! Fellow food lover here 🍽️ Would love to exchange restaurant recommendations and maybe explore together!', status: 'pending', createdAt: new Date('2024-09-02T16:45:00Z') }
 ];
 
+const testStays = [
+  { 
+    id: 'stay-1', 
+    hostId: 'test-user-1', 
+    title: 'Cozy London Hostel', 
+    description: 'Budget-friendly hostel in the heart of London with shared kitchen and common areas.', 
+    type: 'hostel', 
+    country: 'United Kingdom', 
+    city: 'London', 
+    lat: 51.5074, 
+    lng: -0.1278, 
+    pricePerNight: 25.00, 
+    currency: 'GBP', 
+    maxGuests: 1, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'kitchen', 'laundry'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T10:00:00Z'),
+    updatedAt: new Date('2024-09-01T10:00:00Z')
+  },
+  { 
+    id: 'stay-2', 
+    hostId: 'test-user-2', 
+    title: 'Barcelona Artist Apartment', 
+    description: 'Creative space in Gothic Quarter, perfect for artists and photographers.', 
+    type: 'apartment', 
+    country: 'Spain', 
+    city: 'Barcelona', 
+    lat: 41.3851, 
+    lng: 2.1734, 
+    pricePerNight: 45.00, 
+    currency: 'EUR', 
+    maxGuests: 2, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'kitchen', 'art_supplies'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T11:00:00Z'),
+    updatedAt: new Date('2024-09-01T11:00:00Z')
+  },
+  { 
+    id: 'stay-3', 
+    hostId: 'test-user-3', 
+    title: 'Tokyo Traditional Guesthouse', 
+    description: 'Experience authentic Japanese hospitality in traditional tatami rooms.', 
+    type: 'guesthouse', 
+    country: 'Japan', 
+    city: 'Tokyo', 
+    lat: 35.6762, 
+    lng: 139.6503, 
+    pricePerNight: 35.00, 
+    currency: 'USD', 
+    maxGuests: 2, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'traditional_bath', 'tea_ceremony'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T12:00:00Z'),
+    updatedAt: new Date('2024-09-01T12:00:00Z')
+  },
+  { 
+    id: 'stay-4', 
+    hostId: 'test-user-4', 
+    title: 'Mumbai Backpacker Hostel', 
+    description: 'Budget accommodation for backpackers exploring incredible India.', 
+    type: 'hostel', 
+    country: 'India', 
+    city: 'Mumbai', 
+    lat: 19.0760, 
+    lng: 72.8777, 
+    pricePerNight: 12.00, 
+    currency: 'USD', 
+    maxGuests: 1, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'common_room', 'local_tours'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T13:00:00Z'),
+    updatedAt: new Date('2024-09-01T13:00:00Z')
+  },
+  { 
+    id: 'stay-5', 
+    hostId: 'test-user-5', 
+    title: 'Paris Foodie Studio', 
+    description: 'Charming studio near food markets, perfect for culinary enthusiasts.', 
+    type: 'studio', 
+    country: 'France', 
+    city: 'Paris', 
+    lat: 48.8566, 
+    lng: 2.3522, 
+    pricePerNight: 60.00, 
+    currency: 'EUR', 
+    maxGuests: 2, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'kitchen', 'food_markets_nearby'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T14:00:00Z'),
+    updatedAt: new Date('2024-09-01T14:00:00Z')
+  },
+  { 
+    id: 'stay-6', 
+    hostId: 'test-user-6', 
+    title: 'Sydney Beachside Hostel', 
+    description: 'Wake up to ocean views at this beachfront hostel in Sydney.', 
+    type: 'hostel', 
+    country: 'Australia', 
+    city: 'Sydney', 
+    lat: -33.8688, 
+    lng: 151.2093, 
+    pricePerNight: 30.00, 
+    currency: 'AUD', 
+    maxGuests: 1, 
+    bedrooms: 1, 
+    bathrooms: 1, 
+    amenities: ['wifi', 'beach_access', 'surf_boards'], 
+    status: 'active',
+    createdAt: new Date('2024-09-01T15:00:00Z'),
+    updatedAt: new Date('2024-09-01T15:00:00Z')
+  }
+];
+
 export class DatabaseStorage implements IStorage {
   demoConversations: any[] = []; // Store demo conversations in memory
   
@@ -772,24 +895,62 @@ export class DatabaseStorage implements IStorage {
   
   // Stays implementation
   async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]> {
-    const conditions = [eq(stays.status, 'active')];
+    // For demo purposes, return test stays first, then database stays
+    let filteredStays = [...testStays];
     
+    // Apply filters to test data
     if (filters?.country) {
-      conditions.push(eq(stays.country, filters.country));
+      filteredStays = filteredStays.filter(stay => stay.country === filters.country);
     }
     if (filters?.city) {
-      conditions.push(eq(stays.city, filters.city));
+      filteredStays = filteredStays.filter(stay => stay.city === filters.city);
     }
     if (filters?.type) {
-      conditions.push(eq(stays.type, filters.type));
+      filteredStays = filteredStays.filter(stay => stay.type === filters.type);
     }
     if (filters?.guests) {
-      conditions.push(sql`${stays.maxGuests} >= ${filters.guests}`);
+      filteredStays = filteredStays.filter(stay => stay.maxGuests >= filters.guests);
+    }
+    if (filters?.minPrice) {
+      filteredStays = filteredStays.filter(stay => stay.pricePerNight >= filters.minPrice!);
+    }
+    if (filters?.maxPrice) {
+      filteredStays = filteredStays.filter(stay => stay.pricePerNight <= filters.maxPrice!);
     }
     
-    return await db.select().from(stays)
-      .where(and(...conditions))
-      .limit(filters?.limit || 20);
+    // Limit results
+    const limit = filters?.limit || 20;
+    filteredStays = filteredStays.slice(0, limit);
+    
+    console.log('Returning test stays:', filteredStays.length);
+    
+    // Also try to get from database
+    try {
+      const conditions = [eq(stays.status, 'active')];
+      
+      if (filters?.country) {
+        conditions.push(eq(stays.country, filters.country));
+      }
+      if (filters?.city) {
+        conditions.push(eq(stays.city, filters.city));
+      }
+      if (filters?.type) {
+        conditions.push(eq(stays.type, filters.type));
+      }
+      if (filters?.guests) {
+        conditions.push(sql`${stays.maxGuests} >= ${filters.guests}`);
+      }
+      
+      const dbStays = await db.select().from(stays)
+        .where(and(...conditions))
+        .limit(Math.max(0, limit - filteredStays.length));
+      
+      // Combine test data with database data
+      return [...filteredStays, ...dbStays];
+    } catch (error) {
+      console.log('Database error, returning test stays only:', error);
+      return filteredStays;
+    }
   }
   
   async getStayById(id: string): Promise<Stay | undefined> {

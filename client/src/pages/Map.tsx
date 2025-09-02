@@ -7,17 +7,19 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Globe, MapPin, Users, Filter, Search, Maximize2, Minimize2, Settings, Info } from "lucide-react";
+import { Globe, MapPin, Users, Filter, Search, Maximize2, Minimize2, Settings, Info, Bed } from "lucide-react";
 import Globe3D from "@/components/Globe3D";
 import { UserCard } from "@/components/UserCard";
-import type { User } from "@shared/schema";
+import type { User, Stay } from "@shared/schema";
 
 export default function Map() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedStay, setSelectedStay] = useState<Stay | null>(null);
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showStays, setShowStays] = useState(true);
   
   // Fetch travelers data
   const { data: users = [], isLoading } = useQuery<User[]>({
@@ -27,6 +29,11 @@ export default function Map() {
 
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
+  };
+
+  const handleStayClick = (stay: Stay) => {
+    console.log('Stay clicked:', stay);
+    setSelectedStay(stay);
   };
 
   // Country options
@@ -196,6 +203,7 @@ export default function Map() {
                         width={globeWidth}
                         height={globeHeight}
                         onUserClick={handleUserClick}
+                        onStayClick={handleStayClick}
                         selectedCountry={selectedCountry}
                         selectedCity={selectedCity}
                       />
@@ -208,6 +216,7 @@ export default function Map() {
                       width={globeWidth}
                       height={globeHeight}
                       onUserClick={handleUserClick}
+                      onStayClick={handleStayClick}
                       selectedCountry={selectedCountry}
                       selectedCity={selectedCity}
                     />
