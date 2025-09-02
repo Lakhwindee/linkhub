@@ -138,14 +138,6 @@ export default function DiscoverTravelers() {
 
     // Add default layer
     satellite.addTo(map);
-    
-    // Add simple labels overlay on top of satellite
-    const labels = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
-      opacity: 0.6,
-      maxZoom: 18,
-      subdomains: 'abcd'
-    });
-    labels.addTo(map);
 
     // Layer control
     const baseLayers = {
