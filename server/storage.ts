@@ -218,10 +218,10 @@ export class DatabaseStorage implements IStorage {
     // Return test users for demo purposes with proper User structure
     return testUsers.map(user => ({
       ...user,
-      currentCity: user.currentCity,
-      currentCountry: user.currentCountry,
-      city: user.currentCity,
-      country: user.currentCountry,
+      currentCity: user.city,
+      currentCountry: user.country,
+      city: user.city,
+      country: user.country,
       createdAt: new Date(),
       updatedAt: new Date(),
     })) as User[];

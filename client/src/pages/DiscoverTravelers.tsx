@@ -78,6 +78,8 @@ export default function DiscoverTravelers() {
     enabled: true,
   });
 
+  console.log('Frontend users data:', users.length, users);
+
   // Load Leaflet dynamically
   useEffect(() => {
     const loadLeaflet = async () => {

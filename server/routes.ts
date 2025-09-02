@@ -71,23 +71,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/discover', async (req, res) => {
     try {
       const { lat, lng, radius = 10, country, city, interests, plan } = req.query;
+      console.log('Discovery API called with params:', { country, city, lat, lng });
       
-      if (lat && lng) {
-        const users = await storage.getUsersNearby(
-          parseFloat(lat as string),
-          parseFloat(lng as string),
-          parseInt(radius as string)
+      // Always return test users for now (demo purposes)
+      const users = await storage.getUsersNearby(0, 0, 100);
+      console.log('Users from storage:', users.length);
+      
+      // Filter by country if specified
+      let filteredUsers = users;
+      if (country && country !== 'all') {
+        filteredUsers = users.filter(user => 
+          user.country?.toLowerCase().includes(country.toString().toLowerCase()) ||
+          (country === 'KR' && user.country === 'South Korea') ||
+          (country === 'GB' && user.country === 'United Kingdom') ||
+          (country === 'US' && user.country === 'United States')
         );
-        return res.json(users);
+        console.log('Filtered by country:', filteredUsers.length);
       }
-
-      if (country || city || interests) {
-        const query = [country, city, interests].filter(Boolean).join(' ');
-        const users = await storage.searchUsers(query);
-        return res.json(users);
+      
+      // Filter by city if specified
+      if (city && city !== 'all') {
+        filteredUsers = filteredUsers.filter(user => 
+          user.city?.toLowerCase().includes(city.toString().toLowerCase())
+        );
+        console.log('Filtered by city:', filteredUsers.length);
       }
-
-      res.json([]);
+      
+      console.log('Final result:', filteredUsers.length);
+      res.json(filteredUsers);
     } catch (error) {
       console.error("Error in discovery:", error);
       res.status(500).json({ message: "Failed to discover users" });
