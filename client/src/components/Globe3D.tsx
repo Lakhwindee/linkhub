@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Globe from 'globe.gl';
 
 interface GlobeProps {
@@ -11,35 +11,54 @@ interface GlobeProps {
 export default function Globe3D({ users, width = 500, height = 500, userLocation }: GlobeProps) {
   const globeRef = useRef<HTMLDivElement>(null);
   const globeInstanceRef = useRef<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Initialize 3D Globe
   useEffect(() => {
     if (!globeRef.current || globeInstanceRef.current) return;
     
-    const initGlobe = () => {
-      // Create 3D Globe instance
-      const globe = new Globe()
-        .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-        .backgroundColor('rgba(0,0,0,0)')
-        .showAtmosphere(true)
-        .atmosphereColor('lightblue')
-        .atmosphereAltitude(0.15)
-        .width(width)
-        .height(height);
-      
-      globeInstanceRef.current = globe;
-      globe(globeRef.current);
-      
-      // Auto-rotate
-      globe.controls().autoRotate = true;
-      globe.controls().autoRotateSpeed = 0.5;
-      globe.controls().enableZoom = true;
-      globe.controls().minDistance = 150;
-      globe.controls().maxDistance = 800;
-      
-      // Enable pointer interactions
-      globe.controls().enableDamping = true;
-      globe.controls().dampingFactor = 0.1;
+    const initGlobe = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Create 3D Globe instance  
+        const globe = Globe()
+          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+          .backgroundColor('rgba(0,0,0,0)')
+          .showAtmosphere(true)
+          .atmosphereColor('lightblue')
+          .atmosphereAltitude(0.15)
+          .width(width)
+          .height(height);
+        
+        globeInstanceRef.current = globe;
+        globe(globeRef.current);
+        
+        // Wait for globe to load
+        setTimeout(() => {
+          if (globeInstanceRef.current) {
+            // Auto-rotate
+            globe.controls().autoRotate = true;
+            globe.controls().autoRotateSpeed = 0.5;
+            globe.controls().enableZoom = true;
+            globe.controls().minDistance = 150;
+            globe.controls().maxDistance = 800;
+            
+            // Enable pointer interactions
+            globe.controls().enableDamping = true;
+            globe.controls().dampingFactor = 0.1;
+            
+            setIsLoading(false);
+          }
+        }, 1000);
+        
+      } catch (err) {
+        console.error('Globe initialization error:', err);
+        setError('Failed to load 3D Globe');
+        setIsLoading(false);
+      }
     };
     
     initGlobe();
@@ -47,7 +66,12 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
     // Cleanup
     return () => {
       if (globeInstanceRef.current) {
-        globeInstanceRef.current._destructor?.();
+        try {
+          globeInstanceRef.current._destructor?.();
+          globeInstanceRef.current = null;
+        } catch (err) {
+          console.error('Globe cleanup error:', err);
+        }
       }
     };
   }, [width, height]);
@@ -109,13 +133,34 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
     }
   }, [userLocation]);
 
+  if (error) {
+    return (
+      <div className="relative flex items-center justify-center" style={{ width: `${width}px`, height: `${height}px` }}>
+        <div className="text-white text-center">
+          <div className="text-red-400 mb-2">⚠️ Globe Error</div>
+          <div className="text-sm opacity-70">{error}</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative flex items-center justify-center">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="text-white text-center">
+            <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full mx-auto mb-2"></div>
+            <div className="text-sm opacity-70">Loading 3D Globe...</div>
+          </div>
+        </div>
+      )}
       <div 
         ref={globeRef} 
         style={{ 
           width: `${width}px`, 
           height: `${height}px`,
+          opacity: isLoading ? 0.3 : 1,
+          transition: 'opacity 0.5s ease-in-out'
         }}
       />
     </div>
