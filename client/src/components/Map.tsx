@@ -224,7 +224,6 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
           // Check if Leaflet is already loaded
           if ((window as any).L) {
             L = (window as any).L;
-            setTimeout(initializeMap, 100);
             return;
           }
 
@@ -244,7 +243,7 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
             script.onload = () => {
               L = (window as any).L;
-              setTimeout(initializeMap, 100);
+              // Don't call initializeMap here, let the userLocation effect handle it
             };
             script.onerror = () => {
               console.error('Failed to load Leaflet');
@@ -255,16 +254,16 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
           console.error('Error loading Leaflet:', error);
         }
       } else if (L) {
-        setTimeout(initializeMap, 100);
+        // L is already loaded, userLocation effect will handle initialization
       }
     };
 
     loadLeaflet();
   }, []);
 
-  // Initialize map when userLocation is available
+  // Initialize map when userLocation is available (only once)
   useEffect(() => {
-    if (userLocation && L && mapRef.current) {
+    if (userLocation && L && mapRef.current && !mapInstanceRef.current) {
       initializeMap();
     }
   }, [userLocation]);
@@ -290,18 +289,19 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
 
   const initializeMap = () => {
     if (!mapRef.current || !L) {
-      console.log('Map initialization skipped - missing mapRef or L', { mapRef: !!mapRef.current, L: !!L });
       return;
     }
-    
-    console.log('Initializing map...');
     
     // Use userLocation if available, otherwise default to London
     const mapLocation = userLocation || [51.5074, -0.1278];
 
     // Clear existing map
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
+      try {
+        mapInstanceRef.current.remove();
+      } catch (error) {
+        // Ignore removal errors
+      }
     }
 
     // Create map with world view
