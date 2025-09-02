@@ -60,6 +60,9 @@ export default function Globe3D({
           .atmosphereAltitude(0.12)
           .width(width)
           .height(height)
+          // Fix for preventing multiple globe copies
+          .showGraticules(false)
+          .enablePointerInteraction(true)
           // Performance optimizations
           .rendererConfig({ 
             antialias: false, // Disable for better performance
@@ -101,8 +104,8 @@ export default function Globe3D({
             controls.enablePan = true;
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
-            controls.minDistance = 150;
-            controls.maxDistance = 1000;
+            controls.minDistance = 200; // Increased minimum distance
+            controls.maxDistance = 600; // Reduced maximum distance to prevent duplication
             controls.minPolarAngle = 0;
             controls.maxPolarAngle = Math.PI;
             
