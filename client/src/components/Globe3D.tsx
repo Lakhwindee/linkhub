@@ -928,7 +928,7 @@ export default function Globe3D({
           }
         };
         
-        // Hierarchical zoom: Only zoom when state is selected, keep global view by default
+        // Hierarchical zoom: State > Country
         
         if (selectedState && selectedState !== 'all') {
           // Priority 1: Zoom to specific state/province
@@ -942,12 +942,19 @@ export default function Globe3D({
           }
         }
         
+        // Priority 2: Zoom to country when country is selected
+        const coords = countryCoords[selectedCountry];
+        if (coords) {
+          map.panTo({ lat: coords.lat, lng: coords.lng });
+          map.setZoom(coords.zoom);
+          map.setTilt(20); // Slight 3D effect for country view
+        }
+      } else {
+        // Default: Global satellite view when no country selected
+        map.panTo({ lat: 20, lng: 0 });
+        map.setZoom(3);
+        map.setTilt(0);
       }
-      
-      // Default: Always show global satellite view
-      map.panTo({ lat: 20, lng: 0 });
-      map.setZoom(3);
-      map.setTilt(0);
     }
   }, [selectedCountry, selectedState, isLoading]);
 
