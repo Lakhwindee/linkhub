@@ -994,7 +994,7 @@ export default function Globe3D({
       style={{ 
         width: typeof width === 'string' ? width : `${width}px`,
         height: `${height}px`,
-        minHeight: '400px'
+        minHeight: '600px'
       }}
     >
       {isLoading && (
@@ -1009,7 +1009,7 @@ export default function Globe3D({
         ref={mapRef} 
         className="w-full h-full"
         style={{ 
-          minHeight: '400px',
+          minHeight: '600px',
           height: '100%',
           opacity: isLoading ? 0.3 : 1,
           transition: 'opacity 0.5s ease-in-out'

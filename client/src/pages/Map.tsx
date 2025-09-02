@@ -52,7 +52,7 @@ export default function Map() {
   });
 
   const globeWidth = isFullscreen ? window.innerWidth - 50 : '100%';
-  const globeHeight = isFullscreen ? window.innerHeight - 100 : 500;
+  const globeHeight = isFullscreen ? window.innerHeight - 100 : 700;
 
   if (isLoading) {
     return (
@@ -203,7 +203,7 @@ export default function Map() {
                   </div>
                 ) : (
                   <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                    <div className="w-full" style={{ minHeight: '500px' }}>
+                    <div className="w-full" style={{ minHeight: '700px' }}>
                       <Globe3D
                         users={filteredUsers}
                         width={globeWidth}
