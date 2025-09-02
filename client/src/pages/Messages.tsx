@@ -231,6 +231,27 @@ export default function Messages() {
     request.message?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Helper function to get user data from test users
+  const getUserData = (userId: string) => {
+    const testUsers = [
+      { id: 'test-user-1', username: 'alex_traveler', displayName: 'Alex Johnson', firstName: 'Alex', lastName: 'Johnson', plan: 'traveler', city: 'London', country: 'United Kingdom', profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face' },
+      { id: 'test-user-2', username: 'maria_creator', displayName: 'Maria Santos', firstName: 'Maria', lastName: 'Santos', plan: 'creator', city: 'Barcelona', country: 'Spain', profileImageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face' },
+      { id: 'test-user-3', username: 'yuki_explorer', displayName: 'Yuki Tanaka', firstName: 'Yuki', lastName: 'Tanaka', plan: 'traveler', city: 'Tokyo', country: 'Japan', profileImageUrl: 'https://images.unsplash.com/photo-1545167622-3a6ac756afa4?w=150&h=150&fit=crop&crop=face' },
+      { id: 'test-user-5', username: 'emma_foodie', displayName: 'Emma Thompson', firstName: 'Emma', lastName: 'Thompson', plan: 'creator', city: 'Paris', country: 'France', profileImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face' }
+    ];
+    
+    return testUsers.find(u => u.id === userId) || {
+      id: userId,
+      username: userId,
+      displayName: userId,
+      firstName: userId,
+      plan: 'free',
+      city: 'Unknown',
+      country: 'Unknown',
+      profileImageUrl: ''
+    };
+  };
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -364,55 +385,97 @@ export default function Messages() {
               </TabsContent>
 
               {/* Conversations */}
-              <TabsContent value="conversations" className="space-y-4">
+              <TabsContent value="conversations" className="space-y-2">
                 {conversationsLoading ? (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     {[...Array(3)].map((_, i) => (
-                      <Card key={i} className="animate-pulse">
-                        <CardContent className="p-4 space-y-3">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-muted rounded-full"></div>
-                            <div className="space-y-2">
-                              <div className="h-4 bg-muted rounded w-24"></div>
-                              <div className="h-3 bg-muted rounded w-16"></div>
-                            </div>
+                      <div key={i} className="animate-pulse p-4 rounded-xl bg-muted/50">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-12 h-12 bg-muted rounded-full"></div>
+                          <div className="flex-1 space-y-2">
+                            <div className="h-4 bg-muted rounded w-32"></div>
+                            <div className="h-3 bg-muted rounded w-24"></div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : conversations.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-1">
                     {conversations.map((conversation: Conversation) => {
                       const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
+                      
+                      // Get user data from test users
+                      const userData = getUserData(otherUserId || '');
+                      
                       return (
-                        <Card 
+                        <div 
                           key={conversation.id} 
-                          className={`cursor-pointer border-accent/20 hover:border-accent/50 ${selectedConversation === conversation.id ? 'border-accent bg-accent/10' : ''}`}
+                          className={`cursor-pointer p-4 rounded-xl transition-all duration-200 hover:bg-accent/10 ${
+                            selectedConversation === conversation.id 
+                              ? 'bg-accent/20 border-l-4 border-accent shadow-sm' 
+                              : 'hover:shadow-sm'
+                          }`}
                           onClick={() => setSelectedConversation(conversation.id)}
                           data-testid={`card-conversation-${conversation.id}`}
                         >
-                          <CardContent className="p-4">
-                            <div className="flex items-center space-x-3">
-                              <Avatar>
-                                <AvatarFallback data-testid={`text-conversation-user-initials-${conversation.id}`}>
-                                  {otherUserId?.charAt(0)?.toUpperCase() || 'U'}
+                          <div className="flex items-center space-x-3">
+                            {/* Profile Image with Online Status */}
+                            <div className="relative">
+                              <Avatar className="w-12 h-12 border-2 border-background shadow-sm">
+                                <AvatarImage src={userData.profileImageUrl} alt={userData.displayName} />
+                                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                                  {userData.displayName?.charAt(0)?.toUpperCase() || otherUserId?.charAt(0)?.toUpperCase() || 'U'}
                                 </AvatarFallback>
                               </Avatar>
-                              <div className="flex-1">
-                                <div className="font-medium text-card-foreground" data-testid={`text-conversation-user-${conversation.id}`}>
-                                  @{otherUserId}
-                                </div>
-                                <div className="text-xs text-muted-foreground" data-testid={`text-conversation-time-${conversation.id}`}>
+                              {/* Online Status */}
+                              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-background"></div>
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              {/* User Name & Location */}
+                              <div className="flex items-center justify-between mb-1">
+                                <h4 className="font-semibold text-foreground truncate">
+                                  {userData.displayName || userData.firstName || `@${otherUserId}`}
+                                </h4>
+                                <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                                   {conversation.lastMessageAt 
-                                    ? formatDistanceToNow(new Date(conversation.lastMessageAt)) + ' ago'
-                                    : 'No messages yet'
+                                    ? formatDistanceToNow(new Date(conversation.lastMessageAt))
+                                    : 'now'
                                   }
-                                </div>
+                                </span>
+                              </div>
+                              
+                              {/* Location & Last Message Preview */}
+                              <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                                <span className="truncate">
+                                  📍 {userData.city}, {userData.country}
+                                </span>
+                              </div>
+                              
+                              {/* Last Message Preview */}
+                              <p className="text-sm text-muted-foreground mt-1 truncate">
+                                {conversation.lastMessageAt 
+                                  ? "💬 Start your conversation..."
+                                  : "👋 Say hello to begin chatting!"
+                                }
+                              </p>
+                            </div>
+                            
+                            {/* Plan Badge */}
+                            <div className="flex flex-col items-end space-y-1">
+                              <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                userData.plan === 'creator' 
+                                  ? 'bg-purple-100 text-purple-700'
+                                  : userData.plan === 'traveler'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {userData.plan === 'creator' ? '⭐ Creator' : userData.plan === 'traveler' ? '✈️ Traveler' : '🆓 Free'}
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -437,18 +500,51 @@ export default function Messages() {
           {/* Main Chat Area */}
           <div className="lg:col-span-2">
             {selectedConversation ? (
-              <Card className="h-[600px] flex flex-col" data-testid="card-chat-area">
-                <CardHeader className="border-b border-border">
-                  <CardTitle className="flex items-center space-x-2">
-                    <MessageCircle className="w-5 h-5 text-accent" />
-                    <span>Conversation</span>
-                  </CardTitle>
-                </CardHeader>
+              <div className="h-[600px] flex flex-col bg-background rounded-xl border shadow-sm overflow-hidden" data-testid="card-chat-area">
+                {/* Chat Header - WhatsApp Style */}
+                <div className="bg-accent/5 border-b px-4 py-3 flex items-center space-x-3">
+                  {(() => {
+                    const selectedConv = conversations.find(c => c.id === selectedConversation);
+                    const otherUserId = selectedConv?.user1Id === user?.id ? selectedConv?.user2Id : selectedConv?.user1Id;
+                    const userData = getUserData(otherUserId || '');
+                    
+                    return (
+                      <>
+                        <div className="relative">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={userData.profileImageUrl} alt={userData.displayName} />
+                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                              {userData.displayName?.charAt(0)?.toUpperCase() || 'U'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border border-background"></div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-foreground">{userData.displayName}</h3>
+                          <p className="text-sm text-muted-foreground flex items-center space-x-1">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span>Online • 📍 {userData.city}, {userData.country}</span>
+                          </p>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          userData.plan === 'creator' 
+                            ? 'bg-purple-100 text-purple-700'
+                            : userData.plan === 'traveler'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {userData.plan === 'creator' ? '⭐ Creator' : userData.plan === 'traveler' ? '✈️ Traveler' : '🆓 Free'}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
                 
                 {/* Messages */}
-                <CardContent className="flex-1 p-0 overflow-hidden">
+                <div className="flex-1 overflow-hidden">
                   <div className="h-full flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4" data-testid="div-messages-container">
+                    <div className="flex-1 overflow-y-auto px-4 py-4 bg-gradient-to-b from-slate-50/50 to-slate-100/50 dark:from-slate-800/20 dark:to-slate-900/20" data-testid="div-messages-container">
+                      <div className="space-y-3">
                       {messagesLoading ? (
                         <div className="space-y-4">
                           {[...Array(5)].map((_, i) => (
@@ -461,127 +557,175 @@ export default function Messages() {
                           ))}
                         </div>
                       ) : messages.length > 0 ? (
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           {messages.map((message: Message) => (
                             <div 
                               key={message.id} 
-                              className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+                              className={`flex items-end space-x-2 ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
                               data-testid={`div-message-${message.id}`}
                             >
+                              {/* Show avatar for received messages */}
+                              {message.fromUserId !== user?.id && (
+                                <Avatar className="w-6 h-6 mb-1">
+                                  <AvatarImage src={getUserData(message.fromUserId!).profileImageUrl} />
+                                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs">
+                                    {getUserData(message.fromUserId!).displayName?.charAt(0)?.toUpperCase() || 'U'}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                              
                               <div className={`max-w-xs lg:max-w-md space-y-1 ${
                                 message.fromUserId === user?.id 
-                                  ? 'text-right' 
-                                  : 'text-left'
+                                  ? 'text-right items-end' 
+                                  : 'text-left items-start'
                               }`}>
-                                <div className={`inline-block p-3 rounded-2xl ${
+                                {/* Message Bubble */}
+                                <div className={`inline-block px-4 py-2 relative ${
                                   message.fromUserId === user?.id 
-                                    ? 'bg-accent text-accent-foreground' 
-                                    : 'bg-muted text-muted-foreground'
+                                    ? 'bg-blue-500 text-white rounded-2xl rounded-br-md shadow-md' 
+                                    : 'bg-white dark:bg-slate-700 text-foreground rounded-2xl rounded-bl-md shadow-md border'
                                 }`}>
+                                  {/* Message tail/pointer */}
+                                  <div className={`absolute bottom-0 w-0 h-0 ${
+                                    message.fromUserId === user?.id
+                                      ? 'right-0 border-l-[12px] border-l-blue-500 border-t-[8px] border-t-transparent translate-x-2'
+                                      : 'left-0 border-r-[12px] border-r-white dark:border-r-slate-700 border-t-[8px] border-t-transparent -translate-x-2'
+                                  }`}></div>
+                                  
                                   {message.mediaUrl ? (
-                                    message.mediaType === 'video' ? (
-                                      <video controls className="max-w-full rounded">
-                                        <source src={message.mediaUrl} />
-                                      </video>
-                                    ) : (
-                                      <img 
-                                        src={message.mediaUrl} 
-                                        alt="Shared media"
-                                        className="max-w-full rounded"
-                                      />
-                                    )
-                                  ) : (
-                                    <p data-testid={`text-message-body-${message.id}`}>{message.body}</p>
-                                  )}
-                                </div>
-                                <div className="text-xs text-muted-foreground" data-testid={`text-message-time-${message.id}`}>
-                                  {formatDistanceToNow(new Date(message.createdAt!))} ago
+                                    <div className="mb-1">
+                                      {message.mediaType === 'video' ? (
+                                        <video controls className="max-w-full rounded-lg">
+                                          <source src={message.mediaUrl} />
+                                        </video>
+                                      ) : (
+                                        <img 
+                                          src={message.mediaUrl} 
+                                          alt="Shared media"
+                                          className="max-w-full rounded-lg"
+                                        />
+                                      )}
+                                    </div>
+                                  ) : null}
+                                  
+                                  <p className="text-sm leading-relaxed" data-testid={`text-message-body-${message.id}`}>
+                                    {message.body}
+                                  </p>
+                                  
+                                  <div className={`text-xs mt-1 opacity-70 ${
+                                    message.fromUserId === user?.id ? 'text-blue-100' : 'text-muted-foreground'
+                                  }`} data-testid={`text-message-time-${message.id}`}>
+                                    {formatDistanceToNow(new Date(message.createdAt!))} ago
+                                    {message.fromUserId === user?.id && (
+                                      <span className="ml-1">✓✓</span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
+                              
+                              {/* Empty space for sent messages to balance layout */}
+                              {message.fromUserId === user?.id && <div className="w-6"></div>}
                             </div>
                           ))}
-                          <div ref={messagesEndRef} />
+                          <div ref={messagesEndRef} className="h-4" />
                         </div>
                       ) : (
-                        <div className="flex-1 flex items-center justify-center text-center" data-testid="div-no-messages">
-                          <div>
-                            <MessageCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                            <h3 className="font-semibold text-foreground mb-2">Start the conversation</h3>
-                            <p className="text-muted-foreground text-sm">
-                              Send your first message to break the ice!
+                        <div className="flex-1 flex items-center justify-center text-center py-16" data-testid="div-no-messages">
+                          <div className="max-w-sm mx-auto">
+                            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                              <MessageCircle className="w-8 h-8 text-white" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-foreground mb-3">Start the conversation</h3>
+                            <p className="text-muted-foreground text-sm leading-relaxed">
+                              Send your first message to break the ice! 🚀 
+                              <br />Share your travel plans, ask questions, or just say hello.
                             </p>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Message Input */}
-                    <div className="border-t border-border p-4">
-                      <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
-                        <div className="flex-1 space-y-2">
-                          <Input
-                            placeholder="Type your message..."
-                            value={messageInput}
-                            onChange={(e) => setMessageInput(e.target.value)}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                handleSendMessage(e);
-                              }
-                            }}
-                            data-testid="input-message"
-                          />
+                      </div>
+                    </div>
+
+                    {/* Message Input - WhatsApp Style */}
+                    <div className="border-t bg-background px-4 py-3">
+                      <form onSubmit={handleSendMessage} className="flex items-end space-x-3">
+                        <div className="flex-1">
+                          <div className="relative">
+                            <Input
+                              placeholder="Type a message..."
+                              value={messageInput}
+                              onChange={(e) => setMessageInput(e.target.value)}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSendMessage(e);
+                                }
+                              }}
+                              className="rounded-3xl pl-4 pr-20 py-3 bg-accent/10 border-accent/20 focus:border-accent/50 resize-none text-sm"
+                              data-testid="input-message"
+                            />
+                            
+                            {/* Media Upload Buttons */}
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex space-x-1">
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={10 * 1024 * 1024}
+                                onGetUploadParameters={handleMediaUpload}
+                                onComplete={handleMediaComplete}
+                                buttonClassName="p-1.5 rounded-full hover:bg-accent/10 text-muted-foreground hover:text-accent transition-colors"
+                              >
+                                <Image className="w-4 h-4" />
+                              </ObjectUploader>
+
+                              <ObjectUploader
+                                maxNumberOfFiles={1}
+                                maxFileSize={50 * 1024 * 1024}
+                                onGetUploadParameters={handleMediaUpload}
+                                onComplete={handleMediaComplete}
+                                buttonClassName="p-1.5 rounded-full hover:bg-accent/10 text-muted-foreground hover:text-accent transition-colors"
+                              >
+                                <Video className="w-4 h-4" />
+                              </ObjectUploader>
+                            </div>
+                          </div>
                         </div>
                         
-                        <div className="flex space-x-1">
-                          <ObjectUploader
-                            maxNumberOfFiles={1}
-                            maxFileSize={10 * 1024 * 1024} // 10MB
-                            onGetUploadParameters={handleMediaUpload}
-                            onComplete={handleMediaComplete}
-                            buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
-                          >
-                            <Image className="w-4 h-4" />
-                          </ObjectUploader>
-
-                          <ObjectUploader
-                            maxNumberOfFiles={1}
-                            maxFileSize={50 * 1024 * 1024} // 50MB
-                            onGetUploadParameters={handleMediaUpload}
-                            onComplete={handleMediaComplete}
-                            buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
-                          >
-                            <Video className="w-4 h-4" />
-                          </ObjectUploader>
-
-                          <Button 
-                            type="submit" 
-                            size="icon"
-                            disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                            data-testid="button-send-message"
-                          >
-                            {sendMessageMutation.isPending ? (
-                              <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
-                            ) : (
-                              <Send className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
+                        <Button 
+                          type="submit" 
+                          size="icon"
+                          disabled={!messageInput.trim() || sendMessageMutation.isPending}
+                          className="rounded-full w-12 h-12 bg-blue-500 hover:bg-blue-600 text-white shadow-lg transition-all duration-200 hover:scale-105"
+                          data-testid="button-send-message"
+                        >
+                          {sendMessageMutation.isPending ? (
+                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                          ) : (
+                            <Send className="w-4 h-4" />
+                          )}
+                        </Button>
                       </form>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
             ) : (
-              <Card className="h-[600px] flex items-center justify-center" data-testid="card-no-thread-selected">
-                <CardContent className="text-center">
-                  <MessageCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Select a conversation</h3>
-                  <p className="text-muted-foreground">
-                    Choose a connect request to start messaging, or accept new requests to begin conversations.
+              <div className="h-[600px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 rounded-xl border shadow-sm" data-testid="card-no-thread-selected">
+                <div className="text-center max-w-md mx-auto p-8">
+                  <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <MessageCircle className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground mb-4">Welcome to HubLink Chat! 🚀</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                    Select a conversation from the list to start messaging with fellow travelers.
+                    <br />Accept connect requests to begin new conversations and build your travel network!
                   </p>
-                </CardContent>
-              </Card>
+                  <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Ready to connect</span>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
