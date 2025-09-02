@@ -7,7 +7,11 @@ import { Send, Image, Paperclip } from "lucide-react";
 
 interface Message {
   id: string;
-  text: string;
+  text?: string;
+  type: 'text' | 'image' | 'file';
+  fileData?: string; // base64 for images/files
+  fileName?: string;
+  fileSize?: number;
   userId: string;
   userName: string;
   userAvatar?: string;
@@ -34,6 +38,8 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Scroll to bottom
   const scrollToBottom = () => {
@@ -80,6 +86,10 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
           const newMessage: Message = {
             id: `msg-${Date.now()}-${Math.random()}`,
             text: data.text,
+            type: data.type || 'text',
+            fileData: data.fileData,
+            fileName: data.fileName,
+            fileSize: data.fileSize,
             userId: data.userId,
             userName: data.userName,
             userAvatar: data.userAvatar,
@@ -110,12 +120,19 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
     };
   }, [conversationId, user]);
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !user) return;
+  const sendMessage = async (messageData?: Partial<Message>) => {
+    if (!user) return;
+    
+    // Check if it's a text message and if it's empty
+    if (!messageData && !newMessage.trim()) return;
 
     const message: Message = {
       id: `msg-${Date.now()}-${Math.random()}`,
-      text: newMessage.trim(),
+      text: messageData?.text || newMessage.trim(),
+      type: messageData?.type || 'text',
+      fileData: messageData?.fileData,
+      fileName: messageData?.fileName,
+      fileSize: messageData?.fileSize,
       userId: user.id,
       userName: user.displayName || user.username || 'User',
       userAvatar: user.profileImageUrl || '',
@@ -132,7 +149,11 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
       wsRef.current.send(JSON.stringify({
         type: 'chat_message',
         conversationId: conversationId,
+        messageType: message.type,
         text: message.text,
+        fileData: message.fileData,
+        fileName: message.fileName,
+        fileSize: message.fileSize,
         userId: message.userId,
         userName: message.userName,
         userAvatar: message.userAvatar
@@ -140,6 +161,93 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
     }
 
     setNewMessage('');
+  };
+
+  // File upload helper function
+  const convertFileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  // Handle image upload
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size should be less than 5MB');
+      return;
+    }
+
+    try {
+      const base64Data = await convertFileToBase64(file);
+      await sendMessage({
+        type: 'image',
+        text: `📷 Image: ${file.name}`,
+        fileData: base64Data,
+        fileName: file.name,
+        fileSize: file.size
+      });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    }
+
+    // Reset file input
+    if (imageInputRef.current) {
+      imageInputRef.current.value = '';
+    }
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size should be less than 10MB');
+      return;
+    }
+
+    try {
+      const base64Data = await convertFileToBase64(file);
+      await sendMessage({
+        type: 'file',
+        text: `📎 File: ${file.name}`,
+        fileData: base64Data,
+        fileName: file.name,
+        fileSize: file.size
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert('Failed to upload file');
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -220,7 +328,42 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
                           ? 'bg-blue-500 text-white rounded-br-md'
                           : 'bg-white dark:bg-gray-800 border rounded-bl-md shadow-sm'
                       }`}>
-                        <p className="text-sm leading-relaxed break-words">{message.text}</p>
+                        {message.type === 'image' && message.fileData ? (
+                          <div className="space-y-2">
+                            <img 
+                              src={message.fileData} 
+                              alt={message.fileName || 'Shared image'}
+                              className="max-w-xs max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => window.open(message.fileData, '_blank')}
+                            />
+                            <p className="text-xs opacity-75">{message.fileName} • {message.fileSize ? formatFileSize(message.fileSize) : ''}</p>
+                          </div>
+                        ) : message.type === 'file' && message.fileData ? (
+                          <div className="space-y-2 max-w-xs">
+                            <div className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                              <Paperclip className="w-4 h-4 flex-shrink-0" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{message.fileName}</p>
+                                <p className="text-xs opacity-75">{message.fileSize ? formatFileSize(message.fileSize) : ''}</p>
+                              </div>
+                            </div>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = message.fileData!;
+                                link.download = message.fileName || 'file';
+                                link.click();
+                              }}
+                              className="w-full"
+                            >
+                              Download
+                            </Button>
+                          </div>
+                        ) : (
+                          <p className="text-sm leading-relaxed break-words">{message.text}</p>
+                        )}
                       </div>
                       <span className="text-xs text-muted-foreground px-1">
                         {new Date(message.timestamp).toLocaleTimeString('en-US', {
@@ -251,10 +394,38 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
           {/* Message Input */}
           <div className="border-t bg-background/50 p-4">
             <div className="flex items-center space-x-2">
-              <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+              {/* Hidden file inputs */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+                accept="*/*"
+              />
+              <input
+                ref={imageInputRef}
+                type="file"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+                accept="image/*"
+              />
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => fileInputRef.current?.click()}
+                title="Attach File"
+              >
                 <Paperclip className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-9 w-9 p-0 hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => imageInputRef.current?.click()}
+                title="Share Image"
+              >
                 <Image className="w-4 h-4" />
               </Button>
               <div className="flex-1 relative">
@@ -267,7 +438,7 @@ export function SimpleChat({ conversationId, otherUser }: SimpleChatProps) {
                 />
               </div>
               <Button 
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={!newMessage.trim()}
                 size="sm" 
                 className="h-9 w-9 p-0 rounded-full bg-blue-500 hover:bg-blue-600"
