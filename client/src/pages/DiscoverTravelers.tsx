@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Move, Plus, Minus } from "lucide-react";
+import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Move, Plus, Minus, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
 import Globe3D from "@/components/Globe3D";
@@ -64,6 +64,11 @@ export default function DiscoverTravelers() {
   const [selectedCity, setSelectedCity] = useState("all");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  
+  // Temporary adjustment controls
+  const [tempGlobeSize, setTempGlobeSize] = useState(1750);
+  const [tempPosition, setTempPosition] = useState({ x: 0, y: 0 });
+  const [isAdjustMode, setIsAdjustMode] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
   
@@ -476,17 +481,128 @@ export default function DiscoverTravelers() {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Temporary Globe Adjustment Controls */}
+        {isAdjustMode && (
+          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950 dark:border-orange-800">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                <Settings className="w-4 h-4" />
+                Manual Adjustment
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Size Controls */}
+              <div className="space-y-2">
+                <Label className="text-xs text-orange-700 dark:text-orange-300">Globe Size</Label>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempGlobeSize(Math.max(500, tempGlobeSize - 250))}
+                    className="flex-1 h-8 text-xs"
+                  >
+                    <Minus className="w-3 h-3" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempGlobeSize(tempGlobeSize + 250)}
+                    className="flex-1 h-8 text-xs"
+                  >
+                    <Plus className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="text-xs text-center text-muted-foreground">{tempGlobeSize}px</div>
+              </div>
+              
+              {/* Position Controls */}
+              <div className="space-y-2">
+                <Label className="text-xs text-orange-700 dark:text-orange-300">Position</Label>
+                <div className="grid grid-cols-3 gap-1">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempPosition(prev => ({...prev, y: prev.y - 50}))}
+                    className="col-start-2 h-8 text-xs"
+                  >
+                    ↑
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempPosition(prev => ({...prev, x: prev.x - 50}))}
+                    className="h-8 text-xs"
+                  >
+                    ←
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempPosition({ x: 0, y: 0 })}
+                    className="h-8 text-xs"
+                  >
+                    ⌂
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempPosition(prev => ({...prev, x: prev.x + 50}))}
+                    className="h-8 text-xs"
+                  >
+                    →
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setTempPosition(prev => ({...prev, y: prev.y + 50}))}
+                    className="col-start-2 h-8 text-xs"
+                  >
+                    ↓
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Save Position Button */}
+              <Button 
+                onClick={() => {
+                  setIsAdjustMode(false);
+                  console.log('Final Globe Settings:', { size: tempGlobeSize, position: tempPosition });
+                }}
+                className="w-full h-8 text-xs bg-orange-600 hover:bg-orange-700 text-white"
+              >
+                Fix Here (Final Position)
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
       </div>
 
-      {/* Full Screen Globe Area - Fixed Size */}
-      <div className="flex-1 relative bg-background overflow-hidden flex items-center justify-center">
-        <Globe3D 
-          users={typedUsers} 
-          width={1750} 
-          height={1750}
-          userLocation={userLocation}
-        />
+      {/* Full Screen Globe Area - Adjustable */}
+      <div className="flex-1 relative bg-background overflow-hidden">
+        <div 
+          className="absolute"
+          style={{
+            left: `calc(50% + ${tempPosition.x}px)`,
+            top: `calc(50% + ${tempPosition.y}px)`,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10
+          }}
+        >
+          {isAdjustMode && (
+            <div className="absolute -top-8 left-0 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
+              <Settings className="w-3 h-3" />
+              Adjustment Mode - Use sidebar controls
+            </div>
+          )}
+          <Globe3D 
+            users={typedUsers} 
+            width={tempGlobeSize} 
+            height={tempGlobeSize}
+            userLocation={userLocation}
+          />
+        </div>
       </div>
 
 
