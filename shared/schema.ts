@@ -336,6 +336,15 @@ export const trips = pgTable("trips", {
   tags: text("tags").array(), // "photography", "food", "culture", "nightlife", etc
   meetupLocation: text("meetup_location"), // where to meet before trip
   itinerary: jsonb("itinerary"), // detailed day-by-day plan
+  accommodations: jsonb("accommodations"), // planned stays per city/day
+  transportation: jsonb("transportation"), // flight/transport details
+  budgetBreakdown: jsonb("budget_breakdown"), // detailed budget planning
+  activities: jsonb("activities"), // planned activities per day
+  documents: text("documents").array(), // required documents/visas
+  packingList: text("packing_list").array(), // suggested packing items
+  weatherInfo: jsonb("weather_info"), // expected weather conditions
+  emergencyContacts: jsonb("emergency_contacts"), // emergency contact info
+  travelInsurance: jsonb("travel_insurance"), // insurance details
   requirements: text("requirements"), // age, experience, etc
   isPublic: boolean("is_public").default(true),
   requiresApproval: boolean("requires_approval").default(false),

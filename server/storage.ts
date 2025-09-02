@@ -343,6 +343,125 @@ const testTrips = [
     tags: ['photography', 'culture', 'art'], 
     meetupLocation: 'London Heathrow Terminal 2, Departure Gate',
     requirements: 'Photography equipment and enthusiasm for capturing memories!',
+    
+    // Professional trip planning data
+    itinerary: [
+      {
+        day: 1,
+        date: '2024-10-15',
+        city: 'London',
+        activities: [
+          { time: '08:00', title: 'Meet at Heathrow Terminal 2', type: 'transport' },
+          { time: '10:30', title: 'Flight to Paris (EuroStar)', type: 'transport' },
+          { time: '14:00', title: 'Check-in at Hotel des Grands Boulevards', type: 'accommodation' },
+          { time: '16:00', title: 'Evening photography walk - Louvre & Seine', type: 'activity' }
+        ],
+        accommodation: { name: 'Hotel des Grands Boulevards', checkIn: '14:00', checkOut: '11:00' },
+        notes: 'Bring passport and comfortable walking shoes'
+      },
+      {
+        day: 2,
+        date: '2024-10-16',
+        city: 'Paris',
+        activities: [
+          { time: '06:00', title: 'Sunrise at Eiffel Tower', type: 'activity' },
+          { time: '09:00', title: 'Photography workshop - Montmartre', type: 'activity' },
+          { time: '13:00', title: 'Lunch at local bistro', type: 'meal' },
+          { time: '15:00', title: 'Notre-Dame & Latin Quarter photo walk', type: 'activity' }
+        ],
+        accommodation: { name: 'Hotel des Grands Boulevards', staying: true },
+        notes: 'Golden hour photography session at sunset'
+      }
+    ],
+    
+    accommodations: {
+      'Paris': {
+        hotel: 'Hotel des Grands Boulevards',
+        checkIn: '2024-10-15',
+        checkOut: '2024-10-17',
+        nights: 2,
+        roomType: 'Twin/Double rooms',
+        pricePerNight: 120,
+        totalCost: 240
+      },
+      'Barcelona': {
+        hotel: 'Hotel Barcelona Center',
+        checkIn: '2024-10-17',
+        checkOut: '2024-10-25',
+        nights: 8,
+        roomType: 'Twin/Double rooms',
+        pricePerNight: 95,
+        totalCost: 760
+      }
+    },
+    
+    transportation: {
+      outbound: {
+        type: 'flight',
+        from: 'London Heathrow',
+        to: 'Barcelona El Prat',
+        date: '2024-10-15',
+        time: '10:30',
+        airline: 'British Airways',
+        flightNumber: 'BA477',
+        cost: 180
+      },
+      return: {
+        type: 'flight',
+        from: 'Barcelona El Prat',
+        to: 'London Heathrow',
+        date: '2024-10-25',
+        time: '18:45',
+        airline: 'British Airways',
+        flightNumber: 'BA478',
+        cost: 195
+      },
+      local: [
+        { city: 'Paris', type: 'Metro day pass', cost: 15 },
+        { city: 'Barcelona', type: 'Public transport pass', cost: 25 }
+      ]
+    },
+    
+    budgetBreakdown: {
+      accommodation: 1000,
+      transportation: 400,
+      meals: 350,
+      activities: 200,
+      photography: 150,
+      misc: 100,
+      total: 2200,
+      currency: 'GBP',
+      perPerson: true
+    },
+    
+    activities: {
+      photography: [
+        'Golden hour sessions at iconic landmarks',
+        'Street photography workshops',
+        'Architecture and cityscape photography',
+        'Portrait photography with locals'
+      ],
+      cultural: [
+        'Museum visits with photo permissions',
+        'Local market photography',
+        'Historical district tours',
+        'Art gallery visits'
+      ]
+    },
+    
+    documents: ['Valid passport', 'Travel insurance', 'Photography permits for certain locations'],
+    packingList: ['Camera equipment', 'Tripod', 'Extra batteries', 'Memory cards', 'Comfortable walking shoes', 'Weather-appropriate clothing'],
+    
+    weatherInfo: {
+      'Paris': { temp: '12-18°C', conditions: 'Partly cloudy, light rain possible' },
+      'Barcelona': { temp: '16-22°C', conditions: 'Mostly sunny, occasional clouds' }
+    },
+    
+    emergencyContacts: {
+      tourLeader: { name: 'Alex Thompson', phone: '+44 7700 900123' },
+      localEmergency: { paris: '112', barcelona: '112' }
+    },
+    
     isPublic: true,
     requiresApproval: false,
     status: 'planning',
