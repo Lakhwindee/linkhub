@@ -191,6 +191,8 @@ const testConnectRequests = [
 ];
 
 export class DatabaseStorage implements IStorage {
+  demoConversations: any[] = []; // Store demo conversations in memory
+  
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -338,6 +340,32 @@ export class DatabaseStorage implements IStorage {
       return existing;
     }
 
+    // Handle demo conversations in memory for demo users
+    const isDemoConversation = data.user1Id === 'demo-user-1' || 
+                              data.user2Id === 'demo-user-1' ||
+                              data.user1Id?.startsWith('test-user-') || 
+                              data.user2Id?.startsWith('test-user-');
+    
+    if (isDemoConversation) {
+      // Create mock conversation for demo
+      const mockConversation = {
+        id: `conv-${Date.now()}`,
+        user1Id: data.user1Id,
+        user2Id: data.user2Id,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastMessageAt: null,
+      };
+      
+      // Store in memory (you could use a Map or array here)
+      if (!this.demoConversations) {
+        this.demoConversations = [];
+      }
+      this.demoConversations.push(mockConversation);
+      
+      return mockConversation as Conversation;
+    }
+
     const [conversation] = await db
       .insert(conversations)
       .values(data)
@@ -346,6 +374,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConversations(userId: string): Promise<Conversation[]> {
+    // Return demo conversations for demo user
+    if (userId === 'demo-user-1') {
+      const userConversations = this.demoConversations.filter(conv => 
+        conv.user1Id === userId || conv.user2Id === userId
+      );
+      return userConversations as Conversation[];
+    }
+    
     return await db
       .select()
       .from(conversations)
@@ -359,6 +395,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversation(user1Id: string, user2Id: string): Promise<Conversation | undefined> {
+    // Check demo conversations first
+    const isDemoConversation = user1Id === 'demo-user-1' || 
+                              user2Id === 'demo-user-1' ||
+                              user1Id?.startsWith('test-user-') || 
+                              user2Id?.startsWith('test-user-');
+    
+    if (isDemoConversation) {
+      const existing = this.demoConversations.find(conv =>
+        (conv.user1Id === user1Id && conv.user2Id === user2Id) ||
+        (conv.user1Id === user2Id && conv.user2Id === user1Id)
+      );
+      return existing as Conversation | undefined;
+    }
+    
     const [conversation] = await db
       .select()
       .from(conversations)

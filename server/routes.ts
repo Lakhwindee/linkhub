@@ -166,10 +166,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If accepted, create follow relationship and conversation
       if (status === 'accepted') {
-        await storage.createFollow(request.fromUserId!, request.toUserId!);
-        await storage.createFollow(request.toUserId!, request.fromUserId!);
+        // Skip follow creation for demo users to avoid foreign key constraints
+        const isDemoRequest = request.fromUserId?.startsWith('test-user-') || 
+                             request.toUserId?.startsWith('test-user-') ||
+                             request.fromUserId === 'demo-user-1' ||
+                             request.toUserId === 'demo-user-1';
         
-        // Create conversation for messaging
+        if (!isDemoRequest) {
+          await storage.createFollow(request.fromUserId!, request.toUserId!);
+          await storage.createFollow(request.toUserId!, request.fromUserId!);
+        }
+        
+        // Always create conversation for messaging (even for demo users)
         await storage.createConversation({
           user1Id: request.fromUserId!,
           user2Id: request.toUserId!,
