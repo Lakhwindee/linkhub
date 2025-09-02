@@ -140,15 +140,20 @@ export default function DiscoverTravelers() {
     const map = L.map(mapRef.current, {
       center: [20, 0],
       zoom: 3,
-      minZoom: 3, // Higher minimum zoom to prevent going too far out
+      minZoom: 3,
       maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: true,
       worldCopyJump: false,
-      maxBounds: [[-80, -170], [80, 170]], // Tighter bounds
+      maxBounds: [[-80, -170], [80, 170]],
       maxBoundsViscosity: 1.0,
-      preferCanvas: true, // Better performance
-      zoomSnap: 0.5, // Smoother zoom levels
+      preferCanvas: true,
+      zoomSnap: 0.25, // Smoother zoom steps
+      zoomDelta: 0.5, // Smoother zoom increments
+      wheelPxPerZoomLevel: 60, // Smoother wheel zoom
+      zoomAnimation: true, // Enable zoom animations
+      fadeAnimation: true, // Enable fade animations
+      markerZoomAnimation: true, // Smooth marker animations
     });
     
     // Add globe-like styling
@@ -165,8 +170,10 @@ export default function DiscoverTravelers() {
       attribution: '© Esri',
       minZoom: 3,
       maxZoom: 18,
-      updateWhenIdle: true,
-      keepBuffer: 2,
+      updateWhenIdle: false, // Update immediately for smooth movement
+      updateWhenZooming: false, // Don't update while zooming
+      keepBuffer: 4, // Larger buffer for smoother scrolling
+      updateInterval: 50, // Faster update interval
     });
 
     // Street map layer with labels
@@ -174,8 +181,10 @@ export default function DiscoverTravelers() {
       attribution: '© OpenStreetMap contributors',
       minZoom: 3,
       maxZoom: 18,
-      updateWhenIdle: true,
-      keepBuffer: 2,
+      updateWhenIdle: false,
+      updateWhenZooming: false,
+      keepBuffer: 4,
+      updateInterval: 50,
     });
 
     // Satellite with labels overlay
@@ -184,8 +193,10 @@ export default function DiscoverTravelers() {
       minZoom: 3,
       maxZoom: 18,
       opacity: 0.8,
-      updateWhenIdle: true,
-      keepBuffer: 2,
+      updateWhenIdle: false,
+      updateWhenZooming: false,
+      keepBuffer: 4,
+      updateInterval: 50,
     });
 
     // Add default layers (satellite + labels)
