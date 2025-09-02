@@ -416,7 +416,10 @@ export default function Messages() {
                               ? 'bg-accent/20 border-l-4 border-accent shadow-sm' 
                               : 'hover:shadow-sm'
                           }`}
-                          onClick={() => setSelectedConversation(conversation.id)}
+                          onClick={() => {
+                            console.log('Conversation clicked:', conversation.id);
+                            setSelectedConversation(conversation.id);
+                          }}
                           data-testid={`card-conversation-${conversation.id}`}
                         >
                           <div className="flex items-center space-x-3">
@@ -499,7 +502,11 @@ export default function Messages() {
 
           {/* Main Chat Area */}
           <div className="lg:col-span-2">
-            {selectedConversation ? (
+            {(() => {
+              console.log('Selected conversation:', selectedConversation);
+              console.log('Conversations:', conversations);
+              return selectedConversation;
+            })() ? (
               <div className="h-[600px] flex flex-col bg-background rounded-xl border shadow-sm overflow-hidden" data-testid="card-chat-area">
                 {/* Chat Header - WhatsApp Style */}
                 <div className="bg-accent/5 border-b px-4 py-3 flex items-center space-x-3">
