@@ -124,15 +124,10 @@ export default function DiscoverTravelers() {
       scrollWheelZoom: true,
     });
 
-    // Satellite layer with labels (hybrid)
-    const satelliteBase = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    // Default satellite layer
+    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
       maxZoom: 18,
-    });
-    
-    const satelliteLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 18,
-      opacity: 0.8
     });
 
     // Street map layer
@@ -141,11 +136,16 @@ export default function DiscoverTravelers() {
       maxZoom: 18,
     });
 
-    // Create layer groups
-    const satellite = L.layerGroup([satelliteBase, satelliteLabels]);
-
     // Add default layer
     satellite.addTo(map);
+    
+    // Add simple labels overlay on top of satellite
+    const labels = L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png', {
+      opacity: 0.6,
+      maxZoom: 18,
+      subdomains: 'abcd'
+    });
+    labels.addTo(map);
 
     // Layer control
     const baseLayers = {
