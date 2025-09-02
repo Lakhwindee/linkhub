@@ -53,40 +53,39 @@ export default function Globe3D({
         setError(null);
         
         const globe = (Globe as any)()
-          // Use high-quality satellite imagery like Google Earth
-          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-          .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-          .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+          // Use Google Earth-style satellite texture
+          .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+          .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+          
+          // Dimensions and setup
+          .width(width)
+          .height(height)
+          .backgroundColor('rgba(0, 0, 30, 0.9)')
           
           // Enhanced atmosphere for realistic look
           .showAtmosphere(true)
-          .atmosphereColor('#87CEEB')
-          .atmosphereAltitude(0.1)
+          .atmosphereColor('#4FC3F7')
+          .atmosphereAltitude(0.15)
           
-          // Dimensions and basic setup
-          .width(width)
-          .height(height)
-          .backgroundColor('rgba(0, 0, 0, 0.9)')
-          
-          // Enable auto-rotation like Google Earth
+          // Enable interactions
           .enablePointerInteraction(true)
           
-          // Performance optimizations
+          // Performance settings
           .rendererConfig({ 
-            antialias: true,
+            antialias: false, // Disable for better performance
             alpha: true,
             powerPreference: 'high-performance'
           })
           
-          // User markers
+          // User markers on globe
           .pointsData(markers)
           .pointAltitude(0.01)
           .pointColor('color')
           .pointRadius('size')
-          .pointResolution(12)
+          .pointResolution(8)
           .pointsMerge(true)
           
-          // Interaction handlers
+          // Click and hover interactions
           .onPointClick((point: any) => {
             if (onUserClick && point.user) {
               onUserClick(point.user);
