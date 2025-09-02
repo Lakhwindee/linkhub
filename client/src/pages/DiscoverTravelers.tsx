@@ -475,7 +475,7 @@ export default function DiscoverTravelers() {
         </div>
 
         {/* 3D Globe */}
-        <div className="relative w-full h-[1400px] flex items-start justify-center pt-8">
+        <div className="relative w-full h-[1200px] flex items-start justify-center -mt-20">
           <Globe3D 
             users={typedUsers} 
             width={1600} 
