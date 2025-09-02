@@ -477,7 +477,7 @@ export default function DiscoverTravelers() {
         {/* 3D Globe */}
         <Card className="relative max-w-none">
           <CardContent className="p-6">
-            <div className="relative w-full h-[900px] flex items-center justify-center bg-black rounded-xl border-4 border-gray-800">
+            <div className="relative w-full h-[1000px] flex items-center justify-center bg-black rounded-xl border-4 border-gray-800">
               <Globe3D 
                 users={typedUsers} 
                 width={1100} 
