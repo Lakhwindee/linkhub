@@ -43,8 +43,8 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
             // Disable auto-rotate
             globe.controls().autoRotate = false;
             globe.controls().enableZoom = true;
-            globe.controls().minDistance = 150;
-            globe.controls().maxDistance = 800;
+            globe.controls().minDistance = 100; // Allow zooming in closer
+            globe.controls().maxDistance = 300; // Prevent zooming out beyond default view
             
             // Enable pointer interactions
             globe.controls().enableDamping = true;
