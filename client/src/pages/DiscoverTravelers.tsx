@@ -534,7 +534,11 @@ export default function DiscoverTravelers() {
 
       {/* Google Maps Integration */}
       <div className="flex-1 relative bg-background overflow-hidden">
-        <Globe3D users={typedUsers} />
+        <Globe3D 
+          users={typedUsers} 
+          selectedCountry={selectedCountry}
+          selectedCity={selectedCity}
+        />
       </div>
 
       {/* Selected User Details - Hidden for now */}
