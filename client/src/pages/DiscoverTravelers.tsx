@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
+import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Move, Plus, Minus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
 import Globe3D from "@/components/Globe3D";
@@ -66,6 +66,12 @@ export default function DiscoverTravelers() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
+  
+  // Globe positioning and sizing states
+  const [globePosition, setGlobePosition] = useState({ x: 0, y: 0 });
+  const [globeSize, setGlobeSize] = useState(1000);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -474,14 +480,68 @@ export default function DiscoverTravelers() {
           </Card>
         </div>
 
-        {/* 3D Globe */}
-        <div className="relative w-full h-[1000px] flex items-start justify-center bg-transparent -mt-16">
-          <Globe3D 
-            users={typedUsers} 
-            width={1400} 
-            height={1000}
-            userLocation={userLocation}
-          />
+        {/* Globe Size Controls */}
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setGlobeSize(Math.max(400, globeSize - 100))}
+            data-testid="button-globe-smaller"
+          >
+            <Minus className="w-4 h-4" />
+            Smaller
+          </Button>
+          <span className="text-sm text-muted-foreground">Globe Size: {globeSize}px</span>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setGlobeSize(Math.min(1600, globeSize + 100))}
+            data-testid="button-globe-larger"
+          >
+            <Plus className="w-4 h-4" />
+            Larger
+          </Button>
+        </div>
+
+        {/* 3D Globe - Draggable */}
+        <div className="relative w-full h-[1000px] bg-transparent overflow-hidden">
+          <div 
+            className="absolute cursor-move select-none"
+            style={{
+              left: `calc(50% + ${globePosition.x}px)`,
+              top: `calc(20% + ${globePosition.y}px)`,
+              transform: 'translate(-50%, -50%)',
+              zIndex: 10
+            }}
+            onMouseDown={(e) => {
+              setIsDragging(true);
+              setDragOffset({
+                x: e.clientX - globePosition.x,
+                y: e.clientY - globePosition.y
+              });
+            }}
+            onMouseMove={(e) => {
+              if (isDragging) {
+                setGlobePosition({
+                  x: e.clientX - dragOffset.x,
+                  y: e.clientY - dragOffset.y
+                });
+              }
+            }}
+            onMouseUp={() => setIsDragging(false)}
+            onMouseLeave={() => setIsDragging(false)}
+          >
+            <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+              <Move className="w-3 h-3" />
+              Drag to move
+            </div>
+            <Globe3D 
+              users={typedUsers} 
+              width={globeSize} 
+              height={globeSize}
+              userLocation={userLocation}
+            />
+          </div>
         </div>
 
 
