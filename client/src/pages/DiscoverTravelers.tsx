@@ -79,6 +79,9 @@ export default function DiscoverTravelers() {
   });
 
   console.log('Frontend users data:', users.length, users);
+  
+  // Type users data properly
+  const typedUsers = users as any[];
 
   // Load Leaflet dynamically
   useEffect(() => {
@@ -116,10 +119,12 @@ export default function DiscoverTravelers() {
   const initializeMap = () => {
     if (!mapRef.current || mapInstanceRef.current || !L) return;
 
-    // Create map
+    // Create map with zoom limits
     const map = L.map(mapRef.current, {
       center: [20, 0],
       zoom: 2,
+      minZoom: 2,
+      maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: true,
     });
@@ -127,24 +132,40 @@ export default function DiscoverTravelers() {
     // Default satellite layer
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '© Esri',
+      minZoom: 2,
       maxZoom: 18,
     });
 
-    // Street map layer
+    // Street map layer with labels
     const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
+      minZoom: 2,
       maxZoom: 18,
     });
 
-    // Add default layer
+    // Satellite with labels overlay
+    const labels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri',
+      minZoom: 2,
+      maxZoom: 18,
+      opacity: 0.8
+    });
+
+    // Add default layers (satellite + labels)
     satellite.addTo(map);
+    labels.addTo(map);
 
     // Layer control
     const baseLayers = {
       'Satellite': satellite,
       'Streets': streets,
     };
-    L.control.layers(baseLayers).addTo(map);
+    
+    const overlayLayers = {
+      'Country/City Names': labels
+    };
+    
+    L.control.layers(baseLayers, overlayLayers).addTo(map);
 
     mapInstanceRef.current = map;
 
@@ -203,17 +224,17 @@ export default function DiscoverTravelers() {
 
   // Update markers when users data changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !users.length) return;
+    if (!mapInstanceRef.current || !typedUsers.length) return;
 
     // Clear existing markers
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
     // Add user markers
-    users.forEach((user: any) => {
+    typedUsers.forEach((user: any) => {
       if (!user.lat || !user.lng || !user.showOnMap) return;
 
-      const planColors = {
+      const planColors: {[key: string]: string} = {
         free: '#9ca3af',
         traveler: '#22c55e', 
         creator: '#f97316'
@@ -253,7 +274,7 @@ export default function DiscoverTravelers() {
       marker.bindPopup(popupContent);
       markersRef.current.push(marker);
     });
-  }, [users]);
+  }, [typedUsers]);
 
   // Connect request function (global for popup buttons)
   useEffect(() => {
