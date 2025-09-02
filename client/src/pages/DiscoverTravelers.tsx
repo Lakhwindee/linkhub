@@ -11,6 +11,8 @@ import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lu
 import { useToast } from "@/hooks/use-toast";
 import Globe3D from "@/components/Globe3D";
 import type { User } from "@shared/schema";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 // Define comprehensive world countries and cities
 const COUNTRIES = [
@@ -80,6 +82,89 @@ const COUNTRIES = [
   { code: "AU", name: "Australia", lat: -25.2744, lng: 133.7751, zoom: 5 },
   { code: "NZ", name: "New Zealand", lat: -40.9006, lng: 174.8860, zoom: 6 },
 ];
+
+// Define states/provinces by country
+const STATES: Record<string, Array<{ code: string, name: string, lat: number, lng: number, zoom: number }>> = {
+  "US": [
+    { code: "CA", name: "California", lat: 36.7783, lng: -119.4179, zoom: 7 },
+    { code: "TX", name: "Texas", lat: 31.9686, lng: -99.9018, zoom: 6 },
+    { code: "FL", name: "Florida", lat: 27.7663, lng: -81.6868, zoom: 7 },
+    { code: "NY", name: "New York", lat: 42.1657, lng: -74.9481, zoom: 7 },
+    { code: "PA", name: "Pennsylvania", lat: 41.2033, lng: -77.1945, zoom: 7 },
+    { code: "IL", name: "Illinois", lat: 40.3363, lng: -89.0022, zoom: 7 },
+    { code: "OH", name: "Ohio", lat: 40.3888, lng: -82.7649, zoom: 7 },
+    { code: "GA", name: "Georgia", lat: 33.0406, lng: -83.6431, zoom: 7 },
+    { code: "NC", name: "North Carolina", lat: 35.6301, lng: -79.8064, zoom: 7 },
+    { code: "MI", name: "Michigan", lat: 43.3266, lng: -84.5361, zoom: 7 },
+    { code: "WA", name: "Washington", lat: 47.0379, lng: -121.0187, zoom: 7 },
+    { code: "CO", name: "Colorado", lat: 39.0598, lng: -105.3111, zoom: 7 },
+    { code: "AZ", name: "Arizona", lat: 33.7712, lng: -111.3877, zoom: 7 },
+    { code: "NV", name: "Nevada", lat: 38.9517, lng: -117.0542, zoom: 7 },
+    { code: "OR", name: "Oregon", lat: 44.5720, lng: -122.0709, zoom: 7 }
+  ],
+  "IN": [
+    { code: "MH", name: "Maharashtra", lat: 19.7515, lng: 75.7139, zoom: 7 },
+    { code: "DL", name: "Delhi", lat: 28.7041, lng: 77.1025, zoom: 9 },
+    { code: "KA", name: "Karnataka", lat: 15.3173, lng: 75.7139, zoom: 7 },
+    { code: "TN", name: "Tamil Nadu", lat: 11.1271, lng: 78.6569, zoom: 7 },
+    { code: "WB", name: "West Bengal", lat: 22.9868, lng: 87.8550, zoom: 7 },
+    { code: "TS", name: "Telangana", lat: 18.1124, lng: 79.0193, zoom: 8 },
+    { code: "GJ", name: "Gujarat", lat: 22.2587, lng: 71.1924, zoom: 7 },
+    { code: "RJ", name: "Rajasthan", lat: 27.0238, lng: 74.2179, zoom: 6 },
+    { code: "UP", name: "Uttar Pradesh", lat: 26.8467, lng: 80.9462, zoom: 6 },
+    { code: "MP", name: "Madhya Pradesh", lat: 22.9734, lng: 78.6569, zoom: 6 },
+    { code: "BR", name: "Bihar", lat: 25.0961, lng: 85.3131, zoom: 7 },
+    { code: "OR", name: "Odisha", lat: 20.9517, lng: 85.0985, zoom: 7 },
+    { code: "PB", name: "Punjab", lat: 31.1471, lng: 75.3412, zoom: 8 },
+    { code: "HR", name: "Haryana", lat: 29.0588, lng: 76.0856, zoom: 8 },
+    { code: "JH", name: "Jharkhand", lat: 23.6102, lng: 85.2799, zoom: 7 },
+    { code: "AS", name: "Assam", lat: 26.2006, lng: 92.9376, zoom: 7 },
+    { code: "KL", name: "Kerala", lat: 10.8505, lng: 76.2711, zoom: 8 },
+    { code: "AP", name: "Andhra Pradesh", lat: 15.9129, lng: 79.7400, zoom: 7 },
+    { code: "UK", name: "Uttarakhand", lat: 30.0668, lng: 79.0193, zoom: 8 },
+    { code: "HP", name: "Himachal Pradesh", lat: 31.1048, lng: 77.1734, zoom: 8 },
+    { code: "JK", name: "Jammu and Kashmir", lat: 34.0837, lng: 74.7973, zoom: 8 },
+    { code: "GA", name: "Goa", lat: 15.2993, lng: 74.1240, zoom: 10 }
+  ],
+  "CA": [
+    { code: "ON", name: "Ontario", lat: 51.2538, lng: -85.3232, zoom: 5 },
+    { code: "QC", name: "Quebec", lat: 53.9214, lng: -72.7665, zoom: 5 },
+    { code: "BC", name: "British Columbia", lat: 53.7267, lng: -127.6476, zoom: 5 },
+    { code: "AB", name: "Alberta", lat: 53.9333, lng: -116.5765, zoom: 6 },
+    { code: "MB", name: "Manitoba", lat: 53.7609, lng: -98.8139, zoom: 6 },
+    { code: "SK", name: "Saskatchewan", lat: 52.9399, lng: -106.4509, zoom: 6 },
+    { code: "NS", name: "Nova Scotia", lat: 44.6820, lng: -63.7443, zoom: 8 },
+    { code: "NB", name: "New Brunswick", lat: 46.5653, lng: -66.4619, zoom: 8 },
+    { code: "NL", name: "Newfoundland and Labrador", lat: 53.1355, lng: -57.6604, zoom: 6 }
+  ],
+  "GB": [
+    { code: "ENG", name: "England", lat: 52.3555, lng: -1.1743, zoom: 7 },
+    { code: "SCT", name: "Scotland", lat: 56.4907, lng: -4.2026, zoom: 7 },
+    { code: "WLS", name: "Wales", lat: 52.1307, lng: -3.7837, zoom: 8 },
+    { code: "NIR", name: "Northern Ireland", lat: 54.7877, lng: -6.4923, zoom: 8 }
+  ],
+  "AU": [
+    { code: "NSW", name: "New South Wales", lat: -31.2532, lng: 146.9211, zoom: 6 },
+    { code: "VIC", name: "Victoria", lat: -37.4713, lng: 144.7852, zoom: 7 },
+    { code: "QLD", name: "Queensland", lat: -20.9176, lng: 142.7028, zoom: 5 },
+    { code: "WA", name: "Western Australia", lat: -25.2744, lng: 133.7751, zoom: 5 },
+    { code: "SA", name: "South Australia", lat: -30.0002, lng: 136.2092, zoom: 6 },
+    { code: "TAS", name: "Tasmania", lat: -41.4545, lng: 145.9707, zoom: 8 },
+    { code: "NT", name: "Northern Territory", lat: -19.4914, lng: 132.5510, zoom: 6 },
+    { code: "ACT", name: "Australian Capital Territory", lat: -35.4735, lng: 149.0124, zoom: 10 }
+  ],
+  "BR": [
+    { code: "SP", name: "São Paulo", lat: -23.5489, lng: -46.6388, zoom: 7 },
+    { code: "RJ", name: "Rio de Janeiro", lat: -22.9068, lng: -43.1729, zoom: 8 },
+    { code: "MG", name: "Minas Gerais", lat: -18.5122, lng: -44.5550, zoom: 6 },
+    { code: "BA", name: "Bahia", lat: -12.5797, lng: -41.7007, zoom: 6 },
+    { code: "PR", name: "Paraná", lat: -24.8341, lng: -51.9253, zoom: 7 },
+    { code: "RS", name: "Rio Grande do Sul", lat: -30.0346, lng: -51.2177, zoom: 6 },
+    { code: "PE", name: "Pernambuco", lat: -8.8137, lng: -36.9541, zoom: 7 },
+    { code: "CE", name: "Ceará", lat: -5.4984, lng: -39.3206, zoom: 7 },
+    { code: "SC", name: "Santa Catarina", lat: -27.2423, lng: -50.2189, zoom: 7 }
+  ]
+};
 
 const CITIES = {
   // Europe
@@ -496,7 +581,9 @@ const CITIES = {
 
 export default function DiscoverTravelers() {
   const [selectedCountry, setSelectedCountry] = useState("all");
+  const [selectedState, setSelectedState] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
@@ -531,6 +618,12 @@ export default function DiscoverTravelers() {
 
   const handleCountryChange = (value: string) => {
     setSelectedCountry(value);
+    setSelectedState("all");
+    setSelectedCity("all");
+  };
+
+  const handleStateChange = (value: string) => {
+    setSelectedState(value);
     setSelectedCity("all");
   };
 
@@ -538,9 +631,35 @@ export default function DiscoverTravelers() {
     setSelectedCity(value);
   };
 
+  const getStatesForCountry = () => {
+    if (selectedCountry === "all") return [];
+    return STATES[selectedCountry as keyof typeof STATES] || [];
+  };
+
   const getCitiesForCountry = () => {
     if (selectedCountry === "all") return [];
     return CITIES[selectedCountry as keyof typeof CITIES] || [];
+  };
+
+  // Search functionality
+  const filterBySearch = (items: any[], searchIn: 'name' | 'code' = 'name') => {
+    if (!searchQuery.trim()) return items;
+    return items.filter(item => 
+      item[searchIn].toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (searchIn === 'name' && item.code?.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  };
+
+  const getFilteredCountries = () => {
+    return filterBySearch(COUNTRIES.filter(c => c.code !== "all"));
+  };
+
+  const getFilteredStates = () => {
+    return filterBySearch(getStatesForCountry());
+  };
+
+  const getFilteredCities = () => {
+    return filterBySearch(getCitiesForCountry());
   };
 
   if (isLoading) {
@@ -570,6 +689,27 @@ export default function DiscoverTravelers() {
           <p className="text-xs text-muted-foreground">Find and connect with travelers worldwide</p>
         </div>
 
+        {/* Search */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Search className="w-4 h-4" />
+              Search Locations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative">
+              <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search countries, states, cities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-8"
+              />
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Location Filters */}
         <Card>
           <CardHeader className="pb-3">
@@ -586,7 +726,8 @@ export default function DiscoverTravelers() {
                   <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
                 <SelectContent className="z-[9999]">
-                  {COUNTRIES.map((country) => (
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {getFilteredCountries().map((country) => (
                     <SelectItem key={country.code} value={country.code}>
                       {country.name}
                     </SelectItem>
@@ -594,6 +735,25 @@ export default function DiscoverTravelers() {
                 </SelectContent>
               </Select>
             </div>
+            
+            {selectedCountry !== "all" && getStatesForCountry().length > 0 && (
+              <div>
+                <Label className="text-xs">State/Province</Label>
+                <Select value={selectedState} onValueChange={handleStateChange}>
+                  <SelectTrigger className="h-8">
+                    <SelectValue placeholder="Select State/Province" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[9999]">
+                    <SelectItem value="all">All States/Provinces</SelectItem>
+                    {getFilteredStates().map((state: any) => (
+                      <SelectItem key={state.code} value={state.code}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             
             <div>
               <Label className="text-xs">City</Label>
@@ -603,7 +763,7 @@ export default function DiscoverTravelers() {
                 </SelectTrigger>
                 <SelectContent className="z-[9999]">
                   <SelectItem value="all">All Cities</SelectItem>
-                  {getCitiesForCountry().map((city: any) => (
+                  {getFilteredCities().map((city: any) => (
                     <SelectItem key={city.name} value={city.name}>
                       {city.name}
                     </SelectItem>
@@ -704,6 +864,7 @@ export default function DiscoverTravelers() {
         <Globe3D 
           users={typedUsers} 
           selectedCountry={selectedCountry}
+          selectedState={selectedState}
           selectedCity={selectedCity}
         />
       </div>

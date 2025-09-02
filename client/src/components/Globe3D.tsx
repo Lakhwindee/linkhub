@@ -15,6 +15,7 @@ interface Globe3DProps {
   height?: number;
   onUserClick?: (user: User) => void;
   selectedCountry?: string;
+  selectedState?: string;
   selectedCity?: string;
 }
 
@@ -24,6 +25,7 @@ export default function Globe3D({
   height = 600, 
   onUserClick,
   selectedCountry,
+  selectedState,
   selectedCity 
 }: Globe3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -338,6 +340,89 @@ export default function Globe3D({
           'MA': { lat: 31.7917, lng: -7.0926, zoom: 6 },
           'GH': { lat: 7.9465, lng: -1.0232, zoom: 7 },
           'NZ': { lat: -40.9006, lng: 174.8860, zoom: 6 }
+        };
+        
+        // States/provinces coordinates for hierarchical zoom
+        const stateCoords: Record<string, Record<string, { lat: number, lng: number, zoom: number }>> = {
+          "US": {
+            "CA": { lat: 36.7783, lng: -119.4179, zoom: 7 },
+            "TX": { lat: 31.9686, lng: -99.9018, zoom: 6 },
+            "FL": { lat: 27.7663, lng: -81.6868, zoom: 7 },
+            "NY": { lat: 42.1657, lng: -74.9481, zoom: 7 },
+            "PA": { lat: 41.2033, lng: -77.1945, zoom: 7 },
+            "IL": { lat: 40.3363, lng: -89.0022, zoom: 7 },
+            "OH": { lat: 40.3888, lng: -82.7649, zoom: 7 },
+            "GA": { lat: 33.0406, lng: -83.6431, zoom: 7 },
+            "NC": { lat: 35.6301, lng: -79.8064, zoom: 7 },
+            "MI": { lat: 43.3266, lng: -84.5361, zoom: 7 },
+            "WA": { lat: 47.0379, lng: -121.0187, zoom: 7 },
+            "CO": { lat: 39.0598, lng: -105.3111, zoom: 7 },
+            "AZ": { lat: 33.7712, lng: -111.3877, zoom: 7 },
+            "NV": { lat: 38.9517, lng: -117.0542, zoom: 7 },
+            "OR": { lat: 44.5720, lng: -122.0709, zoom: 7 }
+          },
+          "IN": {
+            "MH": { lat: 19.7515, lng: 75.7139, zoom: 7 },
+            "DL": { lat: 28.7041, lng: 77.1025, zoom: 9 },
+            "KA": { lat: 15.3173, lng: 75.7139, zoom: 7 },
+            "TN": { lat: 11.1271, lng: 78.6569, zoom: 7 },
+            "WB": { lat: 22.9868, lng: 87.8550, zoom: 7 },
+            "TS": { lat: 18.1124, lng: 79.0193, zoom: 8 },
+            "GJ": { lat: 22.2587, lng: 71.1924, zoom: 7 },
+            "RJ": { lat: 27.0238, lng: 74.2179, zoom: 6 },
+            "UP": { lat: 26.8467, lng: 80.9462, zoom: 6 },
+            "MP": { lat: 22.9734, lng: 78.6569, zoom: 6 },
+            "BR": { lat: 25.0961, lng: 85.3131, zoom: 7 },
+            "OR": { lat: 20.9517, lng: 85.0985, zoom: 7 },
+            "PB": { lat: 31.1471, lng: 75.3412, zoom: 8 },
+            "HR": { lat: 29.0588, lng: 76.0856, zoom: 8 },
+            "JH": { lat: 23.6102, lng: 85.2799, zoom: 7 },
+            "AS": { lat: 26.2006, lng: 92.9376, zoom: 7 },
+            "KL": { lat: 10.8505, lng: 76.2711, zoom: 8 },
+            "AP": { lat: 15.9129, lng: 79.7400, zoom: 7 },
+            "UK": { lat: 30.0668, lng: 79.0193, zoom: 8 },
+            "HP": { lat: 31.1048, lng: 77.1734, zoom: 8 },
+            "JK": { lat: 34.0837, lng: 74.7973, zoom: 8 },
+            "GA": { lat: 15.2993, lng: 74.1240, zoom: 10 }
+          },
+          "CA": {
+            "ON": { lat: 51.2538, lng: -85.3232, zoom: 5 },
+            "QC": { lat: 53.9214, lng: -72.7665, zoom: 5 },
+            "BC": { lat: 53.7267, lng: -127.6476, zoom: 5 },
+            "AB": { lat: 53.9333, lng: -116.5765, zoom: 6 },
+            "MB": { lat: 53.7609, lng: -98.8139, zoom: 6 },
+            "SK": { lat: 52.9399, lng: -106.4509, zoom: 6 },
+            "NS": { lat: 44.6820, lng: -63.7443, zoom: 8 },
+            "NB": { lat: 46.5653, lng: -66.4619, zoom: 8 },
+            "NL": { lat: 53.1355, lng: -57.6604, zoom: 6 }
+          },
+          "AU": {
+            "NSW": { lat: -31.2532, lng: 146.9211, zoom: 6 },
+            "VIC": { lat: -37.4713, lng: 144.7852, zoom: 7 },
+            "QLD": { lat: -20.9176, lng: 142.7028, zoom: 5 },
+            "WA": { lat: -25.2744, lng: 133.7751, zoom: 5 },
+            "SA": { lat: -30.0002, lng: 136.2092, zoom: 6 },
+            "TAS": { lat: -41.4545, lng: 145.9707, zoom: 8 },
+            "NT": { lat: -19.4914, lng: 132.5510, zoom: 6 },
+            "ACT": { lat: -35.4735, lng: 149.0124, zoom: 10 }
+          },
+          "BR": {
+            "SP": { lat: -23.5489, lng: -46.6388, zoom: 7 },
+            "RJ": { lat: -22.9068, lng: -43.1729, zoom: 8 },
+            "MG": { lat: -18.5122, lng: -44.5550, zoom: 6 },
+            "BA": { lat: -12.5797, lng: -41.7007, zoom: 6 },
+            "PR": { lat: -24.8341, lng: -51.9253, zoom: 7 },
+            "RS": { lat: -30.0346, lng: -51.2177, zoom: 6 },
+            "PE": { lat: -8.8137, lng: -36.9541, zoom: 7 },
+            "CE": { lat: -5.4984, lng: -39.3206, zoom: 7 },
+            "SC": { lat: -27.2423, lng: -50.2189, zoom: 7 }
+          },
+          "GB": {
+            "ENG": { lat: 52.3555, lng: -1.1743, zoom: 7 },
+            "SCT": { lat: 56.4907, lng: -4.2026, zoom: 7 },
+            "WLS": { lat: 52.1307, lng: -3.7837, zoom: 8 },
+            "NIR": { lat: 54.7877, lng: -6.4923, zoom: 8 }
+          }
         };
         
         // Comprehensive city coordinates for zoom functionality matching DiscoverTravelers CITIES data
@@ -845,8 +930,10 @@ export default function Globe3D({
           }
         };
         
+        // Hierarchical zoom: City (highest priority) > State > Country
+        
         if (selectedCity && selectedCity !== 'all') {
-          // Zoom to specific city
+          // Priority 1: Zoom to specific city
           const cityCoord = cityCoords[selectedCountry]?.[selectedCity];
           
           if (cityCoord) {
@@ -857,7 +944,19 @@ export default function Globe3D({
           }
         }
         
-        // Zoom to country
+        if (selectedState && selectedState !== 'all') {
+          // Priority 2: Zoom to specific state/province
+          const stateCoord = stateCoords[selectedCountry]?.[selectedState];
+          
+          if (stateCoord) {
+            map.panTo({ lat: stateCoord.lat, lng: stateCoord.lng });
+            map.setZoom(stateCoord.zoom);
+            map.setTilt(30); // Medium 3D effect for state view
+            return;
+          }
+        }
+        
+        // Priority 3: Zoom to country
         const coords = countryCoords[selectedCountry];
         if (coords) {
           map.panTo({ lat: coords.lat, lng: coords.lng });
@@ -871,7 +970,7 @@ export default function Globe3D({
         map.setTilt(0);
       }
     }
-  }, [selectedCountry, selectedCity, isLoading]);
+  }, [selectedCountry, selectedState, selectedCity, isLoading]);
 
 
   if (error) {
