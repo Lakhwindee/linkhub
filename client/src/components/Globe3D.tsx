@@ -989,7 +989,14 @@ export default function Globe3D({
   }
 
   return (
-    <div className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-white/10">
+    <div 
+      className="relative w-full bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-white/10"
+      style={{ 
+        width: typeof width === 'string' ? width : `${width}px`,
+        height: `${height}px`,
+        minHeight: '400px'
+      }}
+    >
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm z-10">
           <div className="animate-spin w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full mb-4"></div>
@@ -1002,7 +1009,8 @@ export default function Globe3D({
         ref={mapRef} 
         className="w-full h-full"
         style={{ 
-          minHeight: '500px',
+          minHeight: '400px',
+          height: '100%',
           opacity: isLoading ? 0.3 : 1,
           transition: 'opacity 0.5s ease-in-out'
         }}

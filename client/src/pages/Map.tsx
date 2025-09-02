@@ -51,8 +51,8 @@ export default function Map() {
     return true;
   });
 
-  const globeWidth = isFullscreen ? window.innerWidth - 100 : 800;
-  const globeHeight = isFullscreen ? window.innerHeight - 200 : 600;
+  const globeWidth = isFullscreen ? window.innerWidth - 50 : '100%';
+  const globeHeight = isFullscreen ? window.innerHeight - 100 : 500;
 
   if (isLoading) {
     return (
@@ -202,15 +202,17 @@ export default function Map() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 flex items-center justify-center bg-slate-50 dark:bg-slate-900 rounded-lg">
-                    <Globe3D
-                      users={filteredUsers}
-                      width={globeWidth}
-                      height={globeHeight}
-                      onUserClick={handleUserClick}
-                      selectedCountry={selectedCountry}
-                      selectedCity={selectedCity}
-                    />
+                  <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                    <div className="w-full" style={{ minHeight: '500px' }}>
+                      <Globe3D
+                        users={filteredUsers}
+                        width={globeWidth}
+                        height={globeHeight}
+                        onUserClick={handleUserClick}
+                        selectedCountry={selectedCountry}
+                        selectedCity={selectedCity}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
