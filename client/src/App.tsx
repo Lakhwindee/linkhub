@@ -19,6 +19,7 @@ import Admin from "@/pages/Admin";
 import Subscribe from "@/pages/Subscribe";
 import Events from "@/pages/Events";
 import Billing from "@/pages/Billing";
+import Map from "@/pages/Map";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -54,6 +55,7 @@ function Router() {
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
+              <Route path="/map" component={Map} />
             </>
           )}
           <Route component={NotFound} />
