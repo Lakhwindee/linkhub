@@ -243,7 +243,6 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
             script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
             script.onload = () => {
               L = (window as any).L;
-              // Don't call initializeMap here, let the userLocation effect handle it
             };
             script.onerror = () => {
               console.error('Failed to load Leaflet');
@@ -261,22 +260,28 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     loadLeaflet();
   }, []);
 
-  // Initialize map when userLocation is available (only once)
+  // Initialize map when conditions are met (only once)
   useEffect(() => {
-    if (userLocation && L && mapRef.current && !mapInstanceRef.current) {
-      initializeMap();
+    if (L && mapRef.current && !mapInstanceRef.current) {
+      // Small delay to ensure DOM stability
+      const timer = setTimeout(() => {
+        if (mapRef.current && !mapInstanceRef.current) {
+          initializeMap();
+        }
+      }, 200);
+      return () => clearTimeout(timer);
     }
-  }, [userLocation]);
+  }, [L]);
 
-  // Get user's location
+  // Get user's location (simplified)
   useEffect(() => {
-    if (navigator.geolocation) {
+    if (navigator.geolocation && !userLocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setUserLocation([position.coords.latitude, position.coords.longitude]);
         },
         (error) => {
-          console.error("Geolocation error:", error);
+          console.warn("Geolocation error:", error);
           // Default to London
           setUserLocation([51.5074, -0.1278]);
         }
