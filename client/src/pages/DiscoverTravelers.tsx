@@ -74,7 +74,20 @@ export default function DiscoverTravelers() {
 
   // Fetch users based on location and filters
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["/api/discover", selectedCountry, selectedCity, userLocation],
+    queryKey: ["/api/discover"],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (selectedCountry !== "all") params.append("country", selectedCountry);
+      if (selectedCity !== "all") params.append("city", selectedCity);
+      if (userLocation) {
+        params.append("lat", userLocation[0].toString());
+        params.append("lng", userLocation[1].toString());
+      }
+      
+      const response = await fetch(`/api/discover?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch users');
+      return response.json();
+    },
     enabled: true,
   });
 
@@ -119,7 +132,7 @@ export default function DiscoverTravelers() {
   const initializeMap = () => {
     if (!mapRef.current || mapInstanceRef.current || !L) return;
 
-    // Create map with zoom limits
+    // Create map with zoom limits and globe-like appearance
     const map = L.map(mapRef.current, {
       center: [20, 0],
       zoom: 2,
@@ -127,7 +140,18 @@ export default function DiscoverTravelers() {
       maxZoom: 18,
       zoomControl: true,
       scrollWheelZoom: true,
+      worldCopyJump: true,
+      maxBounds: [[-85, -180], [85, 180]],
     });
+    
+    // Add globe-like styling
+    if (mapRef.current) {
+      mapRef.current.style.borderRadius = '50%';
+      mapRef.current.style.overflow = 'hidden';
+      mapRef.current.style.boxShadow = '0 0 50px rgba(0,0,0,0.3), inset 0 0 100px rgba(0,0,0,0.1)';
+      mapRef.current.style.border = '3px solid rgba(255,255,255,0.1)';
+      mapRef.current.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+    }
 
     // Default satellite layer
     const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -452,11 +476,18 @@ export default function DiscoverTravelers() {
         {/* Map */}
         <Card className="relative">
           <CardContent className="p-0">
-            <div 
-              ref={mapRef} 
-              className="w-full h-[500px] rounded-lg relative z-0"
-              style={{ minHeight: '500px' }}
-            />
+            <div className="relative w-full h-[500px] flex items-center justify-center">
+              <div 
+                ref={mapRef} 
+                className="relative z-0"
+                style={{ 
+                  width: '500px', 
+                  height: '500px',
+                  borderRadius: '50%',
+                  overflow: 'hidden'
+                }}
+              />
+            </div>
           </CardContent>
         </Card>
 
