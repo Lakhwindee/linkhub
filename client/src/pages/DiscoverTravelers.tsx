@@ -479,8 +479,8 @@ export default function DiscoverTravelers() {
 
       </div>
 
-      {/* Full Screen Globe Area - Properly Centered */}
-      <div className="flex-1 min-h-screen bg-background flex items-center justify-center">
+      {/* Full Screen Globe Area - Positioned Higher */}
+      <div className="flex-1 min-h-screen bg-background flex items-start justify-center pt-8">
         <div className="flex items-center justify-center">
           <Globe3D 
             users={typedUsers} 
