@@ -37,21 +37,33 @@ export default function Globe3D({
   useEffect(() => {
     const loadGoogleMaps = () => {
       if (window.google && window.google.maps) {
+        console.log('Google Maps already loaded');
         setIsGoogleMapsLoaded(true);
         return;
       }
 
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      console.log('Loading Google Maps API with key:', apiKey ? 'API key found' : 'NO API KEY');
+      
+      if (!apiKey) {
+        setError('Google Maps API key not found. Please check environment variables.');
+        setIsLoading(false);
+        return;
+      }
+
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''}&map_ids=8e0a97af9386fef&libraries=geometry,places&callback=initGoogleMaps`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=geometry,places&callback=initGoogleMaps`;
       script.async = true;
       script.defer = true;
 
       window.initGoogleMaps = () => {
+        console.log('Google Maps API loaded successfully');
         setIsGoogleMapsLoaded(true);
       };
 
-      script.onerror = () => {
-        setError('Failed to load Google Maps API');
+      script.onerror = (error) => {
+        console.error('Failed to load Google Maps API:', error);
+        setError('Failed to load Google Maps API. Please check your internet connection.');
         setIsLoading(false);
       };
 
@@ -70,14 +82,11 @@ export default function Globe3D({
         setIsLoading(true);
         setError(null);
         
-        // Initialize Google Maps with 3D satellite view
+        // Initialize Google Maps with satellite view
         const map = new window.google.maps.Map(mapRef.current, {
           zoom: 2,
           center: { lat: 20, lng: 0 },
-          mapTypeId: 'satellite', // Satellite imagery like Google Earth
-          tilt: 45, // 3D perspective
-          heading: 0,
-          mapId: '8e0a97af9386fef', // Vector map for 3D buildings
+          mapTypeId: 'hybrid', // Hybrid mode shows satellite + labels
           
           // Enhanced controls
           gestureHandling: 'greedy',
@@ -88,18 +97,30 @@ export default function Globe3D({
           rotateControl: true,
           fullscreenControl: true,
           
-          // Styling
-          styles: [
-            {
-              featureType: 'all',
-              elementType: 'geometry.fill',
-              stylers: [{ saturation: 20 }, { lightness: -10 }]
-            }
-          ],
-          
-          // Enable 3D buildings
+          // Better map options
           mapTypeControlOptions: {
-            mapTypeIds: ['satellite', 'hybrid', 'terrain']
+            mapTypeIds: ['satellite', 'hybrid', 'terrain', 'roadmap']
+          },
+          
+          // Enable tilt and rotation for 3D effect
+          tilt: 0, // Start flat, user can tilt
+          restriction: {
+            latLngBounds: {
+              north: 85,
+              south: -85,
+              west: -180,
+              east: 180
+            }
+          }
+        });
+        
+        // Enable 3D tilt on zoom
+        map.addListener('zoom_changed', () => {
+          const zoom = map.getZoom();
+          if (zoom && zoom > 15) {
+            map.setTilt(45); // Enable 3D view at high zoom
+          } else {
+            map.setTilt(0);
           }
         });
         
