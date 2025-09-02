@@ -357,6 +357,21 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     }
   }, [users, onUserSelect]);
 
+  // Debug loading state
+  if (!L || !userLocation) {
+    return (
+      <div className={`${height} w-full flex items-center justify-center bg-muted border border-border rounded-lg`}>
+        <div className="text-center space-y-2">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="text-sm text-muted-foreground">Loading interactive map...</p>
+          <p className="text-xs text-muted-foreground">
+            {!L ? "Loading Leaflet library..." : !userLocation ? "Getting your location..." : ""}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Show search/selection controls only if no external center/zoom control is provided */}
