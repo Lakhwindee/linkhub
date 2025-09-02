@@ -1,12 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function Landing() {
+  const [showLogin, setShowLogin] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
   const handleDemoLogin = () => {
     localStorage.setItem('hublink_demo_user', 'true');
     window.location.reload();
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Test credentials
+    if (username === 'test' && password === 'password') {
+      localStorage.setItem('hublink_demo_user', 'true');
+      window.location.reload();
+    } else {
+      alert('Invalid credentials! Use: test / password');
+    }
   };
   const features = [
     {
@@ -149,17 +167,59 @@ export default function Landing() {
               </div>
 
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
-                    Try Demo (Free)
-                  </Button>
-                  <Button size="lg" variant="outline" className="px-8 py-4" data-testid="button-learn-more">
-                    Learn More
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground" data-testid="text-pricing-summary">
-                  Free to browse • £25/mo for travelers • £45/mo for creators
-                </p>
+                {!showLogin ? (
+                  <>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Button size="lg" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
+                        Try Demo (Free)
+                      </Button>
+                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={() => setShowLogin(true)} data-testid="button-login">
+                        Login with Test ID
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground" data-testid="text-pricing-summary">
+                      Free to browse • £25/mo for travelers • £45/mo for creators
+                    </p>
+                  </>
+                ) : (
+                  <Card className="p-6 max-w-md">
+                    <form onSubmit={handleLogin} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="test"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          data-testid="input-username"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input
+                          id="password"
+                          type="password"
+                          placeholder="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          data-testid="input-password"
+                        />
+                      </div>
+                      <div className="flex gap-4">
+                        <Button type="submit" className="flex-1" data-testid="button-submit-login">
+                          Login
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setShowLogin(false)} data-testid="button-back">
+                          Back
+                        </Button>
+                      </div>
+                      <p className="text-sm text-muted-foreground text-center">
+                        Test credentials: <strong>test</strong> / <strong>password</strong>
+                      </p>
+                    </form>
+                  </Card>
+                )}
               </div>
 
               <div className="flex items-center space-x-8">
