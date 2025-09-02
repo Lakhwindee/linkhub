@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
+import Globe3D from "@/components/Globe3D";
 
 // Define available countries and cities
 const COUNTRIES = [
@@ -473,19 +474,15 @@ export default function DiscoverTravelers() {
           </Card>
         </div>
 
-        {/* Map */}
+        {/* 3D Globe */}
         <Card className="relative">
-          <CardContent className="p-0">
-            <div className="relative w-full h-[500px] flex items-center justify-center">
-              <div 
-                ref={mapRef} 
-                className="relative z-0"
-                style={{ 
-                  width: '500px', 
-                  height: '500px',
-                  borderRadius: '50%',
-                  overflow: 'hidden'
-                }}
+          <CardContent className="p-4">
+            <div className="relative w-full h-[500px] flex items-center justify-center bg-black rounded-lg">
+              <Globe3D 
+                users={typedUsers} 
+                width={500} 
+                height={500}
+                userLocation={userLocation}
               />
             </div>
           </CardContent>
