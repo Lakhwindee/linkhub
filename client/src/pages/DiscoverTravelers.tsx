@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Move, Plus, Minus, Settings } from "lucide-react";
+import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@shared/schema";
 import Globe3D from "@/components/Globe3D";
@@ -65,10 +65,6 @@ export default function DiscoverTravelers() {
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
-  // Temporary adjustment controls
-  const [tempGlobeSize, setTempGlobeSize] = useState(1750);
-  const [tempPosition, setTempPosition] = useState({ x: 0, y: 0 });
-  const [isAdjustMode, setIsAdjustMode] = useState(true);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [currentLayer, setCurrentLayer] = useState<"satellite" | "streets">("satellite");
   
@@ -241,7 +237,7 @@ export default function DiscoverTravelers() {
     if (!mapInstanceRef.current) return;
 
     if (selectedCity !== "all" && selectedCountry !== "all") {
-      const city = CITIES[selectedCountry]?.find(c => c.name === selectedCity);
+      const city = CITIES[selectedCountry as keyof typeof CITIES]?.find((c: any) => c.name === selectedCity);
       if (city) {
         mapInstanceRef.current.setView([city.lat, city.lng], city.zoom);
       }
@@ -325,7 +321,7 @@ export default function DiscoverTravelers() {
 
   const getCitiesForCountry = () => {
     if (selectedCountry === "all") return [];
-    return CITIES[selectedCountry] || [];
+    return CITIES[selectedCountry as keyof typeof CITIES] || [];
   };
 
   if (!L) {
@@ -388,7 +384,7 @@ export default function DiscoverTravelers() {
                 </SelectTrigger>
                 <SelectContent className="z-[9999]">
                   <SelectItem value="all">All Cities</SelectItem>
-                  {getCitiesForCountry().map((city) => (
+                  {getCitiesForCountry().map((city: any) => (
                     <SelectItem key={city.name} value={city.name}>
                       {city.name}
                     </SelectItem>
@@ -441,14 +437,14 @@ export default function DiscoverTravelers() {
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     Travelers
                   </span>
-                  <span>{users.filter(u => u.plan === 'traveler').length}</span>
+                  <span>{users.filter((u: any) => u.plan === 'traveler').length}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
                     Creators
                   </span>
-                  <span>{users.filter(u => u.plan === 'creator').length}</span>
+                  <span>{users.filter((u: any) => u.plan === 'creator').length}</span>
                 </div>
               </div>
             </div>
@@ -481,133 +477,31 @@ export default function DiscoverTravelers() {
             </div>
           </CardContent>
         </Card>
-        
-        {/* Temporary Globe Adjustment Controls */}
-        {isAdjustMode && (
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950 dark:border-orange-800">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm flex items-center gap-2 text-orange-700 dark:text-orange-300">
-                <Settings className="w-4 h-4" />
-                Manual Adjustment
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Size Controls */}
-              <div className="space-y-2">
-                <Label className="text-xs text-orange-700 dark:text-orange-300">Globe Size</Label>
-                <div className="flex gap-1">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempGlobeSize(Math.max(500, tempGlobeSize - 250))}
-                    className="flex-1 h-8 text-xs"
-                  >
-                    <Minus className="w-3 h-3" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempGlobeSize(tempGlobeSize + 250)}
-                    className="flex-1 h-8 text-xs"
-                  >
-                    <Plus className="w-3 h-3" />
-                  </Button>
-                </div>
-                <div className="text-xs text-center text-muted-foreground">{tempGlobeSize}px</div>
-              </div>
-              
-              {/* Position Controls */}
-              <div className="space-y-2">
-                <Label className="text-xs text-orange-700 dark:text-orange-300">Position</Label>
-                <div className="grid grid-cols-3 gap-1">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempPosition(prev => ({...prev, y: prev.y - 50}))}
-                    className="col-start-2 h-8 text-xs"
-                  >
-                    ↑
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempPosition(prev => ({...prev, x: prev.x - 50}))}
-                    className="h-8 text-xs"
-                  >
-                    ←
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempPosition({ x: 0, y: 0 })}
-                    className="h-8 text-xs"
-                  >
-                    ⌂
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempPosition(prev => ({...prev, x: prev.x + 50}))}
-                    className="h-8 text-xs"
-                  >
-                    →
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setTempPosition(prev => ({...prev, y: prev.y + 50}))}
-                    className="col-start-2 h-8 text-xs"
-                  >
-                    ↓
-                  </Button>
-                </div>
-              </div>
-              
-              {/* Save Position Button */}
-              <Button 
-                onClick={() => {
-                  setIsAdjustMode(false);
-                  console.log('Final Globe Settings:', { size: tempGlobeSize, position: tempPosition });
-                }}
-                className="w-full h-8 text-xs bg-orange-600 hover:bg-orange-700 text-white"
-              >
-                Fix Here (Final Position)
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
       </div>
 
-      {/* Full Screen Globe Area - Adjustable */}
+      {/* Full Screen Map Area */}
       <div className="flex-1 relative bg-background overflow-hidden">
         <div 
           className="absolute"
           style={{
-            left: `calc(50% + ${tempPosition.x}px)`,
-            top: `calc(50% + ${tempPosition.y}px)`,
+            left: '50%',
+            top: '50%',
             transform: 'translate(-50%, -50%)',
             zIndex: 10
           }}
         >
-          {isAdjustMode && (
-            <div className="absolute -top-8 left-0 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 font-medium">
-              <Settings className="w-3 h-3" />
-              Adjustment Mode - Use sidebar controls
-            </div>
-          )}
-          <Globe3D 
-            users={typedUsers} 
-            width={tempGlobeSize} 
-            height={tempGlobeSize}
-            userLocation={userLocation}
+          {/* Map Container */}
+          <div 
+            ref={mapRef} 
+            className="w-[600px] h-[600px] rounded-full shadow-2xl border-4 border-white/20"
+            data-testid="discovery-map"
           />
         </div>
       </div>
 
-
-
-        {/* Selected User Details */}
+      {/* Selected User Details - Hidden for now */}
+      <div className="hidden">
         {selectedUser && (
           <Card>
             <CardHeader>
@@ -619,14 +513,14 @@ export default function DiscoverTravelers() {
             <CardContent>
               <div className="flex items-center gap-4">
                 <Avatar className="w-16 h-16">
-                  <AvatarImage src={selectedUser.profileImageUrl} />
-                  <AvatarFallback>{selectedUser.displayName?.[0] || selectedUser.username[0]}</AvatarFallback>
+                  <AvatarImage src={selectedUser?.profileImageUrl || undefined} />
+                  <AvatarFallback>{selectedUser?.displayName?.[0] || selectedUser?.username?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <h3 className="font-semibold">{selectedUser.displayName || selectedUser.username}</h3>
-                  <p className="text-sm text-muted-foreground">📍 {selectedUser.city}, {selectedUser.country}</p>
+                  <h3 className="font-semibold">{selectedUser?.displayName || selectedUser?.username}</h3>
+                  <p className="text-sm text-muted-foreground">📍 {selectedUser?.city}, {selectedUser?.country}</p>
                   <div className="flex gap-2 mt-2">
-                    {selectedUser.interests?.map((interest) => (
+                    {selectedUser?.interests?.map((interest) => (
                       <Badge key={interest} variant="outline" className="text-xs">
                         {interest}
                       </Badge>
@@ -647,6 +541,7 @@ export default function DiscoverTravelers() {
             </CardContent>
           </Card>
         )}
+      </div>
 
     </div>
   );
