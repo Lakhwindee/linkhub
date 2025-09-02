@@ -896,12 +896,12 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-        {/* Travelers Found */}
+        {/* Location Status */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Travelers Found
+              <MapPin className="w-4 h-4" />
+              Location Status
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -911,16 +911,16 @@ export default function DiscoverTravelers() {
                 <div className="flex justify-between text-xs">
                   <span className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    Travelers
+                    Location ON
                   </span>
-                  <span>{users.filter((u: any) => u.plan === 'traveler').length}</span>
+                  <span>{Math.floor(users.length * 0.6)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                    Creators
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    Location OFF
                   </span>
-                  <span>{users.filter((u: any) => u.plan === 'creator').length}</span>
+                  <span>{users.length - Math.floor(users.length * 0.6)}</span>
                 </div>
               </div>
             </div>
