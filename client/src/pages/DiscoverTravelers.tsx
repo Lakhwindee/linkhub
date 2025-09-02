@@ -927,32 +927,6 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-        {/* Quick Stats */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Quick Stats</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span>Countries</span>
-                <Badge variant="secondary">{COUNTRIES.length - 1}</Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>States</span>
-                <Badge variant="secondary">
-                  {Object.values(STATES).reduce((acc, states) => acc + states.length, 0)}
-                </Badge>
-              </div>
-              <div className="flex justify-between">
-                <span>Online</span>
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {Math.floor(users.length * 0.7)}
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
       </div>
 
