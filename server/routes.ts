@@ -166,7 +166,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { requestId } = req.params;
       const { status } = req.body;
       
+      console.log('Connect request update:', { userId, requestId, status });
+      
+      // Validate request
+      if (!requestId || !status) {
+        return res.status(400).json({ message: "Missing requestId or status" });
+      }
+      
+      if (!['accepted', 'declined'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'accepted' or 'declined'" });
+      }
+      
       const request = await storage.updateConnectRequestStatus(requestId, status);
+      console.log('Updated request:', request);
       
       // If accepted, create follow relationship and conversation
       if (status === 'accepted') {

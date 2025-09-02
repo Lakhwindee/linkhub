@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FirebaseChat } from "@/components/FirebaseChat";
+import { SimpleChat } from "@/components/SimpleChat";
 import { MessageCircle, Users, UserPlus, UserCheck, UserX, Search } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
@@ -111,13 +111,16 @@ export default function Messages() {
   // Accept/Decline connect request mutation
   const updateRequestMutation = useMutation({
     mutationFn: async ({ requestId, status }: { requestId: string; status: 'accepted' | 'declined' }) => {
-      return apiRequest(`/api/connect/${requestId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
-      });
+      console.log('Updating request:', { requestId, status });
+      
+      const response = await apiRequest('PATCH', `/api/connect/${requestId}`, { status });
+      
+      console.log('Request update response:', response);
+      return response;
     },
-    onSuccess: (_, { status }) => {
+    onSuccess: (data, { status }) => {
+      console.log('Request updated successfully:', data);
+      
       queryClient.invalidateQueries({ queryKey: ["/api/connect-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       
@@ -129,11 +132,17 @@ export default function Messages() {
         variant: status === 'accepted' ? "default" : "destructive",
       });
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Failed to update request:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response,
+        stack: error.stack
+      });
+      
       toast({
         title: "Error",
-        description: "Failed to update request. Please try again.",
+        description: error.message || "Failed to update request. Please try again.",
         variant: "destructive",
       });
     }
@@ -346,7 +355,7 @@ export default function Messages() {
               const userData = getUserData(otherUserId || '');
               
               return (
-                <FirebaseChat
+                <SimpleChat
                   conversationId={selectedConversation}
                   otherUser={{
                     id: otherUserId || '',

@@ -128,10 +128,13 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Demo mode bypass - check if it's a demo authentication request
+  // Demo mode bypass - check multiple ways for demo authentication
   if (process.env.NODE_ENV === 'development') {
     const demoUserHeader = req.headers['x-demo-user'];
-    if (demoUserHeader === 'true') {
+    const cookies = req.headers.cookie || '';
+    const hasDemoSession = cookies.includes('session_id=demo-session');
+    
+    if (demoUserHeader === 'true' || hasDemoSession) {
       // Create mock user session for demo
       req.user = {
         claims: { 
@@ -141,6 +144,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
           last_name: 'User'
         }
       } as any;
+      console.log('Demo user authenticated:', req.user.claims.sub);
       return next();
     }
   }

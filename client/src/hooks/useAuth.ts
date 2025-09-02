@@ -5,9 +5,15 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for demo auth
-    const demoUser = localStorage.getItem('hublink_demo_user') === 'true';
-    setIsAuthenticated(demoUser);
+    // Auto-enable demo user in development
+    if (process.env.NODE_ENV === 'development') {
+      localStorage.setItem('hublink_demo_user', 'true');
+      setIsAuthenticated(true);
+    } else {
+      // Check localStorage for demo auth in production
+      const demoUser = localStorage.getItem('hublink_demo_user') === 'true';
+      setIsAuthenticated(demoUser);
+    }
     setIsLoading(false);
   }, []);
 
