@@ -374,11 +374,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConversations(userId: string): Promise<Conversation[]> {
-    // Return demo conversations for demo user
-    if (userId === 'demo-user-1') {
+    // Return demo conversations for demo user and test users
+    const isDemoUser = userId === 'demo-user-1' || userId?.startsWith('test-user-');
+    
+    if (isDemoUser) {
+      if (!this.demoConversations) {
+        this.demoConversations = [];
+      }
       const userConversations = this.demoConversations.filter(conv => 
         conv.user1Id === userId || conv.user2Id === userId
       );
+      console.log(`Demo conversations for ${userId}:`, userConversations);
       return userConversations as Conversation[];
     }
     

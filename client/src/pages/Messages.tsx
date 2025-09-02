@@ -22,11 +22,9 @@ export default function Messages() {
   const queryClient = useQueryClient();
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   
-  // Debug effect to track selectedConversation changes
+  // Track selectedConversation state changes
   useEffect(() => {
-    console.log('=== STATE CHANGE ===');
-    console.log('Selected conversation state changed to:', selectedConversation);
-    console.log('=== STATE CHANGE COMPLETE ===');
+    console.log('Selected conversation changed to:', selectedConversation);
   }, [selectedConversation]);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,12 +70,12 @@ export default function Messages() {
     retry: false,
   });
   
-  // Debug effect for messages
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
-    if (selectedConversation && messages) {
-      console.log('Messages fetched for conversation:', selectedConversation, 'Messages:', messages);
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [selectedConversation, messages]);
+  }, [messages]);
 
   // Setup WebSocket connection
   useEffect(() => {
@@ -416,10 +414,7 @@ export default function Messages() {
                   </div>
                 ) : conversations.length > 0 ? (
                   <div className="space-y-1">
-                    {(() => {
-                      console.log('Rendering conversations:', conversations?.length || 0, conversations);
-                      return conversations || [];
-                    })().map((conversation: Conversation) => {
+                    {(conversations || []).map((conversation: Conversation) => {
                       const otherUserId = conversation.user1Id === user?.id ? conversation.user2Id : conversation.user1Id;
                       
                       // Get user data from test users
@@ -436,13 +431,8 @@ export default function Messages() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log('=== CONVERSATION CLICK ===');
-                            console.log('Conversation clicked:', conversation.id);
-                            console.log('Current selectedConversation:', selectedConversation);
-                            console.log('Available conversations:', conversations);
-                            console.log('Setting selected conversation to:', conversation.id);
+                            console.log('Selecting conversation:', conversation.id);
                             setSelectedConversation(conversation.id);
-                            console.log('=== CLICK COMPLETE ===');
                           }}
                           data-testid={`card-conversation-${conversation.id}`}
                         >
@@ -526,13 +516,7 @@ export default function Messages() {
 
           {/* Main Chat Area */}
           <div className="lg:col-span-2">
-            {(() => {
-              console.log('=== RENDERING CHAT AREA ===');
-              console.log('selectedConversation:', selectedConversation);
-              console.log('Boolean check:', !!selectedConversation);
-              console.log('=== RENDER CHECK COMPLETE ===');
-              return !!selectedConversation;
-            })() ? (
+            {selectedConversation ? (
               <div className="h-[600px] flex flex-col bg-background rounded-xl border shadow-sm overflow-hidden" data-testid="card-chat-area">
                 {/* Chat Header - WhatsApp Style */}
                 <div className="bg-accent/5 border-b px-4 py-3 flex items-center space-x-3">
