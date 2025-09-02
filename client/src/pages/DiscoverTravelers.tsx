@@ -479,17 +479,58 @@ export default function DiscoverTravelers() {
 
       </div>
 
-      {/* Full Screen Globe Area - Positioned Higher */}
-      <div className="flex-1 min-h-screen bg-background flex items-start justify-center pt-8">
-        <div className="flex items-center justify-center">
-          <Globe3D 
-            users={typedUsers} 
-            width={1750} 
-            height={1750}
-            userLocation={userLocation}
-          />
-        </div>
+      {/* Full Screen Globe Area - Fixed Size */}
+      <div className="flex-1 relative bg-background overflow-hidden flex items-center justify-center">
+        <Globe3D 
+          users={typedUsers} 
+          width={1750} 
+          height={1750}
+          userLocation={userLocation}
+        />
       </div>
+
+
+
+        {/* Selected User Details */}
+        {selectedUser && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserIcon className="w-5 h-5" />
+                Selected Traveler
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={selectedUser.profileImageUrl} />
+                  <AvatarFallback>{selectedUser.displayName?.[0] || selectedUser.username[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="font-semibold">{selectedUser.displayName || selectedUser.username}</h3>
+                  <p className="text-sm text-muted-foreground">📍 {selectedUser.city}, {selectedUser.country}</p>
+                  <div className="flex gap-2 mt-2">
+                    {selectedUser.interests?.map((interest) => (
+                      <Badge key={interest} variant="outline" className="text-xs">
+                        {interest}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-x-2">
+                  <Button variant="outline" size="sm">
+                    <UserIcon className="w-4 h-4 mr-1" />
+                    View Profile
+                  </Button>
+                  <Button size="sm">
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    Connect
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
     </div>
   );
