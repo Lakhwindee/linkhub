@@ -60,6 +60,71 @@ const mockStays: Stay[] = [
     createdAt: new Date(),
     updatedAt: new Date()
   },
+  // FREE STAY EXAMPLES 
+  {
+    id: "stay-free-1",
+    hostId: "test-user-3", 
+    title: "💝 FREE Guest Room in Family Home",
+    description: "Welcoming family offers free guest room to travelers! Share experiences, local tips, and home-cooked meals. Perfect for budget travelers and cultural exchange.",
+    type: "guest-room",
+    country: "United Kingdom",
+    city: "Manchester",
+    address: "78 Oxford Road, Manchester",
+    lat: 53.4808,
+    lng: -2.2426,
+    pricePerNight: null, // FREE!
+    currency: "GBP", 
+    maxGuests: 1,
+    bedrooms: 1,
+    bathrooms: 1,
+    amenities: ["wifi", "breakfast", "kitchen", "laundry"],
+    imageUrls: ["https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&h=300&fit=crop"],
+    houseRules: "Respect family space, help with dishes, share travel stories!",
+    checkInTime: "18:00",
+    checkOutTime: "10:00", 
+    minimumStay: 1,
+    maximumStay: 5,
+    instantBooking: false,
+    contactInfo: "WhatsApp: +44 161 123 4567",
+    availableFrom: new Date("2025-01-01"),
+    availableTo: new Date("2025-12-31"),
+    status: "active",
+    featured: true, // Feature free stays!
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: "stay-free-2", 
+    hostId: "test-user-4",
+    title: "🏠 FREE Couch in Student House",
+    description: "Young travelers welcome! Free couch in shared student house. Great for backpackers and budget travelers. Meet locals and make friends!",
+    type: "shared-room",
+    country: "Spain", 
+    city: "Valencia",
+    address: "22 Carrer de Xàtiva, Valencia",
+    lat: 39.4699,
+    lng: -0.3763,
+    pricePerNight: null, // FREE!
+    currency: "EUR",
+    maxGuests: 1, 
+    bedrooms: 1,
+    bathrooms: 1,
+    amenities: ["wifi", "kitchen", "laundry"],
+    imageUrls: ["https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=500&h=300&fit=crop"],
+    houseRules: "Clean up after yourself, join our evening meals!",
+    checkInTime: "17:00", 
+    checkOutTime: "11:00",
+    minimumStay: 1,
+    maximumStay: 3,
+    instantBooking: false,
+    contactInfo: "Telegram: @valencia_house",
+    availableFrom: new Date("2025-01-01"),
+    availableTo: new Date("2025-12-31"),
+    status: "active",
+    featured: false,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
   {
     id: "stay-2", 
     hostId: "test-user-2",
@@ -134,11 +199,30 @@ export default function Stays() {
         if (selectedType !== "all" && stay.type !== selectedType) {
           return false;
         }
+        if (priceRange !== "all") {
+          if (priceRange === "free" && stay.pricePerNight !== null) {
+            return false;
+          }
+          if (priceRange === "budget" && (stay.pricePerNight === null || parseFloat(stay.pricePerNight) >= 50)) {
+            return false;
+          }
+          if (priceRange === "mid" && (stay.pricePerNight === null || parseFloat(stay.pricePerNight) < 50 || parseFloat(stay.pricePerNight) > 100)) {
+            return false;
+          }
+          if (priceRange === "luxury" && (stay.pricePerNight === null || parseFloat(stay.pricePerNight) <= 100)) {
+            return false;
+          }
+        }
         if (searchQuery && !stay.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
             !stay.city.toLowerCase().includes(searchQuery.toLowerCase())) {
           return false;
         }
         return true;
+      }).sort((a, b) => {
+        // Sort free stays to the top
+        if (a.pricePerNight === null && b.pricePerNight !== null) return -1;
+        if (a.pricePerNight !== null && b.pricePerNight === null) return 1;
+        return 0;
       });
     },
     staleTime: Infinity,
@@ -182,7 +266,7 @@ export default function Stays() {
           {/* Search and Filters */}
           <Card className="mb-8">
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                 <div className="md:col-span-2">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -220,6 +304,21 @@ export default function Stays() {
                     <SelectItem value="house">House</SelectItem>
                     <SelectItem value="studio">Studio</SelectItem>
                     <SelectItem value="villa">Villa</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={priceRange} onValueChange={setPriceRange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Prices</SelectItem>
+                    <SelectItem value="free" className="text-green-600 font-semibold">
+                      💝 Free Stays Only
+                    </SelectItem>
+                    <SelectItem value="budget">Under £50</SelectItem>
+                    <SelectItem value="mid">£50 - £100</SelectItem>
+                    <SelectItem value="luxury">£100+</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -265,7 +364,12 @@ export default function Stays() {
                   <button className="absolute top-3 right-3 p-2 bg-white/80 rounded-full hover:bg-white">
                     <Heart className="w-4 h-4" />
                   </button>
-                  {stay.featured && (
+                  {stay.pricePerNight === null && (
+                    <Badge className="absolute top-3 left-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white animate-pulse">
+                      💝 FREE STAY!
+                    </Badge>
+                  )}
+                  {stay.featured && stay.pricePerNight !== null && (
                     <Badge className="absolute top-3 left-3 bg-yellow-500">Featured</Badge>
                   )}
                 </div>
@@ -327,16 +431,32 @@ export default function Stays() {
                   
                   <div className="flex justify-between items-center">
                     <div>
-                      <span className="text-lg font-semibold">
-                        {stay.currency === "GBP" ? "£" : "€"}{stay.pricePerNight}
-                      </span>
-                      <span className="text-sm text-muted-foreground"> /night</span>
+                      {stay.pricePerNight === null ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-2xl font-bold text-green-600 dark:text-green-400">
+                            FREE! 🎉
+                          </span>
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                            Host's Gift
+                          </Badge>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-lg font-semibold">
+                            {stay.currency === "GBP" ? "£" : "€"}{stay.pricePerNight}
+                          </span>
+                          <span className="text-sm text-muted-foreground"> /night</span>
+                        </>
+                      )}
                     </div>
                     <Button 
                       onClick={() => handleBookStay(stay.id)}
-                      className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                      className={stay.pricePerNight === null 
+                        ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700" 
+                        : "bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                      }
                     >
-                      Book Now
+                      {stay.pricePerNight === null ? "💝 Request Stay" : "Book Now"}
                     </Button>
                   </div>
                 </CardContent>

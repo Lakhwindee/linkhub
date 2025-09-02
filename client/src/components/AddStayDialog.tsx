@@ -53,7 +53,8 @@ const stayFormSchema = z.object({
   country: z.string().min(1, "Country is required"),
   city: z.string().min(1, "City is required"),
   address: z.string().optional(),
-  pricePerNight: z.string().min(1, "Price is required"),
+  pricePerNight: z.string().optional(), // Allow empty for free stays
+  isFreeStay: z.boolean().default(false),
   currency: z.string().min(1, "Currency is required"),
   maxGuests: z.string().min(1, "Number of guests is required"),
   bedrooms: z.string().min(1, "Number of bedrooms is required"),
@@ -78,13 +79,19 @@ interface AddStayDialogProps {
 }
 
 const propertyTypes = [
-  { value: "room", label: "Private Room" },
-  { value: "apartment", label: "Entire Apartment" },
-  { value: "house", label: "Entire House" },
-  { value: "studio", label: "Studio" },
-  { value: "villa", label: "Villa" },
-  { value: "cottage", label: "Cottage" },
-  { value: "loft", label: "Loft" },
+  { value: "guest-room", label: "🏠 Guest Room (in home)", category: "room" },
+  { value: "private-room", label: "🚪 Private Room", category: "room" },
+  { value: "shared-room", label: "👥 Shared Room", category: "room" },
+  { value: "hostel-bed", label: "🛏️ Hostel Bed", category: "room" },
+  { value: "studio", label: "🏢 Studio Apartment", category: "entire" },
+  { value: "apartment", label: "🏠 Entire Apartment", category: "entire" },
+  { value: "house", label: "🏘️ Entire House", category: "entire" },
+  { value: "villa", label: "🏖️ Villa", category: "entire" },
+  { value: "cottage", label: "🏡 Cottage", category: "entire" },
+  { value: "loft", label: "🏭 Loft", category: "entire" },
+  { value: "tiny-house", label: "🏘️ Tiny House", category: "unique" },
+  { value: "boat", label: "🚤 Boat/Yacht", category: "unique" },
+  { value: "cabin", label: "🏕️ Cabin", category: "unique" },
 ];
 
 const amenitiesList = [
@@ -133,15 +140,32 @@ export function AddStayDialog({ open, onOpenChange }: AddStayDialogProps) {
   const onSubmit = async (data: StayFormData) => {
     setIsSubmitting(true);
     try {
-      // TODO: Replace with actual API call when backend is ready
-      console.log("Creating stay with data:", data);
+      // Transform data for API - handle free stays
+      const stayData = {
+        ...data,
+        pricePerNight: data.isFreeStay ? null : (data.pricePerNight ? parseFloat(data.pricePerNight) : null),
+        maxGuests: parseInt(data.maxGuests),
+        bedrooms: parseInt(data.bedrooms),
+        bathrooms: parseInt(data.bathrooms),
+        minimumStay: parseInt(data.minimumStay || "1"),
+        maximumStay: data.maximumStay ? parseInt(data.maximumStay) : null,
+      };
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/stays', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(stayData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create stay');
+      }
       
       toast({
-        title: "Stay Listed Successfully!",
-        description: "Your stay has been added and is now visible to travelers.",
+        title: data.isFreeStay ? "🎉 Free Stay Listed!" : "Stay Listed Successfully!",
+        description: data.isFreeStay 
+          ? "Your generous free offer is now available to travelers!" 
+          : "Your stay has been added and is now visible to travelers.",
       });
       
       onOpenChange(false);
@@ -433,21 +457,59 @@ export function AddStayDialog({ open, onOpenChange }: AddStayDialogProps) {
 
                 <Separator />
 
+                {/* Free Stay Toggle */}
+                <FormField
+                  control={form.control}
+                  name="isFreeStay"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("pricePerNight", "");
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-medium">
+                          💝 Offer Free Stay - Host a Traveler for Free!
+                        </FormLabel>
+                        <p className="text-xs text-muted-foreground">
+                          Open your home to fellow travelers without charge. Build connections and share experiences!
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="pricePerNight"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Price per Night</FormLabel>
+                        <FormLabel>
+                          {form.watch("isFreeStay") ? "Price (Free Stay Selected)" : "Price per Night"}
+                        </FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="0.00" 
+                            placeholder={form.watch("isFreeStay") ? "Free!" : "0.00"}
                             type="number"
                             step="0.01"
+                            disabled={form.watch("isFreeStay")}
+                            className={form.watch("isFreeStay") ? "bg-green-50 dark:bg-green-900/20" : ""}
                             {...field} 
                           />
                         </FormControl>
+                        {form.watch("isFreeStay") && (
+                          <p className="text-xs text-green-600 dark:text-green-400">
+                            🎉 You're offering a free stay! How generous!
+                          </p>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}

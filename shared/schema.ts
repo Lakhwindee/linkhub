@@ -264,7 +264,7 @@ export const stays = pgTable("stays", {
   address: text("address"),
   lat: real("lat"),
   lng: real("lng"),
-  pricePerNight: decimal("price_per_night", { precision: 10, scale: 2 }).notNull(),
+  pricePerNight: decimal("price_per_night", { precision: 10, scale: 2 }), // Nullable for free stays
   currency: varchar("currency").default("GBP"),
   maxGuests: integer("max_guests").default(1),
   bedrooms: integer("bedrooms").default(1),
