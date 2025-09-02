@@ -73,7 +73,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const navItems = [
     { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
     { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
-    { href: "/map", icon: Globe, label: "3D Map", testId: "nav-map" },
     { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
     { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
     { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
