@@ -493,12 +493,11 @@ export default function DiscoverTravelers() {
             zIndex: 10
           }}
         >
-          <Globe3D 
-            users={typedUsers} 
-            width={2400} 
-            height={2400}
-            userLocation={userLocation}
-            focusLocation={focusLocation}
+          {/* Leaflet Map Container */}
+          <div 
+            ref={mapRef} 
+            className="w-[2400px] h-[2400px] rounded-full shadow-2xl border-4 border-white/20"
+            data-testid="discovery-map"
           />
         </div>
       </div>
