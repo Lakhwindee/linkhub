@@ -4,7 +4,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe } from "lucide-react";
+import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
@@ -74,6 +74,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
     { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
     { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+    { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
     { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
     { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
     { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },

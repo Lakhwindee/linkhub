@@ -145,6 +145,17 @@ export interface IStorage {
   // Stay reviews
   createStayReview(data: any): Promise<StayReview>;
   getStayReviews(stayId: string): Promise<StayReview[]>;
+
+  // Trips
+  createTrip(data: any): Promise<Trip>;
+  getTrips(filters?: any): Promise<Trip[]>;
+  getTrip(id: string): Promise<Trip | undefined>;
+  updateTrip(id: string, data: Partial<Trip>): Promise<Trip>;
+  deleteTrip(id: string): Promise<void>;
+  joinTrip(tripId: string, userId: string, message?: string): Promise<TripParticipant>;
+  leaveTrip(tripId: string, userId: string): Promise<void>;
+  getTripParticipants(tripId: string): Promise<TripParticipant[]>;
+  getUserTrips(userId: string, type: 'organized' | 'joined' | 'all'): Promise<Trip[]>;
 }
 
 // Test data for demo/development
@@ -311,6 +322,87 @@ const testStays = [
     createdAt: new Date('2024-09-01T15:00:00Z'),
     updatedAt: new Date('2024-09-01T15:00:00Z')
   }
+];
+
+const testTrips = [
+  { 
+    id: 'trip-1', 
+    organizerId: 'test-user-1', 
+    title: 'Europe Photography Tour', 
+    description: 'Join me for an amazing photography trip across Europe! We will visit iconic locations in London, Paris, and Barcelona.', 
+    fromCountry: 'United Kingdom', 
+    fromCity: 'London', 
+    toCountry: 'Spain', 
+    toCity: 'Barcelona', 
+    startDate: new Date('2024-10-15'), 
+    endDate: new Date('2024-10-25'), 
+    maxTravelers: 6, 
+    currentTravelers: 2, 
+    budget: 'medium', 
+    travelStyle: 'comfort', 
+    tags: ['photography', 'culture', 'art'], 
+    meetupLocation: 'London Heathrow Terminal 2, Departure Gate',
+    requirements: 'Photography equipment and enthusiasm for capturing memories!',
+    isPublic: true,
+    requiresApproval: false,
+    status: 'planning',
+    createdAt: new Date('2024-09-01T09:00:00Z'),
+    updatedAt: new Date('2024-09-01T09:00:00Z')
+  },
+  { 
+    id: 'trip-2', 
+    organizerId: 'test-user-2', 
+    title: 'Southeast Asia Food Adventure', 
+    description: 'Explore the incredible street food scene across Thailand, Vietnam, and Malaysia!', 
+    fromCountry: 'Spain', 
+    fromCity: 'Barcelona', 
+    toCountry: 'Thailand', 
+    toCity: 'Bangkok', 
+    startDate: new Date('2024-11-10'), 
+    endDate: new Date('2024-11-20'), 
+    maxTravelers: 8, 
+    currentTravelers: 3, 
+    budget: 'low', 
+    travelStyle: 'backpacker', 
+    tags: ['food', 'culture', 'adventure'], 
+    meetupLocation: 'Barcelona Airport, Terminal 1',
+    requirements: 'Open mind for spicy food and street food adventures!',
+    isPublic: true,
+    requiresApproval: false,
+    status: 'confirmed',
+    createdAt: new Date('2024-09-02T10:00:00Z'),
+    updatedAt: new Date('2024-09-02T10:00:00Z')
+  },
+  { 
+    id: 'trip-3', 
+    organizerId: 'test-user-3', 
+    title: 'Japan Temple & Mountain Hiking', 
+    description: 'Spiritual journey through Japan\'s ancient temples and mountain trails.', 
+    fromCountry: 'Japan', 
+    fromCity: 'Tokyo', 
+    toCountry: 'Japan', 
+    toCity: 'Kyoto', 
+    startDate: new Date('2024-12-05'), 
+    endDate: new Date('2024-12-15'), 
+    maxTravelers: 5, 
+    currentTravelers: 1, 
+    budget: 'medium', 
+    travelStyle: 'adventure', 
+    tags: ['hiking', 'spirituality', 'nature'], 
+    meetupLocation: 'Tokyo Station East Exit',
+    requirements: 'Good physical fitness for hiking. Hiking boots required.',
+    isPublic: true,
+    requiresApproval: true,
+    status: 'planning',
+    createdAt: new Date('2024-09-03T08:00:00Z'),
+    updatedAt: new Date('2024-09-03T08:00:00Z')
+  }
+];
+
+const testTripParticipants = [
+  { id: 'participant-1', tripId: 'trip-1', userId: 'test-user-2', joinedAt: new Date('2024-09-01T12:00:00Z'), status: 'confirmed', message: 'Excited to join this photography adventure!', role: 'participant' },
+  { id: 'participant-2', tripId: 'trip-2', userId: 'test-user-1', joinedAt: new Date('2024-09-02T14:00:00Z'), status: 'confirmed', message: 'Love food, can\'t wait!', role: 'participant' },
+  { id: 'participant-3', tripId: 'trip-2', userId: 'test-user-3', joinedAt: new Date('2024-09-02T16:00:00Z'), status: 'confirmed', message: 'Perfect timing for my travels!', role: 'participant' }
 ];
 
 export class DatabaseStorage implements IStorage {
@@ -1013,6 +1105,116 @@ export class DatabaseStorage implements IStorage {
   
   async getStayReviews(stayId: string): Promise<StayReview[]> {
     return await db.select().from(stayReviews).where(eq(stayReviews.stayId, stayId));
+  }
+
+  // Trips implementation
+  async createTrip(data: any): Promise<Trip> {
+    const newTrip = {
+      id: `trip-${Date.now()}`,
+      organizerId: data.organizerId,
+      ...data,
+      currentTravelers: 1,
+      status: 'planning',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    testTrips.push(newTrip);
+    return newTrip;
+  }
+
+  async getTrips(filters?: any): Promise<Trip[]> {
+    console.log('Returning test trips:', testTrips.length);
+    let filteredTrips = [...testTrips];
+
+    if (filters?.country) {
+      filteredTrips = filteredTrips.filter(trip => 
+        trip.fromCountry === filters.country || trip.toCountry === filters.country
+      );
+    }
+
+    if (filters?.city) {
+      filteredTrips = filteredTrips.filter(trip => 
+        trip.fromCity === filters.city || trip.toCity === filters.city
+      );
+    }
+
+    return filteredTrips.slice(0, filters?.limit || 50);
+  }
+
+  async getTrip(id: string): Promise<Trip | undefined> {
+    return testTrips.find(trip => trip.id === id);
+  }
+
+  async updateTrip(id: string, data: Partial<Trip>): Promise<Trip> {
+    const index = testTrips.findIndex(trip => trip.id === id);
+    if (index === -1) throw new Error('Trip not found');
+    
+    testTrips[index] = { ...testTrips[index], ...data, updatedAt: new Date() };
+    return testTrips[index];
+  }
+
+  async deleteTrip(id: string): Promise<void> {
+    const index = testTrips.findIndex(trip => trip.id === id);
+    if (index !== -1) {
+      testTrips.splice(index, 1);
+    }
+  }
+
+  async joinTrip(tripId: string, userId: string, message?: string): Promise<TripParticipant> {
+    const newParticipant = {
+      id: `participant-${Date.now()}`,
+      tripId,
+      userId,
+      joinedAt: new Date(),
+      status: 'confirmed',
+      message: message || '',
+      role: 'participant'
+    };
+
+    testTripParticipants.push(newParticipant);
+
+    const trip = testTrips.find(t => t.id === tripId);
+    if (trip) {
+      trip.currentTravelers = (trip.currentTravelers || 1) + 1;
+    }
+
+    return newParticipant;
+  }
+
+  async leaveTrip(tripId: string, userId: string): Promise<void> {
+    const index = testTripParticipants.findIndex(p => p.tripId === tripId && p.userId === userId);
+    if (index !== -1) {
+      testTripParticipants.splice(index, 1);
+      
+      const trip = testTrips.find(t => t.id === tripId);
+      if (trip && trip.currentTravelers > 1) {
+        trip.currentTravelers = trip.currentTravelers - 1;
+      }
+    }
+  }
+
+  async getTripParticipants(tripId: string): Promise<TripParticipant[]> {
+    return testTripParticipants.filter(p => p.tripId === tripId);
+  }
+
+  async getUserTrips(userId: string, type: 'organized' | 'joined' | 'all'): Promise<Trip[]> {
+    switch (type) {
+      case 'organized':
+        return testTrips.filter(trip => trip.organizerId === userId);
+      case 'joined':
+        const joinedTripIds = testTripParticipants
+          .filter(p => p.userId === userId)
+          .map(p => p.tripId);
+        return testTrips.filter(trip => joinedTripIds.includes(trip.id));
+      case 'all':
+      default:
+        const organizedTrips = testTrips.filter(trip => trip.organizerId === userId);
+        const joinedTripIds2 = testTripParticipants
+          .filter(p => p.userId === userId)
+          .map(p => p.tripId);
+        const joinedTrips = testTrips.filter(trip => joinedTripIds2.includes(trip.id));
+        return [...organizedTrips, ...joinedTrips];
+    }
   }
 }
 

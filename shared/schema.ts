@@ -317,6 +317,44 @@ export const stayReviews = pgTable("stay_reviews", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Trips for travel planning and group travel
+export const trips = pgTable("trips", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organizerId: varchar("organizer_id").references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  fromCountry: varchar("from_country").notNull(),
+  fromCity: varchar("from_city").notNull(),
+  toCountry: varchar("to_country").notNull(),
+  toCity: varchar("to_city").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  maxTravelers: integer("max_travelers").default(10),
+  currentTravelers: integer("current_travelers").default(1), // organizer is included
+  budget: varchar("budget"), // "low", "medium", "high" or specific amount
+  travelStyle: varchar("travel_style"), // "backpacker", "comfort", "luxury", "adventure"
+  tags: text("tags").array(), // "photography", "food", "culture", "nightlife", etc
+  meetupLocation: text("meetup_location"), // where to meet before trip
+  itinerary: jsonb("itinerary"), // detailed day-by-day plan
+  requirements: text("requirements"), // age, experience, etc
+  isPublic: boolean("is_public").default(true),
+  requiresApproval: boolean("requires_approval").default(false),
+  status: varchar("status").default("planning"), // planning, confirmed, ongoing, completed, cancelled
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Trip participants/joiners
+export const tripParticipants = pgTable("trip_participants", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: varchar("trip_id").references(() => trips.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  status: varchar("status").default("confirmed"), // pending, confirmed, declined, removed
+  message: text("message"), // join request message
+  role: varchar("role").default("participant"), // organizer, co-organizer, participant
+});
+
 // Audit logs
 export const auditLogs = pgTable("audit_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -352,6 +390,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   hostedStays: many(stays),
   stayBookings: many(stayBookings),
   stayReviews: many(stayReviews),
+  organizedTrips: many(trips),
+  tripParticipations: many(tripParticipants),
 }));
 
 export const authProvidersRelations = relations(authProviders, ({ one }) => ({
@@ -444,6 +484,16 @@ export const stayReviewsRelations = relations(stayReviews, ({ one }) => ({
   stay: one(stays, { fields: [stayReviews.stayId], references: [stays.id] }),
   booking: one(stayBookings, { fields: [stayReviews.bookingId], references: [stayBookings.id] }),
   reviewer: one(users, { fields: [stayReviews.reviewerId], references: [users.id] }),
+}));
+
+export const tripsRelations = relations(trips, ({ one, many }) => ({
+  organizer: one(users, { fields: [trips.organizerId], references: [users.id] }),
+  participants: many(tripParticipants),
+}));
+
+export const tripParticipantsRelations = relations(tripParticipants, ({ one }) => ({
+  trip: one(trips, { fields: [tripParticipants.tripId], references: [trips.id] }),
+  user: one(users, { fields: [tripParticipants.userId], references: [users.id] }),
 }));
 
 // Insert schemas
@@ -590,6 +640,33 @@ export const insertStayReviewSchema = createInsertSchema(stayReviews).pick({
   value: true,
 });
 
+export const insertTripSchema = createInsertSchema(trips).pick({
+  title: true,
+  description: true,
+  fromCountry: true,
+  fromCity: true,
+  toCountry: true,
+  toCity: true,
+  startDate: true,
+  endDate: true,
+  maxTravelers: true,
+  budget: true,
+  travelStyle: true,
+  tags: true,
+  meetupLocation: true,
+  itinerary: true,
+  requirements: true,
+  isPublic: true,
+  requiresApproval: true,
+}).extend({
+  tags: z.array(z.string()).optional(),
+});
+
+export const insertTripParticipantSchema = createInsertSchema(tripParticipants).pick({
+  tripId: true,
+  message: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -610,4 +687,6 @@ export type Report = typeof reports.$inferSelect;
 export type Stay = typeof stays.$inferSelect;
 export type StayBooking = typeof stayBookings.$inferSelect;
 export type StayReview = typeof stayReviews.$inferSelect;
+export type Trip = typeof trips.$inferSelect;
+export type TripParticipant = typeof tripParticipants.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;

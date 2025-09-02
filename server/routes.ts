@@ -1048,6 +1048,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Trips routes
+  app.get('/api/trips', async (req, res) => {
+    try {
+      const { country, city, travelStyle, budget, tags, limit } = req.query;
+      
+      const filters = {
+        country: country as string,
+        city: city as string,
+        travelStyle: travelStyle as string,
+        budget: budget as string,
+        tags: tags ? (tags as string).split(',') : undefined,
+        limit: limit ? Number(limit) : undefined
+      };
+
+      const trips = await storage.getTrips(filters);
+      res.json(trips);
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+      res.status(500).json({ message: 'Failed to fetch trips' });
+    }
+  });
+
+  app.get('/api/trips/:id', async (req, res) => {
+    try {
+      const trip = await storage.getTrip(req.params.id);
+      if (!trip) {
+        return res.status(404).json({ message: 'Trip not found' });
+      }
+      res.json(trip);
+    } catch (error) {
+      console.error('Error fetching trip:', error);
+      res.status(500).json({ message: 'Failed to fetch trip' });
+    }
+  });
+
+  app.post('/api/trips', isAuthenticated, async (req: any, res) => {
+    try {
+      const tripData = { ...req.body, organizerId: req.user.claims.sub };
+      const trip = await storage.createTrip(tripData);
+      res.json(trip);
+    } catch (error) {
+      console.error('Error creating trip:', error);
+      res.status(500).json({ message: 'Failed to create trip' });
+    }
+  });
+
+  app.post('/api/trips/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const { message } = req.body;
+      const participant = await storage.joinTrip(req.params.id, req.user.claims.sub, message);
+      res.json(participant);
+    } catch (error) {
+      console.error('Error joining trip:', error);
+      res.status(500).json({ message: 'Failed to join trip' });
+    }
+  });
+
+  app.delete('/api/trips/:id/leave', isAuthenticated, async (req: any, res) => {
+    try {
+      await storage.leaveTrip(req.params.id, req.user.claims.sub);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error leaving trip:', error);
+      res.status(500).json({ message: 'Failed to leave trip' });
+    }
+  });
+
+  app.get('/api/trips/:id/participants', async (req, res) => {
+    try {
+      const participants = await storage.getTripParticipants(req.params.id);
+      res.json(participants);
+    } catch (error) {
+      console.error('Error fetching trip participants:', error);
+      res.status(500).json({ message: 'Failed to fetch participants' });
+    }
+  });
+
+  app.get('/api/users/:userId/trips', async (req, res) => {
+    try {
+      const { type = 'all' } = req.query;
+      const trips = await storage.getUserTrips(req.params.userId, type as 'organized' | 'joined' | 'all');
+      res.json(trips);
+    } catch (error) {
+      console.error('Error fetching user trips:', error);
+      res.status(500).json({ message: 'Failed to fetch user trips' });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket server for real-time messaging
