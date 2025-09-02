@@ -24,7 +24,7 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
         setError(null);
         
         // Create 3D Globe instance  
-        const globe = Globe()
+        const globe = (Globe as any)()
           .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
           .backgroundColor('rgba(0,0,0,0)')
           .showAtmosphere(true)
