@@ -24,8 +24,11 @@ export default function Messages() {
   
   // Debug effect to track selectedConversation changes
   useEffect(() => {
+    console.log('=== STATE CHANGE ===');
     console.log('Selected conversation state changed to:', selectedConversation);
-  }, [selectedConversation]);
+    console.log('Conversations available:', conversations.length, conversations);
+    console.log('=== STATE CHANGE COMPLETE ===');
+  }, [selectedConversation, conversations]);
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -433,9 +436,13 @@ export default function Messages() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            console.log('=== CONVERSATION CLICK ===');
                             console.log('Conversation clicked:', conversation.id);
+                            console.log('Current selectedConversation:', selectedConversation);
+                            console.log('Available conversations:', conversations);
                             console.log('Setting selected conversation to:', conversation.id);
                             setSelectedConversation(conversation.id);
+                            console.log('=== CLICK COMPLETE ===');
                           }}
                           data-testid={`card-conversation-${conversation.id}`}
                         >
@@ -519,7 +526,13 @@ export default function Messages() {
 
           {/* Main Chat Area */}
           <div className="lg:col-span-2">
-            {selectedConversation ? (
+            {(() => {
+              console.log('=== RENDERING CHAT AREA ===');
+              console.log('selectedConversation:', selectedConversation);
+              console.log('Boolean check:', !!selectedConversation);
+              console.log('=== RENDER CHECK COMPLETE ===');
+              return !!selectedConversation;
+            })() ? (
               <div className="h-[600px] flex flex-col bg-background rounded-xl border shadow-sm overflow-hidden" data-testid="card-chat-area">
                 {/* Chat Header - WhatsApp Style */}
                 <div className="bg-accent/5 border-b px-4 py-3 flex items-center space-x-3">
