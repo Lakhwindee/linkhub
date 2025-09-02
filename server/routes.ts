@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertReportSchema, adReservations } from "@shared/schema";
+import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -328,6 +328,283 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating RSVP:", error);
       res.status(500).json({ message: "Failed to RSVP" });
+    }
+  });
+
+  // Stays routes
+  app.get('/api/stays', async (req, res) => {
+    try {
+      const { country, city, type, minPrice, maxPrice, guests = 1, limit = 20 } = req.query;
+      const stays = await storage.getStays({
+        country: country as string,
+        city: city as string,
+        type: type as string,
+        minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
+        maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
+        guests: parseInt(guests as string),
+        limit: parseInt(limit as string)
+      });
+      res.json(stays);
+    } catch (error) {
+      console.error("Error fetching stays:", error);
+      res.status(500).json({ message: "Failed to fetch stays" });
+    }
+  });
+
+  app.get('/api/stays/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const stay = await storage.getStayById(id);
+      if (!stay) {
+        return res.status(404).json({ message: "Stay not found" });
+      }
+      
+      // Get reviews for this stay
+      const reviews = await storage.getStayReviews(id);
+      res.json({ ...stay, reviews });
+    } catch (error) {
+      console.error("Error fetching stay:", error);
+      res.status(500).json({ message: "Failed to fetch stay" });
+    }
+  });
+
+  app.post('/api/stays', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const data = insertStaySchema.parse(req.body);
+      
+      const stay = await storage.createStay({
+        hostId: userId,
+        ...data
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "stay_created",
+        targetType: "stay",
+        targetId: stay.id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(stay);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating stay:", error);
+      res.status(500).json({ message: "Failed to create stay" });
+    }
+  });
+
+  app.put('/api/stays/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const data = insertStaySchema.parse(req.body);
+      
+      // Check if user owns this stay
+      const stay = await storage.getStayById(id);
+      if (!stay || stay.hostId !== userId) {
+        return res.status(403).json({ message: "You can only edit your own stays" });
+      }
+      
+      const updatedStay = await storage.updateStay(id, data);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "stay_updated",
+        targetType: "stay",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(updatedStay);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating stay:", error);
+      res.status(500).json({ message: "Failed to update stay" });
+    }
+  });
+
+  app.delete('/api/stays/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Check if user owns this stay
+      const stay = await storage.getStayById(id);
+      if (!stay || stay.hostId !== userId) {
+        return res.status(403).json({ message: "You can only delete your own stays" });
+      }
+      
+      await storage.deleteStay(id);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "stay_deleted",
+        targetType: "stay",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ message: "Stay deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting stay:", error);
+      res.status(500).json({ message: "Failed to delete stay" });
+    }
+  });
+
+  app.post('/api/stays/:id/book', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const data = insertStayBookingSchema.parse({ ...req.body, stayId: id });
+      
+      // Check if stay exists and is available
+      const stay = await storage.getStayById(id);
+      if (!stay) {
+        return res.status(404).json({ message: "Stay not found" });
+      }
+      
+      if (stay.status !== 'active') {
+        return res.status(400).json({ message: "Stay is not available for booking" });
+      }
+      
+      // Calculate total price
+      const checkIn = new Date(data.checkInDate!);
+      const checkOut = new Date(data.checkOutDate!);
+      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+      const totalPrice = (parseFloat(stay.pricePerNight) * nights).toString();
+      
+      const booking = await storage.createStayBooking({
+        guestId: userId,
+        totalPrice,
+        currency: stay.currency,
+        ...data
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "stay_booked",
+        targetType: "stay_booking",
+        targetId: booking.id,
+        metaJson: { stayId: id, nights, totalPrice },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(booking);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error booking stay:", error);
+      res.status(500).json({ message: "Failed to book stay" });
+    }
+  });
+
+  app.get('/api/stays/bookings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { type = 'guest' } = req.query;
+      
+      let bookings;
+      if (type === 'host') {
+        bookings = await storage.getHostBookings(userId);
+      } else {
+        bookings = await storage.getUserBookings(userId);
+      }
+      
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+      res.status(500).json({ message: "Failed to fetch bookings" });
+    }
+  });
+
+  app.patch('/api/stays/bookings/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!['confirmed', 'cancelled'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const booking = await storage.updateStayBookingStatus(id, status);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: `booking_${status}`,
+        targetType: "stay_booking",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating booking:", error);
+      res.status(500).json({ message: "Failed to update booking" });
+    }
+  });
+
+  app.post('/api/stays/:id/review', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const data = insertStayReviewSchema.parse({ ...req.body, stayId: id });
+      
+      // Check if user has a completed booking for this stay
+      const userBookings = await storage.getUserBookings(userId);
+      const completedBooking = userBookings.find(booking => 
+        booking.stayId === id && booking.status === 'completed'
+      );
+      
+      if (!completedBooking) {
+        return res.status(400).json({ message: "You can only review stays you have completed" });
+      }
+      
+      const review = await storage.createStayReview({
+        reviewerId: userId,
+        bookingId: completedBooking.id,
+        ...data
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "stay_reviewed",
+        targetType: "stay_review",
+        targetId: review.id,
+        metaJson: { stayId: id, rating: data.rating },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(review);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating review:", error);
+      res.status(500).json({ message: "Failed to create review" });
+    }
+  });
+
+  app.get('/api/my-stays', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stays = await storage.getUserStays(userId);
+      res.json(stays);
+    } catch (error) {
+      console.error("Error fetching user stays:", error);
+      res.status(500).json({ message: "Failed to fetch your stays" });
     }
   });
 

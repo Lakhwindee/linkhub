@@ -252,6 +252,71 @@ export const invoices = pgTable("invoices", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Stays
+export const stays = pgTable("stays", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hostId: varchar("host_id").references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  type: varchar("type").notNull(), // room, apartment, house, villa, etc
+  country: varchar("country").notNull(),
+  city: varchar("city").notNull(),
+  address: text("address"),
+  lat: real("lat"),
+  lng: real("lng"),
+  pricePerNight: decimal("price_per_night", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").default("GBP"),
+  maxGuests: integer("max_guests").default(1),
+  bedrooms: integer("bedrooms").default(1),
+  bathrooms: integer("bathrooms").default(1),
+  amenities: text("amenities").array(), // wifi, kitchen, parking, pool, etc
+  imageUrls: text("image_urls").array(),
+  houseRules: text("house_rules"),
+  checkInTime: varchar("check_in_time").default("15:00"),
+  checkOutTime: varchar("check_out_time").default("11:00"),
+  minimumStay: integer("minimum_stay").default(1), // minimum nights
+  maximumStay: integer("maximum_stay"), // maximum nights (null for unlimited)
+  instantBooking: boolean("instant_booking").default(false),
+  contactInfo: text("contact_info"), // phone, whatsapp, etc
+  availableFrom: timestamp("available_from"),
+  availableTo: timestamp("available_to"),
+  status: varchar("status").default("active"), // active, paused, archived
+  featured: boolean("featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Stay bookings
+export const stayBookings = pgTable("stay_bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stayId: varchar("stay_id").references(() => stays.id, { onDelete: "cascade" }),
+  guestId: varchar("guest_id").references(() => users.id, { onDelete: "cascade" }),
+  checkInDate: timestamp("check_in_date").notNull(),
+  checkOutDate: timestamp("check_out_date").notNull(),
+  guests: integer("guests").default(1),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").default("GBP"),
+  message: text("message"), // guest message to host
+  status: varchar("status").default("pending"), // pending, confirmed, cancelled, completed
+  paymentStatus: varchar("payment_status").default("pending"), // pending, paid, refunded
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Stay reviews
+export const stayReviews = pgTable("stay_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stayId: varchar("stay_id").references(() => stays.id, { onDelete: "cascade" }),
+  bookingId: varchar("booking_id").references(() => stayBookings.id, { onDelete: "cascade" }),
+  reviewerId: varchar("reviewer_id").references(() => users.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(), // 1-5 stars
+  comment: text("comment"),
+  cleanliness: integer("cleanliness"), // 1-5
+  communication: integer("communication"), // 1-5
+  location: integer("location"), // 1-5
+  value: integer("value"), // 1-5
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Audit logs
 export const auditLogs = pgTable("audit_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -284,6 +349,9 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   payouts: many(payouts),
   subscriptions: many(subscriptions),
   invoices: many(invoices),
+  hostedStays: many(stays),
+  stayBookings: many(stayBookings),
+  stayReviews: many(stayReviews),
 }));
 
 export const authProvidersRelations = relations(authProviders, ({ one }) => ({
@@ -358,6 +426,24 @@ export const subscriptionsRelations = relations(subscriptions, ({ one, many }) =
 export const invoicesRelations = relations(invoices, ({ one }) => ({
   user: one(users, { fields: [invoices.userId], references: [users.id] }),
   subscription: one(subscriptions, { fields: [invoices.subscriptionId], references: [subscriptions.id] }),
+}));
+
+export const staysRelations = relations(stays, ({ one, many }) => ({
+  host: one(users, { fields: [stays.hostId], references: [users.id] }),
+  bookings: many(stayBookings),
+  reviews: many(stayReviews),
+}));
+
+export const stayBookingsRelations = relations(stayBookings, ({ one, many }) => ({
+  stay: one(stays, { fields: [stayBookings.stayId], references: [stays.id] }),
+  guest: one(users, { fields: [stayBookings.guestId], references: [users.id] }),
+  reviews: many(stayReviews),
+}));
+
+export const stayReviewsRelations = relations(stayReviews, ({ one }) => ({
+  stay: one(stays, { fields: [stayReviews.stayId], references: [stays.id] }),
+  booking: one(stayBookings, { fields: [stayReviews.bookingId], references: [stayBookings.id] }),
+  reviewer: one(users, { fields: [stayReviews.reviewerId], references: [users.id] }),
 }));
 
 // Insert schemas
@@ -455,6 +541,55 @@ export const insertReportSchema = createInsertSchema(reports).pick({
   description: true,
 });
 
+export const insertStaySchema = createInsertSchema(stays).pick({
+  title: true,
+  description: true,
+  type: true,
+  country: true,
+  city: true,
+  address: true,
+  lat: true,
+  lng: true,
+  pricePerNight: true,
+  currency: true,
+  maxGuests: true,
+  bedrooms: true,
+  bathrooms: true,
+  amenities: true,
+  imageUrls: true,
+  houseRules: true,
+  checkInTime: true,
+  checkOutTime: true,
+  minimumStay: true,
+  maximumStay: true,
+  instantBooking: true,
+  contactInfo: true,
+  availableFrom: true,
+  availableTo: true,
+}).extend({
+  amenities: z.array(z.string()).optional(),
+  imageUrls: z.array(z.string()).optional(),
+});
+
+export const insertStayBookingSchema = createInsertSchema(stayBookings).pick({
+  stayId: true,
+  checkInDate: true,
+  checkOutDate: true,
+  guests: true,
+  message: true,
+});
+
+export const insertStayReviewSchema = createInsertSchema(stayReviews).pick({
+  stayId: true,
+  bookingId: true,
+  rating: true,
+  comment: true,
+  cleanliness: true,
+  communication: true,
+  location: true,
+  value: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -472,4 +607,7 @@ export type Payout = typeof payouts.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type Report = typeof reports.$inferSelect;
+export type Stay = typeof stays.$inferSelect;
+export type StayBooking = typeof stayBookings.$inferSelect;
+export type StayReview = typeof stayReviews.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
