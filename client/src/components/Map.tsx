@@ -254,7 +254,10 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
   }, []);
 
   const initializeMap = () => {
-    if (!mapRef.current || !L || !userLocation) return;
+    if (!mapRef.current || !L) return;
+    
+    // Use userLocation if available, otherwise default to London
+    const mapLocation = userLocation || [51.5074, -0.1278];
 
     // Clear existing map
     if (mapInstanceRef.current) {
@@ -263,7 +266,7 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
 
     // Create map with world view
     const map = L.map(mapRef.current, {
-      center: userLocation,
+      center: mapLocation,
       zoom: 2,
       minZoom: 2,
       maxZoom: 18,
@@ -284,7 +287,7 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
       iconAnchor: [8, 8]
     });
     
-    L.marker(userLocation, { icon: userIcon })
+    L.marker(mapLocation, { icon: userIcon })
       .addTo(map)
       .bindPopup('<div class="text-center"><strong>Your Location</strong><br/><span class="text-xs text-gray-600">Current Position</span></div>');
 
@@ -357,16 +360,14 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
     }
   }, [users, onUserSelect]);
 
-  // Debug loading state
-  if (!L || !userLocation) {
+  // Debug loading state - Only block if Leaflet is not loaded, allow map to show even without location
+  if (!L) {
     return (
       <div className={`${height} w-full flex items-center justify-center bg-muted border border-border rounded-lg`}>
         <div className="text-center space-y-2">
           <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-          <p className="text-sm text-muted-foreground">Loading interactive map...</p>
-          <p className="text-xs text-muted-foreground">
-            {!L ? "Loading Leaflet library..." : !userLocation ? "Getting your location..." : ""}
-          </p>
+          <p className="text-sm text-muted-foreground">Loading map library...</p>
+          <p className="text-xs text-muted-foreground">Setting up interactive map...</p>
         </div>
       </div>
     );
