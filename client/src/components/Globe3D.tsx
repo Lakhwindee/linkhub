@@ -94,7 +94,7 @@ export default function Globe3D({
         globeInstanceRef.current = globe;
         globe(globeRef.current);
         
-        // Configure controls for smooth interaction
+        // Configure controls for smooth interaction and set default view
         setTimeout(() => {
           if (globeInstanceRef.current) {
             const controls = globe.controls();
@@ -112,6 +112,9 @@ export default function Globe3D({
             controls.rotateSpeed = 0.5;
             controls.zoomSpeed = 1.2;
             controls.panSpeed = 1.0;
+            
+            // Set default view to show full Earth properly
+            globe.pointOfView({ lat: 0, lng: 0, altitude: 2.2 }, 1000);
             
             setIsLoading(false);
           }
@@ -167,8 +170,8 @@ export default function Globe3D({
           globe.pointOfView(coords, 1500);
         }
       } else {
-        // Reset to global view
-        globe.pointOfView({ lat: 0, lng: 0, altitude: 3 }, 2000);
+        // Reset to global view - show full Earth
+        globe.pointOfView({ lat: 0, lng: 0, altitude: 2.5 }, 2000);
       }
     }
   }, [selectedCountry, selectedCity, isLoading]);
