@@ -53,7 +53,21 @@ export const getQueryFn: <T>(options: {
       headers["x-demo-user"] = "true";
     }
     
-    const res = await fetch(queryKey.join("/") as string, {
+    // Construct URL with query parameters properly
+    let url = queryKey[0] as string;
+    if (queryKey.length > 1 && typeof queryKey[1] === 'object' && queryKey[1] !== null) {
+      const params = new URLSearchParams();
+      const queryParams = queryKey[1] as Record<string, string>;
+      for (const [key, value] of Object.entries(queryParams)) {
+        params.append(key, value);
+      }
+      url += '?' + params.toString();
+    } else if (queryKey.length > 1) {
+      // Handle path parameters (like /api/messages/conversationId)
+      url = queryKey.join("/");
+    }
+    
+    const res = await fetch(url, {
       headers,
       credentials: "include",
     });
