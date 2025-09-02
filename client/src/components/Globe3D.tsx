@@ -186,28 +186,18 @@ export default function Globe3D({
         const color = user.plan === 'creator' ? '#10b981' : user.plan === 'traveler' ? '#3b82f6' : '#6b7280';
         const planIcon = user.plan === 'creator' ? '⭐' : user.plan === 'traveler' ? '✈️' : '👤';
         
-        // Create premium marker design
+        // Create simple but effective marker
         const marker = new window.google.maps.Marker({
           position: { lat: user.lat!, lng: user.lng! },
           map: map,
           title: `${user.displayName || user.username} - ${user.plan}`,
           icon: {
-            url: `data:image/svg+xml;base64,${btoa(`
-              <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                    <dropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
-                  </filter>
-                </defs>
-                <circle cx="25" cy="25" r="22" fill="white" stroke="${color}" stroke-width="3" filter="url(#shadow)"/>
-                <circle cx="25" cy="25" r="16" fill="${color}" opacity="0.1"/>
-                <text x="25" y="30" text-anchor="middle" fill="${color}" font-size="16" font-weight="bold">
-                  ${planIcon}
-                </text>
-              </svg>
-            `)}`,
-            scaledSize: new window.google.maps.Size(50, 50),
-            anchor: new window.google.maps.Point(25, 25)
+            path: window.google.maps.SymbolPath.CIRCLE,
+            fillColor: color,
+            fillOpacity: 0.8,
+            strokeColor: 'white',
+            strokeWeight: 3,
+            scale: 12
           },
           animation: window.google.maps.Animation.DROP
         });
