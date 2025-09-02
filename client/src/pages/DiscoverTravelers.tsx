@@ -28,6 +28,7 @@ export default function DiscoverTravelers() {
     { value: "FR", label: "France", lat: 46.6034, lng: 1.8883, zoom: 6 },
     { value: "DE", label: "Germany", lat: 51.1657, lng: 10.4515, zoom: 6 },
     { value: "JP", label: "Japan", lat: 36.2048, lng: 138.2529, zoom: 6 },
+    { value: "KR", label: "South Korea", lat: 35.9078, lng: 127.7669, zoom: 7 },
     { value: "AU", label: "Australia", lat: -25.2744, lng: 133.7751, zoom: 5 },
     { value: "CA", label: "Canada", lat: 56.1304, lng: -106.3468, zoom: 4 },
     { value: "IT", label: "Italy", lat: 41.8719, lng: 12.5674, zoom: 6 },
@@ -59,6 +60,14 @@ export default function DiscoverTravelers() {
       { value: "Chicago", label: "Chicago", lat: 41.8781, lng: -87.6298, zoom: 10 },
       { value: "Miami", label: "Miami", lat: 25.7617, lng: -80.1918, zoom: 10 },
       { value: "San Francisco", label: "San Francisco", lat: 37.7749, lng: -122.4194, zoom: 10 },
+    ],
+    "KR": [
+      { value: "all", label: "All Cities", lat: 35.9078, lng: 127.7669, zoom: 7 },
+      { value: "Seoul", label: "Seoul", lat: 37.5665, lng: 126.9780, zoom: 10 },
+      { value: "Busan", label: "Busan", lat: 35.1796, lng: 129.0756, zoom: 10 },
+      { value: "Incheon", label: "Incheon", lat: 37.4563, lng: 126.7052, zoom: 10 },
+      { value: "Daegu", label: "Daegu", lat: 35.8714, lng: 128.6014, zoom: 10 },
+      { value: "Jeju", label: "Jeju Island", lat: 33.4996, lng: 126.5312, zoom: 10 },
     ],
   };
 

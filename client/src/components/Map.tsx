@@ -48,6 +48,7 @@ const COUNTRIES: CountryData[] = [
   { code: 'FR', name: 'France', lat: 46.6, lng: 2.2, zoom: 6 },
   { code: 'DE', name: 'Germany', lat: 51.2, lng: 10.5, zoom: 6 },
   { code: 'JP', name: 'Japan', lat: 36.2, lng: 138.2, zoom: 5 },
+  { code: 'KR', name: 'South Korea', lat: 35.9078, lng: 127.7669, zoom: 7 },
   { code: 'AU', name: 'Australia', lat: -25.3, lng: 133.8, zoom: 4 },
   { code: 'ES', name: 'Spain', lat: 40.5, lng: -3.7, zoom: 6 },
   { code: 'IT', name: 'Italy', lat: 41.9, lng: 12.6, zoom: 6 },
@@ -78,6 +79,13 @@ const CITIES: Record<string, CityData[]> = {
     { name: 'Kyoto', country: 'JP', lat: 35.0116, lng: 135.7681, zoom: 11 },
     { name: 'Osaka', country: 'JP', lat: 34.6937, lng: 135.5023, zoom: 11 },
     { name: 'Hiroshima', country: 'JP', lat: 34.3853, lng: 132.4553, zoom: 11 },
+  ],
+  KR: [
+    { name: 'Seoul', country: 'KR', lat: 37.5665, lng: 126.9780, zoom: 11 },
+    { name: 'Busan', country: 'KR', lat: 35.1796, lng: 129.0756, zoom: 11 },
+    { name: 'Incheon', country: 'KR', lat: 37.4563, lng: 126.7052, zoom: 11 },
+    { name: 'Daegu', country: 'KR', lat: 35.8714, lng: 128.6014, zoom: 11 },
+    { name: 'Jeju', country: 'KR', lat: 33.4996, lng: 126.5312, zoom: 11 },
   ],
 };
 
@@ -273,11 +281,29 @@ export function Map({ onUserSelect, height = "h-96", selectedCountry, selectedCi
       worldCopyJump: true
     });
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Add Google-style satellite tiles with fallback
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '© Esri, Maxar, Earthstar Geographics',
+      maxZoom: 18,
+      id: 'satellite'
+    });
+    
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 18,
-    }).addTo(map);
+      id: 'street'
+    });
+    
+    // Default to satellite for Google Earth-like experience
+    satelliteLayer.addTo(map);
+    
+    // Add layer control for switching between views
+    const baseLayers = {
+      '🛰️ Satellite': satelliteLayer,
+      '🗺️ Street Map': streetLayer
+    };
+    
+    L.control.layers(baseLayers).addTo(map);
 
     // Add user location marker with custom icon
     const userIcon = L.divIcon({
