@@ -34,6 +34,68 @@ export default function Globe3D({
   const [isGoogleMapsLoaded, setIsGoogleMapsLoaded] = useState(false);
 
   // Load Google Maps API
+  // Setup global connection request handler
+  useEffect(() => {
+    const handleConnectionRequest = async (userId: string) => {
+      try {
+        console.log('Sending connection request to user:', userId);
+        
+        const response = await fetch('/api/connect-requests', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            recipientId: userId,
+            message: 'Hi! I found you on HubLink and would love to connect!'
+          }),
+        });
+
+        if (response.ok) {
+          // Show success notification
+          const button = document.querySelector(`[onclick="window.sendConnectionRequest('${userId}')"]`) as HTMLElement;
+          if (button) {
+            button.innerHTML = '✅ Request Sent!';
+            button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+            button.style.cursor = 'default';
+            button.onclick = null;
+            
+            setTimeout(() => {
+              // Close any open InfoWindows
+              document.querySelectorAll('.gm-ui-hover-effect').forEach(el => {
+                (el as HTMLElement).click();
+              });
+            }, 1500);
+          }
+          
+          console.log('Connection request sent successfully!');
+        } else {
+          throw new Error('Failed to send connection request');
+        }
+      } catch (error) {
+        console.error('Connection request error:', error);
+        
+        const button = document.querySelector(`[onclick="window.sendConnectionRequest('${userId}')"]`) as HTMLElement;
+        if (button) {
+          button.innerHTML = '❌ Request Failed';
+          button.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+          setTimeout(() => {
+            button.innerHTML = '🤝 Send Connection Request';
+            button.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+          }, 2000);
+        }
+      }
+    };
+
+    // Make function globally available
+    (window as any).sendConnectionRequest = handleConnectionRequest;
+
+    return () => {
+      // Cleanup
+      delete (window as any).sendConnectionRequest;
+    };
+  }, []);
+
   useEffect(() => {
     const loadGoogleMaps = async () => {
       if (window.google && window.google.maps) {
@@ -232,64 +294,117 @@ export default function Globe3D({
           animation: window.google.maps.Animation.DROP
         });
 
-        // Enhanced info window with better styling
+        // Enhanced info window with detailed traveler info and connection request
         const infoWindow = new window.google.maps.InfoWindow({
           content: `
             <div style="
-              padding: 15px; 
+              padding: 20px; 
               font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-              min-width: 250px;
-              background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-              border-radius: 12px;
-              box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+              min-width: 300px;
+              max-width: 350px;
+              background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+              border-radius: 16px;
+              box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+              border: 1px solid rgba(255,255,255,0.2);
             ">
-              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
-                <img src="${user.profileImageUrl}" style="
-                  width: 50px; 
-                  height: 50px; 
-                  border-radius: 50%; 
-                  object-fit: cover;
-                  border: 3px solid ${color};
-                " />
-                <div>
-                  <div style="font-weight: 700; font-size: 16px; color: #1e293b;">${user.displayName || user.username}</div>
+              <!-- Header Section -->
+              <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <div style="position: relative;">
+                  <img src="${user.profileImageUrl}" style="
+                    width: 60px; 
+                    height: 60px; 
+                    border-radius: 50%; 
+                    object-fit: cover;
+                    border: 4px solid ${color};
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                  " />
+                  <div style="
+                    position: absolute;
+                    bottom: -2px;
+                    right: -2px;
+                    background: ${locationColor};
+                    width: 18px;
+                    height: 18px;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                  "></div>
+                </div>
+                <div style="flex: 1;">
+                  <div style="font-weight: 700; font-size: 18px; color: #1e293b; margin-bottom: 4px;">
+                    ${user.displayName || user.username}
+                  </div>
                   <div style="
                     color: ${locationColor}; 
                     font-size: 12px; 
                     font-weight: 600;
                     text-transform: uppercase;
                     background: ${locationColor}20;
-                    padding: 2px 8px;
+                    padding: 4px 10px;
                     border-radius: 20px;
                     display: inline-block;
-                    margin-top: 4px;
-                  ">${isLocationOn ? '🟢' : '🔴'} ${locationStatus}</div>
+                    margin-bottom: 4px;
+                  ">${isLocationOn ? '🟢 ONLINE' : '🔴 OFFLINE'}</div>
                   <div style="
                     color: ${color}; 
-                    font-size: 11px; 
-                    font-weight: 500;
-                    background: ${color}15;
-                    padding: 1px 6px;
-                    border-radius: 10px;
+                    font-size: 12px; 
+                    font-weight: 600;
+                    background: ${color}20;
+                    padding: 3px 8px;
+                    border-radius: 15px;
                     display: inline-block;
-                    margin-top: 2px;
-                  ">${planIcon} ${user.plan}</div>
+                  ">${planIcon} ${user.plan?.toUpperCase() || 'FREE'}</div>
                 </div>
               </div>
+              
+              <!-- Location & Details -->
               <div style="
-                background: white;
-                padding: 10px;
-                border-radius: 8px;
-                border-left: 4px solid ${locationColor};
-                font-size: 13px;
-                color: #475569;
+                background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+                padding: 12px;
+                border-radius: 12px;
+                margin-bottom: 15px;
+                border-left: 4px solid ${color};
               ">
-                📍 ${user.city || 'Unknown'}, ${user.country || 'Unknown'}<br>
-                ${user.bio ? `💭 ${user.bio.substring(0, 100)}...` : ''}
+                <div style="font-size: 14px; color: #334155; margin-bottom: 8px;">
+                  <strong>📍 ${user.city || 'Unknown'}, ${user.country || 'Unknown'}</strong>
+                </div>
+                ${user.interests && user.interests.length > 0 ? `
+                  <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">
+                    <strong>🎯 Interests:</strong> ${user.interests.join(', ')}
+                  </div>
+                ` : ''}
+                <div style="font-size: 12px; color: #64748b;">
+                  <strong>📅 Joined:</strong> ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
+                </div>
+              </div>
+              
+              <!-- Action Button -->
+              <button 
+                onclick="window.sendConnectionRequest('${user.id}')" 
+                style="
+                  width: 100%;
+                  background: linear-gradient(135deg, ${color} 0%, ${color}dd 100%);
+                  color: white;
+                  border: none;
+                  padding: 12px 16px;
+                  border-radius: 10px;
+                  font-size: 14px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  box-shadow: 0 4px 12px ${color}40;
+                  transition: all 0.2s ease;
+                "
+                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px ${color}50';"
+                onmouseout="this.style.transform='translateY(0px)'; this.style.boxShadow='0 4px 12px ${color}40';"
+              >
+                🤝 Send Connection Request
+              </button>
+              
+              <div style="text-align: center; margin-top: 10px; font-size: 11px; color: #94a3b8;">
+                Connect with ${user.firstName || user.displayName || user.username} to start your journey together!
               </div>
             </div>
           `,
-          pixelOffset: new window.google.maps.Size(0, -10)
+          pixelOffset: new window.google.maps.Size(0, -15)
         });
 
         // Click handler
