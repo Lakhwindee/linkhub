@@ -391,26 +391,31 @@ export default function DiscoverTravelers() {
   }
 
   return (
-    <div className="fixed inset-0 w-full h-full bg-background">
-      {/* Full Screen Google Maps */}
-      <div className="absolute inset-0 w-full h-full">
-        <Globe3D users={typedUsers} />
-      </div>
-      
-      {/* Floating Controls - Top Left */}
-      <div className="absolute top-4 left-4 z-50 w-72 space-y-3">
-        {/* Quick Filter Card */}
-        <Card className="bg-white/95 backdrop-blur-sm border-white/20 shadow-lg">
-          <CardHeader className="pb-2">
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar with Controls */}
+      <div className="w-80 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
+        {/* Header */}
+        <div className="text-center space-y-2 mb-6">
+          <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
+            <Globe className="w-6 h-6 text-blue-500" />
+            Discover Travelers
+          </h1>
+          <p className="text-xs text-muted-foreground">Find and connect with travelers worldwide</p>
+        </div>
+
+        {/* Location Filters */}
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
-              <Globe className="w-4 h-4 text-blue-500" />
-              Discover Travelers
+              <MapPin className="w-4 h-4" />
+              Location Filters
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
             <div>
+              <Label className="text-xs">Country</Label>
               <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8">
                   <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
                 <SelectContent className="z-[9999]">
@@ -424,8 +429,9 @@ export default function DiscoverTravelers() {
             </div>
             
             <div>
+              <Label className="text-xs">City</Label>
               <Select value={selectedCity} onValueChange={handleCityChange} disabled={selectedCountry === "all"}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8">
                   <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent className="z-[9999]">
@@ -440,22 +446,95 @@ export default function DiscoverTravelers() {
             </div>
           </CardContent>
         </Card>
-        
-        {/* Stats Card */}
-        <Card className="bg-white/90 backdrop-blur-sm border-white/20 shadow-lg">
-          <CardContent className="p-3">
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="text-center">
-                <div className="font-semibold text-lg">{users.length}</div>
-                <div className="text-muted-foreground">Travelers</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-lg text-green-600">{Math.floor(users.length * 0.7)}</div>
-                <div className="text-muted-foreground">Online</div>
+
+        {/* Live Sharing */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Radar className="w-4 h-4" />
+              Live Sharing
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="live-location"
+                checked={liveLocationSharing}
+                onCheckedChange={setLiveLocationSharing}
+              />
+              <Label htmlFor="live-location" className="text-xs">
+                Share Live Location
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {liveLocationSharing ? "📍 Sharing with connected users" : "🔒 Location sharing disabled"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Travelers Found */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Travelers Found
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-2xl font-bold">{users.length}</div>
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    Travelers
+                  </span>
+                  <span>{users.filter((u: any) => u.plan === 'traveler').length}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                    Creators
+                  </span>
+                  <span>{users.filter((u: any) => u.plan === 'creator').length}</span>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Quick Stats */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Quick Stats</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span>Countries</span>
+                <Badge variant="secondary">{COUNTRIES.length - 1}</Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Cities</span>
+                <Badge variant="secondary">
+                  {Object.values(CITIES).reduce((acc, cities) => acc + cities.length, 0)}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span>Online</span>
+                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                  {Math.floor(users.length * 0.7)}
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+      </div>
+
+      {/* Google Maps Integration */}
+      <div className="flex-1 relative bg-background overflow-hidden">
+        <Globe3D users={typedUsers} />
       </div>
 
       {/* Selected User Details - Hidden for now */}
