@@ -35,39 +35,50 @@ export default function Globe3D({
 
   // Load Google Maps API
   useEffect(() => {
-    const loadGoogleMaps = () => {
+    const loadGoogleMaps = async () => {
       if (window.google && window.google.maps) {
         console.log('Google Maps already loaded');
         setIsGoogleMapsLoaded(true);
         return;
       }
 
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      console.log('Loading Google Maps API with key:', apiKey ? 'API key found' : 'NO API KEY');
-      
-      if (!apiKey) {
-        setError('Google Maps API key not configured.');
+      try {
+        // Fetch API key from server
+        const response = await fetch('/api/config/maps-key');
+        const data = await response.json();
+        
+        if (!response.ok || !data.apiKey) {
+          console.log('Loading Google Maps API with key:', 'NO API KEY');
+          setError('Google Maps API key not configured.');
+          setIsLoading(false);
+          return;
+        }
+
+        const apiKey = data.apiKey;
+        console.log('Loading Google Maps API with key:', apiKey ? 'API key found' : 'NO API KEY');
+
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&map_ids=DEMO_MAP_ID&libraries=geometry,places&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+
+        window.initMap = () => {
+          console.log('Google Maps API loaded successfully');
+          setIsGoogleMapsLoaded(true);
+        };
+
+        script.onerror = (error) => {
+          console.error('Failed to load Google Maps API:', error);
+          setError('Failed to load Google Maps API.');
+          setIsLoading(false);
+        };
+
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Failed to fetch API key:', error);
+        setError('Failed to fetch Google Maps API configuration.');
         setIsLoading(false);
-        return;
       }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&map_ids=DEMO_MAP_ID&libraries=geometry,places&callback=initMap`;
-      script.async = true;
-      script.defer = true;
-
-      window.initMap = () => {
-        console.log('Google Maps API loaded successfully');
-        setIsGoogleMapsLoaded(true);
-      };
-
-      script.onerror = (error) => {
-        console.error('Failed to load Google Maps API:', error);
-        setError('Failed to load Google Maps API.');
-        setIsLoading(false);
-      };
-
-      document.head.appendChild(script);
     };
 
     loadGoogleMaps();
