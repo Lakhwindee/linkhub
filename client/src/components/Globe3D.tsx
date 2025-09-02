@@ -24,15 +24,16 @@ export default function Globe3D({ users, width = 500, height = 500, userLocation
         setIsLoading(true);
         setError(null);
         
-        // Create 3D Globe instance  
+        // Create 3D Globe instance with high quality texture
         const globe = (Globe as any)()
-          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+          .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-night.jpg')
           .backgroundColor('rgba(0,0,0,0)')
           .showAtmosphere(true)
           .atmosphereColor('lightblue')
           .atmosphereAltitude(0.15)
           .width(width)
-          .height(height);
+          .height(height)
+          .rendererConfig({ antialias: true, alpha: true, precision: 'highp' });
         
         globeInstanceRef.current = globe;
         globe(globeRef.current!);
