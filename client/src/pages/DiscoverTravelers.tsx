@@ -326,8 +326,8 @@ const CITIES = {
   ],
 };
 
-// Leaflet global variable
-let L: any = null;
+// Map global variable
+let MapAPI: any = null;
 
 export default function DiscoverTravelers() {
   const [selectedCountry, setSelectedCountry] = useState("all");
@@ -370,158 +370,107 @@ export default function DiscoverTravelers() {
   // Type users data properly
   const typedUsers = users as any[];
 
-  // Load Leaflet dynamically
-  useEffect(() => {
-    const loadLeaflet = async () => {
-      if (typeof window !== 'undefined' && !L) {
-        try {
-          // Check if already loaded
-          if ((window as any).L) {
-            L = (window as any).L;
-            return;
-          }
+  // Realistic map state with iframe approach
+  const [mapCenter, setMapCenter] = useState<{lat: number, lng: number}>({ lat: 20, lng: 0 });
+  const [mapZoom, setMapZoom] = useState<number>(3);
 
-          // Load CSS
-          const cssLink = document.createElement('link');
-          cssLink.rel = 'stylesheet';
-          cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-          document.head.appendChild(cssLink);
-
-          // Load JS
-          const script = document.createElement('script');
-          script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-          script.onload = () => {
-            L = (window as any).L;
-          };
-          document.head.appendChild(script);
-        } catch (error) {
-          console.error('Error loading Leaflet:', error);
-        }
-      }
-    };
-    loadLeaflet();
-  }, []);
-
-  // Initialize map
-  const initializeMap = () => {
-    if (!mapRef.current || mapInstanceRef.current || !L) return;
-
-    // Create map with optimized performance settings
-    const map = L.map(mapRef.current, {
-      center: [20, 0],
-      zoom: 3,
-      minZoom: 3,
-      maxZoom: 18,
-      zoomControl: true,
-      scrollWheelZoom: true,
-      worldCopyJump: false,
-      maxBounds: [[-80, -170], [80, 170]],
-      maxBoundsViscosity: 1.0,
-      preferCanvas: true,
-      zoomSnap: 1, // Simplified zoom steps for better performance
-      zoomDelta: 1, // Standard zoom increments
-      wheelPxPerZoomLevel: 40, // Faster zoom response
-      zoomAnimation: false, // Disable animations to prevent hanging
-      fadeAnimation: false, // Disable fade to improve performance
-      markerZoomAnimation: false, // Disable marker animations
-    });
+  // Generate realistic map URL
+  const getMapUrl = () => {
+    const zoom = Math.max(3, Math.min(15, mapZoom));
+    const lat = Math.max(-80, Math.min(80, mapCenter.lat));
+    const lng = Math.max(-170, Math.min(170, mapCenter.lng));
     
-    // Add globe-like styling
-    if (mapRef.current) {
-      mapRef.current.style.borderRadius = '50%';
-      mapRef.current.style.overflow = 'hidden';
-      mapRef.current.style.boxShadow = '0 0 50px rgba(0,0,0,0.3), inset 0 0 100px rgba(0,0,0,0.1)';
-      mapRef.current.style.border = '3px solid rgba(255,255,255,0.1)';
-      mapRef.current.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent 50%), linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
-    }
-
-    // Optimized satellite layer to prevent hanging
-    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '© Esri',
-      minZoom: 3,
-      maxZoom: 18,
-      updateWhenIdle: true, // Wait for zoom to finish
-      updateWhenZooming: true, // Continue updating while zooming
-      keepBuffer: 1, // Smaller buffer to reduce memory usage
-      updateInterval: 200, // Slower update for stability
-    });
-
-    // Street map layer with performance optimization
-    const streets = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      minZoom: 3,
-      maxZoom: 18,
-      updateWhenIdle: true,
-      updateWhenZooming: true,
-      keepBuffer: 1,
-      updateInterval: 200,
-    });
-
-    // Labels overlay with minimal settings
-    const labels = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '© Esri',
-      minZoom: 3,
-      maxZoom: 18,
-      opacity: 0.8,
-      updateWhenIdle: true,
-      updateWhenZooming: true,
-      keepBuffer: 1,
-      updateInterval: 200,
-    });
-
-    // Add default layers (satellite + labels)
-    satellite.addTo(map);
-    labels.addTo(map);
-
-    // Layer control
-    const baseLayers = {
-      'Satellite': satellite,
-      'Streets': streets,
-    };
-    
-    const overlayLayers = {
-      'Country/City Names': labels
-    };
-    
-    L.control.layers(baseLayers, overlayLayers).addTo(map);
-
-    mapInstanceRef.current = map;
-
-    // Get user location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-          setUserLocation([lat, lng]);
-          
-          // Add user location marker
-          const userIcon = L.divIcon({
-            html: '<div style="background: #3b82f6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);"></div>',
-            iconSize: [16, 16],
-            className: 'user-location-marker'
-          });
-          
-          L.marker([lat, lng], { icon: userIcon })
-            .addTo(map)
-            .bindPopup('📍 Your Location')
-            .openPopup();
-        },
-        () => {
-          // Default to London if geolocation fails
-          setUserLocation([51.5074, -0.1278]);
-        }
-      );
-    }
+    // Use OpenStreetMap embedded map
+    return `https://www.openstreetmap.org/export/embed.html?bbox=${lng-10}%2C${lat-10}%2C${lng+10}%2C${lat+10}&amp;layer=mapnik`;
   };
 
-  // Initialize map when Leaflet is loaded
+  // Initialize realistic map
+  const initializeMap = () => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    const mapContainer = mapRef.current;
+    
+    // Create iframe with realistic map
+    const iframe = document.createElement('iframe');
+    iframe.src = getMapUrl();
+    iframe.style.width = '2400px';
+    iframe.style.height = '2400px';
+    iframe.style.border = 'none';
+    iframe.style.borderRadius = '50%';
+    iframe.style.transform = 'scale(1)';
+    iframe.style.transformOrigin = 'center';
+    iframe.style.boxShadow = '0 0 50px rgba(0,0,0,0.3), inset 0 0 100px rgba(0,0,0,0.1)';
+    iframe.frameBorder = '0';
+    iframe.scrolling = 'no';
+    
+    // Add smooth overlay for better performance
+    const overlay = document.createElement('div');
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.right = '0';
+    overlay.style.bottom = '0';
+    overlay.style.background = 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 50%)';
+    overlay.style.borderRadius = '50%';
+    overlay.style.pointerEvents = 'none';
+    
+    // Clear and setup container
+    mapContainer.innerHTML = '';
+    mapContainer.style.position = 'relative';
+    mapContainer.style.borderRadius = '50%';
+    mapContainer.style.overflow = 'hidden';
+    mapContainer.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%)';
+    
+    mapContainer.appendChild(iframe);
+    mapContainer.appendChild(overlay);
+    
+    // Add user markers overlay
+    const markersLayer = document.createElement('div');
+    markersLayer.style.position = 'absolute';
+    markersLayer.style.top = '0';
+    markersLayer.style.left = '0';
+    markersLayer.style.right = '0';
+    markersLayer.style.bottom = '0';
+    markersLayer.style.pointerEvents = 'none';
+    markersLayer.style.borderRadius = '50%';
+    
+    // Add user markers
+    typedUsers.forEach((user: any, index: number) => {
+      if (user.location?.lat && user.location?.lng) {
+        const marker = document.createElement('div');
+        marker.style.position = 'absolute';
+        marker.style.width = '12px';
+        marker.style.height = '12px';
+        marker.style.background = '#ef4444';
+        marker.style.borderRadius = '50%';
+        marker.style.border = '2px solid white';
+        marker.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+        marker.style.cursor = 'pointer';
+        marker.style.pointerEvents = 'auto';
+        
+        // Calculate position (simple projection)
+        const x = ((user.location.lng + 180) / 360) * 100;
+        const y = ((90 - user.location.lat) / 180) * 100;
+        marker.style.left = `${x}%`;
+        marker.style.top = `${y}%`;
+        marker.style.transform = 'translate(-50%, -50%)';
+        
+        marker.title = `${user.displayName || user.username} - ${user.city}, ${user.country}`;
+        markersLayer.appendChild(marker);
+      }
+    });
+    
+    mapContainer.appendChild(markersLayer);
+    mapInstanceRef.current = { iframe, markersLayer };
+  };
+
+  // Initialize map when component mounts
   useEffect(() => {
-    if (L && mapRef.current && !mapInstanceRef.current) {
+    if (mapRef.current && !mapInstanceRef.current) {
       const timer = setTimeout(initializeMap, 100);
       return () => clearTimeout(timer);
     }
-  }, [L]);
+  }, [typedUsers]);
 
   // Update focus location when country/city changes
   useEffect(() => {
@@ -541,58 +490,13 @@ export default function DiscoverTravelers() {
     }
   }, [selectedCountry, selectedCity]);
 
-  // Update markers when users data changes
+  // Update iframe map when users data changes
   useEffect(() => {
-    if (!mapInstanceRef.current || !typedUsers.length) return;
-
-    // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
-    markersRef.current = [];
-
-    // Add user markers
-    typedUsers.forEach((user: any) => {
-      if (!user.lat || !user.lng || !user.showOnMap) return;
-
-      const planColors: {[key: string]: string} = {
-        free: '#9ca3af',
-        traveler: '#22c55e', 
-        creator: '#f97316'
-      };
-
-      const color = planColors[user.plan] || '#9ca3af';
-      
-      const userIcon = L.divIcon({
-        html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3); cursor: pointer;"></div>`,
-        iconSize: [20, 20],
-        className: 'user-marker'
-      });
-
-      const marker = L.marker([user.lat, user.lng], { icon: userIcon })
-        .addTo(mapInstanceRef.current);
-
-      const popupContent = `
-        <div style="min-width: 200px; padding: 8px;">
-          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <img src="${user.profileImageUrl || '/api/placeholder/40/40'}" 
-                 style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />
-            <div>
-              <div style="font-weight: 600; font-size: 14px;">${user.displayName || user.username}</div>
-              <div style="font-size: 12px; color: #666;">📍 ${user.city}, ${user.country}</div>
-            </div>
-          </div>
-          <div style="font-size: 12px; color: #666; margin-bottom: 8px;">
-            ${user.interests?.slice(0, 2).join(', ') || 'Explorer'}
-          </div>
-          <button onclick="sendConnectRequest('${user.id}', '${user.displayName || user.username}')" 
-                  style="width: 100%; background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">
-            🤝 Connect Me
-          </button>
-        </div>
-      `;
-
-      marker.bindPopup(popupContent);
-      markersRef.current.push(marker);
-    });
+    if (mapInstanceRef.current && typedUsers.length > 0) {
+      // Re-initialize map to update markers
+      mapInstanceRef.current = null;
+      initializeMap();
+    }
   }, [typedUsers]);
 
   // Connect request function (global for popup buttons)
@@ -611,18 +515,26 @@ export default function DiscoverTravelers() {
     setSelectedCity("all");
     
     // Auto zoom to selected country
-    if (mapInstanceRef.current && value !== "all") {
+    if (value !== "all") {
       const country = COUNTRIES.find(c => c.code === value);
       if (country) {
-        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: false // Disable animation for instant response
-        });
+        setMapCenter({ lat: country.lat, lng: country.lng });
+        setMapZoom(country.zoom);
+        // Update iframe URL
+        if (mapInstanceRef.current?.iframe) {
+          const zoom = Math.max(3, Math.min(15, country.zoom));
+          const lat = Math.max(-80, Math.min(80, country.lat));
+          const lng = Math.max(-170, Math.min(170, country.lng));
+          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-5}%2C${lat-5}%2C${lng+5}%2C${lat+5}&amp;layer=mapnik`;
+        }
       }
-    } else if (mapInstanceRef.current && value === "all") {
+    } else {
       // Reset to world view
-      mapInstanceRef.current.setView([20, 0], 3, {
-        animate: false // Disable animation for instant response
-      });
+      setMapCenter({ lat: 20, lng: 0 });
+      setMapZoom(3);
+      if (mapInstanceRef.current?.iframe) {
+        mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=-170%2C-80%2C170%2C80&amp;layer=mapnik`;
+      }
     }
   };
 
@@ -630,21 +542,32 @@ export default function DiscoverTravelers() {
     setSelectedCity(value);
     
     // Auto zoom to selected city
-    if (mapInstanceRef.current && value !== "all" && selectedCountry !== "all") {
+    if (value !== "all" && selectedCountry !== "all") {
       const cities = CITIES[selectedCountry as keyof typeof CITIES] || [];
       const city = cities.find(c => c.name === value);
       if (city) {
-        mapInstanceRef.current.setView([city.lat, city.lng], city.zoom, {
-          animate: false // Disable animation for instant response
-        });
+        setMapCenter({ lat: city.lat, lng: city.lng });
+        setMapZoom(city.zoom);
+        // Update iframe URL
+        if (mapInstanceRef.current?.iframe) {
+          const zoom = Math.max(3, Math.min(15, city.zoom));
+          const lat = Math.max(-80, Math.min(80, city.lat));
+          const lng = Math.max(-170, Math.min(170, city.lng));
+          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-2}%2C${lat-2}%2C${lng+2}%2C${lat+2}&amp;layer=mapnik`;
+        }
       }
-    } else if (mapInstanceRef.current && value === "all" && selectedCountry !== "all") {
+    } else if (value === "all" && selectedCountry !== "all") {
       // Zoom back to country view
       const country = COUNTRIES.find(c => c.code === selectedCountry);
       if (country) {
-        mapInstanceRef.current.setView([country.lat, country.lng], country.zoom, {
-          animate: false // Disable animation for instant response
-        });
+        setMapCenter({ lat: country.lat, lng: country.lng });
+        setMapZoom(country.zoom);
+        if (mapInstanceRef.current?.iframe) {
+          const zoom = Math.max(3, Math.min(15, country.zoom));
+          const lat = Math.max(-80, Math.min(80, country.lat));
+          const lng = Math.max(-170, Math.min(170, country.lng));
+          mapInstanceRef.current.iframe.src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-5}%2C${lat-5}%2C${lng+5}%2C${lat+5}&amp;layer=mapnik`;
+        }
       }
     }
   };
@@ -654,14 +577,14 @@ export default function DiscoverTravelers() {
     return CITIES[selectedCountry as keyof typeof CITIES] || [];
   };
 
-  if (!L) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-950 dark:to-green-950 flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 mx-auto border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           <div className="space-y-2">
-            <h3 className="text-xl font-semibold">🗺️ Loading Discovery Map</h3>
-            <p className="text-sm text-muted-foreground">Preparing Google Earth-style traveler discovery...</p>
+            <h3 className="text-xl font-semibold">🗺️ Loading Realistic Map</h3>
+            <p className="text-sm text-muted-foreground">Preparing smooth interactive world map...</p>
           </div>
         </div>
       </div>
