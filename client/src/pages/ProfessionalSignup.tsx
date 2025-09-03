@@ -14,7 +14,7 @@ import {
   Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { countryCodes, countries, statesByCountry, getCitiesForState } from "@/data/locationData";
+import { countryCodes, countries, statesByCountry, getCitiesForState, citiesByCountry } from "@/data/locationData";
 
 interface ExtractedInfo {
   documentNumber?: string;
@@ -197,7 +197,7 @@ export default function ProfessionalSignup() {
     }
 
     try {
-      // Store signup data in sessionStorage for after login
+      // For demo purposes, directly complete signup without OAuth
       const signupData = {
         ...formData,
         role: selectedRole,
@@ -206,21 +206,33 @@ export default function ProfessionalSignup() {
         ...extractedInfo,
         verificationStatus: selectedRole === 'publisher' ? verificationStatus : 'verified',
       };
-      
-      sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
-      sessionStorage.setItem('hublink_signup_type', 'professional');
+
+      // Create demo user account  
+      const demoUserId = 'demo-' + Date.now();
+      localStorage.setItem('hublink_demo_user', 'true');
+      localStorage.setItem('hublink_user_id', demoUserId);
+      localStorage.setItem('hublink_user_role', selectedRole || 'creator');
+      localStorage.setItem('hublink_verification_complete', 'true');
+      localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
       
       toast({
-        title: "Redirecting to Login",
-        description: "Please login with your Replit account to complete signup.",
+        title: "Account Created Successfully!",
+        description: `Welcome to HubLink! Redirecting to your dashboard...`,
       });
       
-      // Redirect to Replit OAuth login
-      window.location.href = '/api/login';
+      // Small delay for better UX
+      setTimeout(() => {
+        if (selectedRole === 'publisher') {
+          window.location.href = '/stays';
+        } else {
+          window.location.href = '/dashboard';
+        }
+      }, 1500);
+      
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to initiate signup. Please try again.",
+        description: "Failed to complete signup. Please try again.",
         variant: "destructive",
       });
     }
