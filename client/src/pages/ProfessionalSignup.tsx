@@ -14,7 +14,7 @@ import {
   Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { countryCodes, countries, statesByCountry, citiesByCountry } from "@/data/locationData";
+import { countryCodes, countries, statesByCountry, getCitiesForState } from "@/data/locationData";
 
 interface ExtractedInfo {
   documentNumber?: string;

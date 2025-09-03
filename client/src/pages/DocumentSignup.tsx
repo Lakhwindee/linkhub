@@ -12,7 +12,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Upload, CheckCircle, AlertCircle, Clock, User, MapPin, Calendar } from "lucide-react";
 import { useLocation } from "wouter";
-import { countries, citiesByCountry } from "@/data/locationData";
+import { countries, statesByCountry, getCitiesForState } from "@/data/locationData";
 
 interface ExtractedInfo {
   documentNumber?: string;
