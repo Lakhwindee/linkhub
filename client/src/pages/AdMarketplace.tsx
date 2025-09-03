@@ -29,6 +29,8 @@ export default function AdMarketplace() {
   const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
   const [showCountdownOverlay, setShowCountdownOverlay] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(1);
+  const [liveCountdown, setLiveCountdown] = useState("");
+  const [reservedCampaignId, setReservedCampaignId] = useState<string | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -84,12 +86,44 @@ export default function AdMarketplace() {
     }
   }, [adsError, toast]);
 
+  // Live countdown timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (showCountdownOverlay && reservedCampaignId) {
+      const startTime = Date.now();
+      const endTime = startTime + (5 * 24 * 60 * 60 * 1000); // 5 days from now
+      
+      interval = setInterval(() => {
+        const now = Date.now();
+        const timeLeft = endTime - now;
+        
+        if (timeLeft <= 0) {
+          setLiveCountdown("Time's up!");
+          return;
+        }
+        
+        const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+        const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+        
+        setLiveCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showCountdownOverlay, reservedCampaignId]);
+
   const reserveAdMutation = useMutation({
     mutationFn: async (adId: string) => {
       return await apiRequest("POST", `/api/ads/${adId}/reserve`);
     },
-    onSuccess: () => {
-      // Show red countdown overlay immediately
+    onSuccess: (data, adId) => {
+      // Show countdown overlay immediately
+      setReservedCampaignId(adId);
       setShowCountdownOverlay(true);
       setOverlayOpacity(1);
       
@@ -107,8 +141,9 @@ export default function AdMarketplace() {
         // Hide overlay and switch tab after fade
         setTimeout(() => {
           setShowCountdownOverlay(false);
+          setReservedCampaignId(null);
           setCurrentTab("my-campaigns");
-        }, 300); // 300ms for fade transition
+        }, 500); // 500ms for fade transition
       }, 3000);
     },
     onError: (error) => {
@@ -628,12 +663,14 @@ export default function AdMarketplace() {
               🎯 Campaign Reserved!
             </h3>
             <p className="text-xl text-green-500 dark:text-green-300 mb-6 font-semibold">
-              ⏰ 5-Day Countdown Started!
+              ⏰ Live Countdown
             </p>
             <div className="bg-green-50 dark:bg-green-950/50 p-4 rounded-lg border-2 border-green-200 dark:border-green-800">
               <div className="flex items-center justify-center space-x-3 text-green-700 dark:text-green-300">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
-                <span className="font-medium">Complete and submit within 5 days</span>
+                <span className="font-bold text-lg font-mono tracking-wider">
+                  {liveCountdown || "4d 23h 59m 59s"}
+                </span>
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-ping"></div>
               </div>
             </div>
