@@ -142,14 +142,13 @@ export default function PublisherAds() {
   };
 
   const onSubmit = (data: PublisherAdFormData) => {
+    // For demo purposes, allow submission without image
     if (!adImageUrl) {
-      toast({
-        title: "Image Required",
-        description: "Please upload an ad creative image.",
-        variant: "destructive",
-      });
-      return;
+      // Use a placeholder image for demo
+      setAdImageUrl("https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop");
     }
+    
+    console.log('Form submitted:', data);
     createAdMutation.mutate(data);
   };
 
@@ -456,7 +455,7 @@ export default function PublisherAds() {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={createAdMutation.isPending || !adImageUrl}
+                    disabled={createAdMutation.isPending}
                     className="bg-accent hover:bg-accent/90"
                   >
                     {createAdMutation.isPending ? (
