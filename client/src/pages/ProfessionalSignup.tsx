@@ -170,16 +170,12 @@ export default function ProfessionalSignup() {
         localStorage.setItem('hublink_verification_complete', 'true');
         
         toast({
-          title: "Signup Complete!",
-          description: `Your ${selectedRole} account has been created successfully. Welcome to HubLink!`,
+          title: "Account Created Successfully!",
+          description: `Welcome to HubLink! Please select your subscription plan to continue.`,
         });
         
-        // Redirect based on role
-        if (selectedRole === 'publisher') {
-          window.location.href = '/stays';
-        } else {
-          window.location.href = '/dashboard';
-        }
+        // Redirect to plan selection for both roles
+        window.location.href = '/subscribe';
       } else {
         throw new Error('Signup failed');
       }
@@ -259,7 +255,7 @@ export default function ProfessionalSignup() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-lg">Creator</h3>
-                      <Badge className="mt-1">£45/month</Badge>
+                      <Badge variant="secondary" className="mt-1">Content Creator</Badge>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">
