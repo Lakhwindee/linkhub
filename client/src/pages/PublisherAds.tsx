@@ -266,51 +266,27 @@ export default function PublisherAds() {
                     </div>
 
                     {!adImageUrl ? (
-                      <div className="relative">
-                        <ObjectUploader
-                          maxNumberOfFiles={1}
-                          maxFileSize={10 * 1024 * 1024} // 10MB
-                          onGetUploadParameters={handleImageUpload}
-                          onComplete={handleImageComplete}
-                          buttonClassName="w-full min-h-[200px] border-2 border-dashed border-accent/40 hover:border-accent bg-gradient-to-br from-background to-accent/5 hover:from-accent/5 hover:to-accent/10 transition-all duration-500 rounded-2xl shadow-inner group"
-                        >
-                          <div className="flex flex-col items-center justify-center space-y-6 p-10">
-                            <div className="relative">
-                              <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-chart-2/20 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <Upload className="w-10 h-10 text-accent" />
-                              </div>
-                              <div className="absolute -top-1 -right-1 w-6 h-6 bg-chart-2 rounded-full flex items-center justify-center">
-                                <Plus className="w-3 h-3 text-white" />
-                              </div>
-                            </div>
-                            
-                            <div className="text-center space-y-3">
-                              <div>
-                                <h4 className="font-bold text-foreground text-xl mb-1">
-                                  Drop your creative here
-                                </h4>
-                                <p className="text-muted-foreground font-medium">
-                                  or click to browse from your device
-                                </p>
-                              </div>
-                              <div className="flex items-center justify-center space-x-6 text-xs text-muted-foreground">
-                                <div className="flex items-center space-x-1">
-                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                  <span>JPG, PNG, GIF</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                  <span>Up to 10MB</span>
-                                </div>
-                                <div className="flex items-center space-x-1">
-                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                  <span>High Resolution</span>
-                                </div>
-                              </div>
-                            </div>
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={10 * 1024 * 1024} // 10MB
+                        onGetUploadParameters={handleImageUpload}
+                        onComplete={handleImageComplete}
+                        buttonClassName="w-full min-h-[180px] border border-border/50 hover:border-primary/40 bg-card hover:bg-accent/5 transition-all duration-300 rounded-xl group flex items-center justify-center"
+                      >
+                        <div className="text-center space-y-4">
+                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <Upload className="w-6 h-6 text-primary" />
                           </div>
-                        </ObjectUploader>
-                      </div>
+                          <div>
+                            <h4 className="text-lg font-semibold text-foreground mb-2">
+                              Upload Campaign Creative
+                            </h4>
+                            <p className="text-muted-foreground">
+                              Drag & drop or click to browse
+                            </p>
+                          </div>
+                        </div>
+                      </ObjectUploader>
                     ) : (
                       <div className="space-y-5">
                         {/* Preview uploaded image */}
@@ -340,13 +316,11 @@ export default function PublisherAds() {
                           maxFileSize={10 * 1024 * 1024} // 10MB
                           onGetUploadParameters={handleImageUpload}
                           onComplete={handleImageComplete}
-                          buttonClassName="w-full bg-gradient-to-r from-muted to-muted/80 hover:from-accent/10 hover:to-accent/20 text-foreground border-2 border-muted-foreground/20 hover:border-accent/50 transition-all duration-300 py-4 px-6 rounded-xl shadow-sm hover:shadow-md"
+                          buttonClassName="w-full bg-card hover:bg-accent/5 text-foreground border border-border hover:border-primary/40 transition-all duration-300 py-3 px-4 rounded-lg"
                         >
-                          <div className="flex items-center justify-center space-x-3">
-                            <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
-                              <Upload className="w-4 h-4 text-accent" />
-                            </div>
-                            <span className="font-semibold text-lg">Update Creative</span>
+                          <div className="flex items-center justify-center space-x-2">
+                            <Upload className="w-4 h-4" />
+                            <span className="font-medium">Change Creative</span>
                           </div>
                         </ObjectUploader>
                       </div>
