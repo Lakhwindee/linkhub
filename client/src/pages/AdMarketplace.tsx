@@ -418,9 +418,6 @@ export default function AdMarketplace() {
                                   <strong>Step 3:</strong> Include the promotional file/image in your content or mention the brand verbally
                                 </p>
                                 <p className="text-foreground leading-relaxed">
-                                  <strong>Step 4:</strong> Use the required hashtags and post on your social media
-                                </p>
-                                <p className="text-foreground leading-relaxed">
                                   <strong>Step 5:</strong> Upload your final content for approval to receive payment
                                 </p>
                               </div>
@@ -432,38 +429,12 @@ export default function AdMarketplace() {
                                 <Download className="w-4 h-4 mr-2" />
                                 Download Promotional File
                               </h4>
-                              <p className="text-sm text-muted-foreground mb-3">
-                                Brand ne jo bhi file provide ki hai (video, image, ya koi aur file) wo download kro
-                              </p>
                               <Button variant="outline" size="lg" className="w-full justify-center">
                                 <Download className="w-4 h-4 mr-2" />
                                 Download File
                               </Button>
                             </div>
 
-                            {/* Campaign Details */}
-                            <div className="grid grid-cols-2 gap-6">
-                              <div>
-                                <h4 className="font-semibold text-sm mb-2">Target Countries</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {ad.countries?.map((country, index) => (
-                                    <Badge key={index} variant="outline" className="text-xs">
-                                      {country}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                              <div>
-                                <h4 className="font-semibold text-sm mb-2">Required Hashtags</h4>
-                                <div className="flex flex-wrap gap-1">
-                                  {ad.hashtags?.map((hashtag, index) => (
-                                    <Badge key={index} variant="secondary" className="text-xs">
-                                      #{hashtag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              </div>
-                            </div>
 
                             {/* Campaign Stats */}
                             <div className="flex items-center justify-between pt-4 border-t">
