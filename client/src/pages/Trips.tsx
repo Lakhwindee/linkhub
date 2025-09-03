@@ -329,55 +329,122 @@ export default function Trips() {
 
             <TabsContent value="itinerary" className="space-y-4">
               {trip.itinerary && trip.itinerary.length > 0 ? (
-                <div className="space-y-4">
-                  {trip.itinerary.map((day, dayIndex) => (
-                    <Card key={dayIndex}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          Day {day.day} - {formatDate(day.date)}
-                        </CardTitle>
-                        <div className="text-sm text-muted-foreground">{day.city}</div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {day.activities?.map((activity: any, actIndex: number) => (
-                            <div key={actIndex} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                              <div className="flex items-center gap-2 min-w-16">
-                                {getActivityIcon(activity.type)}
-                                <span className="text-sm font-mono">{formatTime(activity.time)}</span>
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-4 rounded-lg">
+                    <h3 className="text-lg font-semibold mb-2">Complete Journey Plan</h3>
+                    <div className="text-sm text-muted-foreground">
+                      {trip.itinerary.length} destinations • Total {trip.itinerary.reduce((total: number, dest: any) => total + (dest.duration || 1), 0)} days
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {trip.itinerary.map((destination: any, index: number) => (
+                      <Card key={index} className="border-2 hover:shadow-lg transition-shadow">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-lg flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <div>
+                              <div className="text-xl">
+                                {destination.city || destination.location}, {destination.country}
                               </div>
-                              <div className="flex-1">
-                                <div className="font-medium">{activity.title}</div>
-                                <Badge variant="outline" className="text-xs mt-1 capitalize">
-                                  {activity.type}
-                                </Badge>
+                              <div className="text-sm text-muted-foreground font-normal">
+                                {destination.startDate && destination.endDate ? 
+                                  `${formatDate(destination.startDate)} - ${formatDate(destination.endDate)}` :
+                                  destination.date ? formatDate(destination.date) : 'Dates TBD'
+                                }
                               </div>
                             </div>
-                          ))}
-                          
-                          {day.accommodation && (
-                            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                              <div className="flex items-center gap-2 font-medium">
-                                <Bed className="w-4 h-4" />
-                                Accommodation: {day.accommodation.name}
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-primary" />
+                              <div>
+                                <div className="font-medium">Duration</div>
+                                <div className="text-muted-foreground">{destination.duration || 1} days</div>
                               </div>
-                              {day.accommodation.checkIn && (
-                                <div className="text-sm text-muted-foreground mt-1">
-                                  Check-in: {day.accommodation.checkIn} | Check-out: {day.accommodation.checkOut}
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-primary" />
+                              <div>
+                                <div className="font-medium">Arrival</div>
+                                <div className="text-muted-foreground">
+                                  {destination.startDate ? formatDate(destination.startDate) : 
+                                   destination.date ? formatDate(destination.date) : 'TBD'}
                                 </div>
-                              )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <Calendar className="w-4 h-4 text-primary" />
+                              <div>
+                                <div className="font-medium">Departure</div>
+                                <div className="text-muted-foreground">
+                                  {destination.endDate ? formatDate(destination.endDate) : 'TBD'}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-primary" />
+                              <div>
+                                <div className="font-medium">Country</div>
+                                <div className="text-muted-foreground">{destination.country}</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {destination.activities && destination.activities.length > 0 && (
+                            <div className="border-t pt-3">
+                              <h4 className="font-medium mb-2 flex items-center gap-2">
+                                <Camera className="w-4 h-4 text-primary" />
+                                Planned Activities
+                              </h4>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {destination.activities.map((activity: any, idx: number) => (
+                                  <div key={idx} className="flex items-center gap-2 text-sm">
+                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                    {typeof activity === 'string' ? activity : activity.title || activity.name}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
-                          
-                          {day.notes && (
-                            <div className="text-sm text-muted-foreground italic border-l-2 border-primary pl-3">
-                              {day.notes}
+
+                          {destination.notes && (
+                            <div className="border-t pt-3">
+                              <h4 className="font-medium mb-2">Notes</h4>
+                              <p className="text-sm text-muted-foreground">{destination.notes}</p>
                             </div>
                           )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+
+                          {index < trip.itinerary.length - 1 && (
+                            <div className="flex items-center justify-center pt-2">
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <div className="w-8 border-t border-dashed"></div>
+                                <Plane className="w-4 h-4" />
+                                <span>Next destination</span>
+                                <div className="w-8 border-t border-dashed"></div>
+                              </div>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-muted/30 p-4 rounded-lg">
+                    <h4 className="font-medium mb-2">Journey Summary</h4>
+                    <div className="text-sm space-y-1">
+                      <div>🌍 <strong>Countries:</strong> {Array.from(new Set(trip.itinerary.map((d: any) => d.country))).join(', ')}</div>
+                      <div>📅 <strong>Total Duration:</strong> {trip.itinerary.reduce((total: number, dest: any) => total + (dest.duration || 1), 0)} days</div>
+                      <div>🏙️ <strong>Cities:</strong> {trip.itinerary.map((d: any) => d.city || d.location).join(' → ')}</div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
