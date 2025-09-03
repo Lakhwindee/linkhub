@@ -6,7 +6,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations } from "@shared/schema";
+import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -1152,6 +1152,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error creating ad:", error);
       res.status(500).json({ message: "Failed to create ad" });
+    }
+  });
+
+  // Publisher ad creation
+  app.post('/api/publisher/ads', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'publisher') {
+        return res.status(403).json({ message: "Publisher role required" });
+      }
+      
+      const data = insertPublisherAdSchema.parse(req.body);
+      
+      // Calculate max influencers based on tier and budget
+      const tierPrices = { 1: 120, 2: 240, 3: 360 };
+      const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
+      const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
+      
+      const adData = {
+        ...data,
+        publisherId: req.user.claims.sub,
+        payoutAmount: tierPrice.toString(),
+        quota: maxInfluencers,
+        maxInfluencers,
+        currency: "USD"
+      };
+      
+      const ad = await storage.createAd(adData);
+      
+      res.json(ad);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating publisher ad:", error);
+      res.status(500).json({ message: "Failed to create ad" });
+    }
+  });
+
+  // Get publisher's ads
+  app.get('/api/publisher/ads', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (user?.role !== 'publisher') {
+        return res.status(403).json({ message: "Publisher role required" });
+      }
+      
+      const ads = await storage.getPublisherAds(req.user.claims.sub);
+      res.json(ads);
+    } catch (error) {
+      console.error("Error fetching publisher ads:", error);
+      res.status(500).json({ message: "Failed to fetch ads" });
     }
   });
 

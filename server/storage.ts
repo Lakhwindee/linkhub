@@ -100,6 +100,7 @@ export interface IStorage {
   createAd(data: any): Promise<Ad>;
   getAds(filters?: any): Promise<Ad[]>;
   getAd(id: string): Promise<Ad | undefined>;
+  getPublisherAds(publisherId: string): Promise<Ad[]>;
   createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation>;
   getUserActiveReservations(userId: string): Promise<AdReservation[]>;
   createAdSubmission(data: { reservationId: string; postId?: string; rawFileUrl?: string }): Promise<AdSubmission>;
@@ -1089,6 +1090,14 @@ export class DatabaseStorage implements IStorage {
 
     const [ad] = await db.select().from(ads).where(eq(ads.id, id));
     return ad;
+  }
+
+  async getPublisherAds(publisherId: string): Promise<Ad[]> {
+    return await db
+      .select()
+      .from(ads)
+      .where(eq(ads.publisherId, publisherId))
+      .orderBy(desc(ads.createdAt));
   }
 
   async cleanupExpiredReservations(): Promise<void> {

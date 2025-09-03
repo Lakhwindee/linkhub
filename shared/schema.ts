@@ -200,17 +200,23 @@ export const eventRsvps = pgTable("event_rsvps", {
 // Ads
 export const ads = pgTable("ads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  publisherId: varchar("publisher_id").references(() => users.id), // null for admin-created, user ID for publisher-created
   brand: varchar("brand").notNull(),
   title: varchar("title").notNull(),
   briefMd: text("brief_md").notNull(),
   countries: text("countries").array(),
   hashtags: text("hashtags").array(),
   payoutAmount: decimal("payout_amount", { precision: 10, scale: 2 }).notNull(),
-  currency: varchar("currency").default("GBP"),
+  currency: varchar("currency").default("USD"),
   deadlineAt: timestamp("deadline_at").notNull(),
   quota: integer("quota").default(1),
   currentReservations: integer("current_reservations").default(0),
   status: varchar("status").default("active"), // active, paused, completed
+  // Publisher-specific fields for tier system
+  totalBudget: decimal("total_budget", { precision: 10, scale: 2 }),
+  tierLevel: integer("tier_level"), // 1: $120, 2: $240, 3: $360
+  maxInfluencers: integer("max_influencers"),
+  adImageUrl: varchar("ad_image_url"), // uploaded ad creative
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -623,6 +629,25 @@ export const insertAdSchema = createInsertSchema(ads).pick({
 }).extend({
   countries: z.array(z.string()).optional(),
   hashtags: z.array(z.string()).optional(),
+});
+
+// Publisher ad creation schema
+export const insertPublisherAdSchema = createInsertSchema(ads).pick({
+  brand: true,
+  title: true,
+  briefMd: true,
+  countries: true,
+  hashtags: true,
+  currency: true,
+  deadlineAt: true,
+  totalBudget: true,
+  tierLevel: true,
+  adImageUrl: true,
+}).extend({
+  countries: z.array(z.string()).optional(),
+  hashtags: z.array(z.string()).optional(),
+  totalBudget: z.coerce.number().min(120, "Minimum budget is $120"),
+  tierLevel: z.number().min(1).max(3),
 });
 
 export const insertReportSchema = createInsertSchema(reports).pick({
