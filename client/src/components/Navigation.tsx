@@ -29,7 +29,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('hublink_demo_user');
+    localStorage.setItem('hublink_demo_user', 'false');
     window.location.reload(); // Reload to update auth state
   };
 
