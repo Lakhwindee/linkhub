@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { FollowStats } from "@/components/FollowButton";
 import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -314,6 +315,9 @@ export default function Profile() {
             <p className="text-muted-foreground mt-1" data-testid="text-profile-subtitle">
               Manage your personal information and privacy settings
             </p>
+            <div className="mt-3">
+              <FollowStats userId={user.id} />
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" data-testid="badge-plan">

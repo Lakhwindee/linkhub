@@ -11,6 +11,7 @@ import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, 
 import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
+import { FollowStats } from "@/components/FollowButton";
 import type { User, Post, Event } from "@shared/schema";
 
 export default function Home() {
@@ -109,6 +110,9 @@ export default function Home() {
               <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
                 Discover new travelers and share your journey
               </p>
+              <div className="mt-3">
+                <FollowStats userId={user.id} />
+              </div>
             </div>
           </div>
           <div className="flex items-center space-x-2">
