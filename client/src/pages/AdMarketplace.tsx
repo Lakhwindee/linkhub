@@ -101,7 +101,7 @@ export default function AdMarketplace() {
         setIsReserveDialogOpen(false);
       }, 1000);
       
-      // Make countdown transparent after 2 seconds total
+      // Make countdown transparent after 3 seconds total
       setTimeout(() => {
         setOverlayOpacity(0);
         // Hide overlay and switch tab after fade
@@ -109,7 +109,7 @@ export default function AdMarketplace() {
           setShowCountdownOverlay(false);
           setCurrentTab("my-campaigns");
         }, 300); // 300ms for fade transition
-      }, 2000);
+      }, 3000);
     },
     onError: (error) => {
       toast({
