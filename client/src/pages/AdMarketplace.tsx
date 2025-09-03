@@ -27,6 +27,7 @@ export default function AdMarketplace() {
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState("campaigns");
   const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
+  const [showCountdownOverlay, setShowCountdownOverlay] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -88,14 +89,15 @@ export default function AdMarketplace() {
     },
     onSuccess: () => {
       setIsReserveDialogOpen(false); // Close dialog
-      toast({
-        title: "Campaign Reserved!",
-        description: "You have 5 days to complete and submit your content. Countdown has started!",
-      });
+      setShowCountdownOverlay(true); // Show countdown overlay
       queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
-      // Switch to My Campaigns tab immediately
-      setCurrentTab("my-campaigns");
+      
+      // Hide overlay and switch tab after 2 seconds
+      setTimeout(() => {
+        setShowCountdownOverlay(false);
+        setCurrentTab("my-campaigns");
+      }, 2000);
     },
     onError: (error) => {
       toast({
