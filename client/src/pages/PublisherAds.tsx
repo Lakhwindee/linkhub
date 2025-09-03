@@ -263,10 +263,19 @@ export default function PublisherAds() {
                       maxFileSize={10 * 1024 * 1024} // 10MB
                       onGetUploadParameters={handleImageUpload}
                       onComplete={handleImageComplete}
-                      buttonClassName="bg-accent hover:bg-accent/90 w-full"
+                      buttonClassName="bg-accent hover:bg-accent/90 w-full min-h-[120px] border-2 border-dashed border-accent/30 hover:border-accent/50 transition-colors flex-col"
                     >
-                      <Upload className="w-4 h-4 mr-2" />
-                      {adImageUrl ? "Change Image" : "Upload Ad Creative"}
+                      <div className="flex flex-col items-center justify-center space-y-2">
+                        <Upload className="w-8 h-8 text-accent" />
+                        <div className="text-center">
+                          <p className="font-medium">
+                            {adImageUrl ? "Change Image" : "Upload Ad Creative"}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Drag and drop or click to upload (Max 10MB)
+                          </p>
+                        </div>
+                      </div>
                     </ObjectUploader>
                     {adImageUrl && (
                       <div className="mt-2 p-2 bg-green-50 dark:bg-green-950 rounded border">
