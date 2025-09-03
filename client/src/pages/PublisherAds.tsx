@@ -48,10 +48,29 @@ export default function PublisherAds() {
     { level: 3, price: 360, range: "70K+", description: "Macro-Influencers" },
   ];
 
+  // Calculate costs with platform fees and VAT
+  const calculateCosts = (budget: number, tierLevel: number) => {
+    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 120;
+    const platformFee = budget * 0.10; // 10% platform fee
+    const subtotalWithFee = budget + platformFee;
+    const vat = subtotalWithFee * 0.20; // 20% VAT
+    const totalWithVAT = subtotalWithFee + vat;
+    const maxInfluencers = Math.floor(budget / tierPrice);
+    
+    return {
+      baseAmount: budget,
+      platformFee,
+      subtotalWithFee,
+      vat,
+      totalWithVAT,
+      maxInfluencers,
+      tierPrice
+    };
+  };
+
   // Calculate max influencers based on budget and tier
   const calculateMaxInfluencers = (budget: number, tierLevel: number) => {
-    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 120;
-    return Math.floor(budget / tierPrice);
+    return calculateCosts(budget, tierLevel).maxInfluencers;
   };
 
   // Fetch publisher's ads
@@ -171,7 +190,7 @@ export default function PublisherAds() {
   }
 
   const currentTier = tiers.find(t => t.level === selectedTier);
-  const maxInfluencers = calculateMaxInfluencers(totalBudget, selectedTier);
+  const costBreakdown = calculateCosts(totalBudget, selectedTier);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -378,26 +397,60 @@ export default function PublisherAds() {
                     </div>
 
                     {/* Budget Calculator */}
-                    <Card className="p-4 bg-muted/30">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">Selected Tier:</span>
-                          <Badge variant="secondary">{currentTier?.description}</Badge>
+                    <Card className="p-6 bg-gradient-to-br from-muted/20 to-muted/40 border-2 border-muted-foreground/10">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between pb-2 border-b border-muted-foreground/20">
+                          <span className="font-semibold text-lg">Cost Breakdown</span>
+                          <Badge variant="secondary" className="bg-chart-2/20 text-chart-2">{currentTier?.description}</Badge>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">Price per influencer:</span>
-                          <span className="text-chart-2 font-bold">${currentTier?.price}</span>
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">Campaign Budget:</span>
+                            <span className="font-bold">${totalBudget || 0}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Price per influencer:</span>
+                            <span className="text-muted-foreground">${currentTier?.price}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Platform Fee (10%):</span>
+                            <span className="text-muted-foreground">+${costBreakdown.platformFee.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm border-b border-muted-foreground/10 pb-2">
+                            <span className="text-muted-foreground">Subtotal:</span>
+                            <span className="text-muted-foreground">${costBreakdown.subtotalWithFee.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">VAT (20%):</span>
+                            <span className="text-muted-foreground">+${costBreakdown.vat.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
+                            <span className="text-foreground">Total Cost:</span>
+                            <span className="text-chart-1">£{costBreakdown.totalWithVAT.toFixed(2)}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">Total Budget:</span>
-                          <span className="font-bold">${totalBudget || 0}</span>
-                        </div>
-                        <div className="border-t pt-2 mt-2">
-                          <div className="flex items-center justify-between text-lg">
-                            <span className="font-semibold">Max Influencers:</span>
-                            <span className="text-chart-2 font-bold">
-                              {maxInfluencers} influencers
-                            </span>
+                        
+                        <div className="bg-primary/10 rounded-lg p-4 mt-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
+                                <Users className="w-5 h-5 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-foreground">Campaign Reach</p>
+                                <p className="text-sm text-muted-foreground">Maximum influencers you can work with</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-primary">{costBreakdown.maxInfluencers}</p>
+                              <p className="text-sm text-muted-foreground">influencers</p>
+                            </div>
                           </div>
                         </div>
                       </div>
