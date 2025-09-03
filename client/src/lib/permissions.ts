@@ -1,6 +1,6 @@
 // Role-based permission system
 
-export type UserRole = 'traveler' | 'stays' | 'promotional' | 'tour_package' | 'admin' | 'superadmin';
+export type UserRole = 'traveler' | 'stays' | 'promotional' | 'tour_package' | 'publisher' | 'admin' | 'superadmin';
 
 export interface User {
   id: string;
@@ -14,7 +14,7 @@ export const permissions = {
   // Stays permissions
   canCreateStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['stays', 'admin', 'superadmin'].includes(user.role as string);
+    return ['stays', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewStays: (user: User | null): boolean => {
@@ -23,13 +23,13 @@ export const permissions = {
 
   canManageStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['stays', 'admin', 'superadmin'].includes(user.role as string);
+    return ['stays', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   // Tour Package permissions
   canCreateTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['tour_package', 'admin', 'superadmin'].includes(user.role as string);
+    return ['tour_package', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewTourPackages: (user: User | null): boolean => {
@@ -38,13 +38,13 @@ export const permissions = {
 
   canManageTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['tour_package', 'admin', 'superadmin'].includes(user.role as string);
+    return ['tour_package', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   // Promotional/Ads permissions
   canCreateAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['promotional', 'admin', 'superadmin'].includes(user.role as string);
+    return ['promotional', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewAds: (user: User | null): boolean => {
@@ -53,7 +53,7 @@ export const permissions = {
 
   canManageAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['promotional', 'admin', 'superadmin'].includes(user.role as string);
+    return ['promotional', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   // Trip permissions
@@ -105,6 +105,8 @@ export const permissions = {
         return 'Promotional/Ads';
       case 'tour_package':
         return 'Tour Package Provider';
+      case 'publisher':
+        return 'Content Publisher';
       case 'admin':
         return 'Administrator';
       case 'superadmin':
@@ -124,6 +126,8 @@ export const permissions = {
         return 'Can create and manage advertisements and promotional content';
       case 'tour_package':
         return 'Can create and manage tour packages and travel offerings';
+      case 'publisher':
+        return 'Can create and manage stays, tour packages, and advertisements';
       case 'admin':
         return 'Can manage all content and moderate the platform';
       case 'superadmin':
@@ -134,12 +138,17 @@ export const permissions = {
   },
 
   getAllRoles: (): UserRole[] => {
-    return ['traveler', 'stays', 'promotional', 'tour_package', 'admin', 'superadmin'];
+    return ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
   },
 
   // Role validation
   isValidRole: (role: string): role is UserRole => {
-    return ['traveler', 'stays', 'promotional', 'tour_package', 'admin', 'superadmin'].includes(role as UserRole);
+    return ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'].includes(role as UserRole);
+  },
+
+  // Check if user should see limited navigation (publisher role)
+  shouldShowLimitedNavigation: (user: User | null): boolean => {
+    return user?.role === 'publisher';
   }
 };
 
@@ -166,7 +175,7 @@ export const usePermissions = (user: User | null) => {
     canModerateContent: permissions.canModerateContent(user),
     
     userRole: user?.role || 'traveler',
-    roleDisplayName: permissions.getRoleDisplayName(user?.role || 'traveler'),
-    roleDescription: permissions.getRoleDescription(user?.role || 'traveler')
+    roleDisplayName: permissions.getRoleDisplayName((user?.role as UserRole) || 'traveler'),
+    roleDescription: permissions.getRoleDescription((user?.role as UserRole) || 'traveler')
   };
 };

@@ -8,17 +8,7 @@ import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Mo
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
-  // Demo user data
-  const user = isAuthenticated ? { 
-    firstName: 'Demo', 
-    lastName: 'User', 
-    displayName: 'Demo User',
-    username: 'demo',
-    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    plan: 'creator',
-    role: 'traveler' // Demo user default role
-  } : null;
+  const { user } = useAuth();
   
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
@@ -71,20 +61,30 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     );
   }
 
-  // All navigation items - everyone can VIEW everything
-  const navItems = [
-    { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
-    { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
-    { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
-    { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
-    { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-    { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
-    { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
-    { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-  ];
-
-  // Add Ads navigation for everyone (all can view ads)
-  navItems.push({ href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" });
+  // Navigation items based on user role
+  let navItems = [];
+  
+  if (user?.role === 'publisher') {
+    // Publisher role only sees these 3 menus
+    navItems = [
+      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
+      { href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" },
+    ];
+  } else {
+    // All other roles see full navigation
+    navItems = [
+      { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
+      { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
+      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+      { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
+      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
+      { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
+      { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
+      { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
+      { href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" },
+    ];
+  }
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">

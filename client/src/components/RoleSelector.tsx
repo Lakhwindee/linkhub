@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { permissions, type UserRole } from "@/lib/permissions";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Settings, Shield, Home, DollarSign, Package, User } from "lucide-react";
+import { Settings, Shield, Home, DollarSign, Package, User, Globe } from "lucide-react";
 
 interface RoleSelectorProps {
   currentRole?: UserRole;
@@ -37,6 +37,8 @@ export function RoleSelector({ currentRole = 'traveler', onRoleChange, disabled 
         return DollarSign;
       case 'tour_package':
         return Package;
+      case 'publisher':
+        return Globe;
       case 'admin':
       case 'superadmin':
         return Shield;
@@ -55,6 +57,8 @@ export function RoleSelector({ currentRole = 'traveler', onRoleChange, disabled 
         return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'tour_package':
         return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'publisher':
+        return 'bg-indigo-100 text-indigo-800 border-indigo-200';
       case 'admin':
         return 'bg-red-100 text-red-800 border-red-200';
       case 'superadmin':

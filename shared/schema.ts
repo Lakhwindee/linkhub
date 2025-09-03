@@ -52,7 +52,7 @@ export const users = pgTable("users", {
   instagramUrl: varchar("instagram_url"),
   youtubeUrl: varchar("youtube_url"),
   tiktokUrl: varchar("tiktok_url"),
-  role: varchar("role").default("traveler"), // traveler, stays, promotional, tour_package, admin, superadmin
+  role: varchar("role").default("traveler"), // traveler, stays, promotional, tour_package, publisher, admin, superadmin
   plan: varchar("plan").default("free"), // free, traveler, creator
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
