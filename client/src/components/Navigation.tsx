@@ -69,7 +69,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" },
+      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
     ];
   } else {
     // All other roles see full navigation
@@ -82,7 +82,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" },
+      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
     ];
   }
 
