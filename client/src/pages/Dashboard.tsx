@@ -11,6 +11,7 @@ import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, 
 import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
+import { FollowersFollowingSection } from "@/components/FollowersFollowingSection";
 import type { User, Post, Event } from "@shared/schema";
 
 export default function Dashboard() {
@@ -60,6 +61,29 @@ export default function Dashboard() {
     retry: false,
   });
 
+  // Fetch follower/following data for stats
+  const { data: followers = [] } = useQuery<any[]>({
+    queryKey: ["followers", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/followers/${user.id}`);
+      return await response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
+  const { data: following = [] } = useQuery<any[]>({
+    queryKey: ["following", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/following/${user.id}`);
+      return await response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -75,26 +99,26 @@ export default function Dashboard() {
   const quickStats = [
     {
       icon: Users,
-      label: "Connections",
-      value: "24",
+      label: "Followers",
+      value: followers.length.toString(),
       color: "text-blue-600"
     },
     {
+      icon: Users,
+      label: "Following", 
+      value: following.length.toString(),
+      color: "text-purple-600"
+    },
+    {
       icon: MessageCircle,
-      label: "Messages", 
+      label: "Messages",
       value: "0",
       color: "text-gray-600"
     },
     {
       icon: Calendar,
       label: "Events",
-      value: "4",
-      color: "text-purple-600"
-    },
-    {
-      icon: MapPin,
-      label: "Countries",
-      value: "12",
+      value: upcomingEvents.length.toString(),
       color: "text-green-600"
     }
   ];
@@ -266,6 +290,9 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Followers and Following Section */}
+            <FollowersFollowingSection userId={user.id} />
 
             {/* Upcoming Events */}
             <Card data-testid="card-upcoming-events">
