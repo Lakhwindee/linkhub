@@ -1355,32 +1355,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserTrips(userId: string, type: 'organized' | 'joined' | 'all'): Promise<Trip[]> {
-    console.log(`getUserTrips called for userId: ${userId}, type: ${type}`);
-    console.log(`Total trips available: ${testTrips.length}`);
-    console.log('Trip organizer IDs:', testTrips.map(t => ({ id: t.id, organizerId: t.organizerId })));
-    
     switch (type) {
       case 'organized':
-        const organizedTrips = testTrips.filter(trip => trip.organizerId === userId);
-        console.log(`Found ${organizedTrips.length} organized trips for user ${userId}`);
-        return organizedTrips;
+        return testTrips.filter(trip => trip.organizerId === userId);
       case 'joined':
         const joinedTripIds = testTripParticipants
           .filter(p => p.userId === userId)
           .map(p => p.tripId);
-        const joinedTrips = testTrips.filter(trip => joinedTripIds.includes(trip.id));
-        console.log(`Found ${joinedTrips.length} joined trips for user ${userId}`);
-        return joinedTrips;
+        return testTrips.filter(trip => joinedTripIds.includes(trip.id));
       case 'all':
       default:
-        const organizedTripsAll = testTrips.filter(trip => trip.organizerId === userId);
+        const organizedTrips = testTrips.filter(trip => trip.organizerId === userId);
         const joinedTripIds2 = testTripParticipants
           .filter(p => p.userId === userId)
           .map(p => p.tripId);
-        const joinedTripsAll = testTrips.filter(trip => joinedTripIds2.includes(trip.id));
-        const allTrips = [...organizedTripsAll, ...joinedTripsAll];
-        console.log(`Found ${allTrips.length} total trips for user ${userId}`);
-        return allTrips;
+        const joinedTrips = testTrips.filter(trip => joinedTripIds2.includes(trip.id));
+        return [...organizedTrips, ...joinedTrips];
     }
   }
 

@@ -1128,9 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/users/:userId/trips', async (req, res) => {
     try {
       const { type = 'all' } = req.query;
-      console.log(`Route called for userId: ${req.params.userId}, type: ${type}`);
       const trips = await storage.getUserTrips(req.params.userId, type as 'organized' | 'joined' | 'all');
-      console.log(`Returning ${trips.length} trips for user ${req.params.userId}`);
       res.json(trips);
     } catch (error) {
       console.error('Error fetching user trips:', error);

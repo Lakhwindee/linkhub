@@ -20,7 +20,6 @@ import {
 import type { Trip, TripParticipant } from "@shared/schema";
 
 interface TripWithDetails extends Trip {
-  budgetBreakdown?: any;
   activities?: any;
   documents?: string[];
   packingList?: string[];
@@ -36,7 +35,6 @@ export default function Trips() {
     country: "",
     city: "",
     travelStyle: "",
-    budget: "",
     tags: ""
   });
   const [itineraryDestinations, setItineraryDestinations] = useState([
@@ -200,15 +198,6 @@ export default function Trips() {
           </div>
         </div>
 
-        {trip.budgetBreakdown && (
-          <div className="bg-muted/50 rounded-lg p-3">
-            <div className="text-sm font-medium mb-1">Budget Overview</div>
-            <div className="text-2xl font-bold text-primary">
-              {trip.budgetBreakdown.currency} {trip.budgetBreakdown.total.toLocaleString()}
-              {trip.budgetBreakdown.perPerson && <span className="text-sm font-normal"> per person</span>}
-            </div>
-          </div>
-        )}
 
         <div className="flex gap-2">
           <Button 
@@ -260,10 +249,9 @@ export default function Trips() {
         
         <div className="overflow-y-auto">
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="itinerary">Itinerary</TabsTrigger>
-              <TabsTrigger value="budget">Budget</TabsTrigger>
               <TabsTrigger value="accommodation">Stays</TabsTrigger>
               <TabsTrigger value="transport">Transport</TabsTrigger>
               <TabsTrigger value="essentials">Essentials</TabsTrigger>
@@ -289,9 +277,6 @@ export default function Trips() {
                     <div className="flex justify-between">
                       <span>Travel Style:</span>
                       <span className="font-medium">{getTravelStyleIcon(trip.travelStyle || '')} {trip.travelStyle}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Budget Level:</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Status:</span>
@@ -454,41 +439,6 @@ export default function Trips() {
               )}
             </TabsContent>
 
-            <TabsContent value="budget" className="space-y-4">
-              {trip.budgetBreakdown ? (
-                <div className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Budget Breakdown</CardTitle>
-                      <div className="text-3xl font-bold text-primary">
-                        {trip.budgetBreakdown.currency} {trip.budgetBreakdown.total.toLocaleString()}
-                        {trip.budgetBreakdown.perPerson && <span className="text-lg font-normal"> per person</span>}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {Object.entries(trip.budgetBreakdown).map(([category, amount]) => {
-                          if (['total', 'currency', 'perPerson'].includes(category)) return null;
-                          return (
-                            <div key={category} className="flex justify-between items-center">
-                              <span className="capitalize">{category}:</span>
-                              <span className="font-medium">
-                                {trip.budgetBreakdown.currency} {(amount as number).toLocaleString()}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <DollarSign className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Budget breakdown will be shared with confirmed participants</p>
-                </div>
-              )}
-            </TabsContent>
 
             <TabsContent value="accommodation" className="space-y-4">
               {trip.accommodations ? (
@@ -947,7 +897,7 @@ export default function Trips() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Input
               placeholder="Country"
               value={searchFilters.country}
@@ -958,17 +908,6 @@ export default function Trips() {
               value={searchFilters.city}
               onChange={(e) => setSearchFilters(prev => ({ ...prev, city: e.target.value }))}
             />
-            <Select value={searchFilters.budget} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, budget: value === "all" ? "" : value }))}>
-              <SelectTrigger>
-                <SelectValue placeholder="Budget" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Budgets</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
             <Select value={searchFilters.travelStyle} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, travelStyle: value === "all" ? "" : value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Style" />
