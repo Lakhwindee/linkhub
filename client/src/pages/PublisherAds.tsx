@@ -266,27 +266,24 @@ export default function PublisherAds() {
                     </div>
 
                     {!adImageUrl ? (
-                      <ObjectUploader
-                        maxNumberOfFiles={1}
-                        maxFileSize={10 * 1024 * 1024} // 10MB
-                        onGetUploadParameters={handleImageUpload}
-                        onComplete={handleImageComplete}
-                        buttonClassName="w-full min-h-[180px] border border-border/50 hover:border-primary/40 bg-card hover:bg-accent/5 transition-all duration-300 rounded-xl group flex items-center justify-center"
-                      >
-                        <div className="text-center space-y-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                            <Upload className="w-6 h-6 text-primary" />
+                      <div className="space-y-4">
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={10 * 1024 * 1024} // 10MB
+                          onGetUploadParameters={handleImageUpload}
+                          onComplete={handleImageComplete}
+                          buttonClassName="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                        >
+                          <div className="flex items-center justify-center space-x-3">
+                            <Upload className="w-5 h-5" />
+                            <span>Upload Campaign Creative</span>
                           </div>
-                          <div>
-                            <h4 className="text-lg font-semibold text-foreground mb-2">
-                              Upload Campaign Creative
-                            </h4>
-                            <p className="text-muted-foreground">
-                              Drag & drop or click to browse
-                            </p>
-                          </div>
+                        </ObjectUploader>
+                        
+                        <div className="text-center text-sm text-muted-foreground">
+                          <p>JPG, PNG, GIF • Max 10MB • High Resolution Recommended</p>
                         </div>
-                      </ObjectUploader>
+                      </div>
                     ) : (
                       <div className="space-y-5">
                         {/* Preview uploaded image */}
