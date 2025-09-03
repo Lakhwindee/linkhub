@@ -8,12 +8,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
-import { SignupModal } from "@/components/auth/SignupModal";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { user } = useAuth();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [signupModalOpen, setSignupModalOpen] = useState(false);
   
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
@@ -23,7 +21,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   };
 
   const handleGetStarted = () => {
-    setSignupModalOpen(true);
+    // Redirect to proper document signup page
+    window.location.href = '/document-signup';
   };
 
   const handleLogout = () => {
@@ -70,10 +69,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
         <LoginModal 
           open={loginModalOpen} 
           onOpenChange={setLoginModalOpen} 
-        />
-        <SignupModal 
-          open={signupModalOpen} 
-          onOpenChange={setSignupModalOpen} 
         />
       </nav>
     );
@@ -211,10 +206,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       <LoginModal 
         open={loginModalOpen} 
         onOpenChange={setLoginModalOpen} 
-      />
-      <SignupModal 
-        open={signupModalOpen} 
-        onOpenChange={setSignupModalOpen} 
       />
     </nav>
   );
