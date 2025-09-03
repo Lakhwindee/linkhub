@@ -94,10 +94,8 @@ export default function AdMarketplace() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
-      // Switch to My Campaigns tab after 1 second
-      setTimeout(() => {
-        setCurrentTab("my-campaigns");
-      }, 1000);
+      // Switch to My Campaigns tab immediately
+      setCurrentTab("my-campaigns");
     },
     onError: (error) => {
       toast({
