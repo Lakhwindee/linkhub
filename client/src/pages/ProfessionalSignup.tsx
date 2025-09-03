@@ -520,8 +520,8 @@ export default function ProfessionalSignup() {
                           <SelectValue placeholder="+44" />
                         </SelectTrigger>
                         <SelectContent className="max-h-80 overflow-y-auto">
-                          {countryCodes.map((item) => (
-                            <SelectItem key={item.code} value={item.code}>
+                          {countryCodes.map((item, index) => (
+                            <SelectItem key={`${item.code}-${item.country}-${index}`} value={item.code}>
                               {item.flag} {item.code}
                             </SelectItem>
                           ))}
