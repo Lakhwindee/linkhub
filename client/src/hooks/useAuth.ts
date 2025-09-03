@@ -26,7 +26,7 @@ export function useAuth() {
     email: 'demo@hublink.com',
     profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     plan: 'creator', // Give demo user creator access
-    role: 'traveler' // Demo user default role
+    role: 'promotional' // Demo user with ads publisher role
   } : null;
 
   return {
