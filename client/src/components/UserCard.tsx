@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { FollowButton, FollowStats } from "@/components/FollowButton";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -104,6 +105,14 @@ export function UserCard({ user, detailed = false, showConnectButton = true }: U
                 <span className="ml-1">{user.plan}</span>
               </Badge>
             </div>
+            <div className="flex items-center gap-2">
+              <FollowButton 
+                userId={user.id} 
+                username={user.username} 
+                size="sm" 
+                showIcon={false}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -141,6 +150,17 @@ export function UserCard({ user, detailed = false, showConnectButton = true }: U
                 {user.city}, {user.country}
               </div>
             </div>
+            <div className="mt-3">
+              <FollowStats userId={user.id} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <FollowButton 
+              userId={user.id} 
+              username={user.username} 
+              size="sm"
+            />
+          </div>
           </div>
         </div>
       </CardHeader>

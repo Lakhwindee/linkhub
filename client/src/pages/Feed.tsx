@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostSchema } from "@shared/schema";
 import { z } from "zod";
 import type { Post } from "@shared/schema";
+import { Link } from "wouter";
 
 type CreatePostData = z.infer<typeof insertPostSchema>;
 
@@ -50,6 +51,8 @@ export default function Feed() {
       mediaType: "text",
       mediaUrls: [],
       visibility: "public",
+      country: undefined,
+      city: undefined,
     }
   });
 
@@ -216,7 +219,7 @@ export default function Feed() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Select
-                    value={watchedValues.visibility}
+                    value={watchedValues.visibility || "public"}
                     onValueChange={(value) => setValue("visibility", value as "public" | "followers" | "private")}
                   >
                     <SelectTrigger data-testid="select-post-visibility">
@@ -390,9 +393,9 @@ export default function Feed() {
                     </Card>
                   ))}
                 </div>
-              ) : posts.length > 0 ? (
+              ) : (posts as Post[]).length > 0 ? (
                 <div className="space-y-6">
-                  {posts.map((post: Post) => (
+                  {(posts as Post[]).map((post: Post) => (
                     <PostCard key={post.id} post={post} />
                   ))}
                 </div>
@@ -457,18 +460,46 @@ export default function Feed() {
 
           <TabsContent value="following" className="space-y-6">
             <div className="space-y-4">
-              <Card data-testid="card-following-posts">
-                <CardContent className="p-12 text-center">
-                  <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No posts from connections</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Connect with more travelers to see their posts here.
-                  </p>
-                  <Button variant="outline" data-testid="button-discover-travelers">
-                    Discover Travelers
-                  </Button>
-                </CardContent>
-              </Card>
+              {postsLoading ? (
+                <div className="space-y-6">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-muted rounded-full"></div>
+                          <div className="space-y-2">
+                            <div className="h-4 bg-muted rounded w-32"></div>
+                            <div className="h-3 bg-muted rounded w-24"></div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-muted rounded w-full"></div>
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (posts as Post[]).length > 0 ? (
+                <div className="space-y-6">
+                  {(posts as Post[]).map((post: Post) => (
+                    <PostCard key={post.id} post={post} />
+                  ))}
+                </div>
+              ) : (
+                <Card data-testid="card-following-posts">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No posts from followed users</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Follow other travelers to see their posts here.
+                    </p>
+                    <Button variant="outline" asChild data-testid="button-discover-travelers">
+                      <Link href="/discover-travelers">Discover Travelers</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>

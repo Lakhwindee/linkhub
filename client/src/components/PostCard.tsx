@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { FollowButton } from "@/components/FollowButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff } from "lucide-react";
+import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Post } from "@shared/schema";
@@ -116,6 +117,16 @@ export function PostCard({ post, compact = false }: PostCardProps) {
                 )}
               </div>
             </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <FollowButton 
+              userId={post.userId!} 
+              username={(post as any).username || post.userId!} 
+              size="sm" 
+              variant="outline"
+              showIcon={false}
+            />
           </div>
 
           <DropdownMenu>

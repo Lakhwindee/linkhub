@@ -116,6 +116,13 @@ export interface IStorage {
   // Subscriptions
   createSubscription(data: any): Promise<Subscription>;
   getUserActiveSubscription(userId: string): Promise<Subscription | undefined>;
+  
+  // Following system
+  isFollowing(followerId: string, followeeId: string): Promise<boolean>;
+  createFollow(followerId: string, followeeId: string): Promise<any>;
+  removeFollow(followerId: string, followeeId: string): Promise<void>;
+  getFollowers(userId: string): Promise<any[]>;
+  getFollowing(userId: string): Promise<any[]>;
   updateSubscriptionStatus(id: string, status: string): Promise<Subscription>;
   
   // Reports and Moderation
@@ -819,8 +826,62 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFeedPosts(tab: 'global' | 'country' | 'following', userId?: string, country?: string, limit = 20): Promise<Post[]> {
-    // Return test posts with user info for demo
-    return testPosts.map((post) => {
+    if (tab === 'following' && userId) {
+      // Get posts from users that the current user follows
+      const followingUserIds = await db
+        .select({ userId: follows.followeeId })
+        .from(follows)
+        .where(eq(follows.followerId, userId));
+      
+      if (followingUserIds.length === 0) {
+        // If not following anyone, return empty array
+        return [];
+      }
+      
+      const followingIds = followingUserIds.map(f => f.userId!);
+      
+      // Get posts from followed users, including user info
+      const result = await db
+        .select({
+          post: posts,
+          user: {
+            id: users.id,
+            username: users.username,
+            displayName: users.displayName,
+            profileImageUrl: users.profileImageUrl,
+            avatarUrl: users.avatarUrl
+          }
+        })
+        .from(posts)
+        .innerJoin(users, eq(posts.userId, users.id))
+        .where(
+          and(
+            sql`${posts.userId} = ANY(${followingIds})`,
+            eq(posts.status, 'published')
+          )
+        )
+        .orderBy(desc(posts.createdAt))
+        .limit(limit);
+      
+      return result.map(r => ({
+        ...r.post,
+        username: r.user.username || 'unknown',
+        displayName: r.user.displayName || 'Unknown User',
+        profileImageUrl: r.user.profileImageUrl || r.user.avatarUrl || '',
+        updatedAt: new Date(),
+      })) as Post[];
+    }
+    
+    // For global and country tabs, return test posts with user info for demo
+    let filteredPosts = testPosts;
+    
+    if (tab === 'country' && country) {
+      filteredPosts = testPosts.filter(post => 
+        post.country?.toLowerCase().includes(country.toLowerCase())
+      );
+    }
+    
+    return filteredPosts.map((post) => {
       const user = testUsers.find(u => u.id === post.userId);
       return {
         ...post,
