@@ -170,8 +170,8 @@ export default function Landing() {
                 {!showLogin ? (
                   <>
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button size="lg" className="px-8 py-4" asChild data-testid="button-get-started">
-                        <a href="/document-signup">Get Started</a>
+                      <Button size="lg" className="px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground" asChild data-testid="button-sign-up">
+                        <a href="/document-signup">Sign Up Now</a>
                       </Button>
                       <Button size="lg" variant="outline" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
                         Try Demo (Free)
