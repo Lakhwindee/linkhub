@@ -246,17 +246,6 @@ export default function PublisherAds() {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="deadlineAt">Campaign Deadline</Label>
-                    <Input
-                      id="deadlineAt"
-                      {...register("deadlineAt")}
-                      type="datetime-local"
-                    />
-                    {errors.deadlineAt && (
-                      <p className="text-sm text-destructive">{errors.deadlineAt.message}</p>
-                    )}
-                  </div>
                 </div>
 
                 {/* Ad Creative Upload */}
