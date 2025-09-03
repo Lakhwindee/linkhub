@@ -43,9 +43,15 @@ export default function Dashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Fetch recent posts
+  // Fetch recent posts from followed users only
   const { data: recentPosts = [], isLoading: postsLoading } = useQuery<Post[]>({
-    queryKey: ["/api/feed"],
+    queryKey: ["/api/feed", "following", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/feed?tab=following&limit=5`);
+      return await response.json();
+    },
+    enabled: !!user?.id,
     retry: false,
   });
 
