@@ -355,12 +355,18 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${user?.role === 'publisher' ? 'grid-cols-3' : 'grid-cols-5'}`}>
             <TabsTrigger value="basic" data-testid="tab-basic">Basic Info</TabsTrigger>
             <TabsTrigger value="location" data-testid="tab-location">Location</TabsTrigger>
-            <TabsTrigger value="social" data-testid="tab-social">Social Links</TabsTrigger>
+            {user?.role !== 'publisher' && (
+              <>
+                <TabsTrigger value="social" data-testid="tab-social">Social Links</TabsTrigger>
+              </>
+            )}
             <TabsTrigger value="privacy" data-testid="tab-privacy">Privacy</TabsTrigger>
-            <TabsTrigger value="trips" data-testid="tab-trips">My Trips</TabsTrigger>
+            {user?.role !== 'publisher' && (
+              <TabsTrigger value="trips" data-testid="tab-trips">My Trips</TabsTrigger>
+            )}
           </TabsList>
 
           {/* Basic Information */}
@@ -539,15 +545,16 @@ export default function Profile() {
             </Card>
           </TabsContent>
 
-          {/* Social Links */}
-          <TabsContent value="social">
-            <Card data-testid="card-social">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Globe className="w-5 h-5" />
-                  <span>Social Media Links</span>
-                </CardTitle>
-              </CardHeader>
+          {/* Social Links - Only for non-publisher roles */}
+          {user?.role !== 'publisher' && (
+            <TabsContent value="social">
+              <Card data-testid="card-social">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Globe className="w-5 h-5" />
+                    <span>Social Media Links</span>
+                  </CardTitle>
+                </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="instagramUrl" className="flex items-center space-x-2">
@@ -594,7 +601,8 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+            </TabsContent>
+          )}
 
           {/* Privacy Settings */}
           <TabsContent value="privacy">
@@ -675,10 +683,12 @@ export default function Profile() {
             </Card>
           </TabsContent>
 
-          {/* My Trips */}
-          <TabsContent value="trips">
-            <MyTripsSection user={user} />
-          </TabsContent>
+          {/* My Trips - Only for non-publisher roles */}
+          {user?.role !== 'publisher' && (
+            <TabsContent value="trips">
+              <MyTripsSection user={user} />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
