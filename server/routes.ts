@@ -119,6 +119,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User search route
+  app.get('/api/users/search', async (req, res) => {
+    try {
+      const { q: query } = req.query;
+      
+      if (!query || query.length < 1) {
+        return res.json([]);
+      }
+      
+      // Search users by username, displayName, or first name
+      const users = await storage.searchUsers(query.toString());
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ message: "Failed to search users" });
+    }
+  });
+
   // Connect request routes
   app.post('/api/connect/:toUserId', isAuthenticated, async (req: any, res) => {
     try {

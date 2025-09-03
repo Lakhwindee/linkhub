@@ -1180,6 +1180,41 @@ export class DatabaseStorage implements IStorage {
     
     return result.map(r => r.user);
   }
+
+  async searchUsers(query: string): Promise<User[]> {
+    // Return test users for demo that match the search query
+    const searchQuery = query.toLowerCase();
+    
+    // Add demo user to test users for search
+    const allTestUsers = [
+      {
+        id: 'demo-user-1',
+        username: 'demo_user',
+        displayName: 'Demo User',
+        firstName: 'Demo',
+        lastName: 'User',
+        email: 'demo@hublink.com',
+        profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        country: 'United Kingdom',
+        city: 'London',
+        plan: 'creator',
+        role: 'traveler',
+        interests: ['travel', 'photography', 'food'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      ...testUsers
+    ];
+    
+    const matchedUsers = allTestUsers.filter(user => 
+      user.username?.toLowerCase().includes(searchQuery) ||
+      user.displayName?.toLowerCase().includes(searchQuery) ||
+      user.firstName?.toLowerCase().includes(searchQuery) ||
+      user.lastName?.toLowerCase().includes(searchQuery)
+    );
+    
+    return matchedUsers.slice(0, 20); // Limit to 20 results
+  }
   
   // Stays implementation
   async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]> {

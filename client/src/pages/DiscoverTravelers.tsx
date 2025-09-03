@@ -13,6 +13,7 @@ import Globe3D from "@/components/Globe3D";
 import type { User } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { UserSearch } from "@/components/UserSearch";
 
 // Define comprehensive world countries and cities
 const COUNTRIES = [
@@ -802,7 +803,20 @@ export default function DiscoverTravelers() {
           <p className="text-xs text-muted-foreground">Find and connect with travelers worldwide</p>
         </div>
 
-        {/* Search */}
+        {/* User Search */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Search Users
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <UserSearch />
+          </CardContent>
+        </Card>
+
+        {/* Location Search */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2">
