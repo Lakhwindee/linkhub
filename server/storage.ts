@@ -206,9 +206,96 @@ const testEvents = [
 ];
 
 const testAds = [
-  { id: 'ad-1', title: 'Travel Photography Campaign', brand: 'Canon', description: 'Showcase your travel photography skills with our latest mirrorless camera. Perfect for creators who love capturing adventures.', budget: 500, campaignType: 'photography', targetCountries: ['GB', 'US', 'AU'], requirements: 'Min 1K followers, travel content focus', deadline: new Date('2024-11-30'), status: 'active' },
-  { id: 'ad-2', title: 'Street Food Adventures', brand: 'FoodieApp', description: 'Document your local street food experiences and share authentic cultural dining moments.', budget: 300, campaignType: 'food', targetCountries: ['IN', 'TH', 'MX'], requirements: 'Food content creators, 500+ followers', deadline: new Date('2024-12-15'), status: 'active' },
-  { id: 'ad-3', title: 'Sustainable Travel Gear', brand: 'EcoTravel', description: 'Promote eco-friendly travel gear and sustainable tourism practices to conscious travelers.', budget: 750, campaignType: 'lifestyle', targetCountries: ['DE', 'NL', 'SE'], requirements: 'Sustainability focus, 2K+ followers', deadline: new Date('2024-12-01'), status: 'active' }
+  { 
+    id: 'ad-1', 
+    title: 'Travel Photography Campaign', 
+    brand: 'Canon', 
+    briefMd: 'Showcase your travel photography skills with our latest mirrorless camera. Create authentic content featuring iconic landmarks and hidden gems. Include camera in at least 3 shots. Focus on storytelling through your lens and inspire wanderlust in your followers.', 
+    payoutAmount: '500.00',
+    currency: 'GBP',
+    countries: ['GB', 'US', 'AU'], 
+    hashtags: ['CanonUK', 'TravelPhotography', 'Wanderlust', 'MirrorlessCamera'],
+    deadlineAt: new Date('2024-12-30'), 
+    status: 'active',
+    quota: 5,
+    currentReservations: 1,
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-2', 
+    title: 'Street Food Adventures', 
+    brand: 'FoodieApp', 
+    briefMd: 'Document your local street food experiences and share authentic cultural dining moments. Show the cooking process, interact with vendors, and capture the atmosphere. Must feature diverse cuisines and include app screenshots.', 
+    payoutAmount: '300.00',
+    currency: 'GBP',
+    countries: ['IN', 'TH', 'MX', 'VN'], 
+    hashtags: ['FoodieApp', 'StreetFood', 'LocalEats', 'FoodTravel'],
+    deadlineAt: new Date('2025-01-15'), 
+    status: 'active',
+    quota: 10,
+    currentReservations: 3,
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-3', 
+    title: 'Sustainable Travel Gear', 
+    brand: 'EcoTravel', 
+    briefMd: 'Promote eco-friendly travel gear and sustainable tourism practices to conscious travelers. Showcase our bamboo luggage, solar chargers, and recycled travel accessories. Highlight environmental impact and durability.', 
+    payoutAmount: '750.00',
+    currency: 'GBP',
+    countries: ['DE', 'NL', 'SE', 'NO'], 
+    hashtags: ['EcoTravel', 'SustainableTravel', 'EcoFriendly', 'GreenTravel'],
+    deadlineAt: new Date('2025-02-01'), 
+    status: 'active',
+    quota: 3,
+    currentReservations: 0,
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-4', 
+    title: 'Digital Nomad Workspace', 
+    brand: 'RemoteHub', 
+    briefMd: 'Show off the best co-working spaces and remote work setups around the world. Feature our workspace booking platform and demonstrate productivity tips. Include before/after shots of workspace setup and testimonials from locals.', 
+    payoutAmount: '450.00',
+    currency: 'GBP',
+    countries: ['GB', 'PT', 'ES', 'ID'], 
+    hashtags: ['DigitalNomad', 'RemoteWork', 'WorkFromAnywhere', 'RemoteHub'],
+    deadlineAt: new Date('2025-01-20'), 
+    status: 'active',
+    quota: 8,
+    currentReservations: 2,
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-5', 
+    title: 'Adventure Gear Challenge', 
+    brand: 'AdventureX', 
+    briefMd: 'Take our latest hiking gear on an epic adventure! Document a challenging hike or outdoor activity showcasing durability and performance. Include gear close-ups, action shots, and honest review. Perfect for outdoor enthusiasts.', 
+    payoutAmount: '600.00',
+    currency: 'GBP',
+    countries: ['US', 'CA', 'NZ', 'CH'], 
+    hashtags: ['AdventureX', 'HikingGear', 'OutdoorAdventure', 'GearTest'],
+    deadlineAt: new Date('2025-03-01'), 
+    status: 'active',
+    quota: 4,
+    currentReservations: 1,
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-6', 
+    title: 'Cultural Exchange Program', 
+    brand: 'ConnectGlobal', 
+    briefMd: 'Share your cultural exchange experiences and language learning journey. Showcase interactions with locals, traditional activities, and personal growth moments. Promote our language exchange app with authentic testimonials.', 
+    payoutAmount: '350.00',
+    currency: 'GBP',
+    countries: ['JP', 'KR', 'CN', 'FR'], 
+    hashtags: ['ConnectGlobal', 'CulturalExchange', 'LanguageLearning', 'TravelEducation'],
+    deadlineAt: new Date('2025-01-31'), 
+    status: 'active',
+    quota: 6,
+    currentReservations: 0,
+    createdAt: new Date()
+  }
 ];
 
 const testPosts = [
@@ -552,6 +639,25 @@ export class DatabaseStorage implements IStorage {
   
   // User operations
   async getUser(id: string): Promise<User | undefined> {
+    // Handle demo user specially
+    if (id === 'demo-user-1') {
+      return {
+        id: 'demo-user-1',
+        username: 'demo_user',
+        displayName: 'Demo User',
+        firstName: 'Demo',
+        lastName: 'User',
+        email: 'demo@hublink.com',
+        profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        country: 'United Kingdom',
+        city: 'London',
+        plan: 'creator',
+        role: 'traveler',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as User;
+    }
+
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
@@ -970,11 +1076,36 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAd(id: string): Promise<Ad | undefined> {
+    // Check if it's a test ad first
+    const testAd = testAds.find(ad => ad.id === id);
+    if (testAd) {
+      return {
+        ...testAd,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Ad;
+    }
+
     const [ad] = await db.select().from(ads).where(eq(ads.id, id));
     return ad;
   }
 
   async createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation> {
+    // Check if it's a test ad
+    const testAd = testAds.find(ad => ad.id === adId);
+    if (testAd) {
+      // For test ads, create a mock reservation
+      const mockReservation = {
+        id: `test-reservation-${Date.now()}`,
+        adId,
+        userId,
+        expiresAt,
+        status: 'active',
+        createdAt: new Date(),
+      } as AdReservation;
+      return mockReservation;
+    }
+
     const [reservation] = await db
       .insert(adReservations)
       .values({ adId, userId, expiresAt })
@@ -983,6 +1114,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserActiveReservations(userId: string): Promise<AdReservation[]> {
+    // For demo user, return empty array (no active reservations)
+    if (userId === 'demo-user-1') {
+      return [];
+    }
+
     return await db
       .select()
       .from(adReservations)
