@@ -249,39 +249,106 @@ export default function PublisherAds() {
                 </div>
 
                 {/* Ad Creative Upload */}
-                <Card className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Upload className="w-5 h-5 text-accent" />
-                      <Label className="text-base font-semibold">Ad Creative</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Upload the main image or creative asset for your campaign
-                    </p>
-                    <ObjectUploader
-                      maxNumberOfFiles={1}
-                      maxFileSize={10 * 1024 * 1024} // 10MB
-                      onGetUploadParameters={handleImageUpload}
-                      onComplete={handleImageComplete}
-                      buttonClassName="bg-accent hover:bg-accent/90 w-full min-h-[120px] border-2 border-dashed border-accent/30 hover:border-accent/50 transition-colors flex-col"
-                    >
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                        <Upload className="w-8 h-8 text-accent" />
-                        <div className="text-center">
-                          <p className="font-medium">
-                            {adImageUrl ? "Change Image" : "Upload Ad Creative"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Drag and drop or click to browse (Max 10MB)
+                <Card className="p-6 bg-gradient-to-br from-background to-muted/30 border-2 border-muted-foreground/10 shadow-lg">
+                  <div className="space-y-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-gradient-to-br from-accent to-chart-2 rounded-xl flex items-center justify-center shadow-md">
+                          <Upload className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-foreground mb-1">Campaign Creative</h3>
+                          <p className="text-sm text-muted-foreground max-w-md">
+                            Upload high-resolution creative assets to maximize campaign effectiveness
                           </p>
                         </div>
                       </div>
-                    </ObjectUploader>
-                    {adImageUrl && (
-                      <div className="mt-2 p-2 bg-green-50 dark:bg-green-950 rounded border">
-                        <p className="text-sm text-green-700 dark:text-green-300">
-                          ✓ Ad creative uploaded successfully
-                        </p>
+                    </div>
+
+                    {!adImageUrl ? (
+                      <div className="relative">
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={10 * 1024 * 1024} // 10MB
+                          onGetUploadParameters={handleImageUpload}
+                          onComplete={handleImageComplete}
+                          buttonClassName="w-full min-h-[200px] border-2 border-dashed border-accent/40 hover:border-accent bg-gradient-to-br from-background to-accent/5 hover:from-accent/5 hover:to-accent/10 transition-all duration-500 rounded-2xl shadow-inner group"
+                        >
+                          <div className="flex flex-col items-center justify-center space-y-6 p-10">
+                            <div className="relative">
+                              <div className="w-20 h-20 bg-gradient-to-br from-accent/20 to-chart-2/20 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <Upload className="w-10 h-10 text-accent" />
+                              </div>
+                              <div className="absolute -top-1 -right-1 w-6 h-6 bg-chart-2 rounded-full flex items-center justify-center">
+                                <Plus className="w-3 h-3 text-white" />
+                              </div>
+                            </div>
+                            
+                            <div className="text-center space-y-3">
+                              <div>
+                                <h4 className="font-bold text-foreground text-xl mb-1">
+                                  Drop your creative here
+                                </h4>
+                                <p className="text-muted-foreground font-medium">
+                                  or click to browse from your device
+                                </p>
+                              </div>
+                              <div className="flex items-center justify-center space-x-6 text-xs text-muted-foreground">
+                                <div className="flex items-center space-x-1">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <span>JPG, PNG, GIF</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  <span>Up to 10MB</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                  <span>High Resolution</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </ObjectUploader>
+                      </div>
+                    ) : (
+                      <div className="space-y-5">
+                        {/* Preview uploaded image */}
+                        <div className="relative rounded-2xl overflow-hidden border-2 border-green-200 dark:border-green-700 shadow-xl">
+                          <img 
+                            src={adImageUrl} 
+                            alt="Campaign creative preview" 
+                            className="w-full h-56 object-cover"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                          <div className="absolute top-4 right-4">
+                            <Badge className="bg-green-500/90 backdrop-blur-sm text-white shadow-lg">
+                              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse" />
+                              Creative Ready
+                            </Badge>
+                          </div>
+                          <div className="absolute bottom-4 left-4">
+                            <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
+                              <p className="text-white text-sm font-medium">Campaign Creative Preview</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Change image button */}
+                        <ObjectUploader
+                          maxNumberOfFiles={1}
+                          maxFileSize={10 * 1024 * 1024} // 10MB
+                          onGetUploadParameters={handleImageUpload}
+                          onComplete={handleImageComplete}
+                          buttonClassName="w-full bg-gradient-to-r from-muted to-muted/80 hover:from-accent/10 hover:to-accent/20 text-foreground border-2 border-muted-foreground/20 hover:border-accent/50 transition-all duration-300 py-4 px-6 rounded-xl shadow-sm hover:shadow-md"
+                        >
+                          <div className="flex items-center justify-center space-x-3">
+                            <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
+                              <Upload className="w-4 h-4 text-accent" />
+                            </div>
+                            <span className="font-semibold text-lg">Update Creative</span>
+                          </div>
+                        </ObjectUploader>
                       </div>
                     )}
                   </div>
