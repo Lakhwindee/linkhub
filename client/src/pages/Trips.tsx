@@ -38,7 +38,28 @@ export default function Trips() {
     tags: ""
   });
   const [itineraryDestinations, setItineraryDestinations] = useState([
-    { country: '', city: '', startDate: '', endDate: '', duration: 1 }
+    { 
+      country: '', 
+      city: '', 
+      startDate: '', 
+      endDate: '', 
+      duration: 1,
+      accommodation: {
+        hotel: '',
+        roomType: '',
+        pricePerNight: '',
+        totalCost: '',
+        checkInTime: '',
+        checkOutTime: ''
+      },
+      activities: [],
+      transportation: {
+        arrival: { type: '', details: '', cost: '' },
+        departure: { type: '', details: '', cost: '' },
+        local: []
+      },
+      notes: ''
+    }
   ]);
 
   const queryClient = useQueryClient();
@@ -733,7 +754,28 @@ export default function Trips() {
                       type="button" 
                       variant="outline" 
                       size="default"
-                      onClick={() => setItineraryDestinations([...itineraryDestinations, { country: '', city: '', startDate: '', endDate: '', duration: 1 }])}
+                      onClick={() => setItineraryDestinations([...itineraryDestinations, { 
+                        country: '', 
+                        city: '', 
+                        startDate: '', 
+                        endDate: '', 
+                        duration: 1,
+                        accommodation: {
+                          hotel: '',
+                          roomType: '',
+                          pricePerNight: '',
+                          totalCost: '',
+                          checkInTime: '',
+                          checkOutTime: ''
+                        },
+                        activities: [],
+                        transportation: {
+                          arrival: { type: '', details: '', cost: '' },
+                          departure: { type: '', details: '', cost: '' },
+                          local: []
+                        },
+                        notes: ''
+                      }])}
                       className="border-dashed border-2 hover:border-solid"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -795,7 +837,7 @@ export default function Trips() {
                           </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                           <div className="space-y-3">
                             <Label className="text-base font-medium">Start Date *</Label>
                             <Input 
@@ -838,6 +880,172 @@ export default function Trips() {
                               className="h-11"
                             />
                           </div>
+                        </div>
+
+                        {/* Accommodation Planning */}
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Bed className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Accommodation Planning</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Hotel Name</Label>
+                              <Input 
+                                placeholder="e.g., Hotel Barcelona Center"
+                                value={destination.accommodation.hotel}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].accommodation.hotel = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Room Type</Label>
+                              <Select 
+                                value={destination.accommodation.roomType}
+                                onValueChange={(value) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].accommodation.roomType = value;
+                                  setItineraryDestinations(updated);
+                                }}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select room type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="single">Single Room</SelectItem>
+                                  <SelectItem value="twin">Twin Room</SelectItem>
+                                  <SelectItem value="double">Double Room</SelectItem>
+                                  <SelectItem value="suite">Suite</SelectItem>
+                                  <SelectItem value="shared">Shared Dormitory</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Price per Night (£)</Label>
+                              <Input 
+                                type="number"
+                                placeholder="95"
+                                value={destination.accommodation.pricePerNight}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].accommodation.pricePerNight = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Check-in Time</Label>
+                              <Input 
+                                type="time"
+                                value={destination.accommodation.checkInTime}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].accommodation.checkInTime = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Check-out Time</Label>
+                              <Input 
+                                type="time"
+                                value={destination.accommodation.checkOutTime}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].accommodation.checkOutTime = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Activities & Sightseeing */}
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Camera className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Activities & Sightseeing</h4>
+                          </div>
+                          
+                          <Textarea 
+                            placeholder="Add planned activities, sightseeing spots, workshops, tours, etc.&#10;Example:&#10;- Morning photography walk at sunrise&#10;- Visit to local museums&#10;- Food tour in historic district&#10;- Evening cultural show"
+                            value={destination.activities.join('\n')}
+                            onChange={(e) => {
+                              const updated = [...itineraryDestinations];
+                              updated[index].activities = e.target.value.split('\n').filter(item => item.trim());
+                              setItineraryDestinations(updated);
+                            }}
+                            rows={4}
+                            className="min-h-[100px]"
+                          />
+                        </div>
+
+                        {/* Transportation */}
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Plane className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Transportation</h4>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Arrival Details</Label>
+                              <Input 
+                                placeholder="e.g., Flight BA477 from London, 10:30 AM"
+                                value={destination.transportation.arrival.details}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].transportation.arrival.details = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <Label className="text-base font-medium">Departure Details</Label>
+                              <Input 
+                                placeholder="e.g., Flight BA478 to London, 6:45 PM"
+                                value={destination.transportation.departure.details}
+                                onChange={(e) => {
+                                  const updated = [...itineraryDestinations];
+                                  updated[index].transportation.departure.details = e.target.value;
+                                  setItineraryDestinations(updated);
+                                }}
+                                className="h-11"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Notes & Special Requirements */}
+                        <div className="border-t pt-4 space-y-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <FileText className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Notes & Special Requirements</h4>
+                          </div>
+                          
+                          <Textarea 
+                            placeholder="Any special notes, requirements, or important information for this destination..."
+                            value={destination.notes}
+                            onChange={(e) => {
+                              const updated = [...itineraryDestinations];
+                              updated[index].notes = e.target.value;
+                              setItineraryDestinations(updated);
+                            }}
+                            rows={3}
+                            className="min-h-[80px]"
+                          />
                         </div>
                       </div>
                     ))}
