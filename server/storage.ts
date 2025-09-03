@@ -1114,9 +1114,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserActiveReservations(userId: string): Promise<AdReservation[]> {
-    // For demo user, return empty array (no active reservations)
+    // For demo user, return mock reservations to demonstrate functionality
     if (userId === 'demo-user-1') {
-      return [];
+      const now = new Date();
+      const fiveDaysFromNow = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000));
+      
+      return [
+        {
+          id: `demo-reservation-${Date.now()}`,
+          adId: 'ad-6',
+          userId: 'demo-user-1',
+          status: 'active',
+          expiresAt: fiveDaysFromNow,
+          createdAt: now,
+        }
+      ] as AdReservation[];
     }
 
     return await db
