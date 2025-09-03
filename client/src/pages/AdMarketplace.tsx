@@ -32,6 +32,7 @@ export default function AdMarketplace() {
   const [liveCountdown, setLiveCountdown] = useState("");
   const [reservedCampaignId, setReservedCampaignId] = useState<string | null>(null);
   const [contentLink, setContentLink] = useState("");
+  const [campaignCountdowns, setCampaignCountdowns] = useState<Record<string, string>>({});
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -117,6 +118,40 @@ export default function AdMarketplace() {
       if (interval) clearInterval(interval);
     };
   }, [showCountdownOverlay, reservedCampaignId]);
+
+  // Live countdown for campaigns in "My Campaigns" tab
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (reservations.length > 0) {
+      interval = setInterval(() => {
+        const newCountdowns: Record<string, string> = {};
+        
+        reservations.forEach((reservation: AdReservation) => {
+          const now = Date.now();
+          const expiry = new Date(reservation.expiresAt!).getTime();
+          const timeLeft = expiry - now;
+          
+          if (timeLeft <= 0) {
+            newCountdowns[reservation.id] = "Expired";
+          } else {
+            const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+            
+            newCountdowns[reservation.id] = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+          }
+        });
+        
+        setCampaignCountdowns(newCountdowns);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [reservations]);
 
   const reserveAdMutation = useMutation({
     mutationFn: async (adId: string) => {
@@ -579,9 +614,11 @@ export default function AdMarketplace() {
                               </Badge>
                             </div>
                             <div className="flex items-center space-x-4">
-                              <div className="text-sm text-muted-foreground">
-                                <Clock className="w-4 h-4 inline mr-1" />
-                                Deadline: {formatDistanceToNow(new Date(reservation.expiresAt!))} remaining
+                              <div className="flex items-center text-sm font-medium text-foreground bg-red-50 dark:bg-red-950 px-3 py-1 rounded-full border border-red-200 dark:border-red-800">
+                                <Clock className="w-4 h-4 mr-2 text-red-600" />
+                                <span className="text-red-700 dark:text-red-300">
+                                  {campaignCountdowns[reservation.id] || "Loading..."}
+                                </span>
                               </div>
                               <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
                                 ⏰ 5 Days Campaign
