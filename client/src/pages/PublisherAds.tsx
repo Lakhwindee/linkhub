@@ -48,21 +48,17 @@ export default function PublisherAds() {
     { level: 3, price: 360, range: "70K+", description: "Macro-Influencers" },
   ];
 
-  // Calculate costs with platform fees and VAT
+  // Calculate costs with platform fees
   const calculateCosts = (budget: number, tierLevel: number) => {
     const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 120;
     const platformFee = budget * 0.10; // 10% platform fee
-    const subtotalWithFee = budget + platformFee;
-    const vat = subtotalWithFee * 0.20; // 20% VAT
-    const totalWithVAT = subtotalWithFee + vat;
+    const totalCost = budget + platformFee;
     const maxInfluencers = Math.floor(budget / tierPrice);
     
     return {
       baseAmount: budget,
       platformFee,
-      subtotalWithFee,
-      vat,
-      totalWithVAT,
+      totalCost,
       maxInfluencers,
       tierPrice
     };
@@ -420,19 +416,9 @@ export default function PublisherAds() {
                             <span className="text-muted-foreground">+${costBreakdown.platformFee.toFixed(2)}</span>
                           </div>
                           
-                          <div className="flex items-center justify-between text-sm border-b border-muted-foreground/10 pb-2">
-                            <span className="text-muted-foreground">Subtotal:</span>
-                            <span className="text-muted-foreground">${costBreakdown.subtotalWithFee.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">VAT (20%):</span>
-                            <span className="text-muted-foreground">+${costBreakdown.vat.toFixed(2)}</span>
-                          </div>
-                          
                           <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
                             <span className="text-foreground">Total Cost:</span>
-                            <span className="text-chart-1">£{costBreakdown.totalWithVAT.toFixed(2)}</span>
+                            <span className="text-chart-1">${costBreakdown.totalCost.toFixed(2)}</span>
                           </div>
                         </div>
                         
