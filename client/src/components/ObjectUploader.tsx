@@ -64,6 +64,19 @@ export function ObjectUploader({
         maxFileSize,
       },
       autoProceed: false,
+      locale: {
+        strings: {
+          dropPaste: "",
+          browse: "browse",
+          dropPasteFiles: "%{browseFiles}",
+          dropPasteFolders: "%{browseFolders}",
+          dropPasteBoth: "%{browseFiles}",
+          dropHereOr: "",
+          dropPasteImportFolders: "%{browseFiles}",
+          dropPasteImportFiles: "%{browseFiles}",
+          dropPasteImportBoth: "%{browseFiles}",
+        },
+      },
     })
       .use(AwsS3, {
         shouldUseMultipart: false,
