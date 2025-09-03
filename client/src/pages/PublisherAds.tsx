@@ -444,26 +444,6 @@ export default function PublisherAds() {
                 </div>
                 </Card>
 
-                {/* Additional Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="countries">Target Countries</Label>
-                    <Input
-                      id="countries"
-                      placeholder="US, UK, Canada (comma separated)"
-                      onChange={(e) => setValue("countries", e.target.value.split(",").map(s => s.trim()).filter(Boolean))}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="hashtags">Required Hashtags</Label>
-                    <Input
-                      id="hashtags"
-                      placeholder="#travel, #adventure (comma separated)"
-                      onChange={(e) => setValue("hashtags", e.target.value.split(",").map(s => s.trim().replace(/^#/, "")).filter(Boolean))}
-                    />
-                  </div>
-                </div>
 
                 {/* Submit Button */}
                 <div className="flex justify-end space-x-3">
