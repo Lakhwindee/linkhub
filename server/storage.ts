@@ -1142,7 +1142,7 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
-  async createAdSubmission(data: { reservationId: string; postId?: string; rawFileUrl?: string }): Promise<AdSubmission> {
+  async createAdSubmission(data: { reservationId: string; postId?: string; rawFileUrl?: string; contentLink?: string }): Promise<AdSubmission> {
     const [submission] = await db
       .insert(adSubmissions)
       .values(data)

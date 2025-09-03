@@ -779,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { id } = req.params;
-      const { postId, rawFileUrl } = req.body;
+      const { postId, rawFileUrl, contentLink } = req.body;
       
       // Find active reservation
       const reservations = await storage.getUserActiveReservations(userId);
@@ -792,7 +792,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const submission = await storage.createAdSubmission({
         reservationId: reservation.id,
         postId,
-        rawFileUrl
+        rawFileUrl,
+        contentLink
       });
       
       await storage.createAuditLog({

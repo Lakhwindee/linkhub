@@ -31,6 +31,7 @@ export default function AdMarketplace() {
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [liveCountdown, setLiveCountdown] = useState("");
   const [reservedCampaignId, setReservedCampaignId] = useState<string | null>(null);
+  const [contentLink, setContentLink] = useState("");
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -156,9 +157,10 @@ export default function AdMarketplace() {
   });
 
   const submitAdMutation = useMutation({
-    mutationFn: async (data: { adId: string; rawFileUrl: string }) => {
+    mutationFn: async (data: { adId: string; rawFileUrl: string; contentLink: string }) => {
       return await apiRequest("POST", `/api/ads/${data.adId}/submit`, {
-        rawFileUrl: data.rawFileUrl
+        rawFileUrl: data.rawFileUrl,
+        contentLink: data.contentLink
       });
     },
     onSuccess: () => {
@@ -167,6 +169,7 @@ export default function AdMarketplace() {
         description: "Your content has been submitted for review.",
       });
       setIsSubmitDialogOpen(false);
+      setContentLink(""); // Clear the link input
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
     },
     onError: (error) => {
@@ -204,7 +207,8 @@ export default function AdMarketplace() {
         
         submitAdMutation.mutate({
           adId: selectedAd.id,
-          rawFileUrl: objectPath
+          rawFileUrl: objectPath,
+          contentLink: contentLink
         });
       } catch (error) {
         toast({
@@ -603,8 +607,22 @@ export default function AdMarketplace() {
                                 </DialogHeader>
                                 <div className="space-y-4">
                                   <p className="text-muted-foreground">
-                                    Upload your final video or image content for admin review.
+                                    Upload your final video or image content and provide the link to your post for admin review.
                                   </p>
+                                  
+                                  {/* Content Link Input */}
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-foreground">
+                                      Content Link (Instagram, TikTok, YouTube, etc.)
+                                    </label>
+                                    <Input
+                                      type="url"
+                                      placeholder="https://www.instagram.com/p/..."
+                                      value={contentLink}
+                                      onChange={(e) => setContentLink(e.target.value)}
+                                      className="w-full"
+                                    />
+                                  </div>
                                   
                                   <ObjectUploader
                                     maxNumberOfFiles={1}
@@ -614,7 +632,7 @@ export default function AdMarketplace() {
                                     buttonClassName="w-full bg-accent hover:bg-accent/90"
                                   >
                                     <Upload className="w-4 h-4 mr-2" />
-                                    Upload Content
+                                    Upload Content File
                                   </ObjectUploader>
 
                                   <p className="text-xs text-muted-foreground">
