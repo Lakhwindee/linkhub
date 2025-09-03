@@ -43,6 +43,7 @@ function Router() {
             <>
               <Route path="/" component={Landing} />
               <Route path="/subscribe" component={Subscribe} />
+              <Route path="/document-signup" component={DocumentSignup} />
             </>
           ) : (
             <>
