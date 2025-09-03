@@ -11,7 +11,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { 
   FileText, Upload, CheckCircle, AlertCircle, Clock, User, MapPin, Calendar, 
-  Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building
+  Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building, Loader2
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { countryCodes, countries, statesByCountry, getCitiesForState, citiesByCountry } from "@/data/locationData";
@@ -35,6 +35,8 @@ export default function ProfessionalSignup() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'failed'>('pending');
   const [extractedInfo, setExtractedInfo] = useState<ExtractedInfo>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
   
   const [formData, setFormData] = useState({
     // Personal Information
@@ -196,8 +198,13 @@ export default function ProfessionalSignup() {
       return;
     }
 
+    setIsSubmitting(true);
+    setSuccessStage('creating');
+
     try {
-      // For demo purposes, directly complete signup without OAuth
+      // Simulate account creation process with realistic timing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
       const signupData = {
         ...formData,
         role: selectedRole,
@@ -215,21 +222,27 @@ export default function ProfessionalSignup() {
       localStorage.setItem('hublink_verification_complete', 'true');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
       
-      toast({
-        title: "Account Created Successfully!",
-        description: `Welcome to HubLink! Redirecting to your dashboard...`,
-      });
+      // Success stage with animation
+      setSuccessStage('success');
       
-      // Small delay for better UX
+      // Wait for success animation
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redirecting stage
+      setSuccessStage('redirecting');
+      
+      // Final redirect
       setTimeout(() => {
         if (selectedRole === 'publisher') {
           window.location.href = '/stays';
         } else {
           window.location.href = '/dashboard';
         }
-      }, 1500);
+      }, 1000);
       
     } catch (error) {
+      setIsSubmitting(false);
+      setSuccessStage('none');
       toast({
         title: "Error",
         description: "Failed to complete signup. Please try again.",
@@ -894,13 +907,22 @@ export default function ProfessionalSignup() {
                   </Button>
                   <Button 
                     onClick={handleSubmit}
-                    disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+                    disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
                              !formData.address || !formData.city || !formData.postalCode || !formData.country || 
                              !formData.username || !formData.password || !formData.confirmPassword ||
                              (selectedRole === 'publisher' && !formData.businessName)}
-                    className="px-8"
+                    className="px-8 min-w-[200px]"
                   >
-                    Create {selectedRole === 'publisher' ? 'Publisher' : 'Creator'} Account
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {successStage === 'creating' && 'Creating Account...'}
+                        {successStage === 'success' && 'Account Created!'}
+                        {successStage === 'redirecting' && 'Redirecting...'}
+                      </div>
+                    ) : (
+                      `Create ${selectedRole === 'publisher' ? 'Publisher' : 'Creator'} Account`
+                    )}
                   </Button>
                 </div>
               </div>
@@ -908,6 +930,51 @@ export default function ProfessionalSignup() {
           </Card>
         )}
       </div>
+      
+      {/* Success Overlay */}
+      {successStage !== 'none' && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300">
+          <Card className="w-[400px] mx-4">
+            <CardContent className="p-8 text-center">
+              {successStage === 'creating' && (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold">Creating Your Account</h3>
+                  <p className="text-muted-foreground">Please wait while we set up your HubLink profile...</p>
+                </div>
+              )}
+              
+              {successStage === 'success' && (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center animate-pulse">
+                      <CheckCircle className="w-8 h-8 text-green-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-green-600">Account Created Successfully!</h3>
+                  <p className="text-muted-foreground">Welcome to HubLink! Your {selectedRole} account is ready.</p>
+                </div>
+              )}
+              
+              {successStage === 'redirecting' && (
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-blue-600">Redirecting...</h3>
+                  <p className="text-muted-foreground">
+                    Taking you to your {selectedRole === 'publisher' ? 'stays management' : 'dashboard'}...
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
