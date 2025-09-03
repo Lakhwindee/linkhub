@@ -73,6 +73,53 @@ export default function ProfessionalSignup() {
     taxId: '',
   });
 
+  const fillDemoData = () => {
+    const demoData = {
+      // Personal Information
+      firstName: 'Rajesh',
+      lastName: 'Kumar',
+      email: 'rajesh.kumar@example.com',
+      phone: '9876543210',
+      dateOfBirth: '1990-03-15',
+      gender: 'male',
+      nationality: 'Indian',
+      
+      // Address Information  
+      address: 'Sector 14, Cyber City',
+      city: 'Ahmedabad',
+      state: 'Gujarat',
+      postalCode: '380001',
+      country: 'India',
+      
+      // Professional Information
+      username: 'rajesh_travels',
+      bio: 'Professional travel blogger and photographer with 5+ years experience in tourism industry.',
+      profession: 'Travel Blogger & Photographer',
+      experience: '5+ years',
+      languages: 'English, Hindi, Gujarati',
+      
+      // Account Information
+      password: 'Demo123!',
+      confirmPassword: 'Demo123!',
+      countryCode: '+91',
+      
+      // Publisher specific
+      businessName: 'Gujarat Tourism Hub',
+      businessType: 'Travel Agency',
+      businessAddress: 'Commerce House, Ashram Road, Ahmedabad',
+      businessPhone: '9876543210',
+      taxId: 'GSTIN123456789',
+    };
+    
+    setFormData(demoData);
+    
+    toast({
+      title: "Demo Data Filled!",
+      description: "Form has been filled with sample Indian data for testing.",
+      duration: 3000,
+    });
+  };
+
   const handleRoleSelection = (role: 'creator' | 'publisher') => {
     setSelectedRole(role);
     if (role === 'creator') {
@@ -832,23 +879,29 @@ export default function ProfessionalSignup() {
                 </div>
               </div>
 
-              <div className="flex justify-between pt-6 border-t">
+              <div className="flex justify-between items-center pt-6 border-t">
                 <Button 
                   variant="outline" 
                   onClick={() => selectedRole === 'creator' ? setStep(1) : setStep(2)}
                 >
                   Back
                 </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
-                           !formData.address || !formData.city || !formData.postalCode || !formData.country || 
-                           !formData.username || !formData.password || !formData.confirmPassword ||
-                           (selectedRole === 'publisher' && !formData.businessName)}
-                  className="px-8"
-                >
-                  Create {selectedRole === 'publisher' ? 'Publisher' : 'Creator'} Account
-                </Button>
+                
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={fillDemoData}>
+                    🎯 Fill Demo Data
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit}
+                    disabled={!formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
+                             !formData.address || !formData.city || !formData.postalCode || !formData.country || 
+                             !formData.username || !formData.password || !formData.confirmPassword ||
+                             (selectedRole === 'publisher' && !formData.businessName)}
+                    className="px-8"
+                  >
+                    Create {selectedRole === 'publisher' ? 'Publisher' : 'Creator'} Account
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

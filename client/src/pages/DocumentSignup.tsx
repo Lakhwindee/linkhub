@@ -42,6 +42,26 @@ export default function DocumentSignup() {
     city: '',
   });
 
+  const fillDemoData = () => {
+    const demoData = {
+      username: 'priya_mumbai',
+      email: 'priya.sharma@example.com',
+      firstName: 'Priya',
+      lastName: 'Sharma',
+      bio: 'Mumbai-based travel enthusiast and content creator exploring India\'s hidden gems.',
+      country: 'India',
+      city: 'Ahmedabad',
+    };
+    
+    setFormData(demoData);
+    
+    toast({
+      title: "Demo Data Filled!",
+      description: "Form has been filled with sample data for testing.",
+      duration: 3000,
+    });
+  };
+
   const handleDocumentUpload = async (url: string) => {
     setDocumentUrl(url);
     setIsVerifying(true);
@@ -451,16 +471,22 @@ export default function DocumentSignup() {
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <Button variant="outline" onClick={() => setStep(2)}>
                   Back
                 </Button>
-                <Button 
-                  onClick={handleSubmit}
-                  disabled={!formData.username || !formData.email}
-                >
-                  Complete Signup
-                </Button>
+                
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={fillDemoData}>
+                    🎯 Fill Demo Data
+                  </Button>
+                  <Button 
+                    onClick={handleSubmit}
+                    disabled={!formData.username || !formData.email}
+                  >
+                    Complete Signup
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
