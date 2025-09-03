@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users, ThumbsDown, Send, Instagram, Twitter, Facebook, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Post } from "@shared/schema";
@@ -17,11 +19,82 @@ interface PostCardProps {
 
 export function PostCard({ post, compact = false }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  const [isDisliked, setIsDisliked] = useState(false);
+  const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 50) + 5);
+  const [dislikeCount, setDislikeCount] = useState(Math.floor(Math.random() * 5));
+  const [commentCount, setCommentCount] = useState(Math.floor(Math.random() * 20) + 2);
+  const [comments, setComments] = useState<{id: string, author: string, text: string, time: Date}[]>([
+    {
+      id: '1',
+      author: 'travel_lover',
+      text: 'Amazing photo! 😍',
+      time: new Date(Date.now() - 2 * 60 * 60 * 1000)
+    },
+    {
+      id: '2', 
+      author: 'wanderlust_soul',
+      text: 'I need to visit this place! Thanks for sharing ✈️',
+      time: new Date(Date.now() - 5 * 60 * 60 * 1000)
+    }
+  ]);
+  const [newComment, setNewComment] = useState('');
+  const [showComments, setShowComments] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
 
   const handleLike = () => {
+    if (isDisliked) {
+      setIsDisliked(false);
+      setDislikeCount(prev => prev - 1);
+    }
     setIsLiked(!isLiked);
     setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+  };
+
+  const handleDislike = () => {
+    if (isLiked) {
+      setIsLiked(false);
+      setLikeCount(prev => prev - 1);
+    }
+    setIsDisliked(!isDisliked);
+    setDislikeCount(prev => isDisliked ? prev - 1 : prev + 1);
+  };
+
+  const handleAddComment = () => {
+    if (newComment.trim()) {
+      const comment = {
+        id: Date.now().toString(),
+        author: 'You',
+        text: newComment.trim(),
+        time: new Date()
+      };
+      setComments(prev => [comment, ...prev]);
+      setCommentCount(prev => prev + 1);
+      setNewComment('');
+    }
+  };
+
+  const handleShare = (platform: string) => {
+    const url = window.location.href;
+    const text = `Check out this amazing post: ${post.body?.slice(0, 100)}...`;
+    
+    switch (platform) {
+      case 'instagram':
+        // Instagram doesn't support direct sharing via URL, so copy to clipboard
+        navigator.clipboard.writeText(`${text} ${url}`);
+        alert('Post content copied to clipboard! Share it on Instagram.');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(`${text} ${url}`);
+        alert('Link copied to clipboard!');
+        break;
+    }
+    setShowShareDialog(false);
   };
 
   const getVisibilityIcon = (visibility: string) => {
@@ -200,30 +273,166 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           </div>
         )}
 
-        {/* Post Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex items-center space-x-6">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLike}
-              className={`flex items-center space-x-1 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
-              data-testid={`button-like-post-${post.id}`}
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-              <span>{likeCount}</span>
-            </Button>
+        {/* Post Actions - Instagram Style */}
+        <div className="pt-3 border-t border-border space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleLike}
+                className={`flex items-center space-x-1 p-1 hover:bg-transparent ${isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                data-testid={`button-like-post-${post.id}`}
+              >
+                <Heart className={`w-6 h-6 ${isLiked ? 'fill-current' : ''}`} />
+              </Button>
 
-            <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground" data-testid={`button-comment-post-${post.id}`}>
-              <MessageCircle className="w-4 h-4" />
-              <span>0</span>
-            </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleDislike}
+                className={`flex items-center space-x-1 p-1 hover:bg-transparent ${isDisliked ? 'text-blue-500' : 'text-muted-foreground hover:text-blue-500'}`}
+                data-testid={`button-dislike-post-${post.id}`}
+              >
+                <ThumbsDown className={`w-5 h-5 ${isDisliked ? 'fill-current' : ''}`} />
+              </Button>
 
-            <Button variant="ghost" size="sm" className="flex items-center space-x-1 text-muted-foreground" data-testid={`button-share-post-${post.id}`}>
-              <Share className="w-4 h-4" />
-              <span>Share</span>
-            </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center space-x-1 p-1 hover:bg-transparent text-muted-foreground hover:text-blue-500" 
+                data-testid={`button-comment-post-${post.id}`}
+              >
+                <MessageCircle className="w-6 h-6" />
+              </Button>
+
+              <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="flex items-center space-x-1 p-1 hover:bg-transparent text-muted-foreground hover:text-green-500" 
+                    data-testid={`button-share-post-${post.id}`}
+                  >
+                    <Send className="w-5 h-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Share this post</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleShare('instagram')}
+                      className="flex items-center space-x-2"
+                    >
+                      <Instagram className="w-4 h-4" />
+                      <span>Instagram</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleShare('facebook')}
+                      className="flex items-center space-x-2"
+                    >
+                      <Facebook className="w-4 h-4" />
+                      <span>Facebook</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleShare('twitter')}
+                      className="flex items-center space-x-2"
+                    >
+                      <Twitter className="w-4 h-4" />
+                      <span>Twitter</span>
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleShare('copy')}
+                      className="flex items-center space-x-2"
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy Link</span>
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
+
+          {/* Like and interaction counts */}
+          <div className="text-sm space-y-1">
+            <div className="flex items-center space-x-4">
+              <span className="font-semibold">
+                {likeCount} likes
+              </span>
+              {dislikeCount > 0 && (
+                <span className="text-muted-foreground">
+                  {dislikeCount} dislikes
+                </span>
+              )}
+              <button 
+                onClick={() => setShowComments(!showComments)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                View all {commentCount} comments
+              </button>
+            </div>
+          </div>
+
+          {/* Comments Section */}
+          {showComments && (
+            <div className="space-y-3">
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex items-start space-x-2">
+                    <Avatar className="w-6 h-6">
+                      <AvatarFallback className="text-xs">
+                        {comment.author.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="text-sm">
+                        <span className="font-semibold mr-2">{comment.author}</span>
+                        {comment.text}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(comment.time)} ago
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Add Comment */}
+              <div className="flex items-center space-x-2">
+                <Avatar className="w-6 h-6">
+                  <AvatarFallback className="text-xs">
+                    U
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 flex items-center space-x-2">
+                  <Input
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                    className="border-none shadow-none focus-visible:ring-0"
+                  />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim()}
+                    className="p-1"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
