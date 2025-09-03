@@ -21,8 +21,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   };
 
   const handleGetStarted = () => {
-    // Redirect to proper document signup page
-    window.location.href = '/document-signup';
+    // Redirect to professional signup page
+    window.location.href = '/professional-signup';
   };
 
   const handleLogout = () => {

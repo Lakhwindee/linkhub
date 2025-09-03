@@ -22,6 +22,7 @@ import Stays from "@/pages/Stays";
 import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
 import DocumentSignup from "@/pages/DocumentSignup";
+import ProfessionalSignup from "@/pages/ProfessionalSignup";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -44,6 +45,7 @@ function Router() {
               <Route path="/" component={Landing} />
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/document-signup" component={DocumentSignup} />
+              <Route path="/professional-signup" component={ProfessionalSignup} />
             </>
           ) : (
             <>
@@ -74,6 +76,7 @@ function Router() {
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
               <Route path="/document-signup" component={DocumentSignup} />
+              <Route path="/professional-signup" component={ProfessionalSignup} />
             </>
           )}
           <Route component={NotFound} />
