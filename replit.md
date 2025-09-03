@@ -6,6 +6,14 @@ HubLink is a tourism-social platform that connects travelers and creators global
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Changes
+
+**September 2025 - Critical Security Enhancement**
+- Implemented continuous YouTube channel verification system
+- Added fraud prevention for campaign access - prevents "friend's channel" verification abuse
+- Real-time verification code checking during campaign reservation and submission
+- Automatic user de-verification if verification code is removed from channel description
+
 # System Architecture
 
 ## Frontend Architecture
