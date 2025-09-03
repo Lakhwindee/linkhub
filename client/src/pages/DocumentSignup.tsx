@@ -420,8 +420,11 @@ export default function DocumentSignup() {
                         <SelectValue placeholder="Select city" />
                       </SelectTrigger>
                       <SelectContent className="max-h-80 overflow-y-auto">
-                        {formData.country && citiesByCountry[formData.country] ? (
-                          citiesByCountry[formData.country].map((city) => (
+                        {formData.country && statesByCountry[formData.country as keyof typeof statesByCountry] ? (
+                          statesByCountry[formData.country as keyof typeof statesByCountry].reduce((allCities: string[], state: string) => {
+                            const cities = getCitiesForState(formData.country, state);
+                            return [...allCities, ...cities];
+                          }, []).map((city) => (
                             <SelectItem key={city} value={city}>
                               {city}
                             </SelectItem>

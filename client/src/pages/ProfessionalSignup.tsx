@@ -617,8 +617,8 @@ export default function ProfessionalSignup() {
                           <SelectValue placeholder="Select state/province" />
                         </SelectTrigger>
                         <SelectContent className="max-h-80 overflow-y-auto">
-                          {formData.country && statesByCountry[formData.country] ? (
-                            statesByCountry[formData.country].map((state) => (
+                          {formData.country && statesByCountry[formData.country as keyof typeof statesByCountry] ? (
+                            statesByCountry[formData.country as keyof typeof statesByCountry].map((state: string) => (
                               <SelectItem key={state} value={state}>
                                 {state}
                               </SelectItem>
@@ -636,21 +636,21 @@ export default function ProfessionalSignup() {
                       <Select 
                         value={formData.city} 
                         onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
-                        disabled={!formData.country}
+                        disabled={!formData.country || !formData.state}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select city" />
                         </SelectTrigger>
                         <SelectContent className="max-h-80 overflow-y-auto">
-                          {formData.country && citiesByCountry[formData.country] ? (
-                            citiesByCountry[formData.country].map((city) => (
+                          {formData.country && formData.state ? (
+                            getCitiesForState(formData.country, formData.state).map((city) => (
                               <SelectItem key={city} value={city}>
                                 {city}
                               </SelectItem>
                             ))
                           ) : (
                             <SelectItem value="no-cities" disabled>
-                              Select country first
+                              {!formData.country ? "Select country first" : "Select state first"}
                             </SelectItem>
                           )}
                         </SelectContent>
