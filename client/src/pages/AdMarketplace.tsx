@@ -28,6 +28,7 @@ export default function AdMarketplace() {
   const [currentTab, setCurrentTab] = useState("campaigns");
   const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
   const [showCountdownOverlay, setShowCountdownOverlay] = useState(false);
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -88,15 +89,26 @@ export default function AdMarketplace() {
       return await apiRequest("POST", `/api/ads/${adId}/reserve`);
     },
     onSuccess: () => {
-      setIsReserveDialogOpen(false); // Close dialog
-      setShowCountdownOverlay(true); // Show countdown overlay
+      // Show red countdown overlay immediately
+      setShowCountdownOverlay(true);
+      setOverlayOpacity(1);
+      
       queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
       
-      // Hide overlay and switch tab after 2 seconds
+      // Close dialog after 1 second
       setTimeout(() => {
-        setShowCountdownOverlay(false);
-        setCurrentTab("my-campaigns");
+        setIsReserveDialogOpen(false);
+      }, 1000);
+      
+      // Make countdown transparent after 2 seconds total
+      setTimeout(() => {
+        setOverlayOpacity(0);
+        // Hide overlay and switch tab after fade
+        setTimeout(() => {
+          setShowCountdownOverlay(false);
+          setCurrentTab("my-campaigns");
+        }, 300); // 300ms for fade transition
       }, 2000);
     },
     onError: (error) => {
@@ -216,389 +228,418 @@ export default function AdMarketplace() {
   });
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2" data-testid="heading-ad-marketplace">
-              <DollarSign className="w-8 h-8 text-chart-2" />
-              <span>Ad Marketplace</span>
-            </h1>
-            <p className="text-muted-foreground mt-1" data-testid="text-marketplace-subtitle">
-              Discover brand campaigns and start earning from your content
-            </p>
+    <>
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2" data-testid="heading-ad-marketplace">
+                <DollarSign className="w-8 h-8 text-chart-2" />
+                <span>Ad Marketplace</span>
+              </h1>
+              <p className="text-muted-foreground mt-1" data-testid="text-marketplace-subtitle">
+                Discover brand campaigns and start earning from your content
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" data-testid="badge-creator-status">
+                Creator Member
+              </Badge>
+              <Badge variant="outline" data-testid="badge-active-reservations">
+                {reservations.length} Active Reservations
+              </Badge>
+            </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge variant="secondary" data-testid="badge-creator-status">
-              Creator Member
-            </Badge>
-            <Badge variant="outline" data-testid="badge-active-reservations">
-              {reservations.length} Active Reservations
-            </Badge>
+
+          {/* Search and Filters */}
+          <Card data-testid="card-search-filters">
+            <CardContent className="p-4">
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search campaigns by brand or title..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                    data-testid="input-search-campaigns"
+                  />
+                </div>
+                <Select value={countryFilter} onValueChange={setCountryFilter}>
+                  <SelectTrigger className="w-full md:w-48" data-testid="select-country-filter">
+                    <SelectValue placeholder="Filter by country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Countries</SelectItem>
+                    <SelectItem value="GB">United Kingdom</SelectItem>
+                    <SelectItem value="IN">India</SelectItem>
+                    <SelectItem value="US">United States</SelectItem>
+                    <SelectItem value="FR">France</SelectItem>
+                    <SelectItem value="DE">Germany</SelectItem>
+                    <SelectItem value="JP">Japan</SelectItem>
+                    <SelectItem value="AU">Australia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
+              <TabsTrigger value="campaigns" data-testid="tab-available">
+                Available Campaigns
+              </TabsTrigger>
+              <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns">
+                My Campaigns
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Available Campaigns */}
+            <TabsContent value="campaigns" className="space-y-6">
+              {adsLoading ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[...Array(6)].map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="h-6 bg-muted rounded w-3/4"></div>
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                        <div className="space-y-2">
+                          <div className="h-3 bg-muted rounded w-full"></div>
+                          <div className="h-3 bg-muted rounded w-2/3"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : filteredAds.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredAds.map((ad: Ad) => (
+                    <Card key={ad.id} className="travel-card" data-testid={`card-ad-${ad.id}`}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-bold text-card-foreground" data-testid={`text-ad-title-${ad.id}`}>
+                              {ad.title}
+                            </h3>
+                            <p className="text-sm text-muted-foreground" data-testid={`text-ad-brand-${ad.id}`}>
+                              by {ad.brand}
+                            </p>
+                          </div>
+                          <Badge className="bg-chart-2 text-primary" data-testid={`badge-ad-payout-${ad.id}`}>
+                            £{ad.payoutAmount}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm">Requirements</h4>
+                          <div className="text-sm text-muted-foreground" data-testid={`text-ad-brief-${ad.id}`}>
+                            {ad.briefMd.slice(0, 150)}...
+                          </div>
+                        </div>
+
+                        {ad.countries && ad.countries.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-sm flex items-center">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              Locations
+                            </h4>
+                            <div className="flex flex-wrap gap-1">
+                              {ad.countries.slice(0, 3).map((country, index) => (
+                                <Badge key={index} variant="outline" className="text-xs" data-testid={`badge-ad-country-${ad.id}-${index}`}>
+                                  {country}
+                                </Badge>
+                              ))}
+                              {ad.countries.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                  +{ad.countries.length - 3} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {ad.hashtags && ad.hashtags.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-sm flex items-center">
+                              <Tag className="w-3 h-3 mr-1" />
+                              Hashtags
+                            </h4>
+                            <div className="flex flex-wrap gap-1">
+                              {ad.hashtags.slice(0, 3).map((hashtag, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs" data-testid={`badge-ad-hashtag-${ad.id}-${index}`}>
+                                  #{hashtag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="flex items-center text-muted-foreground">
+                            <Calendar className="w-3 h-3 mr-1" />
+                            <span data-testid={`text-ad-deadline-${ad.id}`}>
+                              Due {format(new Date(ad.deadlineAt), 'MMM d')}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-muted-foreground">
+                            <span data-testid={`text-ad-quota-${ad.id}`}>
+                              {ad.currentReservations}/{ad.quota} reserved
+                            </span>
+                          </div>
+                        </div>
+
+                        <Dialog open={isReserveDialogOpen} onOpenChange={setIsReserveDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button 
+                              size="sm" 
+                              className="w-full bg-accent hover:bg-accent/90"
+                              disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                              data-testid={`button-reserve-ad-${ad.id}`}
+                            >
+                              {reserveAdMutation.isPending ? (
+                                <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                              ) : (
+                                "Reserve Campaign"
+                              )}
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle className="text-xl">{ad.title}</DialogTitle>
+                              <div className="flex items-center justify-between">
+                                <span className="text-muted-foreground">by {ad.brand}</span>
+                                <Badge className="bg-chart-2 text-primary text-lg px-3 py-1">£{ad.payoutAmount}</Badge>
+                              </div>
+                            </DialogHeader>
+                            
+                            <div className="space-y-6">
+                              {/* Campaign Brief */}
+                              <div>
+                                <h4 className="font-semibold mb-3 text-lg">Campaign Brief</h4>
+                                <div className="prose prose-sm text-foreground" dangerouslySetInnerHTML={{ __html: ad.briefMd }} />
+                              </div>
+
+                              {/* Promotion Instructions */}
+                              <div className="bg-muted/50 p-4 rounded-lg border">
+                                <h4 className="font-semibold mb-3 text-lg flex items-center">
+                                  <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
+                                  How to Promote This Campaign
+                                </h4>
+                                <div className="space-y-3 text-sm">
+                                  <p className="text-foreground leading-relaxed">
+                                    <strong>Step 1:</strong> Download the brand assets and promotional materials below
+                                  </p>
+                                  <p className="text-foreground leading-relaxed">
+                                    <strong>Step 2:</strong> Create your content (photo/video) featuring the brand naturally
+                                  </p>
+                                  <p className="text-foreground leading-relaxed">
+                                    <strong>Step 3:</strong> Include the promotional file/image in your content or mention the brand verbally
+                                  </p>
+                                  <p className="text-foreground leading-relaxed">
+                                    <strong>Step 4:</strong> Create a clip starting 5 seconds before this promotion begins and ending 5 seconds after it finishes - upload this specific segment
+                                  </p>
+                                  <p className="text-foreground leading-relaxed">
+                                    <strong>Step 5:</strong> Upload your final promotion clip and your content link for approval to receive payment
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Download Promotional File */}
+                              <div className="bg-accent/10 p-4 rounded-lg">
+                                <h4 className="font-semibold mb-3 flex items-center">
+                                  <Download className="w-4 h-4 mr-2" />
+                                  Download Promotional File
+                                </h4>
+                                <Button variant="outline" size="lg" className="w-full justify-center">
+                                  <Download className="w-4 h-4 mr-2" />
+                                  Download File
+                                </Button>
+                              </div>
+
+
+                              {/* Campaign Stats */}
+                              <div className="flex items-center justify-between pt-4 border-t">
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                  <Calendar className="w-4 h-4 mr-2" />
+                                  Deadline: {format(new Date(ad.deadlineAt), 'MMM d, yyyy')}
+                                </div>
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                  <span>{ad.currentReservations}/{ad.quota} spots reserved</span>
+                                </div>
+                              </div>
+
+                              {/* Reserve Button */}
+                              <div className="pt-4">
+                                <Button 
+                                  size="lg" 
+                                  className="w-full bg-accent hover:bg-accent/90 text-lg py-6"
+                                  onClick={() => {
+                                    reserveAdMutation.mutate(ad.id);
+                                  }}
+                                  disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                                >
+                                  {reserveAdMutation.isPending ? (
+                                    <div className="animate-spin w-4 h-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                                  ) : (
+                                    `Reserve This Campaign for £${ad.payoutAmount}`
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card data-testid="card-no-campaigns">
+                  <CardContent className="p-12 text-center">
+                    <DollarSign className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No campaigns available</h3>
+                    <p className="text-muted-foreground">
+                      No brand campaigns match your filters. Try adjusting your search criteria.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* My Campaigns */}
+            <TabsContent value="my-campaigns" className="space-y-6">
+              {reservationsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="animate-pulse">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="h-6 bg-muted rounded w-3/4"></div>
+                        <div className="h-4 bg-muted rounded w-1/2"></div>
+                        <div className="h-4 bg-muted rounded w-2/3"></div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : reservations.length > 0 ? (
+                <div className="space-y-4">
+                  {reservations.map((reservation: AdReservation) => (
+                    <Card key={reservation.id} className="border-accent" data-testid={`card-reservation-${reservation.id}`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-bold text-card-foreground" data-testid={`text-reservation-title-${reservation.id}`}>
+                                Campaign Reserved
+                              </h3>
+                              <Badge 
+                                variant={reservation.status === 'active' ? 'default' : 'secondary'}
+                                data-testid={`badge-reservation-status-${reservation.id}`}
+                              >
+                                {reservation.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <div className="text-sm text-muted-foreground">
+                                <Clock className="w-4 h-4 inline mr-1" />
+                                Deadline: {formatDistanceToNow(new Date(reservation.expiresAt!))} remaining
+                              </div>
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                                ⏰ 5 Days Campaign
+                              </Badge>
+                            </div>
+                          </div>
+
+                          {reservation.status === 'active' && (
+                            <Dialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-chart-2 hover:bg-chart-2/90"
+                                  onClick={() => setSelectedAd({ id: reservation.adId! } as Ad)}
+                                  data-testid={`button-submit-content-${reservation.id}`}
+                                >
+                                  Submit Content
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Submit Campaign Content</DialogTitle>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                  <p className="text-muted-foreground">
+                                    Upload your final video or image content for admin review.
+                                  </p>
+                                  
+                                  <ObjectUploader
+                                    maxNumberOfFiles={1}
+                                    maxFileSize={100 * 1024 * 1024} // 100MB
+                                    onGetUploadParameters={handleMediaUpload}
+                                    onComplete={handleMediaComplete}
+                                    buttonClassName="w-full bg-accent hover:bg-accent/90"
+                                  >
+                                    <Upload className="w-4 h-4 mr-2" />
+                                    Upload Content
+                                  </ObjectUploader>
+
+                                  <p className="text-xs text-muted-foreground">
+                                    Supported formats: MP4, MOV, JPG, PNG. Max size: 100MB
+                                  </p>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card data-testid="card-no-reservations">
+                  <CardContent className="p-12 text-center">
+                    <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No active campaigns</h3>
+                    <p className="text-muted-foreground mb-6">
+                      You haven't reserved any campaigns yet. Browse available campaigns to get started.
+                    </p>
+                    <Button variant="outline" data-testid="button-browse-campaigns">
+                      Browse Campaigns
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      {/* Red Countdown Overlay with VFX */}
+      {showCountdownOverlay && (
+        <div 
+          className="fixed inset-0 bg-red-600/90 flex items-center justify-center z-50" 
+          style={{ opacity: overlayOpacity, transition: 'opacity 300ms ease-out' }}
+          data-testid="countdown-overlay"
+        >
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 max-w-lg mx-4 text-center shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300 border-4 border-red-500">
+            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <Clock className="w-12 h-12 text-white" />
+            </div>
+            <h3 className="text-3xl font-bold text-red-600 dark:text-red-400 mb-3">
+              🎯 Campaign Reserved!
+            </h3>
+            <p className="text-xl text-red-500 dark:text-red-300 mb-6 font-semibold">
+              ⏰ 5-Day Countdown Started!
+            </p>
+            <div className="bg-red-50 dark:bg-red-950/50 p-4 rounded-lg border-2 border-red-200 dark:border-red-800">
+              <div className="flex items-center justify-center space-x-3 text-red-700 dark:text-red-300">
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+                <span className="font-medium">Complete and submit within 5 days</span>
+                <div className="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Search and Filters */}
-        <Card data-testid="card-search-filters">
-          <CardContent className="p-4">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                <Input
-                  placeholder="Search campaigns by brand or title..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                  data-testid="input-search-campaigns"
-                />
-              </div>
-              <Select value={countryFilter} onValueChange={setCountryFilter}>
-                <SelectTrigger className="w-full md:w-48" data-testid="select-country-filter">
-                  <SelectValue placeholder="Filter by country" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  <SelectItem value="GB">United Kingdom</SelectItem>
-                  <SelectItem value="IN">India</SelectItem>
-                  <SelectItem value="US">United States</SelectItem>
-                  <SelectItem value="FR">France</SelectItem>
-                  <SelectItem value="DE">Germany</SelectItem>
-                  <SelectItem value="JP">Japan</SelectItem>
-                  <SelectItem value="AU">Australia</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="campaigns" data-testid="tab-available">
-              Available Campaigns
-            </TabsTrigger>
-            <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns">
-              My Campaigns
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Available Campaigns */}
-          <TabsContent value="campaigns" className="space-y-6">
-            {adsLoading ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6 space-y-4">
-                      <div className="h-6 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
-                      <div className="space-y-2">
-                        <div className="h-3 bg-muted rounded w-full"></div>
-                        <div className="h-3 bg-muted rounded w-2/3"></div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : filteredAds.length > 0 ? (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredAds.map((ad: Ad) => (
-                  <Card key={ad.id} className="travel-card" data-testid={`card-ad-${ad.id}`}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-bold text-card-foreground" data-testid={`text-ad-title-${ad.id}`}>
-                            {ad.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground" data-testid={`text-ad-brand-${ad.id}`}>
-                            by {ad.brand}
-                          </p>
-                        </div>
-                        <Badge className="bg-chart-2 text-primary" data-testid={`badge-ad-payout-${ad.id}`}>
-                          £{ad.payoutAmount}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Requirements</h4>
-                        <div className="text-sm text-muted-foreground" data-testid={`text-ad-brief-${ad.id}`}>
-                          {ad.briefMd.slice(0, 150)}...
-                        </div>
-                      </div>
-
-                      {ad.countries && ad.countries.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm flex items-center">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            Locations
-                          </h4>
-                          <div className="flex flex-wrap gap-1">
-                            {ad.countries.slice(0, 3).map((country, index) => (
-                              <Badge key={index} variant="outline" className="text-xs" data-testid={`badge-ad-country-${ad.id}-${index}`}>
-                                {country}
-                              </Badge>
-                            ))}
-                            {ad.countries.length > 3 && (
-                              <Badge variant="outline" className="text-xs">
-                                +{ad.countries.length - 3} more
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {ad.hashtags && ad.hashtags.length > 0 && (
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-sm flex items-center">
-                            <Tag className="w-3 h-3 mr-1" />
-                            Hashtags
-                          </h4>
-                          <div className="flex flex-wrap gap-1">
-                            {ad.hashtags.slice(0, 3).map((hashtag, index) => (
-                              <Badge key={index} variant="secondary" className="text-xs" data-testid={`badge-ad-hashtag-${ad.id}-${index}`}>
-                                #{hashtag}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center text-muted-foreground">
-                          <Calendar className="w-3 h-3 mr-1" />
-                          <span data-testid={`text-ad-deadline-${ad.id}`}>
-                            Due {format(new Date(ad.deadlineAt), 'MMM d')}
-                          </span>
-                        </div>
-                        <div className="flex items-center text-muted-foreground">
-                          <span data-testid={`text-ad-quota-${ad.id}`}>
-                            {ad.currentReservations}/{ad.quota} reserved
-                          </span>
-                        </div>
-                      </div>
-
-                      <Dialog open={isReserveDialogOpen} onOpenChange={setIsReserveDialogOpen}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            size="sm" 
-                            className="w-full bg-accent hover:bg-accent/90"
-                            disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
-                            data-testid={`button-reserve-ad-${ad.id}`}
-                          >
-                            {reserveAdMutation.isPending ? (
-                              <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
-                            ) : (
-                              "Reserve Campaign"
-                            )}
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle className="text-xl">{ad.title}</DialogTitle>
-                            <div className="flex items-center justify-between">
-                              <span className="text-muted-foreground">by {ad.brand}</span>
-                              <Badge className="bg-chart-2 text-primary text-lg px-3 py-1">£{ad.payoutAmount}</Badge>
-                            </div>
-                          </DialogHeader>
-                          
-                          <div className="space-y-6">
-                            {/* Campaign Brief */}
-                            <div>
-                              <h4 className="font-semibold mb-3 text-lg">Campaign Brief</h4>
-                              <div className="prose prose-sm text-foreground" dangerouslySetInnerHTML={{ __html: ad.briefMd }} />
-                            </div>
-
-                            {/* Promotion Instructions */}
-                            <div className="bg-muted/50 p-4 rounded-lg border">
-                              <h4 className="font-semibold mb-3 text-lg flex items-center">
-                                <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
-                                How to Promote This Campaign
-                              </h4>
-                              <div className="space-y-3 text-sm">
-                                <p className="text-foreground leading-relaxed">
-                                  <strong>Step 1:</strong> Download the brand assets and promotional materials below
-                                </p>
-                                <p className="text-foreground leading-relaxed">
-                                  <strong>Step 2:</strong> Create your content (photo/video) featuring the brand naturally
-                                </p>
-                                <p className="text-foreground leading-relaxed">
-                                  <strong>Step 3:</strong> Include the promotional file/image in your content or mention the brand verbally
-                                </p>
-                                <p className="text-foreground leading-relaxed">
-                                  <strong>Step 4:</strong> Create a clip starting 5 seconds before this promotion begins and ending 5 seconds after it finishes - upload this specific segment
-                                </p>
-                                <p className="text-foreground leading-relaxed">
-                                  <strong>Step 5:</strong> Upload your final promotion clip and your content link for approval to receive payment
-                                </p>
-                              </div>
-                            </div>
-
-                            {/* Download Promotional File */}
-                            <div className="bg-accent/10 p-4 rounded-lg">
-                              <h4 className="font-semibold mb-3 flex items-center">
-                                <Download className="w-4 h-4 mr-2" />
-                                Download Promotional File
-                              </h4>
-                              <Button variant="outline" size="lg" className="w-full justify-center">
-                                <Download className="w-4 h-4 mr-2" />
-                                Download File
-                              </Button>
-                            </div>
-
-
-                            {/* Campaign Stats */}
-                            <div className="flex items-center justify-between pt-4 border-t">
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <Calendar className="w-4 h-4 mr-2" />
-                                Deadline: {format(new Date(ad.deadlineAt), 'MMM d, yyyy')}
-                              </div>
-                              <div className="flex items-center text-sm text-muted-foreground">
-                                <span>{ad.currentReservations}/{ad.quota} spots reserved</span>
-                              </div>
-                            </div>
-
-                            {/* Reserve Button */}
-                            <div className="pt-4">
-                              <Button 
-                                size="lg" 
-                                className="w-full bg-accent hover:bg-accent/90 text-lg py-6"
-                                onClick={() => {
-                                  reserveAdMutation.mutate(ad.id);
-                                }}
-                                disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
-                              >
-                                {reserveAdMutation.isPending ? (
-                                  <div className="animate-spin w-4 h-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
-                                ) : (
-                                  `Reserve This Campaign for £${ad.payoutAmount}`
-                                )}
-                              </Button>
-                            </div>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card data-testid="card-no-campaigns">
-                <CardContent className="p-12 text-center">
-                  <DollarSign className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No campaigns available</h3>
-                  <p className="text-muted-foreground">
-                    No brand campaigns match your filters. Try adjusting your search criteria.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* My Campaigns */}
-          <TabsContent value="my-campaigns" className="space-y-6">
-            {reservationsLoading ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i} className="animate-pulse">
-                    <CardContent className="p-6 space-y-4">
-                      <div className="h-6 bg-muted rounded w-3/4"></div>
-                      <div className="h-4 bg-muted rounded w-1/2"></div>
-                      <div className="h-4 bg-muted rounded w-2/3"></div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : reservations.length > 0 ? (
-              <div className="space-y-4">
-                {reservations.map((reservation: AdReservation) => (
-                  <Card key={reservation.id} className="border-accent" data-testid={`card-reservation-${reservation.id}`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <h3 className="font-bold text-card-foreground" data-testid={`text-reservation-title-${reservation.id}`}>
-                              Campaign Reserved
-                            </h3>
-                            <Badge 
-                              variant={reservation.status === 'active' ? 'default' : 'secondary'}
-                              data-testid={`badge-reservation-status-${reservation.id}`}
-                            >
-                              {reservation.status}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <div className="text-sm text-muted-foreground">
-                              <Clock className="w-4 h-4 inline mr-1" />
-                              Deadline: {formatDistanceToNow(new Date(reservation.expiresAt!))} remaining
-                            </div>
-                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
-                              ⏰ 5 Days Campaign
-                            </Badge>
-                          </div>
-                        </div>
-
-                        {reservation.status === 'active' && (
-                          <Dialog open={isSubmitDialogOpen} onOpenChange={setIsSubmitDialogOpen}>
-                            <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
-                                className="bg-chart-2 hover:bg-chart-2/90"
-                                onClick={() => setSelectedAd({ id: reservation.adId! } as Ad)}
-                                data-testid={`button-submit-content-${reservation.id}`}
-                              >
-                                <Upload className="w-3 h-3 mr-2" />
-                                Submit Content
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Submit Campaign Content</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <p className="text-muted-foreground">
-                                  Upload your final video or image content for admin review.
-                                </p>
-                                
-                                <ObjectUploader
-                                  maxNumberOfFiles={1}
-                                  maxFileSize={100 * 1024 * 1024} // 100MB
-                                  onGetUploadParameters={handleMediaUpload}
-                                  onComplete={handleMediaComplete}
-                                  buttonClassName="w-full bg-accent hover:bg-accent/90"
-                                >
-                                  <Upload className="w-4 h-4 mr-2" />
-                                  Upload Content
-                                </ObjectUploader>
-
-                                <p className="text-xs text-muted-foreground">
-                                  Supported formats: MP4, MOV, JPG, PNG. Max size: 100MB
-                                </p>
-                              </div>
-                            </DialogContent>
-                          </Dialog>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <Card data-testid="card-no-reservations">
-                <CardContent className="p-12 text-center">
-                  <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">No active campaigns</h3>
-                  <p className="text-muted-foreground mb-6">
-                    You haven't reserved any campaigns yet. Browse available campaigns to get started.
-                  </p>
-                  <Button variant="outline" data-testid="button-browse-campaigns">
-                    Browse Campaigns
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-        </Tabs>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
