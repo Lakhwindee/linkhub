@@ -158,16 +158,16 @@ export default function Home() {
         </div>
 
         {/* Recent Followers Section */}
-        <Card className="mb-6">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="mb-6 border-2 border-blue-200">
+          <CardHeader className="flex flex-row items-center justify-between bg-blue-50">
             <CardTitle className="flex items-center space-x-2">
-              <Users className="w-5 h-5 text-accent" />
-              <span>Recent Followers</span>
-              <Badge variant="secondary" className="ml-2">
+              <Users className="w-5 h-5 text-blue-600" />
+              <span className="text-blue-800">Recent Followers</span>
+              <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">
                 {followers.length}
               </Badge>
             </CardTitle>
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild className="border-blue-300 text-blue-700 hover:bg-blue-100">
               <Link href="/profile">View All</Link>
             </Button>
           </CardHeader>
@@ -207,8 +207,9 @@ export default function Home() {
             ) : (
               <div className="text-center py-8 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="text-sm">No followers yet</p>
-                <p className="text-xs mt-1">Share your username <span className="font-mono bg-muted px-2 py-1 rounded">@{user?.username}</span> to get followers!</p>
+                <p className="text-sm font-medium">No followers yet</p>
+                <p className="text-xs mt-2">Share your username <span className="font-mono bg-muted px-2 py-1 rounded text-foreground">@{user?.username}</span> to get followers!</p>
+                <p className="text-xs mt-2 text-blue-600">Go to Discover → Search Users to find people to follow you!</p>
               </div>
             )}
           </CardContent>
