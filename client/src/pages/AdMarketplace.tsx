@@ -418,6 +418,9 @@ export default function AdMarketplace() {
                                   <strong>Step 3:</strong> Include the promotional file/image in your content or mention the brand verbally
                                 </p>
                                 <p className="text-foreground leading-relaxed">
+                                  <strong>Step 4:</strong> Create a clip starting 5 seconds before your promotion begins and ending 5 seconds after it finishes - upload this specific segment
+                                </p>
+                                <p className="text-foreground leading-relaxed">
                                   <strong>Step 5:</strong> Upload your final content for approval to receive payment
                                 </p>
                               </div>
