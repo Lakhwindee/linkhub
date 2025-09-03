@@ -665,7 +665,7 @@ export default function Trips() {
             </DialogTrigger>
             <DialogContent className="max-w-none w-[95vw] h-[90vh] overflow-y-auto">
               <DialogHeader className="pb-6">
-                <DialogTitle className="text-2xl font-bold">Create New Professional Trip</DialogTitle>
+                <DialogTitle className="text-2xl font-bold">Create New Trip</DialogTitle>
                 <p className="text-muted-foreground">Plan your multi-destination journey with detailed itinerary</p>
               </DialogHeader>
               
@@ -715,25 +715,32 @@ export default function Trips() {
                     <Button 
                       type="button" 
                       variant="outline" 
-                      size="sm"
+                      size="default"
                       onClick={() => setItineraryDestinations([...itineraryDestinations, { country: '', city: '', startDate: '', endDate: '', duration: 1 }])}
+                      className="border-dashed border-2 hover:border-solid"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Add Destination
+                      Add Another Destination
                     </Button>
                   </div>
                   
-                  <div className="space-y-6 max-h-96 overflow-y-auto border rounded-lg p-6 bg-muted/20">
+                  <div className="space-y-6 border rounded-lg p-6 bg-gradient-to-br from-muted/30 to-muted/10">
                     {itineraryDestinations.map((destination, index) => (
-                      <div key={index} className="border rounded-lg p-6 bg-background shadow-sm">
+                      <div key={index} className="border-2 rounded-xl p-6 bg-card shadow-md hover:shadow-lg transition-shadow">
                         <div className="flex items-center justify-between mb-4">
-                          <span className="font-semibold text-lg text-primary">Destination {index + 1}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                              {index + 1}
+                            </div>
+                            <span className="font-semibold text-lg">Destination {index + 1}</span>
+                          </div>
                           {itineraryDestinations.length > 1 && (
                             <Button 
                               type="button" 
-                              variant="ghost" 
+                              variant="destructive" 
                               size="sm"
                               onClick={() => setItineraryDestinations(itineraryDestinations.filter((_, i) => i !== index))}
+                              className="h-8 w-8 p-0"
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -850,11 +857,11 @@ export default function Trips() {
                   <Textarea id="requirements" name="requirements" placeholder="Any special requirements or notes for travelers..." rows={2} />
                 </div>
 
-                <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
+                <div className="flex justify-end gap-4 pt-4 border-t">
+                  <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)} className="min-w-[100px]">
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createTripMutation.isPending}>
+                  <Button type="submit" disabled={createTripMutation.isPending} className="min-w-[120px]">
                     {createTripMutation.isPending ? "Creating..." : "Create Trip"}
                   </Button>
                 </div>
