@@ -17,7 +17,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
     plan: 'creator',
-    role: 'tour_package' // Demo user has tour package role
+    role: 'traveler' // Demo user default role
   } : null;
   
   const { theme, setTheme } = useTheme();
@@ -71,42 +71,20 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     );
   }
 
-  // Base navigation items available to all users
+  // All navigation items - everyone can VIEW everything
   const navItems = [
     { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
     { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
+    { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+    { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
+    { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
     { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
     { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
     { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
   ];
 
-  // Role-based navigation items
-  if (user?.role) {
-    // Stays navigation - only for stays role and admins
-    if (user.role === 'stays' || user.role === 'admin' || user.role === 'superadmin') {
-      navItems.push({ href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" });
-    }
-
-    // Trips navigation - for all users (view and participate)
-    navItems.push({ href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" });
-
-    // Tour Packages navigation - only for tour_package role and admins
-    if (user.role === 'tour_package' || user.role === 'admin' || user.role === 'superadmin') {
-      navItems.push({ href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" });
-    }
-
-    // Ads navigation - only for promotional role and admins
-    if (user.role === 'promotional' || user.role === 'admin' || user.role === 'superadmin') {
-      navItems.push({ href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" });
-    }
-  } else {
-    // Default traveler can view everything but not create
-    navItems.push(
-      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
-      { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
-      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" }
-    );
-  }
+  // Add Ads navigation for everyone (all can view ads)
+  navItems.push({ href: "/ads", icon: DollarSign, label: "Ads", testId: "nav-ads" });
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
