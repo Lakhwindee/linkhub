@@ -336,14 +336,10 @@ export default function Feed() {
         {/* Feed Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <TabsList className="grid w-full max-w-md grid-cols-3">
+            <TabsList className="grid w-full max-w-md grid-cols-2">
               <TabsTrigger value="global" data-testid="tab-global">
                 <Globe className="w-4 h-4 mr-2" />
                 Global
-              </TabsTrigger>
-              <TabsTrigger value="country" data-testid="tab-country">
-                <MapPin className="w-4 h-4 mr-2" />
-                Country
               </TabsTrigger>
               <TabsTrigger value="following" data-testid="tab-following">
                 <Users className="w-4 h-4 mr-2" />
@@ -421,42 +417,6 @@ export default function Feed() {
             </div>
           </TabsContent>
 
-          <TabsContent value="country" className="space-y-6">
-            <div className="space-y-4">
-              {/* Same content as global, but filtered by country */}
-              {postsLoading ? (
-                <div className="space-y-6">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i} className="animate-pulse">
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-muted rounded-full"></div>
-                          <div className="space-y-2">
-                            <div className="h-4 bg-muted rounded w-32"></div>
-                            <div className="h-3 bg-muted rounded w-24"></div>
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="h-4 bg-muted rounded w-full"></div>
-                          <div className="h-4 bg-muted rounded w-3/4"></div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card data-testid="card-country-posts">
-                  <CardContent className="p-12 text-center">
-                    <MapPin className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <h3 className="text-lg font-semibold text-foreground mb-2">No country posts</h3>
-                    <p className="text-muted-foreground">
-                      No posts from your country yet. Share your local experiences!
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </TabsContent>
 
           <TabsContent value="following" className="space-y-6">
             <div className="space-y-4">
