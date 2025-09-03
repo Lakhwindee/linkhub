@@ -100,11 +100,17 @@ export default function DocumentSignup() {
       });
 
       if (response.ok) {
+        // Set user as authenticated after successful verification
+        localStorage.setItem('hublink_demo_user', 'true');
+        localStorage.setItem('hublink_verification_complete', 'true');
+        
         toast({
           title: "Signup Complete!",
-          description: "Your account has been created successfully.",
+          description: "Your account has been created and verified successfully. Welcome to HubLink!",
         });
-        setLocation('/dashboard');
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       } else {
         throw new Error('Signup failed');
       }

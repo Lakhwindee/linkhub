@@ -170,15 +170,18 @@ export default function Landing() {
                 {!showLogin ? (
                   <>
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button size="lg" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
+                      <Button size="lg" className="px-8 py-4" asChild data-testid="button-get-started">
+                        <a href="/document-signup">Get Started</a>
+                      </Button>
+                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
                         Try Demo (Free)
                       </Button>
-                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={() => setShowLogin(true)} data-testid="button-login">
-                        Login with Test ID
+                      <Button size="lg" variant="ghost" className="px-8 py-4" onClick={() => setShowLogin(true)} data-testid="button-login">
+                        Login
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground" data-testid="text-pricing-summary">
-                      Free to browse • £25/mo for travelers • £45/mo for creators
+                      Sign up with document verification • Try demo for free • Existing users login
                     </p>
                   </>
                 ) : (
@@ -395,8 +398,8 @@ export default function Landing() {
                     asChild
                     data-testid={`button-plan-${index}`}
                   >
-                    <a href="/api/login">
-                      {plan.name === 'Free' ? 'Get Started' : 'Start Free Trial'}
+                    <a href="/document-signup">
+                      {plan.name === 'Free' ? 'Sign Up' : 'Start Free Trial'}
                     </a>
                   </Button>
                   <div className="space-y-3">
@@ -468,7 +471,7 @@ export default function Landing() {
               </div>
 
               <Button size="lg" className="px-8 py-4" asChild data-testid="button-join-hublink">
-                <a href="/api/login">Join HubLink Today</a>
+                <a href="/document-signup">Join HubLink Today</a>
               </Button>
             </div>
           </div>
