@@ -212,7 +212,7 @@ const testAds = [
     title: 'Travel Photography Campaign', 
     brand: 'Canon', 
     briefMd: 'Showcase your travel photography skills with our latest mirrorless camera. Create authentic content featuring iconic landmarks and hidden gems. Include camera in at least 3 shots. Focus on storytelling through your lens and inspire wanderlust in your followers.', 
-    payoutAmount: '500.00',
+    payoutAmount: '120.00',
     currency: 'GBP',
     countries: ['GB', 'US', 'AU'], 
     hashtags: ['CanonUK', 'TravelPhotography', 'Wanderlust', 'MirrorlessCamera'],
@@ -220,6 +220,39 @@ const testAds = [
     status: 'active',
     quota: 5,
     currentReservations: 1,
+    tierLevel: 1, // Tier 1: 10k-40k subscribers
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-2', 
+    title: 'Fashion Brand Collaboration', 
+    brand: 'Style Forward', 
+    briefMd: 'Partner with us to showcase our latest fashion collection. Create engaging outfit posts and styling videos that resonate with young professionals. Perfect for growing creators with fashion-forward audiences.', 
+    payoutAmount: '240.00',
+    currency: 'GBP',
+    countries: ['GB', 'FR', 'DE'], 
+    hashtags: ['StyleForward', 'Fashion', 'OOTD', 'StyleInspo'],
+    deadlineAt: new Date('2025-01-15'), 
+    status: 'active',
+    quota: 3,
+    currentReservations: 0,
+    tierLevel: 2, // Tier 2: 40k-70k subscribers
+    createdAt: new Date()
+  },
+  { 
+    id: 'ad-3', 
+    title: 'Luxury Hotel Experience', 
+    brand: 'Premium Hotels Group', 
+    briefMd: 'Experience and showcase our luxury accommodations. Create premium content highlighting our world-class amenities, gourmet dining, and exceptional service. Ideal for established creators with sophisticated audiences.', 
+    payoutAmount: '360.00',
+    currency: 'GBP',
+    countries: ['GB', 'IT', 'ES'], 
+    hashtags: ['LuxuryTravel', 'PremiumHotels', 'LuxuryLifestyle', 'Hospitality'],
+    deadlineAt: new Date('2025-02-01'), 
+    status: 'active',
+    quota: 2,
+    currentReservations: 0,
+    tierLevel: 3, // Tier 3: 70k+ subscribers
     createdAt: new Date()
   },
   { 

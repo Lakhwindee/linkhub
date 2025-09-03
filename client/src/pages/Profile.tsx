@@ -16,13 +16,206 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { FollowStats } from "@/components/FollowButton";
-import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2 } from "lucide-react";
+import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2, Play, Star } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 
 type ProfileFormData = z.infer<typeof insertUserProfileSchema>;
+
+// YouTube Creator Component
+function YouTubeCreatorSection({ user }: { user: any }) {
+  const [youtubeUrl, setYoutubeUrl] = useState(user?.youtubeUrl || '');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const syncYouTube = useMutation({
+    mutationFn: async (url: string) => {
+      const response = await apiRequest("POST", "/api/youtube/sync", {
+        body: JSON.stringify({ youtubeUrl: url }),
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "YouTube Channel Connected!",
+        description: `${data.subscriberCount.toLocaleString()} subscribers detected. Tier: ${data.tierName}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Connection Failed",
+        description: error.message || "Failed to connect YouTube channel",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleConnect = async () => {
+    if (!youtubeUrl.trim()) {
+      toast({
+        title: "URL Required",
+        description: "Please enter your YouTube channel URL",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsConnecting(true);
+    try {
+      await syncYouTube.mutateAsync(youtubeUrl);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const getTierInfo = (tier: number) => {
+    switch (tier) {
+      case 1: return { name: 'Emerging Creator', range: '10k-40k', color: 'bg-blue-500' };
+      case 2: return { name: 'Growing Creator', range: '40k-70k', color: 'bg-purple-500' };
+      case 3: return { name: 'Established Creator', range: '70k+', color: 'bg-gold-500' };
+      default: return { name: 'Not Connected', range: '', color: 'bg-gray-500' };
+    }
+  };
+
+  const tierInfo = getTierInfo(user?.youtubeTier || 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Youtube className="w-5 h-5 text-red-500" />
+          YouTube Creator Dashboard
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {user?.youtubeChannelId ? (
+          <>
+            {/* Connected Status */}
+            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
+                  <Youtube className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="font-semibold text-green-800">Channel Connected</p>
+                  <p className="text-sm text-green-600">Earning campaigns available</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-green-800">
+                  {user.youtubeSubscribers?.toLocaleString() || '0'}
+                </p>
+                <p className="text-sm text-green-600">subscribers</p>
+              </div>
+            </div>
+
+            {/* Tier Badge */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${tierInfo.color}`}></div>
+                <div>
+                  <p className="font-semibold">{tierInfo.name}</p>
+                  <p className="text-sm text-muted-foreground">{tierInfo.range} subscribers</p>
+                </div>
+              </div>
+              <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
+                Tier {user.youtubeTier || 1}
+              </Badge>
+            </div>
+
+            {/* Campaign Earnings Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="border-accent/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="w-4 h-4 text-accent" />
+                    <p className="font-semibold">Earning Potential</p>
+                  </div>
+                  <p className="text-2xl font-bold text-accent">
+                    £{user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">per campaign</p>
+                </CardContent>
+              </Card>
+              
+              <Card className="border-accent/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Play className="w-4 h-4 text-accent" />
+                    <p className="font-semibold">Available Campaigns</p>
+                  </div>
+                  <p className="text-2xl font-bold text-accent">3</p>
+                  <p className="text-sm text-muted-foreground">matching your tier</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Last Updated */}
+            {user.youtubeLastUpdated && (
+              <div className="text-sm text-muted-foreground">
+                Last updated: {new Date(user.youtubeLastUpdated).toLocaleDateString()}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {/* Connection Form */}
+            <div className="space-y-4">
+              <div className="bg-accent/10 p-4 rounded-lg">
+                <h3 className="font-semibold mb-2">Connect Your YouTube Channel</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Link your YouTube channel to access brand campaigns and earn money. 
+                  You need at least 10,000 subscribers to participate.
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• 10k-40k subscribers: £120 per campaign</li>
+                  <li>• 40k-70k subscribers: £240 per campaign</li>  
+                  <li>• 70k+ subscribers: £360 per campaign</li>
+                </ul>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="youtube-url">YouTube Channel URL</Label>
+                <Input
+                  id="youtube-url"
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
+                  placeholder="https://youtube.com/@yourchannel or https://youtube.com/c/yourchannel"
+                  disabled={isConnecting}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter your channel URL in any format (@username, /c/channel, or /channel/ID)
+                </p>
+              </div>
+
+              <Button 
+                onClick={handleConnect}
+                disabled={isConnecting || !youtubeUrl.trim()}
+                className="w-full bg-red-500 hover:bg-red-600"
+              >
+                {isConnecting ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                    Connecting Channel...
+                  </>
+                ) : (
+                  <>
+                    <Youtube className="w-4 h-4 mr-2" />
+                    Connect YouTube Channel
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 // My Trips Component
 function MyTripsSection({ user }: { user: any }) {
@@ -355,12 +548,13 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className={`grid w-full ${user?.role === 'publisher' ? 'grid-cols-3' : 'grid-cols-5'}`}>
+          <TabsList className={`grid w-full ${user?.role === 'publisher' ? 'grid-cols-3' : 'grid-cols-6'}`}>
             <TabsTrigger value="basic" data-testid="tab-basic">Basic Info</TabsTrigger>
             <TabsTrigger value="location" data-testid="tab-location">Location</TabsTrigger>
             {user?.role !== 'publisher' && (
               <>
                 <TabsTrigger value="social" data-testid="tab-social">Social Links</TabsTrigger>
+                <TabsTrigger value="youtube" data-testid="tab-youtube">YouTube Creator</TabsTrigger>
               </>
             )}
             <TabsTrigger value="privacy" data-testid="tab-privacy">Privacy</TabsTrigger>
@@ -682,6 +876,13 @@ export default function Profile() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* YouTube Creator Tab - Only for non-publisher roles */}
+          {user?.role !== 'publisher' && (
+            <TabsContent value="youtube">
+              <YouTubeCreatorSection user={user} />
+            </TabsContent>
+          )}
 
           {/* My Trips - Only for non-publisher roles */}
           {user?.role !== 'publisher' && (

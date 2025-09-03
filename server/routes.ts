@@ -81,6 +81,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // YouTube integration routes
+  app.post('/api/youtube/sync', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { youtubeUrl } = req.body;
+      
+      if (!youtubeUrl) {
+        return res.status(400).json({ message: "YouTube URL is required" });
+      }
+
+      // Extract channel ID from YouTube URL
+      let channelId = '';
+      if (youtubeUrl.includes('/channel/')) {
+        channelId = youtubeUrl.split('/channel/')[1].split('/')[0].split('?')[0];
+      } else if (youtubeUrl.includes('/@')) {
+        // Handle @username format - we'll need to convert it
+        const username = youtubeUrl.split('/@')[1].split('/')[0].split('?')[0];
+        
+        // Use YouTube API to get channel info by username
+        const searchResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/channels?part=id,statistics&forHandle=${username}&key=${process.env.YOUTUBE_API_KEY}`
+        );
+        
+        if (!searchResponse.ok) {
+          return res.status(400).json({ message: "Invalid YouTube channel" });
+        }
+        
+        const searchData = await searchResponse.json();
+        if (!searchData.items || searchData.items.length === 0) {
+          return res.status(400).json({ message: "YouTube channel not found" });
+        }
+        
+        channelId = searchData.items[0].id;
+      } else if (youtubeUrl.includes('/c/') || youtubeUrl.includes('/user/')) {
+        // Handle custom URLs - need to search by name
+        let customName = '';
+        if (youtubeUrl.includes('/c/')) {
+          customName = youtubeUrl.split('/c/')[1].split('/')[0].split('?')[0];
+        } else {
+          customName = youtubeUrl.split('/user/')[1].split('/')[0].split('?')[0];
+        }
+        
+        const searchResponse = await fetch(
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${customName}&key=${process.env.YOUTUBE_API_KEY}&maxResults=1`
+        );
+        
+        if (!searchResponse.ok) {
+          return res.status(400).json({ message: "Invalid YouTube channel" });
+        }
+        
+        const searchData = await searchResponse.json();
+        if (!searchData.items || searchData.items.length === 0) {
+          return res.status(400).json({ message: "YouTube channel not found" });
+        }
+        
+        channelId = searchData.items[0].snippet.channelId;
+      } else {
+        return res.status(400).json({ message: "Invalid YouTube URL format" });
+      }
+
+      // Fetch channel statistics
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`
+      );
+
+      if (!response.ok) {
+        return res.status(400).json({ message: "Failed to fetch YouTube data" });
+      }
+
+      const data = await response.json();
+      if (!data.items || data.items.length === 0) {
+        return res.status(400).json({ message: "YouTube channel not found" });
+      }
+
+      const subscriberCount = parseInt(data.items[0].statistics.subscriberCount) || 0;
+      
+      // Determine tier based on subscriber count
+      let tier = 1; // Default tier
+      if (subscriberCount >= 70000) {
+        tier = 3; // £360 tier
+      } else if (subscriberCount >= 40000) {
+        tier = 2; // £240 tier  
+      } else if (subscriberCount >= 10000) {
+        tier = 1; // £120 tier
+      } else {
+        return res.status(400).json({ 
+          message: "Channel must have at least 10,000 subscribers to participate in campaigns" 
+        });
+      }
+
+      // Update user with YouTube data
+      const updatedUser = await storage.updateUserProfile(userId, {
+        youtubeUrl,
+        youtubeChannelId: channelId,
+        youtubeSubscribers: subscriberCount,
+        youtubeTier: tier,
+        youtubeLastUpdated: new Date()
+      });
+
+      res.json({
+        subscriberCount,
+        tier,
+        tierName: tier === 1 ? 'Emerging (10k-40k)' : tier === 2 ? 'Growing (40k-70k)' : 'Established (70k+)',
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Error syncing YouTube data:", error);
+      res.status(500).json({ message: "Failed to sync YouTube data" });
+    }
+  });
+
   // Discovery routes
   app.get('/api/discover', async (req, res) => {
     try {
@@ -735,8 +846,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Creator plan required" });
       }
       
+      // Get user's YouTube tier for filtering
+      const userTier = user?.youtubeTier || 1; // Default to tier 1 if not set
+      
       const ads = await storage.getAds();
-      res.json(ads);
+      
+      // Filter ads based on user's YouTube tier - only show ads at or below their tier
+      const filteredAds = ads.filter(ad => (ad.tierLevel || 1) <= userTier);
+      
+      res.json(filteredAds);
     } catch (error) {
       console.error("Error fetching ads:", error);
       res.status(500).json({ message: "Failed to fetch ads" });

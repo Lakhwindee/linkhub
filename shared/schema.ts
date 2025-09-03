@@ -51,6 +51,10 @@ export const users = pgTable("users", {
   coverUrl: varchar("cover_url"),
   instagramUrl: varchar("instagram_url"),
   youtubeUrl: varchar("youtube_url"),
+  youtubeChannelId: varchar("youtube_channel_id"),
+  youtubeSubscribers: integer("youtube_subscribers").default(0),
+  youtubeTier: integer("youtube_tier").default(1), // 1: 10k-40k, 2: 40k-70k, 3: 70k+
+  youtubeLastUpdated: timestamp("youtube_last_updated"),
   tiktokUrl: varchar("tiktok_url"),
   role: varchar("role").default("traveler"), // traveler, stays, promotional, tour_package, publisher, admin, superadmin
   plan: varchar("plan").default("free"), // free, traveler, creator
