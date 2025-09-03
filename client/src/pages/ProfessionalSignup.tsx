@@ -14,6 +14,7 @@ import {
   Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building
 } from "lucide-react";
 import { useLocation } from "wouter";
+import { countryCodes, countries, statesByCountry, citiesByCountry } from "@/data/locationData";
 
 interface ExtractedInfo {
   documentNumber?: string;
@@ -515,20 +516,15 @@ export default function ProfessionalSignup() {
                     <Label htmlFor="phone">Phone Number *</Label>
                     <div className="flex">
                       <Select value={formData.countryCode || "+44"} onValueChange={(value) => setFormData(prev => ({ ...prev, countryCode: value }))}>
-                        <SelectTrigger className="w-24">
+                        <SelectTrigger className="w-32">
                           <SelectValue placeholder="+44" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                          <SelectItem value="+91">🇮🇳 +91</SelectItem>
-                          <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                          <SelectItem value="+33">🇫🇷 +33</SelectItem>
-                          <SelectItem value="+49">🇩🇪 +49</SelectItem>
-                          <SelectItem value="+39">🇮🇹 +39</SelectItem>
-                          <SelectItem value="+34">🇪🇸 +34</SelectItem>
-                          <SelectItem value="+61">🇦🇺 +61</SelectItem>
-                          <SelectItem value="+81">🇯🇵 +81</SelectItem>
-                          <SelectItem value="+82">🇰🇷 +82</SelectItem>
+                        <SelectContent className="max-h-80 overflow-y-auto">
+                          {countryCodes.map((item) => (
+                            <SelectItem key={item.code} value={item.code}>
+                              {item.flag} {item.code}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       <Input
@@ -597,46 +593,68 @@ export default function ProfessionalSignup() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="country">Country *</Label>
-                      <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))}>
+                      <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, state: '', city: '' }))}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="United Kingdom">🇬🇧 United Kingdom</SelectItem>
-                          <SelectItem value="India">🇮🇳 India</SelectItem>
-                          <SelectItem value="United States">🇺🇸 United States</SelectItem>
-                          <SelectItem value="Canada">🇨🇦 Canada</SelectItem>
-                          <SelectItem value="Australia">🇦🇺 Australia</SelectItem>
-                          <SelectItem value="France">🇫🇷 France</SelectItem>
-                          <SelectItem value="Germany">🇩🇪 Germany</SelectItem>
-                          <SelectItem value="Italy">🇮🇹 Italy</SelectItem>
-                          <SelectItem value="Spain">🇪🇸 Spain</SelectItem>
-                          <SelectItem value="Netherlands">🇳🇱 Netherlands</SelectItem>
-                          <SelectItem value="Japan">🇯🇵 Japan</SelectItem>
-                          <SelectItem value="South Korea">🇰🇷 South Korea</SelectItem>
-                          <SelectItem value="Singapore">🇸🇬 Singapore</SelectItem>
-                          <SelectItem value="UAE">🇦🇪 UAE</SelectItem>
+                        <SelectContent className="max-h-80 overflow-y-auto">
+                          {countries.map((country) => (
+                            <SelectItem key={country.name} value={country.name}>
+                              {country.flag} {country.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="state">State/Province</Label>
-                      <Input
-                        id="state"
-                        value={formData.state}
-                        onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                        placeholder="England, California, etc."
-                      />
+                      <Select 
+                        value={formData.state} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, state: value, city: '' }))}
+                        disabled={!formData.country}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select state/province" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-80 overflow-y-auto">
+                          {formData.country && statesByCountry[formData.country] ? (
+                            statesByCountry[formData.country].map((state) => (
+                              <SelectItem key={state} value={state}>
+                                {state}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-states" disabled>
+                              Select country first
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        placeholder="London, Mumbai, etc."
-                        required
-                      />
+                      <Select 
+                        value={formData.city} 
+                        onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                        disabled={!formData.country}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-80 overflow-y-auto">
+                          {formData.country && citiesByCountry[formData.country] ? (
+                            citiesByCountry[formData.country].map((city) => (
+                              <SelectItem key={city} value={city}>
+                                {city}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-cities" disabled>
+                              Select country first
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="postalCode">Postal Code *</Label>

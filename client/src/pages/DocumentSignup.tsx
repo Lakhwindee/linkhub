@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
@@ -11,6 +12,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Upload, CheckCircle, AlertCircle, Clock, User, MapPin, Calendar } from "lucide-react";
 import { useLocation } from "wouter";
+import { countries, citiesByCountry } from "@/data/locationData";
 
 interface ExtractedInfo {
   documentNumber?: string;
@@ -394,21 +396,43 @@ export default function DocumentSignup() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.country}
-                      onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                      placeholder="Your country"
-                    />
+                    <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, city: '' }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-80 overflow-y-auto">
+                        {countries.map((country) => (
+                          <SelectItem key={country.name} value={country.name}>
+                            {country.flag} {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.city}
-                      onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="Your city"
-                    />
+                    <Select 
+                      value={formData.city} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
+                      disabled={!formData.country}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select city" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-80 overflow-y-auto">
+                        {formData.country && citiesByCountry[formData.country] ? (
+                          citiesByCountry[formData.country].map((city) => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-cities" disabled>
+                            Select country first
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
