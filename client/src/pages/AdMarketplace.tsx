@@ -131,12 +131,12 @@ export default function AdMarketplace() {
       queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
       
-      // Close dialog after 1 second
+      // Close dialog with smooth transition after 1 second
       setTimeout(() => {
         setIsReserveDialogOpen(false);
       }, 1000);
       
-      // Make countdown transparent after 3 seconds total
+      // Make countdown transparent after 5 seconds total
       setTimeout(() => {
         setOverlayOpacity(0);
         // Hide overlay and switch tab after fade
@@ -145,7 +145,7 @@ export default function AdMarketplace() {
           setReservedCampaignId(null);
           setCurrentTab("my-campaigns");
         }, 500); // 500ms for fade transition
-      }, 3000);
+      }, 5000);
     },
     onError: (error) => {
       toast({
