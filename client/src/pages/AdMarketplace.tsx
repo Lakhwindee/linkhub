@@ -25,6 +25,8 @@ export default function AdMarketplace() {
   const [countryFilter, setCountryFilter] = useState("");
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState("campaigns");
+  const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -85,12 +87,17 @@ export default function AdMarketplace() {
       return await apiRequest("POST", `/api/ads/${adId}/reserve`);
     },
     onSuccess: () => {
+      setIsReserveDialogOpen(false); // Close dialog
       toast({
-        title: "Campaign Reserved",
-        description: "You have 72 hours to submit your content.",
+        title: "Campaign Reserved!",
+        description: "You have 5 days to complete and submit your content. Countdown has started!",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
       queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
+      // Switch to My Campaigns tab after 1 second
+      setTimeout(() => {
+        setCurrentTab("my-campaigns");
+      }, 1000);
     },
     onError: (error) => {
       toast({
@@ -265,9 +272,9 @@ export default function AdMarketplace() {
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="available" className="space-y-6">
+        <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
           <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="available" data-testid="tab-available">
+            <TabsTrigger value="campaigns" data-testid="tab-available">
               Available Campaigns
             </TabsTrigger>
             <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns">
@@ -276,7 +283,7 @@ export default function AdMarketplace() {
           </TabsList>
 
           {/* Available Campaigns */}
-          <TabsContent value="available" className="space-y-6">
+          <TabsContent value="campaigns" className="space-y-6">
             {adsLoading ? (
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
@@ -370,7 +377,7 @@ export default function AdMarketplace() {
                         </div>
                       </div>
 
-                      <Dialog>
+                      <Dialog open={isReserveDialogOpen} onOpenChange={setIsReserveDialogOpen}>
                         <DialogTrigger asChild>
                           <Button 
                             size="sm" 
@@ -519,9 +526,15 @@ export default function AdMarketplace() {
                               {reservation.status}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground" data-testid={`text-reservation-expires-${reservation.id}`}>
-                            Expires {formatDistanceToNow(new Date(reservation.expiresAt!))} from now
-                          </p>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4 inline mr-1" />
+                              Deadline: {formatDistanceToNow(new Date(reservation.expiresAt!))} remaining
+                            </div>
+                            <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                              ⏰ 5 Days Campaign
+                            </Badge>
+                          </div>
                         </div>
 
                         {reservation.status === 'active' && (

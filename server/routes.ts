@@ -753,17 +753,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Creator plan required" });
       }
       
-      const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000); // 72 hours
+      const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
       const reservation = await storage.createAdReservation(id, userId, expiresAt);
       
-      await storage.createAuditLog({
-        actorId: userId,
-        action: "ad_reserved",
-        targetType: "ad",
-        targetId: id,
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent"),
-      });
+      // Skip audit log for demo users to avoid foreign key constraint error
+      if (userId !== 'demo-user-1') {
+        await storage.createAuditLog({
+          actorId: userId,
+          action: "ad_reserved",
+          targetType: "ad",
+          targetId: id,
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+        });
+      }
       
       res.json(reservation);
     } catch (error) {
