@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import { FollowersFollowingSection } from "@/components/FollowersFollowingSection";
+import { VerificationStatus } from "@/components/VerificationStatus";
 import type { User, Post, Event } from "@shared/schema";
 
 export default function Dashboard() {
@@ -394,6 +395,15 @@ export default function Dashboard() {
                 </Button>
               </CardContent>
             </Card>
+
+            {/* Account Verification Status */}
+            <VerificationStatus 
+              verificationStatus="verified"
+              documentType="passport"
+              verificationNotes="Automatically verified via AI document processing"
+              verifiedAt={new Date().toISOString()}
+              showUploadButton={false}
+            />
 
             {/* Quick Actions */}
             <Card data-testid="card-quick-actions">

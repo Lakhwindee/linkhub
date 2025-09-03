@@ -21,6 +21,7 @@ import Billing from "@/pages/Billing";
 import Stays from "@/pages/Stays";
 import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
+import DocumentSignup from "@/pages/DocumentSignup";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -71,6 +72,7 @@ function Router() {
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
+              <Route path="/document-signup" component={DocumentSignup} />
             </>
           )}
           <Route component={NotFound} />

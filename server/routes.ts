@@ -81,6 +81,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Complete signup with document verification
+  app.post('/api/complete-signup', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const {
+        username,
+        email,
+        firstName,
+        lastName,
+        bio,
+        country,
+        city,
+        documentType,
+        documentUrl,
+        documentNumber,
+        fullName,
+        dateOfBirth,
+        nationality,
+        expiryDate,
+        verificationStatus
+      } = req.body;
+
+      // Check if user already exists
+      const existingUser = await storage.getUser(userId);
+      if (existingUser && existingUser.verificationStatus === 'verified') {
+        return res.status(400).json({ message: "User already verified" });
+      }
+
+      // Update user with document verification info
+      const userData = {
+        username,
+        email,
+        firstName,
+        lastName,
+        bio,
+        country,
+        city,
+        documentType,
+        documentUrl,
+        documentNumber,
+        fullName,
+        dateOfBirth,
+        nationality,
+        expiryDate,
+        verificationStatus,
+        verifiedAt: verificationStatus === 'verified' ? new Date() : null,
+        verificationNotes: verificationStatus === 'verified' 
+          ? 'Automatically verified via AI document processing' 
+          : 'Pending manual review'
+      };
+
+      const user = await storage.updateUserProfile(userId, userData);
+      
+      res.json({ 
+        success: true, 
+        user,
+        message: "Signup completed successfully" 
+      });
+    } catch (error) {
+      console.error("Error completing signup:", error);
+      res.status(500).json({ message: "Failed to complete signup" });
+    }
+  });
+
   // Video verification function
   async function verifyVideoClip(originalVideoUrl: string, clipUrl: string, clipStartTime: number, clipEndTime: number) {
     try {

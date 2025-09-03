@@ -64,6 +64,17 @@ export const users = pgTable("users", {
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   canDmMe: varchar("can_dm_me").default("all"), // all, followers, none
+  // Document verification fields
+  verificationStatus: varchar("verification_status").default("pending"), // pending, verified, rejected
+  documentType: varchar("document_type"), // passport, driving_license
+  documentUrl: varchar("document_url"), // uploaded document URL
+  documentNumber: varchar("document_number"), // extracted document number
+  fullName: varchar("full_name"), // extracted from document
+  dateOfBirth: varchar("date_of_birth"), // extracted from document
+  nationality: varchar("nationality"), // extracted from document
+  expiryDate: varchar("expiry_date"), // document expiry date
+  verifiedAt: timestamp("verified_at"),
+  verificationNotes: text("verification_notes"), // admin notes or AI confidence score
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
