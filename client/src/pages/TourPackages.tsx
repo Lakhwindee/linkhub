@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/lib/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +90,8 @@ export default function TourPackages() {
     search: ""
   });
 
+  const { user } = useAuth();
+  const permissions = usePermissions(user);
   const queryClient = useQueryClient();
 
   // Fetch tour packages
@@ -690,14 +694,25 @@ export default function TourPackages() {
               Discover amazing travel experiences from verified tour operators worldwide
             </p>
             <div className="flex justify-center">
-              <Button 
-                size="lg" 
-                onClick={() => setIsCreateModalOpen(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                List Your Package
-              </Button>
+              {permissions.canCreateTourPackages ? (
+                <Button 
+                  size="lg" 
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  List Your Package
+                </Button>
+              ) : (
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-2">
+                    To create tour packages, you need Tour Package Provider role
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Current role: {permissions.roleDisplayName}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -777,11 +792,18 @@ export default function TourPackages() {
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">No packages found</h3>
-            <p className="text-muted-foreground mb-4">Be the first to create an amazing tour package!</p>
-            <Button onClick={() => setIsCreateModalOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create First Package
-            </Button>
+            <p className="text-muted-foreground mb-4">
+              {permissions.canCreateTourPackages 
+                ? "Be the first to create an amazing tour package!" 
+                : "No tour packages available yet. Tour providers will add packages soon!"
+              }
+            </p>
+            {permissions.canCreateTourPackages && (
+              <Button onClick={() => setIsCreateModalOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Create First Package
+              </Button>
+            )}
           </div>
         )}
       </div>

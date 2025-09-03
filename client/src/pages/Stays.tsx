@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/lib/permissions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -172,6 +174,8 @@ const amenityIcons: Record<string, any> = {
 
 export default function Stays() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const permissions = usePermissions(user);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("all");
   const [selectedType, setSelectedType] = useState("all");
@@ -442,10 +446,18 @@ export default function Stays() {
                     {stays.length} stays found
                   </span>
                 </div>
-                <Button onClick={handleAddListing} className="flex items-center space-x-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Add Your Stay</span>
-                </Button>
+                {permissions.canCreateStays ? (
+                  <Button onClick={handleAddListing} className="flex items-center space-x-2">
+                    <Plus className="w-4 h-4" />
+                    <span>Add Your Stay</span>
+                  </Button>
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    <span>To list stays, you need Stays Provider role</span>
+                    <br />
+                    <span className="text-xs">Current role: {permissions.roleDisplayName}</span>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

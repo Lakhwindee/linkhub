@@ -25,7 +25,8 @@ export function useAuth() {
     username: 'demo_user',
     email: 'demo@hublink.com',
     profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    plan: 'creator' // Give demo user creator access
+    plan: 'creator', // Give demo user creator access
+    role: 'tour_package' // Demo user has tour package role for testing
   } : null;
 
   return {
