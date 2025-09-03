@@ -272,7 +272,7 @@ export default function PublisherAds() {
                             {adImageUrl ? "Change Image" : "Upload Ad Creative"}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Drag and drop or click to upload (Max 10MB)
+                            Drag and drop or click to browse (Max 10MB)
                           </p>
                         </div>
                       </div>
