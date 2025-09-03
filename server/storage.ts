@@ -103,7 +103,19 @@ export interface IStorage {
   getPublisherAds(publisherId: string): Promise<Ad[]>;
   createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation>;
   getUserActiveReservations(userId: string): Promise<AdReservation[]>;
-  createAdSubmission(data: { reservationId: string; postId?: string; rawFileUrl?: string }): Promise<AdSubmission>;
+  createAdSubmission(data: { 
+    reservationId: string; 
+    postId?: string; 
+    rawFileUrl?: string; 
+    contentLink?: string;
+    originalVideoUrl?: string;
+    clipUrl?: string;
+    clipStartTime?: number;
+    clipEndTime?: number;
+    verificationStatus?: string;
+    verificationScore?: string;
+    verificationNotes?: string;
+  }): Promise<AdSubmission>;
   getAdSubmissions(filters?: any): Promise<AdSubmission[]>;
   updateAdSubmissionStatus(id: string, status: string, reviewedBy: string, reviewNotes?: string): Promise<AdSubmission>;
   
@@ -1234,7 +1246,19 @@ export class DatabaseStorage implements IStorage {
       );
   }
 
-  async createAdSubmission(data: { reservationId: string; postId?: string; rawFileUrl?: string; contentLink?: string }): Promise<AdSubmission> {
+  async createAdSubmission(data: { 
+    reservationId: string; 
+    postId?: string; 
+    rawFileUrl?: string; 
+    contentLink?: string;
+    originalVideoUrl?: string;
+    clipUrl?: string;
+    clipStartTime?: number;
+    clipEndTime?: number;
+    verificationStatus?: string;
+    verificationScore?: string;
+    verificationNotes?: string;
+  }): Promise<AdSubmission> {
     const [submission] = await db
       .insert(adSubmissions)
       .values(data)

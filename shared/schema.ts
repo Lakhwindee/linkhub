@@ -243,6 +243,14 @@ export const adSubmissions = pgTable("ad_submissions", {
   reservationId: varchar("reservation_id").references(() => adReservations.id, { onDelete: "cascade" }),
   postId: varchar("post_id").references(() => posts.id),
   rawFileUrl: varchar("raw_file_url"),
+  // Video verification fields
+  originalVideoUrl: varchar("original_video_url"), // Creator's full video URL
+  clipUrl: varchar("clip_url"), // Extracted clip URL showing the promotion
+  clipStartTime: integer("clip_start_time"), // Seconds from video start
+  clipEndTime: integer("clip_end_time"), // Seconds from video start
+  verificationStatus: varchar("verification_status").default("pending"), // pending, verified, failed
+  verificationScore: decimal("verification_score", { precision: 3, scale: 2 }), // 0.00-1.00 similarity score
+  verificationNotes: text("verification_notes"),
   status: varchar("status").default("pending"), // pending, approved, rejected
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
