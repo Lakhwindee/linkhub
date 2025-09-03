@@ -172,86 +172,256 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Instagram-like Social Feed */}
-        <div className="max-w-2xl mx-auto space-y-6">
-          <Card data-testid="card-social-feed">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Globe className="w-5 h-5 text-accent" />
-                <span>Social Feed</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {postsLoading ? (
-                <div className="space-y-6">
-                  {[...Array(5)].map((_, i) => (
-                    <div key={i} className="animate-pulse space-y-4">
-                      <div className="flex items-center space-x-3">
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Recent Posts */}
+            <Card data-testid="card-recent-posts">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Globe className="w-5 h-5 text-accent" />
+                  <span>Recent Posts</span>
+                </CardTitle>
+                <Button variant="outline" size="sm" asChild data-testid="button-view-all-posts">
+                  <Link href="/feed">View All</Link>
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {postsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-3 bg-muted rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : recentPosts.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentPosts.slice(0, 3).map((post: Post) => (
+                      <PostCard key={post.id} post={post} compact={false} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Sample Posts with Enhanced Features */}
+                    <PostCard 
+                      post={{
+                        id: 'demo-post-1',
+                        userId: 'test-user-1',
+                        body: 'Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 🌅',
+                        city: 'London',
+                        country: 'United Kingdom',
+                        visibility: 'public',
+                        createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+                        mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop']
+                      } as Post}
+                      compact={false}
+                    />
+                    
+                    <PostCard 
+                      post={{
+                        id: 'demo-post-2', 
+                        userId: 'travel_explorer',
+                        body: 'Beautiful sunset at Santorini! Greece never disappoints 🇬🇷✨ #TravelLife #Greece',
+                        city: 'Santorini',
+                        country: 'Greece',
+                        visibility: 'public',
+                        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop']
+                      } as Post}
+                      compact={false}
+                    />
+                    
+                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-posts">
+                      View All
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Connect Requests */}
+            <Card data-testid="card-connect-requests">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="w-5 h-5 text-accent" />
+                  <span>Connect Requests</span>
+                  {connectRequests.length > 0 && (
+                    <Badge variant="destructive" data-testid="badge-requests-count">
+                      {connectRequests.length}
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {requestsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="animate-pulse flex items-center space-x-3">
                         <div className="w-10 h-10 bg-muted rounded-full"></div>
-                        <div className="space-y-2">
-                          <div className="h-4 bg-muted rounded w-24"></div>
-                          <div className="h-3 bg-muted rounded w-16"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-muted rounded w-3/4"></div>
+                          <div className="h-3 bg-muted rounded w-1/2"></div>
                         </div>
                       </div>
-                      <div className="h-64 bg-muted rounded-lg"></div>
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                    ))}
+                  </div>
+                ) : connectRequests.length > 0 ? (
+                  <div className="space-y-3">
+                    {connectRequests.slice(0, 3).map((request: any) => (
+                      <div key={request.id} className="flex items-center space-x-3" data-testid={`div-request-${request.id}`}>
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback>
+                            {request.fromUser?.username?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">
+                            {request.fromUser?.displayName || request.fromUser?.username}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {request.message || "Wants to connect"}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <Button variant="outline" size="sm" className="w-full" asChild data-testid="button-view-all-requests">
+                      <Link href="/messages">View All</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground" data-testid="text-no-requests">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                      <Users className="w-8 h-8 text-gray-400" />
                     </div>
-                  ))}
-                </div>
-              ) : recentPosts.length > 0 ? (
-                <div className="space-y-6">
-                  {recentPosts.map((post: Post) => (
-                    <PostCard key={post.id} post={post} compact={false} />
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Sample Posts - Instagram Style */}
-                  <PostCard 
-                    post={{
-                      id: 'demo-post-1',
-                      userId: 'test-user-1',
-                      body: 'Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 🌅',
-                      city: 'London',
-                      country: 'United Kingdom',
-                      visibility: 'public',
-                      createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-                      mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop']
-                    } as Post}
-                    compact={false}
-                  />
-                  
-                  <PostCard 
-                    post={{
-                      id: 'demo-post-2', 
-                      userId: 'travel_explorer',
-                      body: 'Beautiful sunset at Santorini! Greece never disappoints 🇬🇷✨ #TravelLife #Greece',
-                      city: 'Santorini',
-                      country: 'Greece',
-                      visibility: 'public',
-                      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                      mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop']
-                    } as Post}
-                    compact={false}
-                  />
+                    <p className="text-sm">No pending requests</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-                  <PostCard 
-                    post={{
-                      id: 'demo-post-3',
-                      userId: 'foodie_wanderer', 
-                      body: 'Tokyo street food adventure! This ramen was absolutely incredible 🍜 Best meal of my trip so far!',
-                      city: 'Tokyo',
-                      country: 'Japan',
-                      visibility: 'public',
-                      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-                      mediaUrls: ['https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500&h=500&fit=crop']
-                    } as Post}
-                    compact={false}
-                  />
+            {/* Followers and Following Section */}
+            <FollowersFollowingSection userId={user.id} />
+
+            {/* Upcoming Events */}
+            <Card data-testid="card-upcoming-events">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5 text-accent" />
+                  <span>Upcoming Events</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {eventsLoading ? (
+                  <div className="space-y-3">
+                    {[...Array(2)].map((_, i) => (
+                      <div key={i} className="animate-pulse space-y-2">
+                        <div className="h-4 bg-muted rounded w-3/4"></div>
+                        <div className="h-3 bg-muted rounded w-1/2"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : upcomingEvents.length > 0 ? (
+                  <div className="space-y-3">
+                    {upcomingEvents.slice(0, 3).map((event: Event) => (
+                      <EventCard key={event.id} event={event} compact={true} />
+                    ))}
+                    <Button variant="outline" size="sm" className="w-full" asChild data-testid="button-view-all-events">
+                      <Link href="/events">View All Events</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Sample Events */}
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">London Photography Walk</h4>
+                        <Badge className="bg-blue-100 text-blue-800 text-xs">meetup</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 25, 1:30 AM 📍 London, United Kingdom</p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">Barcelona Food Tour</h4>
+                        <Badge className="bg-green-100 text-green-800 text-xs">food</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 30, 7:00 AM 📍 Barcelona, Spain</p>
+                    </div>
+                    
+                    <div className="border rounded-lg p-3">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-sm">Tokyo Temple Hopping</h4>
+                        <Badge className="bg-green-100 text-green-800 text-xs">food</Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">📅 Oct 30, 1:50 AM 📍 Tokyo, Japan</p>
+                    </div>
+                    
+                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-events">
+                      View All Events
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Creator Dashboard */}
+            <Card data-testid="card-creator-dashboard">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="w-5 h-5 text-yellow-600" />
+                  <span>Creator Dashboard</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">£0</div>
+                    <div className="text-xs text-muted-foreground">Total Earnings</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-foreground" data-testid="text-campaigns">0</div>
+                    <div className="text-xs text-muted-foreground">Active Campaigns</div>
+                  </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <Button className="w-full bg-gray-900 hover:bg-gray-800" asChild data-testid="button-browse-ads">
+                  <Link href="/ads">Browse Campaigns</Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card data-testid="card-quick-actions">
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-post-quick">
+                  <Link href="/feed">
+                    <Globe className="w-4 h-4 mr-2" />
+                    Create Post
+                  </Link>
+                </Button>
+                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-event-quick">
+                  <Link href="/events">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Create Event
+                  </Link>
+                </Button>
+                <Button className="w-full justify-start" asChild data-testid="button-upgrade-quick">
+                  <Link href="/subscribe">
+                    <Star className="w-4 h-4 mr-2" />
+                    Upgrade Plan
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
