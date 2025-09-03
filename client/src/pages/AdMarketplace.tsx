@@ -421,7 +421,7 @@ export default function AdMarketplace() {
                                   <strong>Step 4:</strong> Create a clip starting 5 seconds before this promotion begins and ending 5 seconds after it finishes - upload this specific segment
                                 </p>
                                 <p className="text-foreground leading-relaxed">
-                                  <strong>Step 5:</strong> Upload your final content for approval to receive payment
+                                  <strong>Step 5:</strong> Upload your final promotion clip and your content link for approval to receive payment
                                 </p>
                               </div>
                             </div>
