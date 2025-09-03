@@ -654,7 +654,7 @@ export class DatabaseStorage implements IStorage {
         country: 'United Kingdom',
         city: 'London',
         plan: 'creator',
-        role: 'traveler',
+        role: 'publisher',
         createdAt: new Date(),
         updatedAt: new Date(),
       } as User;
