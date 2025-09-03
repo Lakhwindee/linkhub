@@ -124,6 +124,7 @@ export default function AdMarketplace() {
   // Live countdown for campaigns in "My Campaigns" tab
   useEffect(() => {
     let interval: NodeJS.Timeout;
+    let hasExpiredCampaigns = false;
     
     if ((reservations as AdReservation[]).length > 0) {
       interval = setInterval(() => {
@@ -136,6 +137,7 @@ export default function AdMarketplace() {
           
           if (timeLeft <= 0) {
             newCountdowns[reservation.id] = "Expired";
+            hasExpiredCampaigns = true;
           } else {
             const days = Math.floor(timeLeft / (24 * 60 * 60 * 1000));
             const hours = Math.floor((timeLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
@@ -147,13 +149,20 @@ export default function AdMarketplace() {
         });
         
         setCampaignCountdowns(newCountdowns);
+        
+        // If any campaigns expired, refresh the data to remove them
+        if (hasExpiredCampaigns) {
+          queryClient.invalidateQueries({ queryKey: ["/api/reservations"] });
+          queryClient.invalidateQueries({ queryKey: ["/api/ads"] });
+          hasExpiredCampaigns = false; // Reset flag
+        }
       }, 1000);
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [reservations]);
+  }, [reservations, queryClient]);
 
   const reserveAdMutation = useMutation({
     mutationFn: async (adId: string) => {

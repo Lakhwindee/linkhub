@@ -50,7 +50,7 @@ import {
   insertStayReviewSchema,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, sql, count, like, ilike } from "drizzle-orm";
+import { eq, and, or, desc, asc, sql, count, like, ilike, gt } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -636,6 +636,7 @@ const testTripParticipants = [
 
 export class DatabaseStorage implements IStorage {
   demoConversations: any[] = []; // Store demo conversations in memory
+  demoUserReservations: Map<string, AdReservation[]> = new Map(); // Store demo user reservations
   
   // User operations
   async getUser(id: string): Promise<User | undefined> {
@@ -1090,6 +1091,33 @@ export class DatabaseStorage implements IStorage {
     return ad;
   }
 
+  async cleanupExpiredReservations(): Promise<void> {
+    try {
+      // Update expired reservations in database to 'expired' status
+      await db
+        .update(adReservations)
+        .set({ status: 'expired' })
+        .where(
+          and(
+            eq(adReservations.status, 'active'),
+            gt(sql`NOW()`, adReservations.expiresAt)
+          )
+        );
+      
+      // Clean up demo user expired reservations from memory
+      for (const [userId, reservations] of this.demoUserReservations.entries()) {
+        const activeReservations = reservations.filter(r => 
+          new Date(r.expiresAt!).getTime() > Date.now()
+        );
+        if (activeReservations.length !== reservations.length) {
+          this.demoUserReservations.set(userId, activeReservations);
+        }
+      }
+    } catch (error) {
+      console.error("Error cleaning up expired reservations:", error);
+    }
+  }
+
   async createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation> {
     // Check if it's a test ad
     const testAd = testAds.find(ad => ad.id === adId);
@@ -1103,6 +1131,14 @@ export class DatabaseStorage implements IStorage {
         status: 'active',
         createdAt: new Date(),
       } as AdReservation;
+      
+      // Store in memory for demo user
+      if (userId === 'demo-user-1') {
+        const existing = this.demoUserReservations.get(userId) || [];
+        existing.push(mockReservation);
+        this.demoUserReservations.set(userId, existing);
+      }
+      
       return mockReservation;
     }
 
@@ -1114,21 +1150,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserActiveReservations(userId: string): Promise<AdReservation[]> {
+    // First cleanup expired reservations
+    await this.cleanupExpiredReservations();
+    
     // For demo user, return mock reservations to demonstrate functionality
     if (userId === 'demo-user-1') {
       const now = new Date();
-      const fiveDaysFromNow = new Date(now.getTime() + (5 * 24 * 60 * 60 * 1000));
       
-      return [
-        {
+      // Check if demo user has any stored reservations in memory
+      const storedReservations = this.demoUserReservations.get(userId) || [];
+      const activeReservations = storedReservations.filter(r => new Date(r.expiresAt!).getTime() > now.getTime());
+      
+      // If no active reservations and no stored reservations exist, create a new one with short expiry for testing
+      if (activeReservations.length === 0 && storedReservations.length === 0) {
+        const thirtySecondsFromNow = new Date(now.getTime() + (30 * 1000)); // 30 seconds for demo
+        const demoReservation = {
           id: `demo-reservation-${Date.now()}`,
           adId: 'ad-6',
           userId: 'demo-user-1',
           status: 'active',
-          expiresAt: fiveDaysFromNow,
+          expiresAt: thirtySecondsFromNow,
           createdAt: now,
-        }
-      ] as AdReservation[];
+        } as AdReservation;
+        
+        this.demoUserReservations.set(userId, [demoReservation]);
+        return [demoReservation];
+      }
+      
+      return activeReservations;
     }
 
     return await db
@@ -1137,7 +1186,8 @@ export class DatabaseStorage implements IStorage {
       .where(
         and(
           eq(adReservations.userId, userId),
-          eq(adReservations.status, "active")
+          eq(adReservations.status, "active"),
+          gt(adReservations.expiresAt, new Date()) // Only active and not expired
         )
       );
   }
