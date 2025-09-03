@@ -33,6 +33,8 @@ export default function AdMarketplace() {
   const [reservedCampaignId, setReservedCampaignId] = useState<string | null>(null);
   const [contentLink, setContentLink] = useState("");
   const [campaignCountdowns, setCampaignCountdowns] = useState<Record<string, string>>({});
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState<AdReservation | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -123,11 +125,11 @@ export default function AdMarketplace() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
-    if (reservations.length > 0) {
+    if ((reservations as AdReservation[]).length > 0) {
       interval = setInterval(() => {
         const newCountdowns: Record<string, string> = {};
         
-        reservations.forEach((reservation: AdReservation) => {
+        (reservations as AdReservation[]).forEach((reservation: AdReservation) => {
           const now = Date.now();
           const expiry = new Date(reservation.expiresAt!).getTime();
           const timeLeft = expiry - now;
@@ -290,7 +292,7 @@ export default function AdMarketplace() {
     );
   }
 
-  const filteredAds = ads.filter((ad: Ad) => {
+  const filteredAds = (ads as Ad[]).filter((ad: Ad) => {
     const matchesSearch = !searchQuery || 
       ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ad.brand.toLowerCase().includes(searchQuery.toLowerCase());
@@ -321,7 +323,7 @@ export default function AdMarketplace() {
                 Creator Member
               </Badge>
               <Badge variant="outline" data-testid="badge-active-reservations">
-                {reservations.length} Active Reservations
+                {(reservations as AdReservation[]).length} Active Reservations
               </Badge>
             </div>
           </div>
@@ -386,9 +388,9 @@ export default function AdMarketplace() {
                     </Card>
                   ))}
                 </div>
-              ) : filteredAds.length > 0 ? (
+              ) : (filteredAds as Ad[]).length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredAds.map((ad: Ad) => (
+                  {(filteredAds as Ad[]).map((ad: Ad) => (
                     <Card key={ad.id} className="travel-card" data-testid={`card-ad-${ad.id}`}>
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
@@ -595,9 +597,9 @@ export default function AdMarketplace() {
                     </Card>
                   ))}
                 </div>
-              ) : reservations.length > 0 ? (
+              ) : (reservations as AdReservation[]).length > 0 ? (
                 <div className="space-y-4">
-                  {reservations.map((reservation: AdReservation) => (
+                  {(reservations as AdReservation[]).map((reservation: AdReservation) => (
                     <Card key={reservation.id} className="border-accent" data-testid={`card-reservation-${reservation.id}`}>
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between">
@@ -612,6 +614,47 @@ export default function AdMarketplace() {
                               >
                                 {reservation.status}
                               </Badge>
+                              <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => setSelectedReservation(reservation)}
+                                  >
+                                    <Eye className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md">
+                                  <DialogHeader>
+                                    <DialogTitle className="flex items-center space-x-2">
+                                      <Eye className="h-5 w-5" />
+                                      <span>Campaign Details</span>
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div className="bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                                      <div className="flex items-start space-x-3">
+                                        <Clock className="h-5 w-5 text-orange-600 mt-0.5" />
+                                        <div>
+                                          <h4 className="font-medium text-orange-800 dark:text-orange-200 mb-1">
+                                            Important Deadline Notice
+                                          </h4>
+                                          <p className="text-sm text-orange-700 dark:text-orange-300">
+                                            If you don't submit your content within the countdown time, your ad reservation will be removed and the campaign will return to the available listings for other creators.
+                                          </p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="text-center">
+                                      <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                                        Time Remaining: {campaignCountdowns[reservation.id] || "Loading..."}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
                             </div>
                             <div className="flex items-center space-x-4">
                               <div className="flex items-center text-sm font-medium text-foreground bg-red-50 dark:bg-red-950 px-3 py-1 rounded-full border border-red-200 dark:border-red-800">
