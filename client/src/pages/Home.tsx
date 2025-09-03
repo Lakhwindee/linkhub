@@ -46,6 +46,18 @@ export default function Home() {
     retry: false,
   });
 
+  // Fetch user's followers
+  const { data: followers = [], isLoading: followersLoading } = useQuery<User[]>({
+    queryKey: ["followers", user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/followers/${user?.id}`);
+      if (!response.ok) throw new Error('Failed to fetch followers');
+      return response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
   // Fetch connect requests
   const { data: connectRequests = [], isLoading: requestsLoading } = useQuery<any[]>({
     queryKey: ["/api/connect-requests"],
@@ -144,6 +156,63 @@ export default function Home() {
             </Card>
           ))}
         </div>
+
+        {/* Recent Followers Section */}
+        <Card className="mb-6">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center space-x-2">
+              <Users className="w-5 h-5 text-accent" />
+              <span>Recent Followers</span>
+              <Badge variant="secondary" className="ml-2">
+                {followers.length}
+              </Badge>
+            </CardTitle>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/profile">View All</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {followersLoading ? (
+              <div className="flex space-x-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="animate-pulse flex flex-col items-center space-y-2">
+                    <div className="w-12 h-12 bg-muted rounded-full"></div>
+                    <div className="h-3 bg-muted rounded w-16"></div>
+                  </div>
+                ))}
+              </div>
+            ) : followers.length > 0 ? (
+              <div className="flex space-x-4 overflow-x-auto pb-2">
+                {followers.slice(0, 6).map((follower: User) => (
+                  <Link key={follower.id} href="/profile" className="flex-shrink-0">
+                    <div className="flex flex-col items-center space-y-2 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={follower.profileImageUrl || ""} />
+                        <AvatarFallback className="text-sm">
+                          {(follower.displayName || follower.username || "U").charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-center">
+                        <p className="text-xs font-medium truncate w-16">
+                          {follower.displayName || follower.username}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate w-16">
+                          @{follower.username}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p className="text-sm">No followers yet</p>
+                <p className="text-xs mt-1">Share your username <span className="font-mono bg-muted px-2 py-1 rounded">@{user?.username}</span> to get followers!</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
