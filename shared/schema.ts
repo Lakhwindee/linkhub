@@ -54,6 +54,9 @@ export const users = pgTable("users", {
   youtubeChannelId: varchar("youtube_channel_id"),
   youtubeSubscribers: integer("youtube_subscribers").default(0),
   youtubeTier: integer("youtube_tier").default(1), // 1: 10k-40k, 2: 40k-70k, 3: 70k+
+  youtubeVerified: boolean("youtube_verified").default(false),
+  youtubeVerificationCode: varchar("youtube_verification_code"),
+  youtubeVerificationAttempts: integer("youtube_verification_attempts").default(0),
   youtubeLastUpdated: timestamp("youtube_last_updated"),
   tiktokUrl: varchar("tiktok_url"),
   role: varchar("role").default("traveler"), // traveler, stays, promotional, tour_package, publisher, admin, superadmin

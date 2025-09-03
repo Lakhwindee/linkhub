@@ -171,12 +171,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Update user with YouTube data
+      // Generate verification code
+      const verificationCode = `HUBLINK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+
+      // Update user with YouTube data (not verified yet)
       const updatedUser = await storage.updateUserProfile(userId, {
         youtubeUrl,
         youtubeChannelId: channelId,
         youtubeSubscribers: subscriberCount,
         youtubeTier: tier,
+        youtubeVerified: false, // Reset verification status
+        youtubeVerificationCode: verificationCode,
+        youtubeVerificationAttempts: 0,
         youtubeLastUpdated: new Date()
       });
 
@@ -184,11 +190,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
         subscriberCount,
         tier,
         tierName: tier === 1 ? 'Emerging (10k-40k)' : tier === 2 ? 'Growing (40k-70k)' : 'Established (70k+)',
+        verificationCode,
+        requiresVerification: true,
         user: updatedUser
       });
     } catch (error) {
       console.error("Error syncing YouTube data:", error);
       res.status(500).json({ message: "Failed to sync YouTube data" });
+    }
+  });
+
+  // Verify YouTube channel ownership
+  app.post('/api/youtube/verify', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user?.youtubeChannelId || !user?.youtubeVerificationCode) {
+        return res.status(400).json({ message: "No YouTube channel connected or verification code missing" });
+      }
+
+      // Limit verification attempts
+      if ((user.youtubeVerificationAttempts || 0) >= 5) {
+        return res.status(429).json({ message: "Too many verification attempts. Please contact support." });
+      }
+
+      // Fetch channel details to check description
+      const response = await fetch(
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
+      );
+
+      if (!response.ok) {
+        return res.status(400).json({ message: "Failed to fetch channel data" });
+      }
+
+      const data = await response.json();
+      if (!data.items || data.items.length === 0) {
+        return res.status(400).json({ message: "Channel not found" });
+      }
+
+      const channelDescription = data.items[0].snippet.description || '';
+      
+      // Check if verification code exists in channel description
+      if (channelDescription.includes(user.youtubeVerificationCode)) {
+        // Verification successful
+        await storage.updateUserProfile(userId, {
+          youtubeVerified: true,
+          youtubeVerificationAttempts: 0
+        });
+        
+        res.json({ 
+          verified: true, 
+          message: "Channel verified successfully! You can now access premium campaigns." 
+        });
+      } else {
+        // Verification failed - increment attempts
+        await storage.updateUserProfile(userId, {
+          youtubeVerificationAttempts: (user.youtubeVerificationAttempts || 0) + 1
+        });
+        
+        res.status(400).json({ 
+          verified: false, 
+          message: `Verification code not found in channel description. ${4 - (user.youtubeVerificationAttempts || 0)} attempts remaining.`,
+          attemptsRemaining: 4 - (user.youtubeVerificationAttempts || 0)
+        });
+      }
+    } catch (error) {
+      console.error("Error verifying YouTube channel:", error);
+      res.status(500).json({ message: "Failed to verify channel" });
     }
   });
 
@@ -844,6 +913,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(req.user.claims.sub);
       if (user?.plan !== 'creator') {
         return res.status(403).json({ message: "Creator plan required" });
+      }
+      
+      // Check if user has verified YouTube channel
+      if (!user?.youtubeVerified || !user?.youtubeChannelId) {
+        return res.json([]);
       }
       
       // Get user's YouTube tier for filtering

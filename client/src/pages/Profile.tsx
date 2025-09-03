@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { FollowStats } from "@/components/FollowButton";
-import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2, Play, Star } from "lucide-react";
+import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2, Play, Star, Shield, AlertCircle, CheckCircle, Copy } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserProfileSchema } from "@shared/schema";
@@ -28,6 +28,8 @@ type ProfileFormData = z.infer<typeof insertUserProfileSchema>;
 function YouTubeCreatorSection({ user }: { user: any }) {
   const [youtubeUrl, setYoutubeUrl] = useState(user?.youtubeUrl || '');
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -39,9 +41,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       return response.json();
     },
     onSuccess: (data) => {
+      setVerificationCode(data.verificationCode);
       toast({
         title: "YouTube Channel Connected!",
-        description: `${data.subscriberCount.toLocaleString()} subscribers detected. Tier: ${data.tierName}`,
+        description: `${data.subscriberCount.toLocaleString()} subscribers detected. Now verify ownership.`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
@@ -49,6 +52,27 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       toast({
         title: "Connection Failed",
         description: error.message || "Failed to connect YouTube channel",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const verifyChannel = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/youtube/verify");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Channel Verified!",
+        description: data.message,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Verification Failed",
+        description: error.message || "Failed to verify channel ownership",
         variant: "destructive",
       });
     },
@@ -70,6 +94,24 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     } finally {
       setIsConnecting(false);
     }
+  };
+
+  const handleVerify = async () => {
+    setIsVerifying(true);
+    try {
+      await verifyChannel.mutateAsync();
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const copyVerificationCode = () => {
+    const code = user?.youtubeVerificationCode || verificationCode;
+    navigator.clipboard.writeText(code);
+    toast({
+      title: "Copied!",
+      description: "Verification code copied to clipboard",
+    });
   };
 
   const getTierInfo = (tier: number) => {
@@ -94,65 +136,154 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       <CardContent className="space-y-6">
         {user?.youtubeChannelId ? (
           <>
-            {/* Connected Status */}
-            <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center">
-                  <Youtube className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-semibold text-green-800">Channel Connected</p>
-                  <p className="text-sm text-green-600">Earning campaigns available</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold text-green-800">
-                  {user.youtubeSubscribers?.toLocaleString() || '0'}
-                </p>
-                <p className="text-sm text-green-600">subscribers</p>
-              </div>
-            </div>
-
-            {/* Tier Badge */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className={`w-3 h-3 rounded-full ${tierInfo.color}`}></div>
-                <div>
-                  <p className="font-semibold">{tierInfo.name}</p>
-                  <p className="text-sm text-muted-foreground">{tierInfo.range} subscribers</p>
-                </div>
-              </div>
-              <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
-                Tier {user.youtubeTier || 1}
-              </Badge>
-            </div>
-
-            {/* Campaign Earnings Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card className="border-accent/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Star className="w-4 h-4 text-accent" />
-                    <p className="font-semibold">Earning Potential</p>
+            {user?.youtubeVerified ? (
+              <>
+                {/* Verified Status */}
+                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-800">Channel Verified ✓</p>
+                      <p className="text-sm text-green-600">Earning campaigns available</p>
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-accent">
-                    £{user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360'}
-                  </p>
-                  <p className="text-sm text-muted-foreground">per campaign</p>
-                </CardContent>
-              </Card>
-              
-              <Card className="border-accent/20">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Play className="w-4 h-4 text-accent" />
-                    <p className="font-semibold">Available Campaigns</p>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-800">
+                      {user.youtubeSubscribers?.toLocaleString() || '0'}
+                    </p>
+                    <p className="text-sm text-green-600">subscribers</p>
                   </div>
-                  <p className="text-2xl font-bold text-accent">3</p>
-                  <p className="text-sm text-muted-foreground">matching your tier</p>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+
+                {/* Tier Badge */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full ${tierInfo.color}`}></div>
+                    <div>
+                      <p className="font-semibold">{tierInfo.name}</p>
+                      <p className="text-sm text-muted-foreground">{tierInfo.range} subscribers</p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
+                    Tier {user.youtubeTier || 1}
+                  </Badge>
+                </div>
+
+                {/* Campaign Earnings Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card className="border-accent/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Star className="w-4 h-4 text-accent" />
+                        <p className="font-semibold">Earning Potential</p>
+                      </div>
+                      <p className="text-2xl font-bold text-accent">
+                        £{user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">per campaign</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="border-accent/20">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Play className="w-4 h-4 text-accent" />
+                        <p className="font-semibold">Available Campaigns</p>
+                      </div>
+                      <p className="text-2xl font-bold text-accent">{user.youtubeTier || 1}</p>
+                      <p className="text-sm text-muted-foreground">matching your tier</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Connected but Not Verified */}
+                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <AlertCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-yellow-800">Channel Not Verified</p>
+                      <p className="text-sm text-yellow-600">Verification required to earn money</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-yellow-800">
+                      {user.youtubeSubscribers?.toLocaleString() || '0'}
+                    </p>
+                    <p className="text-sm text-yellow-600">subscribers</p>
+                  </div>
+                </div>
+
+                {/* Verification Steps */}
+                <Card className="border-yellow-200 bg-yellow-50">
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Shield className="w-5 h-5 text-yellow-600" />
+                      <h3 className="font-semibold text-yellow-800">Verify Channel Ownership</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <p className="text-sm text-yellow-700">
+                        To prove you own this channel, add this verification code to your channel description:
+                      </p>
+                      
+                      <div className="flex items-center gap-2 p-3 bg-white rounded-lg border">
+                        <code className="flex-1 text-sm font-mono">
+                          {user?.youtubeVerificationCode || verificationCode || 'Loading...'}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={copyVerificationCode}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <p className="text-sm font-semibold text-yellow-700">Steps:</p>
+                        <ol className="text-sm text-yellow-600 space-y-1 list-decimal list-inside">
+                          <li>Go to your YouTube Studio</li>
+                          <li>Click "Customization" → "Basic info"</li>
+                          <li>Add the verification code above to your channel description</li>
+                          <li>Save changes and click "Verify Channel" below</li>
+                          <li>You can remove the code after verification</li>
+                        </ol>
+                      </div>
+                      
+                      <Button 
+                        onClick={handleVerify}
+                        disabled={isVerifying}
+                        className="w-full bg-yellow-600 hover:bg-yellow-700"
+                      >
+                        {isVerifying ? (
+                          <>
+                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                            Verifying Channel...
+                          </>
+                        ) : (
+                          <>
+                            <Shield className="w-4 h-4 mr-2" />
+                            Verify Channel Ownership
+                          </>
+                        )}
+                      </Button>
+                      
+                      {(user?.youtubeVerificationAttempts || 0) > 0 && (
+                        <p className="text-xs text-yellow-600">
+                          Verification attempts: {user.youtubeVerificationAttempts}/5
+                        </p>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
 
             {/* Last Updated */}
             {user.youtubeLastUpdated && (
