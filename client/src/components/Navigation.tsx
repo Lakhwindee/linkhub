@@ -157,7 +157,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || user?.avatarUrl || ""} alt={user?.displayName || user?.username} />
+                    <AvatarImage src={user?.profileImageUrl || ""} alt={user?.displayName || user?.username} />
                     <AvatarFallback data-testid="text-user-initials">
                       {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
                     </AvatarFallback>

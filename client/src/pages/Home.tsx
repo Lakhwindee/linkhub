@@ -17,15 +17,6 @@ export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
 
-  // Demo user with more realistic data
-  const demoUser = {
-    firstName: 'Demo',
-    lastName: 'User',
-    displayName: 'Demo User',
-    username: 'demo',
-    plan: 'creator',
-    profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
-  };
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -104,17 +95,25 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
-              Welcome back, Demo User! 👋
-            </h1>
-            <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
-              Discover new travelers and share your journey
-            </p>
+          <div className="flex items-center space-x-4">
+            <Avatar className="w-16 h-16">
+              <AvatarImage src={user.profileImageUrl || ""} alt={user.displayName || user.username} />
+              <AvatarFallback className="text-xl">
+                {(user.displayName || user.username || "U").charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
+                Welcome back, {user.displayName || user.username}! 👋
+              </h1>
+              <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
+                Discover new travelers and share your journey
+              </p>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="badge-user-plan">
-              Creator Plan
+              {user.plan === 'creator' ? 'Creator Plan' : user.plan === 'traveler' ? 'Traveler Plan' : 'Free Plan'}
             </Badge>
           </div>
         </div>

@@ -25,11 +25,6 @@ export function FollowButton({
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Don't show button if user is not logged in or trying to follow themselves
-  if (!user || user.id === userId) {
-    return null;
-  }
-
   // Check follow status
   const { data: followStatus, isLoading: isCheckingStatus } = useQuery({
     queryKey: ["follow-status", userId],
@@ -38,6 +33,7 @@ export function FollowButton({
       return await response.json();
     },
     staleTime: 30000, // Cache for 30 seconds
+    enabled: !!(user && user.id !== userId), // Only run query if conditions are met
   });
 
   // Follow mutation
@@ -93,6 +89,11 @@ export function FollowButton({
       });
     },
   });
+
+  // Don't show button if user is not logged in or trying to follow themselves
+  if (!user || user.id === userId) {
+    return null;
+  }
 
   const isLoading = isCheckingStatus || followMutation.isPending || unfollowMutation.isPending;
   const isFollowing = followStatus?.isFollowing;
