@@ -613,28 +613,28 @@ export default function AdMarketplace() {
         </div>
       </div>
 
-      {/* Red Countdown Overlay with VFX */}
+      {/* Countdown Overlay with Smooth Transitions */}
       {showCountdownOverlay && (
         <div 
-          className="fixed inset-0 bg-red-600/90 flex items-center justify-center z-50" 
-          style={{ opacity: overlayOpacity, transition: 'opacity 300ms ease-out' }}
+          className="fixed top-4 right-4 z-50" 
+          style={{ opacity: overlayOpacity, transition: 'all 500ms ease-in-out' }}
           data-testid="countdown-overlay"
         >
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 max-w-lg mx-4 text-center shadow-2xl animate-in fade-in-0 zoom-in-95 duration-300 border-4 border-red-500">
-            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Clock className="w-12 h-12 text-white" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 max-w-sm text-center shadow-2xl border-4 border-green-500 transform transition-all duration-500 ease-in-out">
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <Clock className="w-8 h-8 text-white" />
             </div>
-            <h3 className="text-3xl font-bold text-red-600 dark:text-red-400 mb-3">
-              🎯 Campaign Reserved!
+            <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+              🎯 Reserved!
             </h3>
-            <p className="text-xl text-red-500 dark:text-red-300 mb-6 font-semibold">
-              ⏰ 5-Day Countdown Started!
+            <p className="text-lg text-green-500 dark:text-green-300 mb-4 font-semibold">
+              ⏰ 5-Day Countdown
             </p>
-            <div className="bg-red-50 dark:bg-red-950/50 p-4 rounded-lg border-2 border-red-200 dark:border-red-800">
-              <div className="flex items-center justify-center space-x-3 text-red-700 dark:text-red-300">
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-                <span className="font-medium">Complete and submit within 5 days</span>
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
+            <div className="bg-green-50 dark:bg-green-950/50 p-3 rounded-lg border-2 border-green-200 dark:border-green-800">
+              <div className="flex items-center justify-center space-x-2 text-green-700 dark:text-green-300">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                <span className="font-medium text-sm">Complete within 5 days</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
               </div>
             </div>
           </div>
