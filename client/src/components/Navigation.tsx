@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/ThemeProvider";
@@ -6,16 +7,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { LoginModal } from "@/components/auth/LoginModal";
+import { SignupModal } from "@/components/auth/SignupModal";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { user } = useAuth();
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [signupModalOpen, setSignupModalOpen] = useState(false);
   
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
 
-  const handleLogin = () => {
-    localStorage.setItem('hublink_demo_user', 'true');
-    window.location.reload(); // Reload to update auth state
+  const handleSignIn = () => {
+    setLoginModalOpen(true);
+  };
+
+  const handleGetStarted = () => {
+    setSignupModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -48,15 +56,25 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
-              <Button variant="ghost" onClick={handleLogin} data-testid="button-sign-in">
-                Sign In (Demo)
+              <Button variant="ghost" onClick={handleSignIn} data-testid="button-sign-in">
+                Sign In
               </Button>
-              <Button onClick={handleLogin} data-testid="button-get-started">
+              <Button onClick={handleGetStarted} data-testid="button-get-started">
                 Get Started
               </Button>
             </div>
           </div>
         </div>
+        
+        {/* Auth Modals */}
+        <LoginModal 
+          open={loginModalOpen} 
+          onOpenChange={setLoginModalOpen} 
+        />
+        <SignupModal 
+          open={signupModalOpen} 
+          onOpenChange={setSignupModalOpen} 
+        />
       </nav>
     );
   }
@@ -188,6 +206,16 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </div>
         </div>
       </div>
+      
+      {/* Auth Modals */}
+      <LoginModal 
+        open={loginModalOpen} 
+        onOpenChange={setLoginModalOpen} 
+      />
+      <SignupModal 
+        open={signupModalOpen} 
+        onOpenChange={setSignupModalOpen} 
+      />
     </nav>
   );
 }
