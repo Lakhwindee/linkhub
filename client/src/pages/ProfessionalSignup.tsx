@@ -62,6 +62,7 @@ export default function ProfessionalSignup() {
     // Account Information
     password: '',
     confirmPassword: '',
+    countryCode: '+44',
     
     // Publisher specific
     businessName: '',
@@ -512,13 +513,33 @@ export default function ProfessionalSignup() {
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input
-                      id="phone"
-                      value={formData.phone}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="+44 123 456 7890"
-                      required
-                    />
+                    <div className="flex">
+                      <Select value={formData.countryCode || "+44"} onValueChange={(value) => setFormData(prev => ({ ...prev, countryCode: value }))}>
+                        <SelectTrigger className="w-24">
+                          <SelectValue placeholder="+44" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                          <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                          <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                          <SelectItem value="+33">🇫🇷 +33</SelectItem>
+                          <SelectItem value="+49">🇩🇪 +49</SelectItem>
+                          <SelectItem value="+39">🇮🇹 +39</SelectItem>
+                          <SelectItem value="+34">🇪🇸 +34</SelectItem>
+                          <SelectItem value="+61">🇦🇺 +61</SelectItem>
+                          <SelectItem value="+81">🇯🇵 +81</SelectItem>
+                          <SelectItem value="+82">🇰🇷 +82</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        id="phone"
+                        value={formData.phone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                        placeholder="123 456 7890"
+                        className="ml-2 flex-1"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label htmlFor="dateOfBirth">Date of Birth *</Label>
@@ -575,14 +596,28 @@ export default function ProfessionalSignup() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor="city">City *</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                        placeholder="London"
-                        required
-                      />
+                      <Label htmlFor="country">Country *</Label>
+                      <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="United Kingdom">🇬🇧 United Kingdom</SelectItem>
+                          <SelectItem value="India">🇮🇳 India</SelectItem>
+                          <SelectItem value="United States">🇺🇸 United States</SelectItem>
+                          <SelectItem value="Canada">🇨🇦 Canada</SelectItem>
+                          <SelectItem value="Australia">🇦🇺 Australia</SelectItem>
+                          <SelectItem value="France">🇫🇷 France</SelectItem>
+                          <SelectItem value="Germany">🇩🇪 Germany</SelectItem>
+                          <SelectItem value="Italy">🇮🇹 Italy</SelectItem>
+                          <SelectItem value="Spain">🇪🇸 Spain</SelectItem>
+                          <SelectItem value="Netherlands">🇳🇱 Netherlands</SelectItem>
+                          <SelectItem value="Japan">🇯🇵 Japan</SelectItem>
+                          <SelectItem value="South Korea">🇰🇷 South Korea</SelectItem>
+                          <SelectItem value="Singapore">🇸🇬 Singapore</SelectItem>
+                          <SelectItem value="UAE">🇦🇪 UAE</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div>
                       <Label htmlFor="state">State/Province</Label>
@@ -590,7 +625,17 @@ export default function ProfessionalSignup() {
                         id="state"
                         value={formData.state}
                         onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                        placeholder="England"
+                        placeholder="England, California, etc."
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="London, Mumbai, etc."
+                        required
                       />
                     </div>
                     <div>
@@ -599,17 +644,7 @@ export default function ProfessionalSignup() {
                         id="postalCode"
                         value={formData.postalCode}
                         onChange={(e) => setFormData(prev => ({ ...prev, postalCode: e.target.value }))}
-                        placeholder="SW1A 1AA"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="country">Country *</Label>
-                      <Input
-                        id="country"
-                        value={formData.country}
-                        onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                        placeholder="United Kingdom"
+                        placeholder="SW1A 1AA, 400001, etc."
                         required
                       />
                     </div>
