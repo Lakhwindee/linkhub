@@ -11,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { PostCard } from "@/components/PostCard";
-import { Globe, Users, MapPin, Plus, Image, Video, Send, Filter } from "lucide-react";
+import { UserSearch } from "@/components/UserSearch";
+import { Globe, Users, MapPin, Plus, Image, Video, Send, Filter, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostSchema } from "@shared/schema";
@@ -336,7 +337,7 @@ export default function Feed() {
         {/* Feed Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsList className="grid w-full max-w-lg grid-cols-3">
               <TabsTrigger value="global" data-testid="tab-global">
                 <Globe className="w-4 h-4 mr-2" />
                 Global
@@ -344,6 +345,10 @@ export default function Feed() {
               <TabsTrigger value="following" data-testid="tab-following">
                 <Users className="w-4 h-4 mr-2" />
                 Following
+              </TabsTrigger>
+              <TabsTrigger value="search" data-testid="tab-search">
+                <Search className="w-4 h-4 mr-2" />
+                Search Users
               </TabsTrigger>
             </TabsList>
 
@@ -461,6 +466,20 @@ export default function Feed() {
                 </Card>
               )}
             </div>
+          </TabsContent>
+
+          <TabsContent value="search" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Search className="w-5 h-5 text-accent" />
+                  <span>Search Users</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <UserSearch />
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
