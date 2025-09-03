@@ -43,21 +43,14 @@ export function ObjectUploader({
 
     setUploading(true);
 
-    try {
-      // Get upload parameters
-      const uploadParams = await onGetUploadParameters();
-      
-      // Upload file directly
-      const response = await fetch(uploadParams.url, {
-        method: uploadParams.method,
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (response.ok) {
-        // Simulate Uppy's result format
+    // Demo upload - simulate successful upload after 1 second
+    setTimeout(() => {
+      // Create a demo image URL using the selected file
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        
+        // Simulate successful upload result
         const result = {
           successful: [
             {
@@ -65,26 +58,23 @@ export function ObjectUploader({
               name: file.name,
               type: file.type,
               size: file.size,
-              uploadURL: uploadParams.url,
+              uploadURL: imageUrl, // Use the file data URL for demo
             }
           ],
           failed: [],
         };
 
         onComplete?.(result);
-      } else {
-        throw new Error('Upload failed');
-      }
-    } catch (error) {
-      console.error('Upload error:', error);
-      alert('Upload failed. Please try again.');
-    } finally {
-      setUploading(false);
-      // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
+        setUploading(false);
+        
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      
+      reader.readAsDataURL(file);
+    }, 1000);
   };
 
   return (

@@ -63,12 +63,19 @@ export default function PublisherAds() {
   // Create ad mutation
   const createAdMutation = useMutation({
     mutationFn: async (data: PublisherAdFormData) => {
-      return await apiRequest("POST", "/api/publisher/ads", {
+      // Demo mode - simulate successful ad creation
+      await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay
+      
+      return {
+        id: `demo-ad-${Date.now()}`,
         ...data,
         adImageUrl,
         totalBudget: Number(data.totalBudget),
         tierLevel: Number(data.tierLevel),
-      });
+        maxInfluencers: calculateMaxInfluencers(Number(data.totalBudget), Number(data.tierLevel)),
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      };
     },
     onSuccess: () => {
       toast({
@@ -107,25 +114,15 @@ export default function PublisherAds() {
   const handleImageComplete = async (result: any) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      try {
-        const response = await apiRequest("PUT", "/api/media", {
-          mediaUrl: uploadedFile.uploadURL
-        });
-        const { objectPath } = await response.json();
-        setAdImageUrl(objectPath);
-        setValue("adImageUrl", objectPath);
-        
-        toast({
-          title: "Image Uploaded",
-          description: "Ad creative has been uploaded successfully.",
-        });
-      } catch (error) {
-        toast({
-          title: "Upload Failed",
-          description: "Failed to process uploaded image. Please try again.",
-          variant: "destructive",
-        });
-      }
+      
+      // For demo purposes, use the uploaded file URL directly
+      setAdImageUrl(uploadedFile.uploadURL);
+      setValue("adImageUrl", uploadedFile.uploadURL);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Ad creative has been uploaded successfully.",
+      });
     }
   };
 
