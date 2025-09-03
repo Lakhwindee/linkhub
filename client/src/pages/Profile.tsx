@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,13 +15,162 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff } from "lucide-react";
+import { User, MapPin, Globe, Instagram, Youtube, Settings, Save, Upload, Eye, EyeOff, Plane, Calendar, Clock, Users, Edit, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 
 type ProfileFormData = z.infer<typeof insertUserProfileSchema>;
+
+// My Trips Component
+function MyTripsSection({ user }: { user: any }) {
+  const { data: userTrips = [], isLoading } = useQuery({
+    queryKey: [`/api/users/${user.id}/trips`],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${user.id}/trips`, {
+        headers: { "x-demo-user": "true" },
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("Failed to fetch trips");
+      return response.json();
+    },
+  });
+
+  const formatDate = (dateString: string | Date) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plane className="w-5 h-5" />
+            My Created Trips
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Plane className="w-5 h-5" />
+          My Created Trips ({userTrips.length})
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {userTrips.length === 0 ? (
+          <div className="text-center py-12">
+            <Plane className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2">No trips created yet</h3>
+            <p className="text-muted-foreground mb-4">Start planning your first amazing journey!</p>
+            <Button onClick={() => window.location.href = '/trips'}>
+              <Plane className="w-4 h-4 mr-2" />
+              Create Your First Trip
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {userTrips.map((trip: any) => (
+              <TripCard key={trip.id} trip={trip} />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Trip Card Component
+function TripCard({ trip }: { trip: any }) {
+  const formatDate = (dateString: string | Date) => {
+    return new Date(dateString).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  return (
+    <div className="border rounded-lg p-6 bg-card hover:shadow-md transition-shadow">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-2">
+            <h3 className="text-lg font-semibold">{trip.title}</h3>
+            <Badge variant={trip.status === 'confirmed' ? 'default' : 'secondary'}>
+              {trip.status || 'Draft'}
+            </Badge>
+          </div>
+          
+          <p className="text-muted-foreground mb-3 line-clamp-2">
+            {trip.description || 'No description provided'}
+          </p>
+
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              <span>{trip.fromCountry} → {trip.toCountry}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(trip.startDate)} - {formatDate(trip.endDate)}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users className="w-4 h-4" />
+              <span>{trip.currentTravelers || 1}/{trip.maxTravelers} travelers</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              <span>{trip.travelStyle}</span>
+            </div>
+          </div>
+
+          {/* Multi-Country Itinerary Preview */}
+          {trip.itinerary && trip.itinerary.length > 0 && (
+            <div className="mt-3 p-3 bg-muted/30 rounded-lg">
+              <h4 className="text-sm font-medium mb-2">Multi-Country Itinerary:</h4>
+              <div className="flex flex-wrap gap-2">
+                {trip.itinerary.map((dest: any, index: number) => (
+                  <div key={index} className="flex items-center gap-1 text-xs bg-primary/10 px-2 py-1 rounded">
+                    <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-[10px] font-bold">
+                      {index + 1}
+                    </span>
+                    <span>{dest.country}, {dest.city}</span>
+                    <span className="text-muted-foreground">({dest.duration}d)</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-2 md:w-auto w-full">
+          <Button variant="outline" size="sm" className="w-full md:w-auto">
+            <Eye className="w-4 h-4 mr-2" />
+            View Details
+          </Button>
+          <Button variant="outline" size="sm" className="w-full md:w-auto">
+            <Edit className="w-4 h-4 mr-2" />
+            Edit Trip
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Profile() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -202,11 +351,12 @@ export default function Profile() {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="basic" data-testid="tab-basic">Basic Info</TabsTrigger>
             <TabsTrigger value="location" data-testid="tab-location">Location</TabsTrigger>
             <TabsTrigger value="social" data-testid="tab-social">Social Links</TabsTrigger>
             <TabsTrigger value="privacy" data-testid="tab-privacy">Privacy</TabsTrigger>
+            <TabsTrigger value="trips" data-testid="tab-trips">My Trips</TabsTrigger>
           </TabsList>
 
           {/* Basic Information */}
@@ -519,6 +669,11 @@ export default function Profile() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* My Trips */}
+          <TabsContent value="trips">
+            <MyTripsSection user={user} />
           </TabsContent>
         </Tabs>
       </div>
