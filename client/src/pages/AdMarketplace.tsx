@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { DollarSign, Search, Filter, Calendar, MapPin, Tag, Clock, Upload, Eye, CheckCircle } from "lucide-react";
+import { DollarSign, Search, Filter, Calendar, MapPin, Tag, Clock, Upload, Eye, CheckCircle, Download } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Ad, AdReservation } from "@shared/schema";
@@ -370,67 +370,143 @@ export default function AdMarketplace() {
                         </div>
                       </div>
 
-                      <div className="flex space-x-2">
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="flex-1" data-testid={`button-view-ad-${ad.id}`}>
-                              <Eye className="w-3 h-3 mr-2" />
-                              View Details
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader>
-                              <DialogTitle>{ad.title}</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                <span className="text-muted-foreground">Brand: {ad.brand}</span>
-                                <Badge className="bg-chart-2 text-primary">£{ad.payoutAmount}</Badge>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            className="w-full bg-accent hover:bg-accent/90"
+                            disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                            data-testid={`button-reserve-ad-${ad.id}`}
+                          >
+                            {reserveAdMutation.isPending ? (
+                              <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                            ) : (
+                              "Reserve Campaign"
+                            )}
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle className="text-xl">{ad.title}</DialogTitle>
+                            <div className="flex items-center justify-between">
+                              <span className="text-muted-foreground">by {ad.brand}</span>
+                              <Badge className="bg-chart-2 text-primary text-lg px-3 py-1">£{ad.payoutAmount}</Badge>
+                            </div>
+                          </DialogHeader>
+                          
+                          <div className="space-y-6">
+                            {/* Campaign Brief */}
+                            <div>
+                              <h4 className="font-semibold mb-3 text-lg">Campaign Brief</h4>
+                              <div className="prose prose-sm text-foreground" dangerouslySetInnerHTML={{ __html: ad.briefMd }} />
+                            </div>
+
+                            {/* Promotion Instructions */}
+                            <div className="bg-muted/50 p-4 rounded-lg border">
+                              <h4 className="font-semibold mb-3 text-lg flex items-center">
+                                <span className="w-2 h-2 bg-accent rounded-full mr-2"></span>
+                                How to Promote This Campaign
+                              </h4>
+                              <div className="space-y-3 text-sm">
+                                <p className="text-foreground leading-relaxed">
+                                  <strong>Step 1:</strong> Download the brand assets and promotional materials below
+                                </p>
+                                <p className="text-foreground leading-relaxed">
+                                  <strong>Step 2:</strong> Create your content (photo/video) featuring the brand naturally
+                                </p>
+                                <p className="text-foreground leading-relaxed">
+                                  <strong>Step 3:</strong> Include the promotional file/image in your content or mention the brand verbally
+                                </p>
+                                <p className="text-foreground leading-relaxed">
+                                  <strong>Step 4:</strong> Use the required hashtags and post on your social media
+                                </p>
+                                <p className="text-foreground leading-relaxed">
+                                  <strong>Step 5:</strong> Upload your final content for approval to receive payment
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Download Assets */}
+                            <div className="bg-accent/10 p-4 rounded-lg">
+                              <h4 className="font-semibold mb-3 flex items-center">
+                                <Download className="w-4 h-4 mr-2" />
+                                Download Brand Assets
+                              </h4>
+                              <div className="grid grid-cols-2 gap-3">
+                                <Button variant="outline" size="sm" className="justify-start">
+                                  <Download className="w-3 h-3 mr-2" />
+                                  Logo Pack (PNG/SVG)
+                                </Button>
+                                <Button variant="outline" size="sm" className="justify-start">
+                                  <Download className="w-3 h-3 mr-2" />
+                                  Product Images
+                                </Button>
+                                <Button variant="outline" size="sm" className="justify-start">
+                                  <Download className="w-3 h-3 mr-2" />
+                                  Video Assets
+                                </Button>
+                                <Button variant="outline" size="sm" className="justify-start">
+                                  <Download className="w-3 h-3 mr-2" />
+                                  Brand Guidelines
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Campaign Details */}
+                            <div className="grid grid-cols-2 gap-6">
+                              <div>
+                                <h4 className="font-semibold text-sm mb-2">Target Countries</h4>
+                                <div className="flex flex-wrap gap-1">
+                                  {ad.countries?.map((country, index) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {country}
+                                    </Badge>
+                                  ))}
+                                </div>
                               </div>
                               <div>
-                                <h4 className="font-semibold mb-2">Campaign Brief</h4>
-                                <div className="prose prose-sm" dangerouslySetInnerHTML={{ __html: ad.briefMd }} />
-                              </div>
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <h4 className="font-semibold text-sm mb-2">Countries</h4>
-                                  <div className="flex flex-wrap gap-1">
-                                    {ad.countries?.map((country, index) => (
-                                      <Badge key={index} variant="outline" className="text-xs">
-                                        {country}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                </div>
-                                <div>
-                                  <h4 className="font-semibold text-sm mb-2">Required Hashtags</h4>
-                                  <div className="flex flex-wrap gap-1">
-                                    {ad.hashtags?.map((hashtag, index) => (
-                                      <Badge key={index} variant="secondary" className="text-xs">
-                                        #{hashtag}
-                                      </Badge>
-                                    ))}
-                                  </div>
+                                <h4 className="font-semibold text-sm mb-2">Required Hashtags</h4>
+                                <div className="flex flex-wrap gap-1">
+                                  {ad.hashtags?.map((hashtag, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">
+                                      #{hashtag}
+                                    </Badge>
+                                  ))}
                                 </div>
                               </div>
                             </div>
-                          </DialogContent>
-                        </Dialog>
 
-                        <Button 
-                          size="sm" 
-                          className="bg-accent hover:bg-accent/90"
-                          onClick={() => reserveAdMutation.mutate(ad.id)}
-                          disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
-                          data-testid={`button-reserve-ad-${ad.id}`}
-                        >
-                          {reserveAdMutation.isPending ? (
-                            <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
-                          ) : (
-                            "Reserve"
-                          )}
-                        </Button>
-                      </div>
+                            {/* Campaign Stats */}
+                            <div className="flex items-center justify-between pt-4 border-t">
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <Calendar className="w-4 h-4 mr-2" />
+                                Deadline: {format(new Date(ad.deadlineAt), 'MMM d, yyyy')}
+                              </div>
+                              <div className="flex items-center text-sm text-muted-foreground">
+                                <span>{ad.currentReservations}/{ad.quota} spots reserved</span>
+                              </div>
+                            </div>
+
+                            {/* Reserve Button */}
+                            <div className="pt-4">
+                              <Button 
+                                size="lg" 
+                                className="w-full bg-accent hover:bg-accent/90 text-lg py-6"
+                                onClick={() => {
+                                  reserveAdMutation.mutate(ad.id);
+                                }}
+                                disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                              >
+                                {reserveAdMutation.isPending ? (
+                                  <div className="animate-spin w-4 h-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                                ) : (
+                                  `Reserve This Campaign for £${ad.payoutAmount}`
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </CardContent>
                   </Card>
                 ))}
