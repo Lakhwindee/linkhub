@@ -57,6 +57,11 @@ export function ObjectUploader({
   children,
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
+
+  const handleButtonClick = () => {
+    console.log('Upload button clicked - opening modal');
+    setShowModal(true);
+  };
   const [uppy] = useState(() =>
     new Uppy({
       restrictions: {
@@ -100,6 +105,7 @@ export function ObjectUploader({
             2: "Processing...",
           },
         },
+        pluralize: (count: number) => count === 1 ? 0 : 1,
       },
     })
       .use(AwsS3, {
@@ -113,15 +119,20 @@ export function ObjectUploader({
 
   return (
     <div>
-      <Button onClick={() => setShowModal(true)} className={buttonClassName}>
+      <Button onClick={handleButtonClick} className={buttonClassName} type="button">
         {children}
       </Button>
 
       <DashboardModal
         uppy={uppy}
         open={showModal}
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => {
+          console.log('Modal close requested');
+          setShowModal(false);
+        }}
         proudlyDisplayPoweredByUppy={false}
+        hideProgressDetails={false}
+        hideUploadButton={false}
       />
     </div>
   );
