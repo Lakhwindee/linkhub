@@ -23,7 +23,7 @@ import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return (
@@ -45,8 +45,20 @@ function Router() {
             </>
           ) : (
             <>
-              <Route path="/" component={Dashboard} />
-              <Route path="/dashboard" component={Dashboard} />
+              <Route path="/" component={() => {
+                // Publishers go to stays page, others go to dashboard
+                if (user?.role === 'publisher') {
+                  return <Stays />;
+                }
+                return <Dashboard />;
+              }} />
+              <Route path="/dashboard" component={() => {
+                // Publishers shouldn't access dashboard - redirect to stays
+                if (user?.role === 'publisher') {
+                  return <Stays />;
+                }
+                return <Dashboard />;
+              }} />
               <Route path="/discover" component={DiscoverTravelers} />
               <Route path="/stays" component={Stays} />
               <Route path="/trips" component={Trips} />
