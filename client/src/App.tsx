@@ -23,6 +23,7 @@ import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
 import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
+import SignupCompletion from "@/pages/SignupCompletion";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -46,6 +47,7 @@ function Router() {
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
+              <Route path="/signup-completion" component={SignupCompletion} />
             </>
           ) : (
             <>

@@ -197,41 +197,30 @@ export default function ProfessionalSignup() {
     }
 
     try {
-      const response = await fetch('/api/complete-signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          role: selectedRole,
-          documentType: selectedRole === 'publisher' ? documentType : null,
-          documentUrl: selectedRole === 'publisher' ? documentUrl : null,
-          ...extractedInfo,
-          verificationStatus: selectedRole === 'publisher' ? verificationStatus : 'verified',
-        }),
+      // Store signup data in sessionStorage for after login
+      const signupData = {
+        ...formData,
+        role: selectedRole,
+        documentType: selectedRole === 'publisher' ? documentType : null,
+        documentUrl: selectedRole === 'publisher' ? documentUrl : null,
+        ...extractedInfo,
+        verificationStatus: selectedRole === 'publisher' ? verificationStatus : 'verified',
+      };
+      
+      sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      sessionStorage.setItem('hublink_signup_type', 'professional');
+      
+      toast({
+        title: "Redirecting to Login",
+        description: "Please login with your Replit account to complete signup.",
       });
-
-      if (response.ok) {
-        // Set user as authenticated after successful signup
-        localStorage.setItem('hublink_demo_user', 'true');
-        localStorage.setItem('hublink_user_role', selectedRole || 'creator');
-        localStorage.setItem('hublink_verification_complete', 'true');
-        
-        toast({
-          title: "Account Created Successfully!",
-          description: `Welcome to HubLink! Please select your subscription plan to continue.`,
-        });
-        
-        // Redirect to plan selection for both roles
-        window.location.href = '/subscribe';
-      } else {
-        throw new Error('Signup failed');
-      }
+      
+      // Redirect to Replit OAuth login
+      window.location.href = '/api/login';
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to complete signup. Please try again.",
+        description: "Failed to initiate signup. Please try again.",
         variant: "destructive",
       });
     }

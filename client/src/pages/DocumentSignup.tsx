@@ -107,39 +107,29 @@ export default function DocumentSignup() {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch('/api/complete-signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          documentType,
-          documentUrl,
-          ...extractedInfo,
-          verificationStatus,
-        }),
+      // Store signup data in sessionStorage for after login
+      const signupData = {
+        ...formData,
+        documentType,
+        documentUrl,
+        ...extractedInfo,
+        verificationStatus,
+      };
+      
+      sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      sessionStorage.setItem('hublink_signup_type', 'document');
+      
+      toast({
+        title: "Redirecting to Login",
+        description: "Please login with your Replit account to complete signup.",
       });
-
-      if (response.ok) {
-        // Set user as authenticated after successful verification
-        localStorage.setItem('hublink_demo_user', 'true');
-        localStorage.setItem('hublink_verification_complete', 'true');
-        
-        toast({
-          title: "Signup Complete!",
-          description: "Your account has been created and verified successfully. Welcome to HubLink!",
-        });
-        
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
-      } else {
-        throw new Error('Signup failed');
-      }
+      
+      // Redirect to Replit OAuth login
+      window.location.href = '/api/login';
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to complete signup. Please try again.",
+        description: "Failed to initiate signup. Please try again.",
         variant: "destructive",
       });
     }
