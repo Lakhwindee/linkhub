@@ -426,30 +426,19 @@ export default function AdMarketplace() {
                               </div>
                             </div>
 
-                            {/* Download Assets */}
+                            {/* Download Promotional File */}
                             <div className="bg-accent/10 p-4 rounded-lg">
                               <h4 className="font-semibold mb-3 flex items-center">
                                 <Download className="w-4 h-4 mr-2" />
-                                Download Brand Assets
+                                Download Promotional File
                               </h4>
-                              <div className="grid grid-cols-2 gap-3">
-                                <Button variant="outline" size="sm" className="justify-start">
-                                  <Download className="w-3 h-3 mr-2" />
-                                  Logo Pack (PNG/SVG)
-                                </Button>
-                                <Button variant="outline" size="sm" className="justify-start">
-                                  <Download className="w-3 h-3 mr-2" />
-                                  Product Images
-                                </Button>
-                                <Button variant="outline" size="sm" className="justify-start">
-                                  <Download className="w-3 h-3 mr-2" />
-                                  Video Assets
-                                </Button>
-                                <Button variant="outline" size="sm" className="justify-start">
-                                  <Download className="w-3 h-3 mr-2" />
-                                  Brand Guidelines
-                                </Button>
-                              </div>
+                              <p className="text-sm text-muted-foreground mb-3">
+                                Brand ne jo bhi file provide ki hai (video, image, ya koi aur file) wo download kro
+                              </p>
+                              <Button variant="outline" size="lg" className="w-full justify-center">
+                                <Download className="w-4 h-4 mr-2" />
+                                Download File
+                              </Button>
                             </div>
 
                             {/* Campaign Details */}
