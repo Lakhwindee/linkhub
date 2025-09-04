@@ -203,12 +203,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           console.log('API success, showing congratulations'); // Debug log
           setIsVerifyingConnection(false);
           
-          // Use setTimeout to ensure state updates are processed
+          // Force immediate state update
+          console.log('Setting showCongratulations to true'); // Debug log
+          setShowCongratulations(true);
+          console.log('showCongratulations state should be true now'); // Debug log
+          
+          // Force component refresh
           setTimeout(() => {
-            console.log('Setting showCongratulations to true'); // Debug log
-            setShowCongratulations(true);
-            console.log('showCongratulations state should be true now'); // Debug log
-          }, 100);
+            console.log('Force refresh - congratulations should be visible now');
+          }, 50);
           
           setTimeout(() => {
             console.log('Hiding congratulations'); // Debug log
@@ -481,25 +484,25 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </div>
             )}
             
-            {/* Congratulations Overlay - SAME STYLE AS VERIFYING */}
-            {showCongratulations && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ease-in-out">
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl transform transition-all duration-500 ease-out scale-105">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
+            {/* Congratulations Overlay - FORCE RENDER TEST */}
+            {showCongratulations ? (
+              <div className="fixed inset-0 bg-red-500 z-[9999] flex items-center justify-center">
+                <div className="bg-white rounded-xl p-8 text-center border-4 border-green-500">
+                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <CheckCircle className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-2">
-                    🎉 Congratulations!
-                  </h3>
-                  <p className="text-green-200 text-lg">
-                    YouTube channel connected successfully!
+                  <h2 className="text-4xl font-bold text-black mb-2">
+                    SUCCESS! 🎉
+                  </h2>
+                  <p className="text-green-600 text-xl font-bold">
+                    YouTube Connected!
                   </p>
                 </div>
               </div>
-            )}
+            ) : null}
             
-            {/* Debug Console Log */}
-            {showCongratulations && console.log('🎉 CONGRATULATIONS OVERLAY IS RENDERING 🎉')}
+            {/* Always log state */}
+            {console.log('Congratulations state:', showCongratulations)}
             
             {/* Connection Form */}
             <div className="space-y-4">
