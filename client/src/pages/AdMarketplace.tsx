@@ -80,10 +80,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         setDemoDisconnected(false);
         localStorage.removeItem('demo_youtube_disconnected');
       }
-      toast({
-        title: "🎉 YouTube Channel Connected!",
-        description: `${data.subscriberCount.toLocaleString()} subscribers • Tier ${data.tier} Creator`,
-      });
+      // No toast popup - congratulations message shows in center screen instead
       // Force immediate data refresh
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setTimeout(() => refetchUser(), 100);
