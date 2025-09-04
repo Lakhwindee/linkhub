@@ -11,6 +11,7 @@ import { Globe, MapPin, Users, Filter, Search, Maximize2, Minimize2, Settings, I
 import Globe3D from "@/components/Globe3D";
 import { UserCard } from "@/components/UserCard";
 import type { User, Stay } from "@shared/schema";
+import { worldCountries } from "@/data/locationData";
 
 export default function Map() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -36,19 +37,13 @@ export default function Map() {
     setSelectedStay(stay);
   };
 
-  // Country options
+  // Real-world countries data (250+ countries with flags)
   const countries = [
     { value: "all", label: "All Countries" },
-    { value: "GB", label: "United Kingdom" },
-    { value: "US", label: "United States" },
-    { value: "IN", label: "India" },
-    { value: "FR", label: "France" },
-    { value: "DE", label: "Germany" },
-    { value: "JP", label: "Japan" },
-    { value: "AU", label: "Australia" },
-    { value: "CA", label: "Canada" },
-    { value: "IT", label: "Italy" },
-    { value: "ES", label: "Spain" },
+    ...worldCountries.map((country, index) => ({
+      value: `country-${index}`,
+      label: `${country.flag || ''} ${country.name}`.trim()
+    }))
   ];
 
   // Filter users based on selections

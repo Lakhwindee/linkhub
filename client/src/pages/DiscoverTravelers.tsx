@@ -13,9 +13,13 @@ import Globe3D from "@/components/Globe3D";
 import type { User } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { getCountriesForMap, getStatesForCountry } from "@/utils/locationUtils";
 
-// Define comprehensive world countries and cities
-const COUNTRIES = [
+// Use comprehensive real-world countries data (250+ countries) with map coordinates
+const COUNTRIES = getCountriesForMap();
+
+// Old hardcoded data (replaced with real data above)
+const OLD_HARDCODED_COUNTRIES = [
   { code: "all", name: "All Countries", lat: 20, lng: 0, zoom: 2 },
   // Europe
   { code: "GB", name: "United Kingdom", lat: 54.7753, lng: -2.3508, zoom: 6 },
@@ -81,10 +85,16 @@ const COUNTRIES = [
   // Oceania
   { code: "AU", name: "Australia", lat: -25.2744, lng: 133.7751, zoom: 5 },
   { code: "NZ", name: "New Zealand", lat: -40.9006, lng: 174.8860, zoom: 6 },
-];
+];  // End of old hardcoded countries
 
-// Define states/provinces by country
-const STATES: Record<string, Array<{ code: string, name: string, lat: number, lng: number, zoom: number }>> = {
+// Dynamic states/provinces loaded from real-world data based on selected country
+const getStatesForSelectedCountry = (countryName: string) => {
+  if (countryName === "All Countries" || countryName === "all") return [];
+  return getStatesForCountry(countryName);
+};
+
+// OLD HARDCODED states/provinces by country (replaced with real data above)
+const OLD_STATES: Record<string, Array<{ code: string, name: string, lat: number, lng: number, zoom: number }>> = {
   "US": [
     { code: "CA", name: "California", lat: 36.7783, lng: -119.4179, zoom: 7 },
     { code: "TX", name: "Texas", lat: 31.9686, lng: -99.9018, zoom: 6 },
@@ -746,12 +756,12 @@ export default function DiscoverTravelers() {
 
   const getStatesForCountry = () => {
     if (selectedCountry === "all") return [];
-    return STATES[selectedCountry as keyof typeof STATES] || [];
+    return getStatesForSelectedCountry(selectedCountry) || [];
   };
 
   const getCitiesForCountry = () => {
     if (selectedCountry === "all") return [];
-    return CITIES[selectedCountry as keyof typeof CITIES] || [];
+    // For now, return empty array - cities can be implemented later with real data\n    return [];
   };
 
   // Search functionality

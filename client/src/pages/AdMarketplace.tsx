@@ -17,6 +17,7 @@ import { DollarSign, Search, Filter, Calendar, MapPin, Tag, Clock, Upload, Eye, 
 import { format, formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Ad, AdReservation } from "@shared/schema";
+import { worldCountries } from "@/data/locationData";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
@@ -931,13 +932,12 @@ export default function AdMarketplace() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Countries</SelectItem>
-                    <SelectItem value="GB">United Kingdom</SelectItem>
-                    <SelectItem value="IN">India</SelectItem>
-                    <SelectItem value="US">United States</SelectItem>
-                    <SelectItem value="FR">France</SelectItem>
-                    <SelectItem value="DE">Germany</SelectItem>
-                    <SelectItem value="JP">Japan</SelectItem>
-                    <SelectItem value="AU">Australia</SelectItem>
+                    {/* Real-world countries (250+ with flags) */}
+                    {worldCountries.map((country) => (
+                      <SelectItem key={country.code || country.name} value={country.code || country.name}>
+                        {country.flag} {country.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

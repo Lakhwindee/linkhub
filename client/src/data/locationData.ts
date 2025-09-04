@@ -1,6 +1,6 @@
 // Auto-generated accurate world location data
 // Source: countrycitystatejson package (250+ countries, 5000+ states, 150000+ cities)
-// Generated on: 2025-09-03T23:29:53.249Z
+// Generated on: 2025-09-04T14:33:50.533Z
 
 // Country codes for phone number dropdown (with flags)
 export const countryCodes = [

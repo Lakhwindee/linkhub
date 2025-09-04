@@ -45,6 +45,7 @@ import {
   X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { worldCountries } from "@/data/locationData";
 
 const stayFormSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
@@ -109,10 +110,8 @@ const amenitiesList = [
   { id: "breakfast", label: "Breakfast", icon: "🥐" },
 ];
 
-const countries = [
-  "United Kingdom", "Spain", "France", "Germany", "Italy", "Netherlands", 
-  "Portugal", "Greece", "Austria", "Switzerland", "Belgium", "Ireland"
-];
+// Use comprehensive real-world countries data (250+ countries with flags)
+const countries = worldCountries.map(country => country.name).sort();
 
 const currencies = [
   { value: "GBP", label: "£ GBP" },

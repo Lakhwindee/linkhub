@@ -19,6 +19,7 @@ import { insertPostSchema } from "@shared/schema";
 import { z } from "zod";
 import type { Post } from "@shared/schema";
 import { Link } from "wouter";
+import { worldCountries } from "@/data/locationData";
 
 type CreatePostData = z.infer<typeof insertPostSchema>;
 
@@ -242,13 +243,12 @@ export default function Feed() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">No Location</SelectItem>
-                      <SelectItem value="GB">United Kingdom</SelectItem>
-                      <SelectItem value="IN">India</SelectItem>
-                      <SelectItem value="US">United States</SelectItem>
-                      <SelectItem value="FR">France</SelectItem>
-                      <SelectItem value="DE">Germany</SelectItem>
-                      <SelectItem value="JP">Japan</SelectItem>
-                      <SelectItem value="AU">Australia</SelectItem>
+                      {/* Real-world countries (250+ with flags) */}
+                      {worldCountries.map((country) => (
+                        <SelectItem key={country.code || country.name} value={country.code || country.name}>
+                          {country.flag} {country.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 
@@ -360,13 +360,12 @@ export default function Feed() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Countries</SelectItem>
-                  <SelectItem value="GB">United Kingdom</SelectItem>
-                  <SelectItem value="IN">India</SelectItem>
-                  <SelectItem value="US">United States</SelectItem>
-                  <SelectItem value="FR">France</SelectItem>
-                  <SelectItem value="DE">Germany</SelectItem>
-                  <SelectItem value="JP">Japan</SelectItem>
-                  <SelectItem value="AU">Australia</SelectItem>
+                  {/* Real-world countries (250+ with flags) */}
+                  {worldCountries.map((country) => (
+                    <SelectItem key={country.code || country.name} value={country.code || country.name}>
+                      {country.flag} {country.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

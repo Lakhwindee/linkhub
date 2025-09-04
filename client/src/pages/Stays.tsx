@@ -27,6 +27,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { AddStayDialog } from "@/components/AddStayDialog";
 import type { Stay } from "@shared/schema";
+import { worldCountries } from "@/data/locationData";
 
 // Mock data for demo
 const mockStays: Stay[] = [
@@ -290,78 +291,12 @@ export default function Stays() {
                   <SelectContent>
                     <SelectItem value="all">🌍 All Countries</SelectItem>
                     
-                    {/* Europe */}
-                    <SelectItem value="United Kingdom">🇬🇧 United Kingdom</SelectItem>
-                    <SelectItem value="Spain">🇪🇸 Spain</SelectItem>
-                    <SelectItem value="France">🇫🇷 France</SelectItem>
-                    <SelectItem value="Germany">🇩🇪 Germany</SelectItem>
-                    <SelectItem value="Italy">🇮🇹 Italy</SelectItem>
-                    <SelectItem value="Netherlands">🇳🇱 Netherlands</SelectItem>
-                    <SelectItem value="Portugal">🇵🇹 Portugal</SelectItem>
-                    <SelectItem value="Greece">🇬🇷 Greece</SelectItem>
-                    <SelectItem value="Austria">🇦🇹 Austria</SelectItem>
-                    <SelectItem value="Switzerland">🇨🇭 Switzerland</SelectItem>
-                    <SelectItem value="Belgium">🇧🇪 Belgium</SelectItem>
-                    <SelectItem value="Ireland">🇮🇪 Ireland</SelectItem>
-                    <SelectItem value="Norway">🇳🇴 Norway</SelectItem>
-                    <SelectItem value="Sweden">🇸🇪 Sweden</SelectItem>
-                    <SelectItem value="Denmark">🇩🇰 Denmark</SelectItem>
-                    <SelectItem value="Finland">🇫🇮 Finland</SelectItem>
-                    <SelectItem value="Czech Republic">🇨🇿 Czech Republic</SelectItem>
-                    <SelectItem value="Poland">🇵🇱 Poland</SelectItem>
-                    <SelectItem value="Hungary">🇭🇺 Hungary</SelectItem>
-                    <SelectItem value="Croatia">🇭🇷 Croatia</SelectItem>
-                    
-                    {/* Asia */}
-                    <SelectItem value="India">🇮🇳 India</SelectItem>
-                    <SelectItem value="Japan">🇯🇵 Japan</SelectItem>
-                    <SelectItem value="China">🇨🇳 China</SelectItem>
-                    <SelectItem value="Thailand">🇹🇭 Thailand</SelectItem>
-                    <SelectItem value="Singapore">🇸🇬 Singapore</SelectItem>
-                    <SelectItem value="Malaysia">🇲🇾 Malaysia</SelectItem>
-                    <SelectItem value="Indonesia">🇮🇩 Indonesia</SelectItem>
-                    <SelectItem value="Philippines">🇵🇭 Philippines</SelectItem>
-                    <SelectItem value="Vietnam">🇻🇳 Vietnam</SelectItem>
-                    <SelectItem value="South Korea">🇰🇷 South Korea</SelectItem>
-                    <SelectItem value="Taiwan">🇹🇼 Taiwan</SelectItem>
-                    <SelectItem value="Hong Kong">🇭🇰 Hong Kong</SelectItem>
-                    <SelectItem value="UAE">🇦🇪 United Arab Emirates</SelectItem>
-                    <SelectItem value="Turkey">🇹🇷 Turkey</SelectItem>
-                    <SelectItem value="Israel">🇮🇱 Israel</SelectItem>
-                    
-                    {/* North America */}
-                    <SelectItem value="United States">🇺🇸 United States</SelectItem>
-                    <SelectItem value="Canada">🇨🇦 Canada</SelectItem>
-                    <SelectItem value="Mexico">🇲🇽 Mexico</SelectItem>
-                    
-                    {/* South America */}
-                    <SelectItem value="Brazil">🇧🇷 Brazil</SelectItem>
-                    <SelectItem value="Argentina">🇦🇷 Argentina</SelectItem>
-                    <SelectItem value="Chile">🇨🇱 Chile</SelectItem>
-                    <SelectItem value="Peru">🇵🇪 Peru</SelectItem>
-                    <SelectItem value="Colombia">🇨🇴 Colombia</SelectItem>
-                    <SelectItem value="Uruguay">🇺🇾 Uruguay</SelectItem>
-                    <SelectItem value="Ecuador">🇪🇨 Ecuador</SelectItem>
-                    
-                    {/* Africa */}
-                    <SelectItem value="South Africa">🇿🇦 South Africa</SelectItem>
-                    <SelectItem value="Morocco">🇲🇦 Morocco</SelectItem>
-                    <SelectItem value="Egypt">🇪🇬 Egypt</SelectItem>
-                    <SelectItem value="Kenya">🇰🇪 Kenya</SelectItem>
-                    <SelectItem value="Tanzania">🇹🇿 Tanzania</SelectItem>
-                    <SelectItem value="Ghana">🇬🇭 Ghana</SelectItem>
-                    <SelectItem value="Nigeria">🇳🇬 Nigeria</SelectItem>
-                    
-                    {/* Oceania */}
-                    <SelectItem value="Australia">🇦🇺 Australia</SelectItem>
-                    <SelectItem value="New Zealand">🇳🇿 New Zealand</SelectItem>
-                    <SelectItem value="Fiji">🇫🇯 Fiji</SelectItem>
-                    
-                    {/* Caribbean */}
-                    <SelectItem value="Jamaica">🇯🇲 Jamaica</SelectItem>
-                    <SelectItem value="Barbados">🇧🇧 Barbados</SelectItem>
-                    <SelectItem value="Bahamas">🇧🇸 Bahamas</SelectItem>
-                    <SelectItem value="Costa Rica">🇨🇷 Costa Rica</SelectItem>
+                    {/* Real-world countries (250+ with flags) */}
+                    {worldCountries.map((country) => (
+                      <SelectItem key={country.name} value={country.name}>
+                        {country.flag} {country.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
