@@ -28,32 +28,26 @@ export function useAuth() {
       console.log('📦 localStorage demo user:', demoUser);
       
       if (demoUser === 'true') {
-        console.log('✅ Found demo user in localStorage, checking server...');
-        // Make actual API call to get user data
-        try {
-          const response = await fetch('/api/auth/user', {
-            credentials: 'include', // Important for cookie handling
-          });
-          
-          console.log('🌐 Server auth response:', response.status, response.ok);
-          
-          if (response.ok) {
-            const userData = await response.json();
-            console.log('👤 User data received:', userData.displayName, userData.role);
-            setUser(userData);
-            setIsAuthenticated(true);
-          } else {
-            console.log('❌ Server auth failed, clearing localStorage');
-            // Server auth failed, clear localStorage
-            localStorage.removeItem('hublink_demo_user');
-            setUser(null);
-            setIsAuthenticated(false);
-          }
-        } catch (error) {
-          console.error('❌ Auth check failed:', error);
-          setUser(null);
-          setIsAuthenticated(false);
-        }
+        console.log('✅ Found demo user in localStorage, using demo data');
+        // Use demo user data directly without server call
+        const demoUserData = {
+          id: 'demo-user-1',
+          firstName: 'Demo',
+          lastName: 'User', 
+          displayName: 'Demo User',
+          username: 'demo_user',
+          email: 'demo@hublink.com',
+          profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          plan: 'creator',
+          role: 'publisher',
+          youtubeChannelId: 'UCHUAPEHzyyXrZU3WAHYh9MA',
+          youtubeSubscribers: 939000,
+          youtubeTier: 3
+        };
+        
+        console.log('👤 Using demo user data:', demoUserData.displayName, demoUserData.role);
+        setUser(demoUserData);
+        setIsAuthenticated(true);
       } else {
         console.log('👤 No demo user found, staying unauthenticated');
         setUser(null);

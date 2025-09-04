@@ -21,22 +21,11 @@ export function DemoLogin() {
       console.log('Demo login response:', response.status, response.ok);
       
       if (response.ok) {
-        console.log('Setting localStorage...');
         // Set localStorage for frontend authentication
         localStorage.setItem('hublink_demo_user', 'true');
         
-        console.log('Testing auth API...');
-        // Test if auth API works immediately
-        const authTest = await fetch('/api/auth/user', {
-          credentials: 'include',
-        });
-        console.log('Auth test result:', authTest.status, authTest.ok);
-        
-        // Small delay then refresh page
-        setTimeout(() => {
-          console.log('Reloading page...');
-          window.location.reload();
-        }, 500);
+        // Direct redirect to home page without page reload
+        window.location.href = '/';
       } else {
         console.error('Demo login failed with status:', response.status);
       }
