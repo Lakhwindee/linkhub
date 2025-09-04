@@ -320,7 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tier = 1; // £120 tier
       } else {
         return res.status(400).json({ 
-          message: "Channel must have at least 10,000 subscribers to participate in campaigns" 
+          message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 10,000 subscribers required to participate in campaigns.`,
+          subscriberCount,
+          minimumRequired: 10000
         });
       }
 
