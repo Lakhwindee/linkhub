@@ -256,18 +256,22 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                 </div>
 
-                {/* Tier Badge */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${tierInfo.color}`}></div>
-                    <div>
-                      <p className="font-semibold">{tierInfo.name}</p>
-                      <p className="text-sm text-muted-foreground">{tierInfo.range} subscribers</p>
+                {/* Enhanced Tier Display */}
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full ${tierInfo.color} flex items-center justify-center`}>
+                        <Star className="w-3 h-3 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-blue-800">{tierInfo.name}</p>
+                        <p className="text-sm text-blue-600">{tierInfo.range} subscribers range</p>
+                      </div>
                     </div>
+                    <Badge variant="default" className="bg-blue-500 text-white text-sm px-3 py-1">
+                      Tier {userData.youtubeTier || 1}
+                    </Badge>
                   </div>
-                  <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
-                    Tier {userData.youtubeTier || 1}
-                  </Badge>
                 </div>
 
 
@@ -301,6 +305,24 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       {userData.youtubeSubscribers?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-yellow-600">subscribers</p>
+                  </div>
+                </div>
+
+                {/* Enhanced Tier Display for Non-Verified */}
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full ${tierInfo.color} flex items-center justify-center`}>
+                        <Star className="w-3 h-3 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-bold text-blue-800">{tierInfo.name}</p>
+                        <p className="text-sm text-blue-600">{tierInfo.range} subscribers range</p>
+                      </div>
+                    </div>
+                    <Badge variant="default" className="bg-blue-500 text-white text-sm px-3 py-1">
+                      Tier {userData.youtubeTier || 1}
+                    </Badge>
                   </div>
                 </div>
 
