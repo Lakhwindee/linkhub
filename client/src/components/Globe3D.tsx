@@ -119,14 +119,6 @@ export default function Globe3D({
 
   useEffect(() => {
     const loadGoogleMaps = async () => {
-      // For development - skip Google Maps and show fallback immediately
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Development mode - using fallback display');
-        setError('Using fallback display - Google Maps unavailable in development.');
-        setIsLoading(false);
-        return;
-      }
-
       if (window.google && window.google.maps) {
         console.log('Google Maps already loaded');
         setIsGoogleMapsLoaded(true);
