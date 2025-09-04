@@ -38,10 +38,7 @@ function Router() {
     );
   }
 
-  // Show demo login if not authenticated
-  if (!isAuthenticated) {
-    return <DemoLogin />;
-  }
+  // Remove demo login requirement - show normal pages
 
   return (
     <div className="min-h-screen bg-background">
