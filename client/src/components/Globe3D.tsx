@@ -1468,7 +1468,7 @@ export default function Globe3D({
   }
 
   return (
-    <div className="relative w-full h-full bg-slate-900 overflow-hidden">
+    <div className="absolute inset-0 bg-slate-900">
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm z-10">
           <div className="animate-spin w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full mb-4"></div>
