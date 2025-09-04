@@ -78,45 +78,43 @@ export default function Subscribe() {
 
   const plans = [
     {
-      id: "traveler",
+      id: "standard",
       name: "Standard",
-      description: "For active travelers",
-      price: "$25",
+      description: "Essential features for travelers",
+      price: "$19",
       period: "per month",
       popular: false,
       icon: Heart,
       color: "bg-blue-500",
       features: [
-        "Full map access with no restrictions",
-        "Send connect requests to any traveler",
+        "Full map access with travelers worldwide",
+        "Send connect requests to any user",
         "Direct messaging with connections",
         "Create and join travel events",
-        "Basic analytics dashboard",
-        "Priority customer support",
-        "Advanced privacy controls",
-        "Export travel data",
-        "🔒 Limited earn menu access",
-        "🔒 View campaigns (can't apply)"
+        "Basic travel dashboard",
+        "Standard customer support",
+        "Privacy controls",
+        "Profile customization"
       ]
     },
     {
-      id: "creator",
-      name: "Premium Earner",
-      description: "Unlimited earning potential",
-      price: "$45",
+      id: "premium",
+      name: "Premium",
+      description: "Earn money through campaigns",
+      price: "$29",
       period: "per month",
       popular: true,
       icon: Star,
       color: "bg-chart-2",
       features: [
         "Everything in Standard plan",
-        "✨ Full Access to Ad Marketplace",
-        "✨ Reserve & apply to brand campaigns",
+        "✨ Access to Campaign Marketplace",
+        "✨ Apply to brand advertising campaigns",
         "✨ Earnings dashboard and analytics",
-        "✨ Payout management system",
-        "✨ Priority support and guidance",
-        "✨ Creator verification badge",
-        "✨ Advanced content tools",
+        "✨ Campaign performance tracking",
+        "✨ Priority campaign notifications",
+        "✨ Creator verification features",
+        "✨ Advanced earning tools",
         "✨ Unlimited earning potential"
       ]
     }
@@ -332,7 +330,7 @@ export default function Subscribe() {
                   ) : (
                     <Zap className="w-5 h-5 mr-2" />
                   )}
-                  {plan.id === 'traveler' ? 'Start Traveling' : 'Start Earning'}
+                  {plan.id === 'standard' ? 'Get Standard' : 'Get Premium'}
                 </Button>
 
                 <div className="space-y-3">

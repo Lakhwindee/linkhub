@@ -18,8 +18,8 @@ export function usePlanAccess(): PlanAccess {
   const plan = user?.plan || 'free';
   
   const isFree = plan === 'free';
-  const isStandard = plan === 'traveler';
-  const isPremium = plan === 'creator';
+  const isStandard = plan === 'standard';
+  const isPremium = plan === 'premium';
   
   return {
     isFree,

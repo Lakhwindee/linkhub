@@ -60,7 +60,7 @@ export const users = pgTable("users", {
   youtubeLastUpdated: timestamp("youtube_last_updated"),
   tiktokUrl: varchar("tiktok_url"),
   role: varchar("role").default("traveler"), // traveler, stays, promotional, tour_package, publisher, admin, superadmin
-  plan: varchar("plan").default("free"), // free, traveler, creator
+  plan: varchar("plan").default("free"), // free, standard, premium
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   canDmMe: varchar("can_dm_me").default("all"), // all, followers, none

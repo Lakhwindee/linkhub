@@ -34,7 +34,7 @@ export function useAuth() {
         username: 'demo_user',
         email: 'demo@hublink.com',
         profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        plan: 'creator',
+        plan: 'premium',
         role: 'publisher',
         youtubeChannelId: 'UCHUAPEHzyyXrZU3WAHYh9MA',
         youtubeSubscribers: 939000,

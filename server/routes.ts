@@ -1147,7 +1147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(ads);
       }
       
-      if (user?.plan !== 'creator') {
+      if (user?.plan !== 'premium') {
         return res.status(403).json({ message: "Creator plan required" });
       }
       
@@ -1177,7 +1177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       
       const user = await storage.getUser(userId);
-      if (user?.plan !== 'creator') {
+      if (user?.plan !== 'premium') {
         return res.status(403).json({ message: "Creator plan required" });
       }
 
@@ -1451,7 +1451,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { plan } = req.body;
       
-      if (!['traveler', 'creator'].includes(plan)) {
+      if (!['standard', 'premium'].includes(plan)) {
         return res.status(400).json({ message: "Invalid plan" });
       }
       
@@ -1473,9 +1473,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create checkout session
-      const priceId = plan === 'traveler' 
-        ? process.env.STRIPE_TRAVELER_PRICE_ID 
-        : process.env.STRIPE_CREATOR_PRICE_ID;
+      const priceId = plan === 'standard' 
+        ? process.env.STRIPE_STANDARD_PRICE_ID 
+        : process.env.STRIPE_PREMIUM_PRICE_ID;
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -1527,8 +1527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             startedAt: new Date(),
           });
           
-          // Create wallet if creator
-          if (plan === 'creator') {
+          // Create wallet if premium (for earning)
+          if (plan === 'premium') {
             const existing = await storage.getWallet(userId);
             if (!existing) {
               await storage.createWallet(userId);

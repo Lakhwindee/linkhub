@@ -33,7 +33,7 @@ export default function Ads() {
       spots: "15 spots available",
       category: "Travel & Tourism",
       tags: ["luxury", "desert", "dubai", "experience"],
-      restricted: user?.plan !== 'creator'
+      restricted: user?.plan !== 'premium'
     },
     {
       id: "campaign-2", 
@@ -47,7 +47,7 @@ export default function Ads() {
       spots: "8 spots available",
       category: "Accommodation",
       tags: ["stays", "unique", "local", "photography"],
-      restricted: user?.plan !== 'creator'
+      restricted: user?.plan !== 'premium'
     },
     {
       id: "campaign-3",
@@ -61,7 +61,7 @@ export default function Ads() {
       spots: "5 spots available",
       category: "Adventure Sports",
       tags: ["action", "adventure", "gopro", "equipment"],
-      restricted: user?.plan !== 'creator'
+      restricted: user?.plan !== 'premium'
     }
   ];
 
@@ -116,7 +116,7 @@ export default function Ads() {
           <div className="flex items-center gap-3">
             <Badge variant={isPremium ? "default" : isStandard ? "secondary" : "outline"} className="text-sm">
               {isPremium && <Crown className="w-4 h-4 mr-1" />}
-              {user.plan === 'free' ? 'Free Plan' : user.plan === 'traveler' ? 'Standard Plan' : 'Premium Earner'}
+              {user.plan === 'free' ? 'Free Plan' : user.plan === 'standard' ? 'Standard Plan' : 'Premium Plan'}
             </Badge>
             {!isPremium && (
               <Button asChild size="sm">
