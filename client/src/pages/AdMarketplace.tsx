@@ -934,7 +934,7 @@ export default function AdMarketplace() {
                     <SelectItem value="all">All Countries</SelectItem>
                     {/* Real-world countries (250+ with flags) */}
                     {worldCountries.map((country) => (
-                      <SelectItem key={country.code || country.name} value={country.code || country.name}>
+                      <SelectItem key={country.name} value={country.name}>
                         {country.flag} {country.name}
                       </SelectItem>
                     ))}
