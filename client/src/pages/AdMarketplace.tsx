@@ -48,15 +48,21 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
   const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
 
-  // Update YouTube URL when real user data loads
+  // Update YouTube URL when real user data loads - PREVENT RE-RENDER DURING VFX
   useEffect(() => {
+    // Skip URL updates when congratulations is showing to prevent VFX interference
+    if (showCongratulations) {
+      console.log('Skipping URL update during congratulations VFX');
+      return;
+    }
+    
     if (userData?.youtubeUrl) {
       setYoutubeUrl(userData.youtubeUrl);
     } else {
       // Clear field if no YouTube URL in user data (after disconnect or refresh)
       setYoutubeUrl("");
     }
-  }, [userData?.youtubeUrl]);
+  }, [userData?.youtubeUrl, showCongratulations]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
@@ -81,16 +87,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         localStorage.removeItem('demo_youtube_disconnected');
       }
       // No toast popup - congratulations message shows in center screen instead
-      // Force immediate data refresh
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setTimeout(() => refetchUser(), 100);
+      // Delay data refresh until after VFX completes to prevent re-render interference
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+        refetchUser();
+      }, 3500); // After congratulations VFX ends
     },
     onError: (error: any) => {
-      toast({
-        title: "Connection Failed",
-        description: error.message || "Failed to connect YouTube channel",
-        variant: "destructive",
-      });
+      console.log('Connection Failed:', error.message);
+      // No popup - show error in VFX instead
     },
   });
 
@@ -100,18 +105,13 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       return response.json();
     },
     onSuccess: (data) => {
-      toast({
-        title: "Channel Verified!",
-        description: data.message,
-      });
+      console.log('Channel Verified:', data.message);
+      // No popup - success handled elsewhere
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Verification Failed",
-        description: error.message || "Failed to verify channel ownership",
-        variant: "destructive",
-      });
+      console.log('Verification Failed:', error.message);
+      // No popup - error handled elsewhere
     },
   });
 
@@ -134,11 +134,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: any) => {
-      toast({
-        title: "Disconnect Failed",
-        description: error.message || "Failed to disconnect YouTube channel",
-        variant: "destructive",
-      });
+      console.log('Disconnect Failed:', error.message);
+      // No popup - error handled elsewhere
     },
   });
 
@@ -165,21 +162,13 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     console.log('handleConnect called with URL:', youtubeUrl); // Debug log
     
     if (!youtubeUrl.trim()) {
-      toast({
-        title: "URL Required",
-        description: "Please enter your YouTube channel URL",
-        variant: "destructive",
-      });
+      console.log('URL Required - Please enter your YouTube channel URL');
       return;
     }
 
     // Validate YouTube URL format
     if (!validateYouTubeUrl(youtubeUrl.trim())) {
-      toast({
-        title: "Invalid YouTube URL",
-        description: "Please enter a valid YouTube channel URL. Examples: youtube.com/@username, youtube.com/c/channelname, or youtube.com/channel/ID",
-        variant: "destructive",
-      });
+      console.log('Invalid YouTube URL - Please enter a valid URL');
       return;
     }
     
