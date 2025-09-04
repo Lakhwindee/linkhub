@@ -5,7 +5,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock } from "lucide-react";
+import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -78,11 +78,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   let navItems = [];
   
   if (user?.role === 'publisher') {
-    // Publisher role only sees these 3 menus
+    // Publisher role only sees these 4 menus
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
       { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
+      { href: "/billing", icon: CreditCard, label: "Billing", testId: "nav-billing" },
     ];
   } else {
     // All other roles see full navigation
