@@ -40,6 +40,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     // Initialize from localStorage for demo user
     return isDemoUser ? localStorage.getItem('demo_youtube_disconnected') === 'true' : false;
   });
+  // For demo user, use demo logic. For real user, check if channel is connected (not necessarily verified)
+  const isYouTubeConnected = isDemoUser ? !demoDisconnected : !!userData?.youtubeChannelId;
   const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
   const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
 
@@ -226,7 +228,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {(userData?.youtubeChannelId || isDemoUser) && !demoDisconnected ? (
+        {isYouTubeConnected ? (
           <>
             {isYouTubeVerified ? (
               <>
