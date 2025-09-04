@@ -297,11 +297,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Fetch channel statistics
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`
-      );
+      console.log('YouTube API Key exists:', !!process.env.YOUTUBE_API_KEY); // Debug log
+      console.log('Fetching data for channel ID:', channelId); // Debug log
+      
+      const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`;
+      console.log('YouTube API URL:', apiUrl.replace(process.env.YOUTUBE_API_KEY || '', 'REDACTED')); // Debug log
+      
+      const response = await fetch(apiUrl);
+      console.log('YouTube API response status:', response.status); // Debug log
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log('YouTube API error response:', errorText); // Debug log
         return res.status(400).json({ message: "Failed to fetch YouTube data" });
       }
 
