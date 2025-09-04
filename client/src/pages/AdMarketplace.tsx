@@ -332,6 +332,21 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                 </div>
 
+                {/* Full Screen Verification Overlay */}
+                {isVerifying && (
+                  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
+                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+                      <div className="animate-spin w-16 h-16 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">
+                        🔍 Verifying Ownership...
+                      </h3>
+                      <p className="text-yellow-200 animate-pulse">
+                        Checking your channel description for verification code
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Verification Steps */}
                 <Card className="border-yellow-200 bg-yellow-50">
                   <CardContent className="p-6 space-y-4">
@@ -372,12 +387,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       <Button 
                         onClick={handleVerify}
                         disabled={isVerifying}
-                        className={`w-full bg-yellow-600 hover:bg-yellow-700 transition-all duration-500 ease-out transform ${isVerifying ? 'scale-90 animate-bounce bg-orange-500 shadow-2xl' : 'hover:scale-110 hover:shadow-xl hover:bg-yellow-500'}`}
+                        className={`w-full bg-yellow-600 hover:bg-yellow-700 transition-all duration-500 ease-out transform ${isVerifying ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl hover:bg-yellow-500'}`}
                       >
                         {isVerifying ? (
                           <>
                             <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                            <span className="animate-pulse">🔍 Verifying Ownership...</span>
+                            Verifying...
                           </>
                         ) : (
                           <>
@@ -407,6 +422,21 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           </>
         ) : (
           <>
+            {/* Full Screen Loading Overlay */}
+            {isConnecting && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+                  <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">
+                    🔗 Connecting Channel...
+                  </h3>
+                  <p className="text-blue-200 animate-pulse">
+                    Please wait while we verify your YouTube channel
+                  </p>
+                </div>
+              </div>
+            )}
+            
             {/* Connection Form */}
             <div className="space-y-4">
               <div className="bg-accent/10 p-4 rounded-lg">
@@ -445,12 +475,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               <Button 
                 onClick={handleConnect}
                 disabled={isConnecting || !youtubeUrl.trim()}
-                className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-500 ease-out transform ${isConnecting ? 'scale-90 animate-bounce bg-orange-500' : 'hover:scale-110 hover:shadow-xl hover:bg-red-400'}`}
+                className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-500 ease-out transform ${isConnecting ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl hover:bg-red-400'}`}
               >
                 {isConnecting ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    <span className="animate-bounce text-yellow-200">🔗 Connecting Channel...</span>
+                    Connecting...
                   </>
                 ) : (
                   <>
