@@ -119,6 +119,14 @@ export default function Globe3D({
 
   useEffect(() => {
     const loadGoogleMaps = async () => {
+      // For development - skip Google Maps and show fallback immediately
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Development mode - using fallback display');
+        setError('Using fallback display - Google Maps unavailable in development.');
+        setIsLoading(false);
+        return;
+      }
+
       if (window.google && window.google.maps) {
         console.log('Google Maps already loaded');
         setIsGoogleMapsLoaded(true);
@@ -150,14 +158,12 @@ export default function Globe3D({
           setIsGoogleMapsLoaded(true);
         };
 
-        // Set a timeout to detect API key errors
+        // Set a shorter timeout to detect API key errors faster
         const errorTimeout = setTimeout(() => {
-          if (!isGoogleMapsLoaded) {
-            console.log('Google Maps API taking too long - switching to fallback');
-            setError('Using fallback display - Google Maps unavailable in development.');
-            setIsLoading(false);
-          }
-        }, 3000);
+          console.log('Google Maps API timeout - switching to fallback');
+          setError('Using fallback display - Google Maps unavailable in development.');
+          setIsLoading(false);
+        }, 1500);
 
         // Listen for Google Maps errors
         const errorHandler = (event: any) => {
@@ -1429,7 +1435,7 @@ export default function Globe3D({
             >
               <div className="flex items-center space-x-3">
                 <img 
-                  src={user.profileImageUrl || '/default-avatar.png'} 
+                  src={user.profileImageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'} 
                   alt={user.displayName}
                   className="w-12 h-12 rounded-full object-cover"
                 />
