@@ -101,11 +101,32 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     },
   });
 
+  const validateYouTubeUrl = (url: string) => {
+    const youtubePatterns = [
+      /^https?:\/\/(www\.)?youtube\.com\/@[\w\-_.]+/,
+      /^https?:\/\/(www\.)?youtube\.com\/c\/[\w\-_.]+/,
+      /^https?:\/\/(www\.)?youtube\.com\/channel\/[\w\-_.]+/,
+      /^https?:\/\/(www\.)?youtube\.com\/user\/[\w\-_.]+/,
+    ];
+    
+    return youtubePatterns.some(pattern => pattern.test(url));
+  };
+
   const handleConnect = async () => {
     if (!youtubeUrl.trim()) {
       toast({
         title: "URL Required",
         description: "Please enter your YouTube channel URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate YouTube URL format
+    if (!validateYouTubeUrl(youtubeUrl.trim())) {
+      toast({
+        title: "Invalid YouTube URL",
+        description: "Please enter a valid YouTube channel URL. Examples: youtube.com/@username, youtube.com/c/channelname, or youtube.com/channel/ID",
         variant: "destructive",
       });
       return;
@@ -358,6 +379,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   onChange={(e) => setYoutubeUrl(e.target.value)}
                   placeholder="https://youtube.com/@yourchannel or https://youtube.com/c/yourchannel"
                   disabled={isConnecting}
+                  className={youtubeUrl && !validateYouTubeUrl(youtubeUrl.trim()) ? "border-red-500 focus:border-red-500" : ""}
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter your channel URL in any format (@username, /c/channel, or /channel/ID)
