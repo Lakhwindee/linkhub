@@ -34,6 +34,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   // Use real user data if available, fallback to auth user
   const userData = realUserData || user;
   
+  // Debug: Log the data we're getting
+  console.log('Real user data from API:', realUserData);
+  console.log('Auth user data:', user);
+  console.log('Final userData:', userData);
+  console.log('YouTube subscribers:', userData?.youtubeSubscribers);
+  console.log('YouTube tier:', userData?.youtubeTier);
+  console.log('YouTube channel ID:', userData?.youtubeChannelId);
+  
   // For demo user, check if they have been disconnected
   const isDemoUser = user?.id === 'demo-user-1';
   const [demoDisconnected, setDemoDisconnected] = useState(() => {
