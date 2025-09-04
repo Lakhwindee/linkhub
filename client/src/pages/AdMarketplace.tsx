@@ -194,14 +194,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       setIsVerifyingConnection(true);
       
       setTimeout(async () => {
-        // Step 3: Actually call the API and complete
+        // Step 3: Call API after 2 seconds of verifying
         try {
           console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
           await syncYouTube.mutateAsync(youtubeUrl.trim());
           
-          // Step 4: Show congratulations for 3 seconds
-          setIsVerifyingConnection(false);
+          // Step 4: Switch to congratulations while keeping verifying background
           console.log('API success, showing congratulations'); // Debug log
+          setIsVerifyingConnection(false);
           setShowCongratulations(true);
           
           setTimeout(() => {
@@ -214,7 +214,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           setIsVerifyingConnection(false);
           setShowCongratulations(false);
         }
-      }, 5000); // 5 seconds verifying
+      }, 2000); // 2 seconds verifying, then API call
     }, 5000); // 5 seconds loading
   };
 
