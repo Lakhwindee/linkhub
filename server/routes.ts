@@ -297,31 +297,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Fetch channel statistics
-      console.log('YouTube API Key exists:', !!process.env.YOUTUBE_API_KEY); // Debug log
-      console.log('Fetching data for channel ID:', channelId); // Debug log
-      
       const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`;
-      console.log('YouTube API URL:', apiUrl.replace(process.env.YOUTUBE_API_KEY || '', 'REDACTED')); // Debug log
-      
       const response = await fetch(apiUrl);
-      console.log('YouTube API response status:', response.status); // Debug log
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.log('YouTube API error response:', errorText); // Debug log
         return res.status(400).json({ message: "Failed to fetch YouTube data" });
       }
 
       const data = await response.json();
-      console.log('YouTube API data received:', JSON.stringify(data, null, 2)); // Debug log
       
       if (!data.items || data.items.length === 0) {
-        console.log('No items found in YouTube API response'); // Debug log
         return res.status(400).json({ message: "YouTube channel not found" });
       }
 
       const subscriberCount = parseInt(data.items[0].statistics.subscriberCount) || 0;
-      console.log('Parsed subscriber count:', subscriberCount); // Debug log
       
       // Determine tier based on subscriber count
       let tier = 1; // Default tier
@@ -341,10 +330,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate verification code
       const verificationCode = `HUBLINK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
-      console.log('Generated verification code:', verificationCode); // Debug log
 
       // Update user with YouTube data (not verified yet)
-      console.log('Attempting to update user profile...'); // Debug log
       const updatedUser = await storage.updateUserProfile(userId, {
         youtubeUrl,
         youtubeChannelId: channelId,
@@ -355,7 +342,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtubeVerificationAttempts: 0,
         youtubeLastUpdated: new Date()
       });
-      console.log('User profile updated successfully'); // Debug log
 
       res.json({
         subscriberCount,

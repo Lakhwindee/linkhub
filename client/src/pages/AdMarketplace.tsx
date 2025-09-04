@@ -194,7 +194,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   };
 
-  const tierInfo = getTierInfo((isDemoUser && !demoDisconnected) ? 2 : (user?.youtubeTier || 0));
+  const tierInfo = getTierInfo(user?.youtubeTier || 0);
 
   return (
     <Card>
@@ -222,7 +222,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-green-800">
-                      {(isDemoUser && !demoDisconnected) ? '45,000' : (user.youtubeSubscribers?.toLocaleString() || '0')}
+                      {user.youtubeSubscribers?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-green-600">subscribers</p>
                   </div>
@@ -238,36 +238,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     </div>
                   </div>
                   <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
-                    Tier {(isDemoUser && !demoDisconnected) ? 2 : (user.youtubeTier || 1)}
+                    Tier {user.youtubeTier || 1}
                   </Badge>
                 </div>
 
-                {/* Campaign Earnings Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card className="border-accent/20">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Star className="w-4 h-4 text-accent" />
-                        <p className="font-semibold">Earning Potential</p>
-                      </div>
-                      <p className="text-2xl font-bold text-accent">
-                        £{(isDemoUser && !demoDisconnected) ? '240' : (user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360')}
-                      </p>
-                      <p className="text-sm text-muted-foreground">per campaign</p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="border-accent/20">
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Play className="w-4 h-4 text-accent" />
-                        <p className="font-semibold">Available Campaigns</p>
-                      </div>
-                      <p className="text-2xl font-bold text-accent">{(isDemoUser && !demoDisconnected) ? '18' : (user.youtubeTier || 1)}</p>
-                      <p className="text-sm text-muted-foreground">matching your tier</p>
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Disconnect Option */}
                 <div className="pt-4 border-t">
