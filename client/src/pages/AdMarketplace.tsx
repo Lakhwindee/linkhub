@@ -129,10 +129,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         setDemoDisconnected(true);
         localStorage.setItem('demo_youtube_disconnected', 'true');
       }
-      toast({
-        title: "Channel Disconnected",
-        description: "YouTube channel successfully disconnected from your account",
-      });
+      // Removed disconnect toast - no popups allowed
+      console.log('Channel disconnected successfully - no popup shown');
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     },
     onError: (error: any) => {
@@ -484,25 +482,51 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </div>
             )}
             
-            {/* Congratulations Overlay - FORCE RENDER TEST */}
-            {showCongratulations ? (
-              <div className="fixed inset-0 bg-red-500 z-[9999] flex items-center justify-center">
-                <div className="bg-white rounded-xl p-8 text-center border-4 border-green-500">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <CheckCircle className="w-10 h-10 text-white" />
-                  </div>
-                  <h2 className="text-4xl font-bold text-black mb-2">
-                    SUCCESS! 🎉
-                  </h2>
-                  <p className="text-green-600 text-xl font-bold">
-                    YouTube Connected!
-                  </p>
+            {/* Congratulations Overlay - ABSOLUTE POSITION TEST */}
+            <div 
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 0, 0, 0.95)',
+                zIndex: 999999,
+                display: showCongratulations ? 'flex' : 'none',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <div style={{
+                backgroundColor: 'white',
+                padding: '40px',
+                borderRadius: '16px',
+                textAlign: 'center',
+                border: '4px solid green'
+              }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  backgroundColor: 'green',
+                  borderRadius: '50%',
+                  margin: '0 auto 20px auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <CheckCircle style={{ width: '48px', height: '48px', color: 'white' }} />
                 </div>
+                <h2 style={{ fontSize: '48px', fontWeight: 'bold', color: 'black', margin: '0 0 16px 0' }}>
+                  SUCCESS! 🎉
+                </h2>
+                <p style={{ fontSize: '24px', fontWeight: 'bold', color: 'green', margin: '0' }}>
+                  YouTube Connected!
+                </p>
               </div>
-            ) : null}
+            </div>
             
-            {/* Always log state */}
-            {console.log('Congratulations state:', showCongratulations)}
+            {/* Debug state constantly */}
+            {console.log('=== CONGRATULATIONS STATE ===', showCongratulations, '=== TIME ===', new Date().toLocaleTimeString())}
             
             {/* Connection Form */}
             <div className="space-y-4">
