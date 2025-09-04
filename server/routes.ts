@@ -11,6 +11,8 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
+import FormData from 'form-data';
+import fetch from 'node-fetch';
 
 // Initialize Stripe (only if keys are available)
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -93,6 +95,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to update profile" });
     }
   });
+
+  // OCR Document verification endpoint
+  app.post('/api/verify-document', isAuthenticated, async (req: any, res) => {
+    try {
+      const { documentUrl, documentType } = req.body;
+      
+      if (!documentUrl || !documentType) {
+        return res.status(400).json({ message: "Document URL and type are required" });
+      }
+
+      console.log('Starting OCR verification for:', documentUrl);
+
+      // Download the image first
+      const imageResponse = await fetch(documentUrl);
+      if (!imageResponse.ok) {
+        return res.status(400).json({ message: "Failed to download document image" });
+      }
+
+      // Create form data for OCR.SPACE API
+      const formData = new FormData();
+      formData.append('file', imageResponse.body);
+      formData.append('language', 'eng');
+      formData.append('OCREngine', '2'); // Use engine 2 for better MRZ detection
+      formData.append('scale', 'true');
+      formData.append('isTable', 'false');
+      formData.append('isSearchablePdfHideTextLayer', 'false');
+      
+      // Make OCR request to OCR.SPACE (free API)
+      const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          ...formData.getHeaders()
+        }
+      });
+
+      if (!ocrResponse.ok) {
+        console.error('OCR API error:', await ocrResponse.text());
+        return res.status(500).json({ message: "OCR service temporarily unavailable" });
+      }
+
+      const ocrResult: any = await ocrResponse.json();
+      
+      if (!ocrResult.IsErroredOnProcessing) {
+        const extractedText = ocrResult.ParsedResults?.[0]?.ParsedText || '';
+        console.log('OCR extracted text:', extractedText);
+        
+        // Extract information based on document type
+        let extractedInfo: any = {};
+        
+        if (documentType === 'passport') {
+          // Parse passport MRZ or text
+          extractedInfo = parsePassportData(extractedText);
+        } else if (documentType === 'driving_license') {
+          // Parse driving license data
+          extractedInfo = parseDrivingLicenseData(extractedText);
+        }
+        
+        // Basic validation - check if we got some meaningful data
+        if (!extractedInfo.fullName && !extractedInfo.documentNumber) {
+          return res.status(400).json({ 
+            message: "Could not extract valid information from document. Please ensure the image is clear and well-lit." 
+          });
+        }
+        
+        res.json({
+          success: true,
+          extractedInfo,
+          rawText: extractedText,
+          verificationStatus: 'verified'
+        });
+      } else {
+        console.error('OCR processing error:', ocrResult.ErrorMessage);
+        res.status(400).json({ 
+          message: "Failed to process document. Please try again with a clearer image.",
+          error: ocrResult.ErrorMessage 
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error in document verification:", error);
+      res.status(500).json({ message: "Document verification failed" });
+    }
+  });
+
+  // Helper function to parse passport data
+  function parsePassportData(text: string) {
+    const lines = text.split('\n');
+    let extractedInfo: any = {};
+    
+    // Look for MRZ patterns (Machine Readable Zone)
+    const mrzPattern = /^P<|^[A-Z]{3}/;
+    const namePattern = /([A-Z]{2,}(?:\s+[A-Z]{2,})*)/g;
+    const datePattern = /(\d{2}[\s\/\-]\d{2}[\s\/\-]\d{4}|\d{6})/g;
+    const passportPattern = /[A-Z]\d{7,9}/g;
+    
+    // Try to find passport number
+    const passportMatch = text.match(passportPattern);
+    if (passportMatch) {
+      extractedInfo.documentNumber = passportMatch[0];
+    }
+    
+    // Try to extract names (usually in caps)
+    const nameMatches = text.match(namePattern);
+    if (nameMatches && nameMatches.length > 0) {
+      // Filter out common passport words
+      const filteredNames = nameMatches.filter(name => 
+        !['PASSPORT', 'REPUBLIC', 'KINGDOM', 'UNITED', 'STATES', 'NATIONALITY'].includes(name.trim())
+      );
+      if (filteredNames.length > 0) {
+        extractedInfo.fullName = filteredNames[0].trim();
+      }
+    }
+    
+    // Try to extract dates
+    const dateMatches = text.match(datePattern);
+    if (dateMatches && dateMatches.length > 0) {
+      extractedInfo.dateOfBirth = dateMatches[0];
+      if (dateMatches.length > 1) {
+        extractedInfo.expiryDate = dateMatches[1];
+      }
+    }
+    
+    return extractedInfo;
+  }
+
+  // Helper function to parse driving license data
+  function parseDrivingLicenseData(text: string) {
+    const lines = text.split('\n');
+    let extractedInfo: any = {};
+    
+    // Common patterns for driving licenses
+    const licensePattern = /[A-Z]{1,2}\d{6,8}/g;
+    const namePattern = /([A-Z]{2,}(?:\s+[A-Z]{2,})*)/g;
+    const datePattern = /(\d{2}[\s\/\-]\d{2}[\s\/\-]\d{4})/g;
+    
+    // Try to find license number
+    const licenseMatch = text.match(licensePattern);
+    if (licenseMatch) {
+      extractedInfo.documentNumber = licenseMatch[0];
+    }
+    
+    // Try to extract names
+    const nameMatches = text.match(namePattern);
+    if (nameMatches && nameMatches.length > 0) {
+      const filteredNames = nameMatches.filter(name => 
+        !['LICENSE', 'DRIVING', 'CLASS', 'VEHICLE', 'MOTOR'].includes(name.trim())
+      );
+      if (filteredNames.length > 0) {
+        extractedInfo.fullName = filteredNames[0].trim();
+      }
+    }
+    
+    // Try to extract dates
+    const dateMatches = text.match(datePattern);
+    if (dateMatches && dateMatches.length > 0) {
+      extractedInfo.dateOfBirth = dateMatches[0];
+      if (dateMatches.length > 1) {
+        extractedInfo.expiryDate = dateMatches[1];
+      }
+    }
+    
+    return extractedInfo;
+  }
 
   // Complete signup with document verification
   app.post('/api/complete-signup', isAuthenticated, async (req: any, res) => {

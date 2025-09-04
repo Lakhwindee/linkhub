@@ -138,39 +138,52 @@ export default function ProfessionalSignup() {
     setIsVerifying(true);
     
     try {
-      // Simulate AI document verification
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mock extracted information based on document type
-      const mockExtractedInfo: ExtractedInfo = {
-        documentNumber: documentType === 'passport' ? 'P1234567' : 'DL987654321',
-        fullName: 'John Smith',
-        dateOfBirth: '1990-05-15',
-        nationality: documentType === 'passport' ? 'British' : 'UK',
-        expiryDate: '2030-12-31'
-      };
-      
-      setExtractedInfo(mockExtractedInfo);
-      setFormData(prev => ({
-        ...prev,
-        firstName: mockExtractedInfo.fullName?.split(' ')[0] || '',
-        lastName: mockExtractedInfo.fullName?.split(' ').slice(1).join(' ') || '',
-        dateOfBirth: mockExtractedInfo.dateOfBirth || '',
-        nationality: mockExtractedInfo.nationality || ''
-      }));
-      
-      setVerificationStatus('verified');
-      setStep(3);
-      
-      toast({
-        title: "Document Verified!",
-        description: "Your document has been successfully verified. Please complete your profile.",
+      // Call real OCR API for document verification
+      const response = await fetch('/api/verify-document', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentUrl: url,
+          documentType: documentType
+        }),
       });
-    } catch (error) {
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.message || 'Verification failed');
+      }
+
+      if (result.success && result.extractedInfo) {
+        const extractedInfo = result.extractedInfo;
+        
+        setExtractedInfo(extractedInfo);
+        setFormData(prev => ({
+          ...prev,
+          firstName: extractedInfo.fullName?.split(' ')[0] || '',
+          lastName: extractedInfo.fullName?.split(' ').slice(1).join(' ') || '',
+          dateOfBirth: extractedInfo.dateOfBirth || '',
+          nationality: extractedInfo.nationality || ''
+        }));
+        
+        setVerificationStatus('verified');
+        setStep(3);
+        
+        toast({
+          title: "Document Verified!",
+          description: `Real document verification successful! Extracted: ${extractedInfo.fullName || 'Name'}, ${extractedInfo.documentNumber || 'Document Number'}`,
+        });
+      } else {
+        throw new Error('Could not extract valid information from document');
+      }
+    } catch (error: any) {
+      console.error('Document verification error:', error);
       setVerificationStatus('failed');
       toast({
         title: "Verification Failed",
-        description: "Unable to verify your document. Please try again or contact support.",
+        description: error.message || "Unable to verify your document. Please ensure the image is clear and try again.",
         variant: "destructive",
       });
     } finally {
