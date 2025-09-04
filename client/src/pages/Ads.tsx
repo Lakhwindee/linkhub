@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/api";
+import PublisherAds from "./PublisherAds";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -135,6 +136,11 @@ export default function Ads() {
     );
   }
 
+
+  // Role-based routing: Publishers see PublisherAds, Creators see YouTube Creator Dashboard
+  if (user?.role === '2' || user?.role === 'publisher') {
+    return <PublisherAds />;
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
