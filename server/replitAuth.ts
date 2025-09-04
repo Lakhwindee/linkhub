@@ -148,13 +148,13 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     } else if (sessionId === 'demo-creator-session') {
       req.user = {
         claims: { 
-          sub: 'demo-creator-1',
-          email: 'demo-creator@hublink.com',
+          sub: 'demo-user-1', // Map to existing demo user
+          email: 'demo@hublink.com',
           first_name: 'Demo',
           last_name: 'Creator'
         }
       } as any;
-      console.log('✅ Demo CREATOR authenticated:', req.user.claims.sub);
+      console.log('✅ Demo CREATOR authenticated (mapped to demo-user-1):', req.user.claims.sub);
     } else {
       // Default to original demo user for backward compatibility
       req.user = {
