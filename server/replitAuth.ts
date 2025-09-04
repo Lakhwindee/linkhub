@@ -128,25 +128,19 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Demo mode bypass - check multiple ways for demo authentication
+  // Demo mode bypass - simplified for development
   if (process.env.NODE_ENV === 'development') {
-    const demoUserHeader = req.headers['x-demo-user'];
-    const cookies = req.headers.cookie || '';
-    const hasDemoSession = cookies.includes('session_id=demo-session');
-    
-    if (demoUserHeader === 'true' || hasDemoSession) {
-      // Create mock user session for demo
-      req.user = {
-        claims: { 
-          sub: 'demo-user-1',
-          email: 'demo@hublink.com',
-          first_name: 'Demo',
-          last_name: 'User'
-        }
-      } as any;
-      console.log('Demo user authenticated:', req.user.claims.sub);
-      return next();
-    }
+    // Always authenticate as demo user in development for simplified testing
+    req.user = {
+      claims: { 
+        sub: 'demo-user-1',
+        email: 'demo@hublink.com',
+        first_name: 'Demo',
+        last_name: 'User'
+      }
+    } as any;
+    console.log('Demo user authenticated:', req.user.claims.sub);
+    return next();
   }
 
   const user = req.user as any;

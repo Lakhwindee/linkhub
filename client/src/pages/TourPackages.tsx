@@ -43,9 +43,10 @@ export default function TourPackages() {
   const permissions = usePermissions(user);
   const queryClient = useQueryClient();
 
-  // Fetch tour packages
+  // Fetch tour packages - Publisher sees only their own packages
+  const apiEndpoint = user?.role === 'publisher' ? "/api/my-tour-packages" : "/api/tour-packages";
   const { data: packages = [], isLoading } = useQuery<TourPackage[]>({
-    queryKey: ["/api/tour-packages", searchFilters],
+    queryKey: [apiEndpoint, searchFilters],
     retry: false,
   });
 
@@ -66,6 +67,7 @@ export default function TourPackages() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tour-packages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/my-tour-packages"] });
       setIsCreateModalOpen(false);
     },
   });

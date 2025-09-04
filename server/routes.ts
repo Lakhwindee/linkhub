@@ -2033,6 +2033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const packageData = {
         id: `tour-${Date.now()}`,
         ...req.body,
+        publisherId: req.user.claims.sub, // Add publisher ID
         operatorRating: 4.5, // Default rating for new operators
         rating: 0,
         reviewCount: 0,
@@ -2047,6 +2048,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating tour package:', error);
       res.status(500).json({ message: 'Failed to create tour package' });
+    }
+  });
+
+  // Get publisher's tour packages (Publisher-specific filtering)
+  app.get('/api/my-tour-packages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Demo tour packages for the demo publisher
+      const demoTourPackages = [
+        {
+          id: 'demo-tour-1',
+          title: 'Royal Rajasthan Adventure',
+          description: 'Explore the royal heritage of Rajasthan with visits to magnificent palaces and forts.',
+          destination: 'Jaipur, Udaipur, Jodhpur',
+          country: 'India',
+          city: 'Jaipur',
+          duration: 10,
+          price: 1299,
+          currency: 'USD',
+          packageType: 'Adventure',
+          included: ['Accommodation', 'Meals', 'Transport', 'Guide'],
+          excluded: ['Flight', 'Personal expenses'],
+          itinerary: ['Day 1: Arrival in Jaipur', 'Day 2: City Palace & Amber Fort'],
+          publisherId: 'demo-user-1',
+          operatorName: 'Demo User',
+          operatorRating: 4.8,
+          rating: 4.7,
+          reviewCount: 24,
+          featured: true,
+          imageUrl: 'https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=800&q=80'
+        },
+        {
+          id: 'demo-tour-2', 
+          title: 'Kerala Backwaters Experience',
+          description: 'Peaceful journey through the serene backwaters of Kerala with houseboat accommodation.',
+          destination: 'Alleppey, Kumarakom',
+          country: 'India',
+          city: 'Kochi',
+          duration: 5,
+          price: 699,
+          currency: 'USD',
+          packageType: 'Relaxation',
+          included: ['Houseboat', 'Meals', 'Transfer'],
+          excluded: ['Flight', 'Additional activities'],
+          itinerary: ['Day 1: Kochi arrival', 'Day 2: Houseboat cruise'],
+          publisherId: 'demo-user-1',
+          operatorName: 'Demo User',
+          operatorRating: 4.8,
+          rating: 4.6,
+          reviewCount: 18,
+          featured: false,
+          imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80'
+        }
+      ];
+      
+      // Filter packages for this publisher
+      const myPackages = demoTourPackages.filter(pkg => pkg.publisherId === userId);
+      
+      res.json(myPackages);
+    } catch (error) {
+      console.error('Error fetching my tour packages:', error);
+      res.status(500).json({ message: 'Failed to fetch your tour packages' });
     }
   });
 

@@ -184,19 +184,24 @@ export default function Stays() {
   const [guests, setGuests] = useState("1");
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  // For demo, use mock data instead of API call
-  const { data: stays = mockStays, isLoading } = useQuery({
-    queryKey: ["stays", selectedCountry, selectedType, priceRange, guests],
+  // Publisher sees only their own stays, others see all stays
+  const apiEndpoint = user?.role === 'publisher' ? "/api/my-stays" : "/api/stays";
+  const { data: stays = [], isLoading } = useQuery({
+    queryKey: [apiEndpoint, selectedCountry, selectedType, priceRange, guests, searchQuery],
     queryFn: async () => {
-      // TODO: Replace with actual API call when backend is ready
-      // const params = new URLSearchParams();
-      // if (selectedCountry !== "all") params.append("country", selectedCountry);
-      // if (selectedType !== "all") params.append("type", selectedType);
-      // if (guests) params.append("guests", guests);
-      // const response = await fetch(`/api/stays?${params}`);
-      // return response.json();
+      // Use actual API call for publishers to show their own stays
+      if (user?.role === 'publisher') {
+        const response = await fetch("/api/my-stays", {
+          credentials: "include"
+        });
+        if (!response.ok) {
+          // Fallback to empty array if API fails
+          return [];
+        }
+        return response.json();
+      }
       
-      // Return filtered mock data for now
+      // For other users, use mock data with filters for now
       return mockStays.filter(stay => {
         if (selectedCountry !== "all" && !stay.country.toLowerCase().includes(selectedCountry.toLowerCase())) {
           return false;
