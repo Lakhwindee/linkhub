@@ -27,13 +27,13 @@ export function useAuth() {
   const user = isAuthenticated ? {
     id: 'demo-user-1',
     firstName: 'Demo',
-    lastName: 'User',
-    displayName: 'Demo User',
-    username: 'demo_user',
+    lastName: 'Publisher',
+    displayName: 'Demo Publisher',
+    username: 'demo_publisher',
     email: 'demo@hublink.com',
     profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-    plan: 'creator', // Give demo user creator access
-    role: 'creator' // Demo user with creator role
+    plan: 'creator', // Give demo user creator access for campaigns
+    role: 'publisher' // Demo user with publisher role for ad management
   } : null;
 
   return {
