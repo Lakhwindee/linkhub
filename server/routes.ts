@@ -10,6 +10,7 @@ import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchem
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
+import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 
 // Initialize Stripe (only if keys are available)
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -1591,6 +1592,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error creating payout:", error);
       res.status(500).json({ message: "Failed to create payout" });
     }
+  });
+
+  // PayPal routes for publisher payments
+  app.get("/paypal/setup", async (req, res) => {
+    await loadPaypalDefault(req, res);
+  });
+
+  app.post("/paypal/order", async (req, res) => {
+    // Request body should contain: { intent, amount, currency }
+    await createPaypalOrder(req, res);
+  });
+
+  app.post("/paypal/order/:orderID/capture", async (req, res) => {
+    await capturePaypalOrder(req, res);
   });
 
   // Reports

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -11,10 +11,14 @@ import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, C
 import { format } from "date-fns";
 import { Link } from "wouter";
 import type { Subscription, Invoice } from "@shared/schema";
+import { PaymentMethodDialog } from "@/components/PaymentMethodDialog";
+import { PayoutDialog } from "@/components/PayoutDialog";
 
 export default function Billing() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
+  const [showPayoutDialog, setShowPayoutDialog] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -71,6 +75,205 @@ export default function Billing() {
         return 'border-muted';
     }
   };
+
+  // Show different content for publishers
+  if (user.role === 'publisher') {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Publisher Header */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
+                <DollarSign className="w-8 h-8 text-green-500" />
+                <span>Publisher Earnings & Payments</span>
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your earnings, payouts, and payment methods
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
+                Publisher Account
+              </Badge>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Earnings Overview */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <DollarSign className="w-5 h-5 text-green-500" />
+                    <span>Earnings Overview</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <h3 className="text-2xl font-bold text-green-600">£1,247.50</h3>
+                      <p className="text-sm text-muted-foreground">Total Earnings</p>
+                    </div>
+                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <h3 className="text-2xl font-bold text-blue-600">£892.30</h3>
+                      <p className="text-sm text-muted-foreground">Available for Payout</p>
+                    </div>
+                    <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                      <h3 className="text-2xl font-bold text-orange-600">£355.20</h3>
+                      <p className="text-sm text-muted-foreground">Pending</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 flex space-x-4">
+                    <Button 
+                      className="flex-1 bg-green-500 hover:bg-green-600"
+                      onClick={() => setShowPayoutDialog(true)}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Request Payout
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      View History
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Recent Transactions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Transactions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>{format(new Date(), 'MMM dd, yyyy')}</TableCell>
+                        <TableCell>Ad Campaign Payment</TableCell>
+                        <TableCell className="font-semibold text-green-600">+£45.50</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Completed
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>{format(new Date(Date.now() - 86400000), 'MMM dd, yyyy')}</TableCell>
+                        <TableCell>Stay Booking Commission</TableCell>
+                        <TableCell className="font-semibold text-green-600">+£12.75</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Completed
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
+                        <TableCell>Payout to PayPal</TableCell>
+                        <TableCell className="font-semibold text-red-600">-£250.00</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                            <AlertCircle className="w-3 h-3 mr-1" />
+                            Processing
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Payment Methods Sidebar */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CreditCard className="w-5 h-5" />
+                    <span>Payment Methods</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-3 border rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                        PP
+                      </div>
+                      <div>
+                        <p className="font-medium">PayPal</p>
+                        <p className="text-sm text-muted-foreground">publisher@example.com</p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800">
+                      Primary
+                    </Badge>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowPaymentMethodDialog(true)}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Add Payment Method
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Payout Settings</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium">Minimum Payout</label>
+                    <p className="text-2xl font-bold">£100</p>
+                    <p className="text-xs text-muted-foreground">Automatic payout when reached</p>
+                  </div>
+                  <Button variant="outline" className="w-full">
+                    Change Settings
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          <PaymentMethodDialog 
+            open={showPaymentMethodDialog}
+            onOpenChange={setShowPaymentMethodDialog}
+            onPaymentMethodAdded={() => {
+              toast({
+                title: "Payment Method Added",
+                description: "Your payment method has been successfully added.",
+              });
+            }}
+          />
+
+          <PayoutDialog
+            open={showPayoutDialog}
+            onOpenChange={setShowPayoutDialog}
+            availableBalance={892.30}
+            onPayoutRequested={() => {
+              toast({
+                title: "Payout Requested",
+                description: "Your payout request has been submitted and will be processed within 1-2 business days.",
+              });
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
