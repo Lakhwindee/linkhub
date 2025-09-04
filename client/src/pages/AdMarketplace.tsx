@@ -366,7 +366,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       <Button 
                         onClick={handleVerify}
                         disabled={isVerifying}
-                        className={`w-full bg-yellow-600 hover:bg-yellow-700 transition-all duration-300 transform ${isVerifying ? 'scale-95 animate-pulse' : 'hover:scale-105'}`}
+                        className={`w-full bg-yellow-600 hover:bg-yellow-700 transition-all duration-500 ease-out transform ${isVerifying ? 'scale-90 animate-bounce bg-orange-500 shadow-2xl' : 'hover:scale-110 hover:shadow-xl hover:bg-yellow-500'}`}
                       >
                         {isVerifying ? (
                           <>
@@ -429,7 +429,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   }}
                   placeholder="https://youtube.com/@yourchannel or https://youtube.com/c/yourchannel"
                   disabled={isConnecting}
-                  className={`transition-all duration-300 ${youtubeUrl && !validateYouTubeUrl(youtubeUrl.trim()) ? "border-red-500 focus:border-red-500 animate-pulse" : ""} ${isConnecting ? "opacity-50" : ""}`}
+                  className={`transition-all duration-500 ease-out transform ${youtubeUrl && !validateYouTubeUrl(youtubeUrl.trim()) ? "border-red-500 focus:border-red-500 animate-bounce" : ""} ${isConnecting ? "opacity-50 scale-95 animate-pulse" : "hover:scale-105 hover:shadow-lg"}`}
                 />
                 <p className="text-xs text-muted-foreground">
                   Enter your channel URL in any format (@username, /c/channel, or /channel/ID)
@@ -439,12 +439,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               <Button 
                 onClick={handleConnect}
                 disabled={isConnecting || !youtubeUrl.trim()}
-                className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-300 transform ${isConnecting ? 'scale-95 animate-pulse' : 'hover:scale-105'}`}
+                className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-500 ease-out transform ${isConnecting ? 'scale-90 animate-bounce bg-orange-500' : 'hover:scale-110 hover:shadow-xl hover:bg-red-400'}`}
               >
                 {isConnecting ? (
                   <>
                     <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                    <span className="animate-pulse">🔗 Verifying Channel...</span>
+                    <span className="animate-bounce text-yellow-200">🔗 Connecting Channel...</span>
                   </>
                 ) : (
                   <>
@@ -455,9 +455,11 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </Button>
               
               {youtubeUrl.trim() && (
-                <p className="text-xs text-center text-muted-foreground animate-fade-in">
-                  💡 Press Enter to connect quickly
-                </p>
+                <div className="animate-fade-in">
+                  <p className="text-xs text-center text-blue-500 animate-pulse font-medium">
+                    ⚡ Press Enter to connect quickly
+                  </p>
+                </div>
               )}
             </div>
           </>
