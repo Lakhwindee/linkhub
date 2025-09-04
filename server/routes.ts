@@ -1966,7 +1966,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Demo authentication endpoint - sets demo session for browser
+  // Demo authentication endpoints - sets demo session for browser
+  
+  // Publisher Demo Login (Role 2)
+  app.post('/api/demo-login-publisher', async (req, res) => {
+    if (process.env.NODE_ENV === 'development') {
+      // Set publisher demo session cookie for browser
+      res.cookie('session_id', 'demo-publisher-session', { 
+        httpOnly: true, 
+        secure: false, 
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+      
+      res.json({ 
+        message: "Publisher demo login successful", 
+        user: {
+          id: 'demo-publisher-1',
+          role: '2', // Publisher role
+          plan: 'creator',
+          displayName: 'Demo Publisher',
+          firstName: 'Demo',
+          lastName: 'Publisher',
+          email: 'demo-publisher@hublink.com'
+        } 
+      });
+    } else {
+      res.status(403).json({ message: "Demo login only available in development" });
+    }
+  });
+
+  // Creator Demo Login (Role 1) 
+  app.post('/api/demo-login-creator', async (req, res) => {
+    if (process.env.NODE_ENV === 'development') {
+      // Set creator demo session cookie for browser
+      res.cookie('session_id', 'demo-creator-session', { 
+        httpOnly: true, 
+        secure: false, 
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+      
+      res.json({ 
+        message: "Creator demo login successful", 
+        user: {
+          id: 'demo-creator-1',
+          role: '1', // Creator role
+          plan: 'creator',
+          displayName: 'Demo Creator',
+          firstName: 'Demo',
+          lastName: 'Creator',
+          email: 'demo-creator@hublink.com'
+        } 
+      });
+    } else {
+      res.status(403).json({ message: "Demo login only available in development" });
+    }
+  });
+
+  // Original demo login kept for backward compatibility
   app.post('/api/demo-login', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       // Set demo session cookie for browser

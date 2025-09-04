@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, LogIn } from "lucide-react";
+import { User, LogIn, Briefcase, Video } from "lucide-react";
 
 export function DemoLogin() {
   const [isLoading, setIsLoading] = useState(false);
+  const [loginType, setLoginType] = useState<string>('');
 
-  const handleDemoLogin = async () => {
+  const handleDemoLogin = async (type: 'publisher' | 'creator') => {
     setIsLoading(true);
+    setLoginType(type);
+    
     try {
-      console.log('Starting demo login...');
-      const response = await fetch('/api/demo-login', {
+      console.log(`Starting ${type} demo login...`);
+      const endpoint = type === 'publisher' ? '/api/demo-login-publisher' : '/api/demo-login-creator';
+      
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -18,21 +23,26 @@ export function DemoLogin() {
         credentials: 'include', // Important for cookie handling
       });
       
-      console.log('Demo login response:', response.status, response.ok);
+      console.log(`${type} demo login response:`, response.status, response.ok);
       
       if (response.ok) {
-        // Set localStorage for frontend authentication
+        const result = await response.json();
+        console.log(`${type} login successful:`, result);
+        
+        // Set localStorage for frontend authentication with role info
         localStorage.setItem('hublink_demo_user', 'true');
+        localStorage.setItem('hublink_demo_role', type);
         
         // Direct redirect to home page without page reload
         window.location.href = '/';
       } else {
-        console.error('Demo login failed with status:', response.status);
+        console.error(`${type} demo login failed with status:`, response.status);
       }
     } catch (error) {
-      console.error('Demo login error:', error);
+      console.error(`${type} demo login error:`, error);
     } finally {
       setIsLoading(false);
+      setLoginType('');
     }
   };
 
@@ -48,24 +58,51 @@ export function DemoLogin() {
             Connect with travelers and creators worldwide
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <Button 
-            onClick={handleDemoLogin} 
-            disabled={isLoading}
-            className="w-full"
-            size="lg"
-          >
-            <LogIn className="w-5 h-5 mr-2" />
-            {isLoading ? "Logging in..." : "Demo Login as Creator"}
-          </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            <p>Demo account includes:</p>
-            <ul className="text-xs mt-2 space-y-1">
-              <li>🏠 Create stays and accommodations</li>
-              <li>📢 Publish ad campaigns</li>
-              <li>✈️ Create tour packages</li>
-              <li>💰 Access creator/publisher features</li>
-            </ul>
+        <CardContent className="space-y-6">
+          <div className="space-y-3">
+            <Button 
+              onClick={() => handleDemoLogin('publisher')} 
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+              variant={loginType === 'publisher' ? "default" : "default"}
+            >
+              <Briefcase className="w-5 h-5 mr-2" />
+              {isLoading && loginType === 'publisher' ? "Logging in..." : "Demo Login as Publisher"}
+            </Button>
+            
+            <Button 
+              onClick={() => handleDemoLogin('creator')} 
+              disabled={isLoading}
+              className="w-full"
+              size="lg"
+              variant={loginType === 'creator' ? "default" : "secondary"}
+            >
+              <Video className="w-5 h-5 mr-2" />
+              {isLoading && loginType === 'creator' ? "Logging in..." : "Demo Login as Creator"}
+            </Button>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-4 text-sm">
+            <div className="text-center text-muted-foreground">
+              <p className="font-semibold text-foreground mb-2">Publisher Features:</p>
+              <ul className="text-xs space-y-1">
+                <li>🏠 Create stays & accommodations</li>
+                <li>📢 Publish ad campaigns</li>
+                <li>✈️ Create tour packages</li>
+                <li>💰 Manage earnings & payouts</li>
+              </ul>
+            </div>
+            
+            <div className="text-center text-muted-foreground">
+              <p className="font-semibold text-foreground mb-2">Creator Features:</p>
+              <ul className="text-xs space-y-1">
+                <li>🎥 Browse ad campaigns</li>
+                <li>💼 Reserve campaigns</li>
+                <li>📱 Submit video content</li>
+                <li>💲 Earn from campaigns</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>
