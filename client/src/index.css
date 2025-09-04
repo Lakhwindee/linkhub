@@ -103,6 +103,10 @@
     animation: bounce 3s infinite;
   }
 
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
   .gradient-mesh {
     background: linear-gradient(45deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 50%, hsl(var(--chart-2)) 100%);
     background-size: 400% 400%;
@@ -128,4 +132,15 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes fadeIn {
+  0% { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
