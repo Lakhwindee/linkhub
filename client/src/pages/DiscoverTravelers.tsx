@@ -790,9 +790,8 @@ export default function DiscoverTravelers() {
   }
 
   return (
-    <div className="h-screen w-screen bg-background flex">
-      {/* Hidden Sidebar - Removed for full screen map */}
-      <div className="hidden w-80 bg-card border-r border-border p-4 space-y-4 overflow-y-auto">
+    <div className="h-screen w-screen bg-background">
+      {/* Sidebar completely removed for full screen map */}
         {/* Header */}
         <div className="text-center space-y-2 mb-6">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -928,8 +927,6 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-
-      </div>
 
       {/* Google Maps Integration - Full Screen */}
       <div className="w-full h-full absolute inset-0 bg-background">
