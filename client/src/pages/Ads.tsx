@@ -12,9 +12,11 @@ import {
   Plus, MapPin, Users, Calendar, Building, User
 } from "lucide-react";
 import { Link } from "wouter";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 
 export default function Ads() {
   const { user, isAuthenticated } = useAuth();
+  const { isFree, isStandard, isPremium } = usePlanAccess();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
 
   // Mock campaign data
@@ -144,8 +146,9 @@ export default function Ads() {
 
         {isPremium && (
           <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
+              <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
@@ -426,35 +429,124 @@ export default function Ads() {
                       
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <h4 className="font-medium mb-2">Requirements</h4>
+                          <h4 className="font-semibold mb-2">Requirements</h4>
                           <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-2">Campaign Details</h4>
+                          <h4 className="font-semibold mb-2">Campaign Details</h4>
                           <div className="space-y-1 text-sm text-muted-foreground">
-                            <div>Budget: {campaign.budget}</div>
-                            <div>Deadline: {campaign.deadline}</div>
-                            <div className="text-green-600">{campaign.spots}</div>
+                            <p>💰 Budget: {campaign.budget}</p>
+                            <p>📅 Deadline: {campaign.deadline}</p>
+                            <p>👥 {campaign.spots}</p>
                           </div>
                         </div>
                       </div>
-
+                      
                       <div className="flex flex-wrap gap-2">
                         {campaign.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
+                          <Badge key={tag} variant="secondary" className="text-xs">
+                            #{tag}
+                          </Badge>
                         ))}
                       </div>
-
-                      <div className="flex justify-between items-center pt-4 border-t">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>Closes {campaign.deadline}</span>
+                      
+                      {campaign.restricted ? (
+                        <div className="bg-orange-50 dark:bg-orange-950/10 border border-orange-200 rounded-lg p-4">
+                          <div className="flex items-center gap-3">
+                            <Lock className="w-5 h-5 text-orange-600" />
+                            <div>
+                              <p className="font-medium text-orange-900 dark:text-orange-100">Premium Feature</p>
+                              <p className="text-sm text-orange-700 dark:text-orange-300">
+                                Upgrade to Premium Earner ($45/mo) to apply for campaigns and start earning
+                              </p>
+                            </div>
+                          </div>
+                          <Button className="w-full mt-3 bg-orange-500 hover:bg-orange-600" asChild>
+                            <Link href="/subscribe">
+                              <Crown className="w-4 h-4 mr-2" />
+                              Upgrade to Premium
+                            </Link>
+                          </Button>
                         </div>
-                        <Button>Apply Now</Button>
-                      </div>
+                      ) : (
+                        <Button 
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          onClick={() => setSelectedCampaign(campaign.id)}
+                        >
+                          <Target className="w-4 h-4 mr-2" />
+                          Reserve Campaign
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="mycampaigns">
+              <div className="grid gap-6">
+                {selectedCampaign ? (
+                  <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">Visit Dubai Tourism - Desert Campaign</CardTitle>
+                          <p className="text-sm text-muted-foreground">Visit Dubai Tourism</p>
+                          <Badge className="mt-2 bg-blue-100 text-blue-800">Reserved</Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-600">$150-250</div>
+                          <div className="text-sm text-muted-foreground">per post</div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">Promote Dubai's premium desert safari and luxury camp experience</p>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-semibold mb-2">Next Steps</h4>
+                          <ul className="text-sm text-muted-foreground space-y-1">
+                            <li>• Wait for brand approval</li>
+                            <li>• Create content as per guidelines</li>
+                            <li>• Submit for review</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Status</h4>
+                          <div className="space-y-1 text-sm">
+                            <div className="flex justify-between">
+                              <span>Reserved:</span>
+                              <span className="text-blue-600">✓ Done</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Approved:</span>
+                              <span className="text-orange-600">Pending</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Content:</span>
+                              <span className="text-gray-600">Not Started</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <Button variant="outline" className="w-full">
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Campaign Details
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="text-center py-12">
+                    <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                    <h3 className="text-lg font-semibold mb-2">No Reserved Campaigns</h3>
+                    <p className="text-muted-foreground mb-4">Reserve campaigns from the Available Campaigns tab to see them here</p>
+                    <Button variant="outline">
+                      Browse Available Campaigns
+                    </Button>
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>
