@@ -150,13 +150,41 @@ export default function Globe3D({
           setIsGoogleMapsLoaded(true);
         };
 
+        // Set a timeout to detect API key errors
+        const errorTimeout = setTimeout(() => {
+          if (!isGoogleMapsLoaded) {
+            console.log('Google Maps API taking too long - switching to fallback');
+            setError('Using fallback display - Google Maps unavailable in development.');
+            setIsLoading(false);
+          }
+        }, 3000);
+
+        // Listen for Google Maps errors
+        const errorHandler = (event: any) => {
+          if (event.message && event.message.includes('Google Maps')) {
+            console.error('Google Maps error detected:', event.message);
+            clearTimeout(errorTimeout);
+            setError('Using fallback display - Google Maps unavailable in development.');
+            setIsLoading(false);
+          }
+        };
+        window.addEventListener('error', errorHandler);
+
         script.onerror = (error) => {
           console.error('Failed to load Google Maps API:', error);
-          setError('Failed to load Google Maps API.');
+          clearTimeout(errorTimeout);
+          window.removeEventListener('error', errorHandler);
+          setError('Using fallback display - Google Maps unavailable in development.');
           setIsLoading(false);
         };
 
         document.head.appendChild(script);
+        
+        // Return cleanup function
+        return () => {
+          clearTimeout(errorTimeout);
+          window.removeEventListener('error', errorHandler);
+        };
       } catch (error) {
         console.error('Failed to fetch API key:', error);
         setError('Failed to fetch Google Maps API configuration.');
@@ -177,6 +205,14 @@ export default function Globe3D({
         setError(null);
         
         console.log('Initializing Google Maps with', users.length, 'users');
+        
+        // Check if Google Maps API is properly loaded
+        if (!window.google || !window.google.maps) {
+          console.error('Google Maps API not properly loaded');
+          setError('Using fallback display - Google Maps unavailable in development.');
+          setIsLoading(false);
+          return;
+        }
         
         // Create advanced Google Maps with satellite imagery
         const map = new window.google.maps.Map(mapRef.current, {
@@ -1370,16 +1406,93 @@ export default function Globe3D({
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-slate-900 rounded-lg">
-        <div className="text-red-400 mb-4">
-          <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <div className="w-full h-full bg-slate-900 rounded-lg p-6 overflow-auto">
+        <div className="mb-6 text-center">
+          <div className="text-blue-400 mb-2">
+            <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-white mb-1">Traveler Locations</h3>
+          <p className="text-gray-400 text-sm">
+            Development mode - {users.length} travelers discovered
+          </p>
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Globe</h3>
-        <p className="text-gray-400 text-sm text-center max-w-md">
-          {error}
-        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {users.map((user) => (
+            <div 
+              key={user.id} 
+              className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors cursor-pointer border border-slate-700"
+              onClick={() => onUserClick?.(user)}
+            >
+              <div className="flex items-center space-x-3">
+                <img 
+                  src={user.profileImageUrl || '/default-avatar.png'} 
+                  alt={user.displayName}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-white font-medium truncate">{user.displayName}</h4>
+                  <p className="text-gray-400 text-sm truncate">@{user.username}</p>
+                  <div className="flex items-center text-gray-500 text-xs mt-1">
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
+                    {user.city}, {user.country}
+                  </div>
+                </div>
+              </div>
+              {user.interests && user.interests.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1">
+                  {user.interests.slice(0, 2).map((interest) => (
+                    <span 
+                      key={interest} 
+                      className="bg-blue-900/50 text-blue-300 text-xs px-2 py-1 rounded-full"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                  {user.interests.length > 2 && (
+                    <span className="text-gray-400 text-xs px-2 py-1">
+                      +{user.interests.length - 2} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {stays.length > 0 && (
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Available Stays</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {stays.map((stay) => (
+                <div 
+                  key={stay.id} 
+                  className="bg-slate-800 rounded-lg p-4 hover:bg-slate-700 transition-colors cursor-pointer border border-slate-700"
+                  onClick={() => onStayClick?.(stay)}
+                >
+                  <h4 className="text-white font-medium mb-2">{stay.title}</h4>
+                  <p className="text-gray-400 text-sm mb-2 line-clamp-2">{stay.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center text-gray-500 text-xs">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      {stay.city}, {stay.country}
+                    </div>
+                    <span className="text-green-400 text-sm font-medium">
+                      {stay.currency === 'USD' ? '$' : stay.currency === 'EUR' ? '€' : '£'}{stay.pricePerNight}/night
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
