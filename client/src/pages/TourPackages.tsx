@@ -123,10 +123,12 @@ export default function TourPackages() {
 
   const getPackageTypeIcon = (type: string) => {
     switch (type) {
-      case 'adventure': return <Zap className="w-4 h-4" />;
+      case 'adventure': return <Plane className="w-4 h-4" />;
       case 'cultural': return <Camera className="w-4 h-4" />;
-      case 'luxury': return <Crown className="w-4 h-4" />;
-      case 'backpacker': return <Package className="w-4 h-4" />;
+      case 'luxury': return <Award className="w-4 h-4" />;
+      case 'wildlife': return <Shield className="w-4 h-4" />;
+      case 'beach': return <Utensils className="w-4 h-4" />;
+      case 'heritage': return <Package className="w-4 h-4" />;
       case 'family': return <Users className="w-4 h-4" />;
       case 'business': return <Building2 className="w-4 h-4" />;
       default: return <Globe className="w-4 h-4" />;
