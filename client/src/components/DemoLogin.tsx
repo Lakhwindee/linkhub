@@ -59,27 +59,27 @@ export function DemoLogin() {
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <Button 
               onClick={() => handleDemoLogin('publisher')} 
               disabled={isLoading}
-              className="w-full"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               size="lg"
-              variant={loginType === 'publisher' ? "default" : "default"}
+              variant="default"
             >
               <Briefcase className="w-5 h-5 mr-2" />
-              {isLoading && loginType === 'publisher' ? "Logging in..." : "Demo Login as Publisher"}
+              {isLoading && loginType === 'publisher' ? "Logging in..." : "🏢 Demo Login as Publisher (Role 2)"}
             </Button>
             
             <Button 
               onClick={() => handleDemoLogin('creator')} 
               disabled={isLoading}
-              className="w-full"
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
               size="lg"
-              variant={loginType === 'creator' ? "default" : "secondary"}
+              variant="default"
             >
               <Video className="w-5 h-5 mr-2" />
-              {isLoading && loginType === 'creator' ? "Logging in..." : "Demo Login as Creator"}
+              {isLoading && loginType === 'creator' ? "Logging in..." : "🎥 Demo Login as Creator (Role 1)"}
             </Button>
           </div>
           
