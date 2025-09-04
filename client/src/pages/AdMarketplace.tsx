@@ -59,6 +59,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   }, [userData?.youtubeUrl]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
@@ -200,9 +201,17 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         try {
           console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
           await syncYouTube.mutateAsync(youtubeUrl.trim());
+          
+          // Step 4: Show congratulations for 3 seconds
+          setIsVerifyingConnection(false);
+          setShowCongratulations(true);
+          
+          setTimeout(() => {
+            setShowCongratulations(false);
+          }, 3000); // 3 seconds congratulations
+          
         } catch (error) {
           console.error('Connect failed:', error);
-        } finally {
           setIsVerifyingConnection(false);
         }
       }, 5000); // 5 seconds verifying
@@ -466,6 +475,23 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </div>
             )}
             
+            {/* Congratulations Overlay */}
+            {showCongratulations && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+                    <CheckCircle className="w-10 h-10 text-white" />
+                  </div>
+                  <h3 className="text-3xl font-bold text-white mb-2 animate-pulse">
+                    🎉 Congratulations!
+                  </h3>
+                  <p className="text-green-200 animate-pulse text-lg">
+                    YouTube channel connected successfully!
+                  </p>
+                </div>
+              </div>
+            )}
+            
             {/* Connection Form */}
             <div className="space-y-4">
               <div className="bg-accent/10 p-4 rounded-lg">
@@ -503,7 +529,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
               <Button 
                 onClick={handleConnect}
-                disabled={isConnecting || isVerifyingConnection || !youtubeUrl.trim()}
+                disabled={isConnecting || isVerifyingConnection || showCongratulations || !youtubeUrl.trim()}
                 className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-500 ease-out transform ${isConnecting ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl hover:bg-red-400'}`}
               >
                 {isConnecting ? (
