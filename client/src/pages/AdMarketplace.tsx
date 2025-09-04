@@ -33,8 +33,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
   const syncYouTube = useMutation({
     mutationFn: async (url: string) => {
+      console.log('syncYouTube API call with URL:', url); // Debug log
+      const requestBody = { youtubeUrl: url };
+      console.log('Request body being sent:', requestBody); // Debug log
       const response = await apiRequest("POST", "/api/youtube/sync", {
-        body: JSON.stringify({ youtubeUrl: url }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
       return response.json();
     },

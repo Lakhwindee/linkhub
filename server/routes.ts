@@ -238,7 +238,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/youtube/sync', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log('Request body:', req.body); // Debug log
       const { youtubeUrl } = req.body;
+      console.log('Extracted youtubeUrl:', youtubeUrl); // Debug log
       
       if (!youtubeUrl) {
         return res.status(400).json({ message: "YouTube URL is required" });
