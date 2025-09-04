@@ -154,14 +154,14 @@ export default function Landing() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <Badge className="bg-accent/10 text-accent border-accent/20" data-testid="badge-hero-stats">
+                <Badge className="bg-accent/10 text-accent border-accent/20">
                   🌍 Connect with 1M+ travelers worldwide
                 </Badge>
-                <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight" data-testid="heading-hero">
+                <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
                   Your Global Travel
                   <span className="text-accent"> Community</span>
                 </h1>
-                <p className="text-xl text-muted-foreground leading-relaxed" data-testid="text-hero-description">
+                <p className="text-xl text-muted-foreground leading-relaxed">
                   Discover travelers near you, share your journey, and earn from brand collaborations. Join the world's most trusted travel network.
                 </p>
               </div>
@@ -170,17 +170,17 @@ export default function Landing() {
                 {!showLogin ? (
                   <>
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button size="lg" className="px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground" asChild data-testid="button-sign-up">
+                      <Button size="lg" className="px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
                         <a href="/document-signup">Sign Up Now</a>
                       </Button>
-                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={handleDemoLogin} data-testid="button-start-exploring">
+                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={handleDemoLogin}>
                         Try Demo (Free)
                       </Button>
-                      <Button size="lg" variant="ghost" className="px-8 py-4" onClick={() => setShowLogin(true)} data-testid="button-login">
+                      <Button size="lg" variant="ghost" className="px-8 py-4" onClick={() => setShowLogin(true)}>
                         Login
                       </Button>
                     </div>
-                    <p className="text-sm text-muted-foreground" data-testid="text-pricing-summary">
+                    <p className="text-sm text-muted-foreground">
                       Sign up with document verification • Try demo for free • Existing users login
                     </p>
                   </>
@@ -195,7 +195,6 @@ export default function Landing() {
                           placeholder="test"
                           value={username}
                           onChange={(e) => setUsername(e.target.value)}
-                          data-testid="input-username"
                         />
                       </div>
                       <div className="space-y-2">
@@ -206,14 +205,13 @@ export default function Landing() {
                           placeholder="password"
                           value={password}
                           onChange={(e) => setPassword(e.target.value)}
-                          data-testid="input-password"
                         />
                       </div>
                       <div className="flex gap-4">
-                        <Button type="submit" className="flex-1" data-testid="button-submit-login">
+                        <Button type="submit" className="flex-1">
                           Login
                         </Button>
-                        <Button type="button" variant="outline" onClick={() => setShowLogin(false)} data-testid="button-back">
+                        <Button type="button" variant="outline" onClick={() => setShowLogin(false)}>
                           Back
                         </Button>
                       </div>
@@ -227,15 +225,15 @@ export default function Landing() {
 
               <div className="flex items-center space-x-8">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground" data-testid="stat-travelers">50K+</div>
+                  <div className="text-2xl font-bold text-foreground" >50K+</div>
                   <div className="text-sm text-muted-foreground">Active Travelers</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground" data-testid="stat-countries">180+</div>
+                  <div className="text-2xl font-bold text-foreground" >180+</div>
                   <div className="text-sm text-muted-foreground">Countries</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground" data-testid="stat-earnings">£2M+</div>
+                  <div className="text-2xl font-bold text-foreground" >£2M+</div>
                   <div className="text-sm text-muted-foreground">Creator Earnings</div>
                 </div>
               </div>
@@ -246,8 +244,7 @@ export default function Landing() {
                 src="https://images.unsplash.com/photo-1519302959554-a75be0afc82a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
                 alt="World map with location pins" 
                 className="rounded-2xl shadow-2xl w-full h-auto"
-                data-testid="img-hero-map"
-              />
+                              />
               
               <div className="absolute top-4 right-4 bg-card border border-border rounded-xl p-4 shadow-lg glass-effect animate-bounce-slow">
                 <div className="flex items-center space-x-3">
@@ -281,33 +278,32 @@ export default function Landing() {
       <section id="features" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="heading-features">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground" >
               Everything You Need
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-features-description">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" >
               From discovering travelers nearby to earning from brand collaborations
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="travel-card" data-testid={`card-feature-${index}`}>
+              <Card key={index} className="travel-card">
                 <img 
                   src={feature.image} 
                   alt={feature.title}
                   className="rounded-t-xl w-full h-48 object-cover"
-                  data-testid={`img-feature-${index}`}
-                />
+                                 />
                 <CardContent className="p-6 space-y-3">
                   <div className="flex items-center space-x-2">
                     <div className="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
                       <feature.icon className="w-4 h-4 text-accent" />
                     </div>
-                    <h3 className="text-lg font-semibold text-card-foreground" data-testid={`heading-feature-${index}`}>
+                    <h3 className="text-lg font-semibold text-card-foreground">
                       {feature.title}
                     </h3>
                   </div>
-                  <p className="text-muted-foreground" data-testid={`text-feature-description-${index}`}>
+                  <p className="text-muted-foreground">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -321,32 +317,31 @@ export default function Landing() {
       <section id="how-it-works" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="heading-how-it-works">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground" >
               How Creators Earn
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-how-it-works-description">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" >
               Simple steps to start earning from brand collaborations
             </p>
           </div>
 
           <div className="grid lg:grid-cols-4 gap-8">
             {howItWorks.map((step, index) => (
-              <div key={index} className="text-center space-y-4" data-testid={`div-step-${index}`}>
+              <div key={index} className="text-center space-y-4" >
                 <img 
                   src={step.image} 
                   alt={step.title}
                   className="rounded-xl w-full h-48 object-cover mx-auto"
-                  data-testid={`img-step-${index}`}
-                />
+                                  />
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center mx-auto">
-                  <span className="text-xl font-bold text-accent-foreground" data-testid={`text-step-number-${index}`}>
+                  <span className="text-xl font-bold text-accent-foreground" >
                     {step.step}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground" data-testid={`heading-step-${index}`}>
+                <h3 className="text-lg font-semibold text-foreground" >
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground" data-testid={`text-step-description-${index}`}>
+                <p className="text-muted-foreground" >
                   {step.description}
                 </p>
               </div>
@@ -359,17 +354,17 @@ export default function Landing() {
       <section id="pricing" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="heading-pricing">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground" >
               Choose Your Plan
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-pricing-description">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" >
               Start free and upgrade as you grow your travel network
             </p>
           </div>
 
           <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-accent' : ''}`} data-testid={`card-plan-${index}`}>
+              <Card key={index} className={`relative ${plan.popular ? 'border-accent' : ''}`} >
                 {plan.popular && (
                   <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 text-xs font-medium rounded-full">
                     Most Popular
@@ -377,18 +372,18 @@ export default function Landing() {
                 )}
                 <CardContent className="p-8 space-y-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-card-foreground" data-testid={`heading-plan-${index}`}>
+                    <h3 className="text-xl font-semibold text-card-foreground" >
                       {plan.name}
                     </h3>
-                    <p className="text-muted-foreground" data-testid={`text-plan-description-${index}`}>
+                    <p className="text-muted-foreground" >
                       {plan.description}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <div className="text-3xl font-bold text-card-foreground" data-testid={`text-plan-price-${index}`}>
+                    <div className="text-3xl font-bold text-card-foreground" >
                       {plan.price}
                     </div>
-                    <div className="text-sm text-muted-foreground" data-testid={`text-plan-period-${index}`}>
+                    <div className="text-sm text-muted-foreground" >
                       {plan.period}
                     </div>
                   </div>
@@ -396,21 +391,20 @@ export default function Landing() {
                     className={`w-full ${plan.popular ? 'bg-accent hover:bg-accent/90' : ''}`}
                     variant={plan.popular ? "default" : "outline"}
                     asChild
-                    data-testid={`button-plan-${index}`}
-                  >
+                                      >
                     <a href="/document-signup">
                       {plan.name === 'Free' ? 'Sign Up' : 'Start Free Trial'}
                     </a>
                   </Button>
                   <div className="space-y-3">
                     {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center space-x-3" data-testid={`div-plan-feature-${index}-${featureIndex}`}>
+                      <div key={featureIndex} className="flex items-center space-x-3" >
                         <CheckIcon className="w-5 h-5 text-accent" />
                         <span className="text-card-foreground">{feature}</span>
                       </div>
                     ))}
                     {plan.limitations?.map((limitation, limitIndex) => (
-                      <div key={limitIndex} className="flex items-center space-x-3 opacity-50" data-testid={`div-plan-limitation-${index}-${limitIndex}`}>
+                      <div key={limitIndex} className="flex items-center space-x-3 opacity-50" >
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                         </svg>
@@ -429,10 +423,10 @@ export default function Landing() {
       <section id="community" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground" data-testid="heading-community">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground" >
               Join Our Global Community
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-community-description">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto" >
               Connect with travelers from around the world
             </p>
           </div>
@@ -444,8 +438,7 @@ export default function Landing() {
                 src={image} 
                 alt={`Travel destination ${index + 1}`}
                 className="rounded-xl travel-card h-48 w-full object-cover"
-                data-testid={`img-destination-${index}`}
-              />
+                              />
             ))}
           </div>
 
@@ -453,24 +446,24 @@ export default function Landing() {
             <div className="space-y-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground" data-testid="stat-community-countries">180+</div>
+                  <div className="text-3xl font-bold text-foreground" >180+</div>
                   <div className="text-muted-foreground">Countries</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground" data-testid="stat-community-users">50K+</div>
+                  <div className="text-3xl font-bold text-foreground" >50K+</div>
                   <div className="text-muted-foreground">Active Users</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground" data-testid="stat-community-connections">1M+</div>
+                  <div className="text-3xl font-bold text-foreground" >1M+</div>
                   <div className="text-muted-foreground">Connections Made</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground" data-testid="stat-community-earnings">£2M+</div>
+                  <div className="text-3xl font-bold text-foreground" >£2M+</div>
                   <div className="text-muted-foreground">Creator Earnings</div>
                 </div>
               </div>
 
-              <Button size="lg" className="px-8 py-4" asChild data-testid="button-join-hublink">
+              <Button size="lg" className="px-8 py-4" asChild >
                 <a href="/document-signup">Join HubLink Today</a>
               </Button>
             </div>
