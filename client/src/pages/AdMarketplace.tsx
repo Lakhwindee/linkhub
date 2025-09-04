@@ -20,14 +20,35 @@ import type { Ad, AdReservation } from "@shared/schema";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
+  // Fetch real user data from backend with YouTube info
+  const { data: realUserData } = useQuery({
+    queryKey: ["/api/auth/user"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/auth/user");
+      return response.json();
+    },
+    staleTime: 0, // Always fetch fresh data
+    enabled: !!user?.id, // Only fetch when user is authenticated
+  });
+
+  // Use real user data if available, fallback to auth user
+  const userData = realUserData || user;
+  
   // For demo user, check if they have been disconnected
   const isDemoUser = user?.id === 'demo-user-1';
   const [demoDisconnected, setDemoDisconnected] = useState(() => {
     // Initialize from localStorage for demo user
     return isDemoUser ? localStorage.getItem('demo_youtube_disconnected') === 'true' : false;
   });
-  const isYouTubeVerified = isDemoUser ? !demoDisconnected : user?.youtubeVerified;
-  const [youtubeUrl, setYoutubeUrl] = useState(user?.youtubeUrl || '');
+  const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
+  const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
+
+  // Update YouTube URL when real user data loads
+  useEffect(() => {
+    if (userData?.youtubeUrl) {
+      setYoutubeUrl(userData.youtubeUrl);
+    }
+  }, [userData?.youtubeUrl]);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
@@ -177,7 +198,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   };
 
   const copyVerificationCode = () => {
-    const code = user?.youtubeVerificationCode || verificationCode;
+    const code = userData?.youtubeVerificationCode || verificationCode;
     navigator.clipboard.writeText(code);
     toast({
       title: "Copied!",
@@ -194,7 +215,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   };
 
-  const tierInfo = getTierInfo(user?.youtubeTier || 0);
+  const tierInfo = getTierInfo(userData?.youtubeTier || 0);
 
   return (
     <Card>
@@ -205,7 +226,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {(user?.youtubeChannelId || isDemoUser) && !demoDisconnected ? (
+        {(userData?.youtubeChannelId || isDemoUser) && !demoDisconnected ? (
           <>
             {isYouTubeVerified ? (
               <>
@@ -222,7 +243,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-green-800">
-                      {user.youtubeSubscribers?.toLocaleString() || '0'}
+                      {userData.youtubeSubscribers?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-green-600">subscribers</p>
                   </div>
@@ -238,7 +259,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     </div>
                   </div>
                   <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
-                    Tier {user.youtubeTier || 1}
+                    Tier {userData.youtubeTier || 1}
                   </Badge>
                 </div>
 
@@ -270,7 +291,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-yellow-800">
-                      {user.youtubeSubscribers?.toLocaleString() || '0'}
+                      {userData.youtubeSubscribers?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-yellow-600">subscribers</p>
                   </div>
