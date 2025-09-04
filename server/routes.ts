@@ -414,6 +414,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // YouTube disconnect route
+  app.post('/api/youtube/disconnect', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // For demo user, don't actually disconnect
+      if (userId === 'demo-user-1') {
+        return res.status(400).json({ message: "Demo user cannot disconnect YouTube channel" });
+      }
+      
+      // Clear all YouTube-related data from user profile
+      const updatedUser = await storage.updateUserProfile(userId, {
+        youtubeUrl: null,
+        youtubeChannelId: null,
+        youtubeSubscribers: null,
+        youtubeTier: null,
+        youtubeVerified: false,
+        youtubeVerificationCode: null,
+        youtubeVerificationAttempts: 0,
+        youtubeLastUpdated: null,
+      });
+      
+      res.json({ 
+        message: "YouTube channel successfully disconnected",
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error("Error disconnecting YouTube channel:", error);
+      res.status(500).json({ message: "Failed to disconnect YouTube channel" });
+    }
+  });
+
   // Discovery routes
   app.get('/api/discover', async (req, res) => {
     try {

@@ -75,6 +75,27 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     },
   });
 
+  const disconnectYouTube = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/youtube/disconnect");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Channel Disconnected",
+        description: "YouTube channel successfully disconnected from your account",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Disconnect Failed",
+        description: error.message || "Failed to disconnect YouTube channel",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleConnect = async () => {
     if (!youtubeUrl.trim()) {
       toast({
@@ -99,6 +120,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       await verifyChannel.mutateAsync();
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handleDisconnect = () => {
+    if (confirm("Are you sure you want to disconnect your YouTube channel? This will remove access to all earning campaigns.")) {
+      disconnectYouTube.mutate();
     }
   };
 
@@ -194,6 +221,20 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Disconnect Option */}
+                {!isDemoUser && (
+                  <div className="pt-4 border-t">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={handleDisconnect}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      Disconnect YouTube Channel
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <>
