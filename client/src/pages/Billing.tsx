@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, Crown, Star, Heart } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
-import type { Subscription, Invoice, Wallet, Payout } from "@shared/schema";
+import type { Subscription, Invoice } from "@shared/schema";
 
 export default function Billing() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -37,12 +37,6 @@ export default function Billing() {
     retry: false,
   });
 
-  // Fetch wallet data for creators
-  const { data: walletData, isLoading: walletLoading } = useQuery({
-    queryKey: ["/api/wallet"],
-    enabled: user?.plan === 'creator',
-    retry: false,
-  });
 
   if (isLoading) {
     return (
@@ -233,46 +227,6 @@ export default function Billing() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Creator Earnings (if applicable) */}
-            {user.plan === 'creator' && (
-              <Card className="border-chart-2" data-testid="card-creator-earnings">
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <DollarSign className="w-5 h-5 text-chart-2" />
-                    <span>Creator Earnings</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {walletLoading ? (
-                    <div className="space-y-3">
-                      <div className="animate-pulse h-8 bg-muted rounded w-20"></div>
-                      <div className="animate-pulse h-4 bg-muted rounded w-32"></div>
-                    </div>
-                  ) : (
-                    <>
-                      <div>
-                        <div className="text-3xl font-bold text-foreground" data-testid="text-wallet-balance">
-                          £{walletData?.wallet ? (walletData.wallet.balanceMinor / 100).toFixed(2) : '0.00'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">Available balance</div>
-                      </div>
-                      
-                      <Button 
-                        className="w-full bg-chart-2 hover:bg-chart-2/90"
-                        disabled={!walletData?.wallet || walletData.wallet.balanceMinor < 1000} // Min £10
-                        data-testid="button-request-payout"
-                      >
-                        Request Payout
-                      </Button>
-                      
-                      <p className="text-xs text-muted-foreground">
-                        Minimum payout: £10.00
-                      </p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )}
 
             {/* Payment Method */}
             <Card data-testid="card-payment-method">

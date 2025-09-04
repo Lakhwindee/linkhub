@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
-  Lock, Zap, Target, BarChart3, CreditCard, CheckCircle
+  Lock, Zap, Target, BarChart3, CreditCard, CheckCircle,
+  Plus, MapPin, Users, Calendar, Building, User
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -194,55 +196,207 @@ export default function Ads() {
               </div>
             </TabsContent>
 
-            <TabsContent value="analytics">
+            <TabsContent value="analytics" className="space-y-6">
+              {/* Campaign Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Reserved</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">5</div>
+                    <p className="text-xs text-muted-foreground">Awaiting start</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Active</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{stats.activeCampaigns}</div>
+                    <p className="text-xs text-muted-foreground">In progress</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{stats.completedCampaigns}</div>
+                    <p className="text-xs text-muted-foreground">Successfully finished</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total Earned</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">${earnings.lifetime}</div>
+                    <p className="text-xs text-muted-foreground">All time earnings</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Campaign History */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="w-5 h-5" />
-                    Performance Analytics
+                    Recent Campaign Activity
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold">{stats.totalCampaigns}</div>
-                      <div className="text-sm text-muted-foreground">Total Campaigns</div>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">Visit Dubai Tourism - Desert Campaign</div>
+                        <div className="text-sm text-muted-foreground">Completed • Dec 15, 2024</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-green-600">$250.00</div>
+                        <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{stats.activeCampaigns}</div>
-                      <div className="text-sm text-muted-foreground">Active</div>
+                    
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">GoPro Adventure Challenge</div>
+                        <div className="text-sm text-muted-foreground">In Progress • Started Dec 20, 2024</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-blue-600">$400.00</div>
+                        <Badge className="bg-blue-100 text-blue-800">Active</Badge>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">{stats.completedCampaigns}</div>
-                      <div className="text-sm text-muted-foreground">Completed</div>
+                    
+                    <div className="flex justify-between items-center p-3 border rounded-lg">
+                      <div>
+                        <div className="font-medium">Airbnb Plus Unique Stays</div>
+                        <div className="text-sm text-muted-foreground">Reserved • Starts Jan 5, 2025</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-orange-600">$300.00</div>
+                        <Badge className="bg-orange-100 text-orange-800">Reserved</Badge>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-2xl font-bold text-purple-600">{stats.approvalRate}%</div>
-                      <div className="text-sm text-muted-foreground">Approval Rate</div>
-                    </div>
-                  </div>
-                  <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
-                    <p className="text-muted-foreground">Detailed analytics charts coming soon...</p>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            <TabsContent value="payouts">
+            <TabsContent value="payouts" className="space-y-6">
+              {/* Available Balance */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    Payout Management
+                    <DollarSign className="w-5 h-5 text-green-600" />
+                    Available Balance
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-muted-foreground mb-4">No pending payouts</p>
-                    <Button disabled>Request Payout</Button>
+                  <div className="text-center py-4">
+                    <div className="text-4xl font-bold text-green-600 mb-2">$1,250.00</div>
+                    <p className="text-muted-foreground mb-4">Ready for payout</p>
+                    <Button className="bg-green-600 hover:bg-green-700">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Request Payout
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">Minimum payout: $50.00</p>
                   </div>
                 </CardContent>
               </Card>
+
+              <div className="grid lg:grid-cols-2 gap-6">
+                {/* Bank Account Setup */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Building className="w-5 h-5" />
+                      Bank Account Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Account Holder Name</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border rounded-lg bg-background" 
+                          placeholder="John Doe"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Bank Name</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border rounded-lg bg-background" 
+                          placeholder="HSBC Bank"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Account Number</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border rounded-lg bg-background" 
+                          placeholder="12345678"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Sort Code</label>
+                        <input 
+                          type="text" 
+                          className="w-full p-2 border rounded-lg bg-background" 
+                          placeholder="12-34-56"
+                        />
+                      </div>
+                    </div>
+                    <Button className="w-full" variant="outline">
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Save Bank Details
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Payout History */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5" />
+                      Payout History
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">$850.00</div>
+                          <div className="text-sm text-muted-foreground">Dec 1, 2024</div>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">$650.00</div>
+                          <div className="text-sm text-muted-foreground">Nov 15, 2024</div>
+                        </div>
+                        <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 border rounded-lg">
+                        <div>
+                          <div className="font-medium">$450.00</div>
+                          <div className="text-sm text-muted-foreground">Nov 1, 2024</div>
+                        </div>
+                        <Badge className="bg-orange-100 text-orange-800">Pending</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="campaigns">
