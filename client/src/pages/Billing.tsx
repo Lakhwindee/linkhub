@@ -7,10 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, Crown, Star, Heart } from "lucide-react";
+import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, Crown, Star, Heart, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
-import type { Subscription, Invoice } from "@shared/schema";
+import type { Subscription, Invoice, Payout } from "@shared/schema";
+
+interface WalletData {
+  payouts: Payout[];
+  balance?: number;
+}
 
 export default function Billing() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -34,6 +39,13 @@ export default function Billing() {
   // Fetch billing data
   const { data: billingData, isLoading: billingLoading } = useQuery({
     queryKey: ["/api/billing"],
+    retry: false,
+  });
+
+  // Fetch wallet data for creators
+  const { data: walletData, isLoading: walletLoading } = useQuery<WalletData>({
+    queryKey: ["/api/wallet"],
+    enabled: user?.plan === 'creator',
     retry: false,
   });
 
