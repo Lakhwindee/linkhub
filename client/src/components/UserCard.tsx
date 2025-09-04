@@ -161,7 +161,6 @@ export function UserCard({ user, detailed = false, showConnectButton = true }: U
               size="sm"
             />
           </div>
-          </div>
         </div>
       </CardHeader>
 

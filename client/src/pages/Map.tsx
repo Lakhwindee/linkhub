@@ -58,8 +58,8 @@ export default function Map() {
     return true;
   });
 
-  const globeWidth = isFullscreen ? window.innerWidth - 100 : 800;
-  const globeHeight = isFullscreen ? window.innerHeight - 200 : 600;
+  const globeWidth = isFullscreen ? window.innerWidth - 100 : 1200;
+  const globeHeight = isFullscreen ? window.innerHeight - 200 : 800;
 
   if (isLoading) {
     return (
@@ -180,9 +180,9 @@ export default function Map() {
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="grid lg:grid-cols-6 gap-6">
           {/* Map */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-5">
             <Card data-testid="card-3d-globe">
               <CardContent className="p-0">
                 {isFullscreen ? (
@@ -205,7 +205,7 @@ export default function Map() {
                         onUserClick={handleUserClick}
                         onStayClick={handleStayClick}
                         selectedCountry={selectedCountry}
-                        selectedCity={selectedCity}
+                        selectedState={selectedCity}
                       />
                     </div>
                   </div>
@@ -218,7 +218,7 @@ export default function Map() {
                       onUserClick={handleUserClick}
                       onStayClick={handleStayClick}
                       selectedCountry={selectedCountry}
-                      selectedCity={selectedCity}
+                      selectedState={selectedCity}
                     />
                   </div>
                 )}
