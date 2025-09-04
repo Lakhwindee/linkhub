@@ -20,6 +20,9 @@ import type { Ad, AdReservation } from "@shared/schema";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
+  // For demo user, always show as verified
+  const isDemoUser = user?.id === 'demo-user-1';
+  const isYouTubeVerified = isDemoUser || user?.youtubeVerified;
   const [youtubeUrl, setYoutubeUrl] = useState(user?.youtubeUrl || '');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -117,7 +120,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   };
 
-  const tierInfo = getTierInfo(user?.youtubeTier || 0);
+  const tierInfo = getTierInfo(isDemoUser ? 2 : (user?.youtubeTier || 0));
 
   return (
     <Card>
@@ -128,9 +131,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {user?.youtubeChannelId ? (
+        {user?.youtubeChannelId || isDemoUser ? (
           <>
-            {user?.youtubeVerified ? (
+            {isYouTubeVerified ? (
               <>
                 {/* Verified Status */}
                 <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
@@ -145,7 +148,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-green-800">
-                      {user.youtubeSubscribers?.toLocaleString() || '0'}
+                      {isDemoUser ? '45,000' : (user.youtubeSubscribers?.toLocaleString() || '0')}
                     </p>
                     <p className="text-sm text-green-600">subscribers</p>
                   </div>
@@ -161,7 +164,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     </div>
                   </div>
                   <Badge variant="secondary" className="bg-accent/20 text-accent-foreground">
-                    Tier {user.youtubeTier || 1}
+                    Tier {isDemoUser ? 2 : (user.youtubeTier || 1)}
                   </Badge>
                 </div>
 
@@ -174,7 +177,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                         <p className="font-semibold">Earning Potential</p>
                       </div>
                       <p className="text-2xl font-bold text-accent">
-                        £{user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360'}
+                        £{isDemoUser ? '240' : (user.youtubeTier === 1 ? '120' : user.youtubeTier === 2 ? '240' : '360')}
                       </p>
                       <p className="text-sm text-muted-foreground">per campaign</p>
                     </CardContent>
@@ -186,7 +189,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                         <Play className="w-4 h-4 text-accent" />
                         <p className="font-semibold">Available Campaigns</p>
                       </div>
-                      <p className="text-2xl font-bold text-accent">{user.youtubeTier || 1}</p>
+                      <p className="text-2xl font-bold text-accent">{isDemoUser ? '18' : (user.youtubeTier || 1)}</p>
                       <p className="text-sm text-muted-foreground">matching your tier</p>
                     </CardContent>
                   </Card>
