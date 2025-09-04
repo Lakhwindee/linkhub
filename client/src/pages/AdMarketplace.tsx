@@ -20,14 +20,17 @@ import type { Ad, AdReservation } from "@shared/schema";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
-  // Fetch real user data from backend with YouTube info
-  const { data: realUserData } = useQuery({
+  // Fetch real user data from backend with YouTube info - aggressive cache invalidation
+  const { data: realUserData, refetch: refetchUser } = useQuery({
     queryKey: ["/api/auth/user"],
     queryFn: async () => {
       const response = await apiRequest("GET", "/api/auth/user");
       return response.json();
     },
     staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache at all
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     enabled: !!user?.id, // Only fetch when user is authenticated
   });
 
@@ -73,10 +76,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         localStorage.removeItem('demo_youtube_disconnected');
       }
       toast({
-        title: "YouTube Channel Connected!",
-        description: `${data.subscriberCount.toLocaleString()} subscribers detected. Now verify ownership.`,
+        title: "🎉 YouTube Channel Connected!",
+        description: `${data.subscriberCount.toLocaleString()} subscribers • Tier ${data.tier} Creator`,
       });
+      // Force immediate data refresh
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setTimeout(() => refetchUser(), 100);
     },
     onError: (error: any) => {
       toast({
