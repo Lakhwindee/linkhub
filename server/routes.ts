@@ -1063,7 +1063,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Ad marketplace routes
   app.get('/api/ads', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // For demo user, always show test campaigns
+      if (userId === 'demo-user-1') {
+        const ads = await storage.getAds();
+        return res.json(ads);
+      }
+      
       if (user?.plan !== 'creator') {
         return res.status(403).json({ message: "Creator plan required" });
       }
