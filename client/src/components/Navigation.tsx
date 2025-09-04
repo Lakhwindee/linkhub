@@ -77,8 +77,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   // Navigation items based on user role
   let navItems = [];
   
-  if (user?.role === 'publisher') {
-    // Publisher role only sees these 4 menus
+  if (user?.role === '2' || user?.role === 'publisher') {
+    // Publisher role (role 2) only sees these 4 menus
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
