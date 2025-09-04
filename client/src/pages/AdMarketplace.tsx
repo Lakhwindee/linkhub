@@ -124,6 +124,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   };
 
   const handleDisconnect = () => {
+    if (isDemoUser) {
+      toast({
+        title: "Demo Protection",
+        description: "Demo user cannot disconnect YouTube channel. This button shows how disconnect works for real users.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (confirm("Are you sure you want to disconnect your YouTube channel? This will remove access to all earning campaigns.")) {
       disconnectYouTube.mutate();
     }
@@ -223,18 +232,16 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                 </div>
 
                 {/* Disconnect Option */}
-                {!isDemoUser && (
-                  <div className="pt-4 border-t">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={handleDisconnect}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      Disconnect YouTube Channel
-                    </Button>
-                  </div>
-                )}
+                <div className="pt-4 border-t">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleDisconnect}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {isDemoUser ? "Disconnect YouTube Channel (Demo)" : "Disconnect YouTube Channel"}
+                  </Button>
+                </div>
               </>
             ) : (
               <>
