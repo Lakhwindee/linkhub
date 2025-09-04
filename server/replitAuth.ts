@@ -133,7 +133,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     // Check session cookie to determine which demo user to use
     const sessionId = req.cookies?.session_id;
     
-    console.log('Session ID found:', sessionId); // Debug log
+    console.log('🔍 Session ID found:', sessionId, 'from cookies:', Object.keys(req.cookies || {})); // Debug log
     
     if (sessionId === 'demo-publisher-session') {
       req.user = {
