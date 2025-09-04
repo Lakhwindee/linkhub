@@ -96,10 +96,6 @@ export default function Ads() {
     );
   }
 
-  const isPremium = user.plan === 'creator';
-  const isStandard = user.plan === 'traveler'; 
-  const isFree = user.plan === 'free';
-
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
