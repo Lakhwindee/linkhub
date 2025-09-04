@@ -1193,38 +1193,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Fresh verification check - ensure code still exists in channel description
-      try {
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
-        );
+      // Fresh verification check - only for regular users (NOT demo user)
+      if (userId !== 'demo-user-1') {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
+          );
 
-        if (!response.ok) {
-          return res.status(400).json({ message: "Cannot verify channel ownership - please re-verify your channel" });
-        }
+          if (!response.ok) {
+            return res.status(400).json({ message: "Cannot verify channel ownership - please re-verify your channel" });
+          }
 
-        const data = await response.json();
-        if (!data.items || data.items.length === 0) {
-          return res.status(400).json({ message: "Channel not found - please re-verify your channel" });
-        }
+          const data = await response.json();
+          if (!data.items || data.items.length === 0) {
+            return res.status(400).json({ message: "Channel not found - please re-verify your channel" });
+          }
 
-        const channelDescription = data.items[0].snippet.description || '';
-        
-        // Check if verification code still exists in channel description
-        if (!channelDescription.includes(user.youtubeVerificationCode)) {
-          // Mark user as unverified and prevent campaign access
-          await storage.updateUserProfile(userId, {
-            youtubeVerified: false
-          });
+          const channelDescription = data.items[0].snippet.description || '';
           
-          return res.status(403).json({ 
-            message: "Channel verification expired. Verification code no longer found in channel description. Please re-verify your channel.",
-            requiresReVerification: true 
-          });
+          // Check if verification code still exists in channel description
+          if (!channelDescription.includes(user.youtubeVerificationCode)) {
+            // Mark user as unverified and prevent campaign access
+            await storage.updateUserProfile(userId, {
+              youtubeVerified: false
+            });
+            
+            return res.status(403).json({ 
+              message: "Channel verification expired. Verification code no longer found in channel description. Please re-verify your channel.",
+              requiresReVerification: true 
+            });
+          }
+        } catch (verifyError) {
+          console.error("Error during campaign verification check:", verifyError);
+          return res.status(500).json({ message: "Unable to verify channel ownership. Please try again." });
         }
-      } catch (verifyError) {
-        console.error("Error during campaign verification check:", verifyError);
-        return res.status(500).json({ message: "Unable to verify channel ownership. Please try again." });
+      } else {
+        console.log('Demo user - skipping fresh verification check');
       }
       
       const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
@@ -1272,38 +1276,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Fresh verification check - ensure code still exists in channel description
-      try {
-        const response = await fetch(
-          `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
-        );
+      // Fresh verification check - only for regular users (NOT demo user)
+      if (userId !== 'demo-user-1') {
+        try {
+          const response = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
+          );
 
-        if (!response.ok) {
-          return res.status(400).json({ message: "Cannot verify channel ownership - please re-verify your channel" });
-        }
+          if (!response.ok) {
+            return res.status(400).json({ message: "Cannot verify channel ownership - please re-verify your channel" });
+          }
 
-        const data = await response.json();
-        if (!data.items || data.items.length === 0) {
-          return res.status(400).json({ message: "Channel not found - please re-verify your channel" });
-        }
+          const data = await response.json();
+          if (!data.items || data.items.length === 0) {
+            return res.status(400).json({ message: "Channel not found - please re-verify your channel" });
+          }
 
-        const channelDescription = data.items[0].snippet.description || '';
-        
-        // Check if verification code still exists in channel description
-        if (!channelDescription.includes(user.youtubeVerificationCode)) {
-          // Mark user as unverified and prevent campaign access
-          await storage.updateUserProfile(userId, {
-            youtubeVerified: false
-          });
+          const channelDescription = data.items[0].snippet.description || '';
           
-          return res.status(403).json({ 
-            message: "Channel verification expired. Verification code no longer found in channel description. Please re-verify your channel.",
-            requiresReVerification: true 
-          });
+          // Check if verification code still exists in channel description
+          if (!channelDescription.includes(user.youtubeVerificationCode)) {
+            // Mark user as unverified and prevent campaign access
+            await storage.updateUserProfile(userId, {
+              youtubeVerified: false
+            });
+            
+            return res.status(403).json({ 
+              message: "Channel verification expired. Verification code no longer found in channel description. Please re-verify your channel.",
+              requiresReVerification: true 
+            });
+          }
+        } catch (verifyError) {
+          console.error("Error during submission verification check:", verifyError);
+          return res.status(500).json({ message: "Unable to verify channel ownership. Please try again." });
         }
-      } catch (verifyError) {
-        console.error("Error during submission verification check:", verifyError);
-        return res.status(500).json({ message: "Unable to verify channel ownership. Please try again." });
+      } else {
+        console.log('Demo user - skipping fresh submission verification check');
       }
       
       // Find active reservation
