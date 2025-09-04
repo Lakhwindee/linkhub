@@ -5,22 +5,16 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check localStorage for demo auth in both development and production
-    // This allows logout to work properly
+    // Check localStorage for demo auth
     const demoUser = localStorage.getItem('hublink_demo_user');
     
-    if (process.env.NODE_ENV === 'development') {
-      // In development, auto-login only if not explicitly logged out
-      if (demoUser !== 'false') {
-        localStorage.setItem('hublink_demo_user', 'true');
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+    // Simple check: if localStorage has 'true', user is authenticated
+    if (demoUser === 'true') {
+      setIsAuthenticated(true);
     } else {
-      // In production, only login if explicitly set to true
-      setIsAuthenticated(demoUser === 'true');
+      setIsAuthenticated(false);
     }
+    
     setIsLoading(false);
   }, []);
 

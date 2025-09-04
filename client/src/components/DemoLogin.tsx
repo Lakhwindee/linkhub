@@ -18,6 +18,8 @@ export function DemoLogin() {
       });
       
       if (response.ok) {
+        // Set localStorage for frontend authentication
+        localStorage.setItem('hublink_demo_user', 'true');
         // Refresh page to activate demo session
         window.location.reload();
       } else {

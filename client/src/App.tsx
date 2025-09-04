@@ -38,8 +38,8 @@ function Router() {
     );
   }
 
-  // Show demo login if not authenticated and in development
-  if (!isAuthenticated && process.env.NODE_ENV === 'development') {
+  // Show demo login if not authenticated
+  if (!isAuthenticated) {
     return <DemoLogin />;
   }
 
