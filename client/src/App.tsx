@@ -12,7 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import DiscoverTravelers from "@/pages/DiscoverTravelers";
 import Profile from "@/pages/Profile";
 import Feed from "@/pages/Feed";
-import AdsWrapper from "@/pages/AdsWrapper";
+import Ads from "@/pages/Ads";
 import Messages from "@/pages/Messages";
 import Admin from "@/pages/Admin";
 import Subscribe from "@/pages/Subscribe";
@@ -71,7 +71,7 @@ function Router() {
               <Route path="/tour-packages" component={TourPackages} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
-              <Route path="/ads" component={AdsWrapper} />
+              <Route path="/ads" component={Ads} />
               <Route path="/messages" component={Messages} />
               <Route path="/admin" component={Admin} />
               <Route path="/subscribe" component={Subscribe} />

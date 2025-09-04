@@ -1,0 +1,387 @@
+import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { 
+  DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
+  Lock, Zap, Target, BarChart3, CreditCard, CheckCircle
+} from "lucide-react";
+import { Link } from "wouter";
+
+export default function Ads() {
+  const { user, isAuthenticated } = useAuth();
+  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+
+  // Mock campaign data
+  const campaigns = [
+    {
+      id: "campaign-1",
+      brand: "Visit Dubai Tourism",
+      title: "Luxury Desert Experience Campaign",
+      description: "Promote Dubai's premium desert safari and luxury camp experience",
+      budget: "$2,500",
+      payPerPost: "$150-250",
+      requirements: "10k+ followers, Travel content, English speaking",
+      deadline: "Dec 15, 2024",
+      spots: "15 spots available",
+      category: "Travel & Tourism",
+      tags: ["luxury", "desert", "dubai", "experience"],
+      restricted: user?.plan !== 'creator'
+    },
+    {
+      id: "campaign-2", 
+      brand: "Airbnb Plus",
+      title: "Unique Stays Content Series",
+      description: "Showcase unique accommodations and local experiences",
+      budget: "$3,000",
+      payPerPost: "$200-350",
+      requirements: "5k+ followers, Photography skills, Any language",
+      deadline: "Jan 20, 2025",
+      spots: "8 spots available",
+      category: "Accommodation",
+      tags: ["stays", "unique", "local", "photography"],
+      restricted: user?.plan !== 'creator'
+    },
+    {
+      id: "campaign-3",
+      brand: "GoPro Adventure",
+      title: "Action Travel Content Challenge",
+      description: "Create epic adventure travel content using GoPro cameras",
+      budget: "$5,000",
+      payPerPost: "$300-500",
+      requirements: "15k+ followers, Action/Adventure content, Equipment provided",
+      deadline: "Feb 10, 2025",
+      spots: "5 spots available",
+      category: "Adventure Sports",
+      tags: ["action", "adventure", "gopro", "equipment"],
+      restricted: user?.plan !== 'creator'
+    }
+  ];
+
+  const earnings = {
+    thisMonth: 1250,
+    lastMonth: 980,
+    pending: 450,
+    lifetime: 8900
+  };
+
+  const stats = {
+    totalCampaigns: 12,
+    activeCampaigns: 3,
+    completedCampaigns: 9,
+    approvalRate: 87
+  };
+
+  if (!isAuthenticated || !user) {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center space-y-4 py-20">
+            <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
+            <h1 className="text-2xl font-bold">Sign in to access Earn features</h1>
+            <p className="text-muted-foreground">Connect with brands and monetize your travel content</p>
+            <Button asChild>
+              <Link href="/professional-signup">Get Started</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isPremium = user.plan === 'creator';
+  const isStandard = user.plan === 'traveler'; 
+  const isFree = user.plan === 'free';
+
+  return (
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              <DollarSign className="w-8 h-8 text-green-600" />
+              Earn with Travel Content
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Connect with brands and monetize your travel experiences
+            </p>
+          </div>
+          
+          {/* Plan Status Badge */}
+          <div className="flex items-center gap-3">
+            <Badge variant={isPremium ? "default" : isStandard ? "secondary" : "outline"} className="text-sm">
+              {isPremium && <Crown className="w-4 h-4 mr-1" />}
+              {user.plan === 'free' ? 'Free Plan' : user.plan === 'traveler' ? 'Standard Plan' : 'Premium Earner'}
+            </Badge>
+            {!isPremium && (
+              <Button asChild size="sm">
+                <Link href="/subscribe">Upgrade to Premium</Link>
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Restriction Alert for Non-Premium Users */}
+        {!isPremium && (
+          <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950/10">
+            <Lock className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800 dark:text-orange-200">
+              {isFree && (
+                <>You're on the Free plan. Upgrade to <strong>Standard ($25/mo)</strong> to view campaigns or <strong>Premium Earner ($45/mo)</strong> to apply and earn.</>
+              )}
+              {isStandard && (
+                <>You're on the Standard plan. You can view campaigns but need <strong>Premium Earner ($45/mo)</strong> to apply and start earning. <Link href="/subscribe" className="underline font-medium">Upgrade now</Link></>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {isPremium && (
+          <Tabs defaultValue="campaigns" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+              <TabsTrigger value="earnings">Earnings</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="payouts">Payouts</TabsTrigger>
+            </TabsList>
+
+            {/* Premium Earnings Dashboard */}
+            <TabsContent value="earnings" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">This Month</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">${earnings.thisMonth}</div>
+                    <p className="text-xs text-muted-foreground">+{((earnings.thisMonth - earnings.lastMonth) / earnings.lastMonth * 100).toFixed(1)}% from last month</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">${earnings.pending}</div>
+                    <p className="text-xs text-muted-foreground">Awaiting approval</p>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Lifetime Earned</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">${earnings.lifetime}</div>
+                    <p className="text-xs text-muted-foreground">Total earnings</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Success Rate</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-blue-600">{stats.approvalRate}%</div>
+                    <p className="text-xs text-muted-foreground">Campaign approval rate</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="analytics">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    Performance Analytics
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold">{stats.totalCampaigns}</div>
+                      <div className="text-sm text-muted-foreground">Total Campaigns</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-green-600">{stats.activeCampaigns}</div>
+                      <div className="text-sm text-muted-foreground">Active</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-blue-600">{stats.completedCampaigns}</div>
+                      <div className="text-sm text-muted-foreground">Completed</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-purple-600">{stats.approvalRate}%</div>
+                      <div className="text-sm text-muted-foreground">Approval Rate</div>
+                    </div>
+                  </div>
+                  <div className="h-48 bg-muted rounded-lg flex items-center justify-center">
+                    <p className="text-muted-foreground">Detailed analytics charts coming soon...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="payouts">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5" />
+                    Payout Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-muted-foreground mb-4">No pending payouts</p>
+                    <Button disabled>Request Payout</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="campaigns">
+              <div className="grid gap-6">
+                {campaigns.map((campaign) => (
+                  <Card key={campaign.id} className="relative overflow-hidden">
+                    {campaign.restricted && (
+                      <div className="absolute top-0 right-0 bg-green-600 text-white px-2 py-1 text-xs">
+                        Premium Access
+                      </div>
+                    )}
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                          <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                          <div className="text-sm text-muted-foreground">per post</div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">{campaign.description}</p>
+                      
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium mb-2">Requirements</h4>
+                          <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">Campaign Details</h4>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <div>Budget: {campaign.budget}</div>
+                            <div>Deadline: {campaign.deadline}</div>
+                            <div className="text-green-600">{campaign.spots}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {campaign.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-between items-center pt-4 border-t">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" />
+                          <span>Closes {campaign.deadline}</span>
+                        </div>
+                        <Button>Apply Now</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* Restricted View for Standard/Free Users */}
+        {!isPremium && (
+          <div className="space-y-6">
+            <div className="grid gap-6">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.id} className="relative overflow-hidden opacity-75">
+                  <div className="absolute inset-0 bg-black/10 z-10 flex items-center justify-center">
+                    <div className="bg-background/95 backdrop-blur-sm border rounded-lg p-4 text-center">
+                      <Lock className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                      <h3 className="font-semibold mb-2">Premium Feature</h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {isFree ? "Upgrade to Standard to view campaigns" : "Upgrade to Premium Earner to apply"}
+                      </p>
+                      <Button asChild size="sm">
+                        <Link href="/subscribe">
+                          {isFree ? "Upgrade to Standard" : "Upgrade to Premium"}
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                        <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                        <div className="text-sm text-muted-foreground">per post</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">{campaign.description}</p>
+                    
+                    {isStandard && (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium mb-2">Requirements</h4>
+                          <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">Campaign Details</h4>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <div>Budget: {campaign.budget}</div>
+                            <div>Deadline: {campaign.deadline}</div>
+                            <div className="text-green-600">{campaign.spots}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex flex-wrap gap-2">
+                      {campaign.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span>Closes {campaign.deadline}</span>
+                      </div>
+                      <Button disabled>
+                        <Lock className="w-4 h-4 mr-2" />
+                        Apply Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

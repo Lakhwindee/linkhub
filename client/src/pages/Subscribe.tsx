@@ -79,11 +79,11 @@ export default function Subscribe() {
   const plans = [
     {
       id: "traveler",
-      name: "Traveler",
+      name: "Standard",
       description: "For active travelers",
-      price: "£25",
+      price: "$25",
       period: "per month",
-      popular: true,
+      popular: false,
       icon: Heart,
       color: "bg-blue-500",
       features: [
@@ -94,26 +94,30 @@ export default function Subscribe() {
         "Basic analytics dashboard",
         "Priority customer support",
         "Advanced privacy controls",
-        "Export travel data"
+        "Export travel data",
+        "🔒 Limited earn menu access",
+        "🔒 View campaigns (can't apply)"
       ]
     },
     {
       id: "creator",
-      name: "Creator",
-      description: "Earn from content",
-      price: "£45",
+      name: "Premium Earner",
+      description: "Unlimited earning potential",
+      price: "$45",
       period: "per month",
+      popular: true,
       icon: Star,
       color: "bg-chart-2",
       features: [
-        "Everything in Traveler plan",
-        "Access to Ad Marketplace",
-        "Reserve brand campaigns",
-        "Earnings dashboard and analytics",
-        "Payout management system",
-        "Priority support and guidance",
-        "Creator verification badge",
-        "Advanced content tools"
+        "Everything in Standard plan",
+        "✨ Full Access to Ad Marketplace",
+        "✨ Reserve & apply to brand campaigns",
+        "✨ Earnings dashboard and analytics",
+        "✨ Payout management system",
+        "✨ Priority support and guidance",
+        "✨ Creator verification badge",
+        "✨ Advanced content tools",
+        "✨ Unlimited earning potential"
       ]
     }
   ];
@@ -472,7 +476,7 @@ export default function Subscribe() {
                 <div>
                   <h4 className="font-semibold text-foreground mb-2">Which currencies are supported?</h4>
                   <p className="text-sm text-muted-foreground">
-                    We support GBP (UK) and INR (India) with automatic currency detection based on your location.
+                    We support USD, GBP (UK) and INR (India) with automatic currency detection based on your location.
                   </p>
                 </div>
               </div>

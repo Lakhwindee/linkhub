@@ -5,7 +5,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package } from "lucide-react";
+import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -95,7 +95,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
+      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads", restricted: user?.plan === 'free' },
     ];
   }
 
@@ -125,6 +125,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                 >
                   <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
+                  {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
                 </Button>
               </Link>
             ))}
@@ -158,6 +159,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                       >
                         <item.icon className="w-4 h-4" />
                         <span>{item.label}</span>
+                        {(item as any).restricted && <Lock className="w-3 h-3 ml-auto text-muted-foreground" />}
                       </Button>
                     </Link>
                   ))}
@@ -184,11 +186,18 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                     Profile Settings
                   </Link>
                 </DropdownMenuItem>
-                {user?.plan !== 'free' && (
+                {user?.plan !== 'free' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/billing" data-testid="link-billing">
                       <DollarSign className="mr-2 h-4 w-4" />
                       Billing
+                    </Link>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem asChild>
+                    <Link href="/subscribe" data-testid="link-upgrade">
+                      <Crown className="mr-2 h-4 w-4 text-orange-500" />
+                      Upgrade Plan
                     </Link>
                   </DropdownMenuItem>
                 )}
