@@ -36,12 +36,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       console.log('syncYouTube API call with URL:', url); // Debug log
       const requestBody = { youtubeUrl: url };
       console.log('Request body being sent:', requestBody); // Debug log
-      const response = await apiRequest("POST", "/api/youtube/sync", {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
+      const response = await apiRequest("POST", "/api/youtube/sync", requestBody);
       return response.json();
     },
     onSuccess: (data) => {
