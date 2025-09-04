@@ -331,7 +331,7 @@ export default function Billing() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {walletLoading ? (
+              {billingLoading ? (
                 <div className="space-y-4">
                   {[...Array(3)].map((_, i) => (
                     <div key={i} className="animate-pulse flex items-center space-x-4">
@@ -342,7 +342,7 @@ export default function Billing() {
                     </div>
                   ))}
                 </div>
-              ) : walletData?.payouts && walletData.payouts.length > 0 ? (
+              ) : billingData?.payouts && billingData.payouts.length > 0 ? (
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -354,7 +354,7 @@ export default function Billing() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {walletData.payouts.map((payout: Payout) => (
+                    {billingData.payouts.map((payout: any) => (
                       <TableRow key={payout.id} data-testid={`row-payout-${payout.id}`}>
                         <TableCell data-testid={`text-payout-date-${payout.id}`}>
                           {format(new Date(payout.createdAt!), 'MMM d, yyyy')}
