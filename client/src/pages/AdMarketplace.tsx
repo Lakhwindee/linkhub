@@ -103,16 +103,26 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
   const validateYouTubeUrl = (url: string) => {
     const youtubePatterns = [
-      /^https?:\/\/(www\.)?youtube\.com\/@[\w\-_.]+/,
-      /^https?:\/\/(www\.)?youtube\.com\/c\/[\w\-_.]+/,
-      /^https?:\/\/(www\.)?youtube\.com\/channel\/[\w\-_.]+/,
-      /^https?:\/\/(www\.)?youtube\.com\/user\/[\w\-_.]+/,
+      /^https?:\/\/(www\.)?youtube\.com\/@[\w\-_.]+/i,
+      /^https?:\/\/(www\.)?youtube\.com\/c\/[\w\-_.]+/i,
+      /^https?:\/\/(www\.)?youtube\.com\/channel\/[\w\-_.]+/i,
+      /^https?:\/\/(www\.)?youtube\.com\/user\/[\w\-_.]+/i,
+      // Allow without protocol
+      /^(www\.)?youtube\.com\/@[\w\-_.]+/i,
+      /^(www\.)?youtube\.com\/c\/[\w\-_.]+/i,
+      /^(www\.)?youtube\.com\/channel\/[\w\-_.]+/i,
+      /^(www\.)?youtube\.com\/user\/[\w\-_.]+/i,
     ];
     
-    return youtubePatterns.some(pattern => pattern.test(url));
+    console.log('Validating URL:', url); // Debug log
+    const isValid = youtubePatterns.some(pattern => pattern.test(url));
+    console.log('URL validation result:', isValid); // Debug log
+    return isValid;
   };
 
   const handleConnect = async () => {
+    console.log('handleConnect called with URL:', youtubeUrl); // Debug log
+    
     if (!youtubeUrl.trim()) {
       toast({
         title: "URL Required",
@@ -134,7 +144,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     
     setIsConnecting(true);
     try {
-      await syncYouTube.mutateAsync(youtubeUrl);
+      console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
+      await syncYouTube.mutateAsync(youtubeUrl.trim());
     } finally {
       setIsConnecting(false);
     }
