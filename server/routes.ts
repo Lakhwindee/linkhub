@@ -1767,6 +1767,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Quick role update endpoint for demo purposes
+  app.post('/api/user/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const { role } = req.body;
+      const validRoles = ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
+      
+      if (!validRoles.includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      const updatedUser = await storage.updateUserProfile(req.user.claims.sub, { role });
+      res.json({ message: "Role updated successfully", user: updatedUser });
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      res.status(500).json({ message: "Failed to update role" });
+    }
+  });
+
   // Tour Packages routes (Simplified Travel Website Style)
   app.get('/api/tour-packages', async (req, res) => {
     try {
