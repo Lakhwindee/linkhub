@@ -47,6 +47,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const isYouTubeConnected = isDemoUser ? !demoDisconnected : !!userData?.youtubeChannelId;
   const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
   const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
+  
+  // Declare all state variables BEFORE useEffect to prevent hoisting issues
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Update YouTube URL when real user data loads - PREVENT RE-RENDER DURING VFX
   useEffect(() => {
@@ -63,13 +72,6 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       setYoutubeUrl("");
     }
   }, [userData?.youtubeUrl, showCongratulations]);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
-  const [showCongratulations, setShowCongratulations] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const syncYouTube = useMutation({
     mutationFn: async (url: string) => {
