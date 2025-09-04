@@ -138,13 +138,13 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     if (sessionId === 'demo-publisher-session') {
       req.user = {
         claims: { 
-          sub: 'demo-publisher-1',
+          sub: 'demo-user-1', // Map to existing demo user
           email: 'demo-publisher@hublink.com',
           first_name: 'Demo',
           last_name: 'Publisher'
         }
       } as any;
-      console.log('✅ Demo PUBLISHER authenticated:', req.user.claims.sub);
+      console.log('✅ Demo PUBLISHER authenticated (mapped to demo-user-1):', req.user.claims.sub);
     } else if (sessionId === 'demo-creator-session') {
       req.user = {
         claims: { 

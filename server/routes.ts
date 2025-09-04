@@ -44,20 +44,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Debug log to see what we're returning
-      console.log('API returning user data:', {
-        id: user.id,
-        youtubeSubscribers: user.youtubeSubscribers,
-        youtubeTier: user.youtubeTier,
-        youtubeChannelId: user.youtubeChannelId,
-        youtubeVerified: user.youtubeVerified
-      });
+      // Check session cookie to differentiate roles
+      const sessionId = req.cookies?.session_id;
+      
+      // Modify user data based on role
+      let responseUser = { ...user };
+      
+      if (sessionId === 'demo-publisher-session') {
+        responseUser.role = 'publisher';
+        responseUser.displayName = 'Demo Publisher';
+        responseUser.firstName = 'Demo';
+        responseUser.lastName = 'Publisher';
+        responseUser.email = 'demo-publisher@hublink.com';
+        responseUser.plan = 'creator'; // Publisher has creator plan access
+        console.log('API returning PUBLISHER user data:', responseUser.role);
+      } else if (sessionId === 'demo-creator-session') {
+        responseUser.role = 'creator';
+        responseUser.displayName = 'Demo Creator';
+        responseUser.firstName = 'Demo';
+        responseUser.lastName = 'Creator';
+        responseUser.email = 'demo-creator@hublink.com';
+        responseUser.plan = 'creator';
+        console.log('API returning CREATOR user data:', responseUser.role);
+      } else {
+        // Default behavior
+        console.log('API returning DEFAULT user data:', {
+          id: user.id,
+          youtubeSubscribers: user.youtubeSubscribers,
+          youtubeTier: user.youtubeTier,
+          youtubeChannelId: user.youtubeChannelId,
+          youtubeVerified: user.youtubeVerified
+        });
+      }
       
       // Disable cache to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
-      res.json(user);
+      res.json(responseUser);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
