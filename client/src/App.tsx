@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { DemoLogin } from "@/components/DemoLogin";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
@@ -35,6 +36,11 @@ function Router() {
         <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full" />
       </div>
     );
+  }
+
+  // Show demo login if not authenticated and in development
+  if (!isAuthenticated && process.env.NODE_ENV === 'development') {
+    return <DemoLogin />;
   }
 
   return (

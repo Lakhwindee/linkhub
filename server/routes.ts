@@ -1785,6 +1785,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo authentication endpoint - sets demo session for browser
+  app.post('/api/demo-login', async (req, res) => {
+    if (process.env.NODE_ENV === 'development') {
+      // Set demo session cookie for browser
+      res.cookie('session_id', 'demo-session', { 
+        httpOnly: true, 
+        secure: false, 
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+      
+      res.json({ 
+        message: "Demo login successful", 
+        user: {
+          id: 'demo-user-1',
+          role: 'publisher',
+          plan: 'creator',
+          displayName: 'Demo User'
+        } 
+      });
+    } else {
+      res.status(403).json({ message: "Demo login only available in development" });
+    }
+  });
+
+  // Demo logout endpoint
+  app.post('/api/demo-logout', async (req, res) => {
+    res.clearCookie('session_id');
+    res.json({ message: "Demo logout successful" });
+  });
+
   // Tour Packages routes (Simplified Travel Website Style)
   app.get('/api/tour-packages', async (req, res) => {
     try {
