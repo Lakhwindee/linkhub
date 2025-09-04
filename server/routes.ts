@@ -313,11 +313,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const data = await response.json();
+      console.log('YouTube API data received:', JSON.stringify(data, null, 2)); // Debug log
+      
       if (!data.items || data.items.length === 0) {
+        console.log('No items found in YouTube API response'); // Debug log
         return res.status(400).json({ message: "YouTube channel not found" });
       }
 
       const subscriberCount = parseInt(data.items[0].statistics.subscriberCount) || 0;
+      console.log('Parsed subscriber count:', subscriberCount); // Debug log
       
       // Determine tier based on subscriber count
       let tier = 1; // Default tier
@@ -337,8 +341,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Generate verification code
       const verificationCode = `HUBLINK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+      console.log('Generated verification code:', verificationCode); // Debug log
 
       // Update user with YouTube data (not verified yet)
+      console.log('Attempting to update user profile...'); // Debug log
       const updatedUser = await storage.updateUserProfile(userId, {
         youtubeUrl,
         youtubeChannelId: channelId,
@@ -349,6 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtubeVerificationAttempts: 0,
         youtubeLastUpdated: new Date()
       });
+      console.log('User profile updated successfully'); // Debug log
 
       res.json({
         subscriberCount,
