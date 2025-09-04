@@ -419,9 +419,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // For demo user, don't actually disconnect
+      // For demo user, simulate disconnect (for testing purposes)
       if (userId === 'demo-user-1') {
-        return res.status(400).json({ message: "Demo user cannot disconnect YouTube channel" });
+        return res.json({ 
+          message: "YouTube channel successfully disconnected (Demo mode)",
+          user: { id: 'demo-user-1', youtubeVerified: false }
+        });
       }
       
       // Clear all YouTube-related data from user profile
