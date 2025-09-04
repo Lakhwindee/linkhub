@@ -27,7 +27,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   const handleLogout = () => {
     localStorage.setItem('hublink_demo_user', 'false');
-    window.location.reload(); // Reload to update auth state
+    window.location.href = '/'; // Redirect to homepage
   };
 
   if (!isAuthenticated) {
