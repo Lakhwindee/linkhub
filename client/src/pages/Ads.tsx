@@ -62,20 +62,6 @@ export default function Ads() {
       category: "Adventure Sports",
       tags: ["action", "adventure", "gopro", "equipment"],
       restricted: user?.plan !== 'creator'
-    },
-    {
-      id: "campaign-4",
-      brand: "Booking.com",
-      title: "Hidden Gems Travel Series",
-      description: "Discover and showcase hidden travel destinations around the world",
-      budget: "$4,200",
-      payPerPost: "$180-320",
-      requirements: "8k+ followers, Travel exploration, Authentic storytelling",
-      deadline: "Mar 5, 2025",
-      spots: "12 spots available",
-      category: "Travel Discovery",
-      tags: ["hidden-gems", "exploration", "authentic", "discovery"],
-      restricted: user?.plan !== 'creator'
     }
   ];
 
@@ -109,6 +95,10 @@ export default function Ads() {
       </div>
     );
   }
+
+  const isPremium = user.plan === 'creator';
+  const isStandard = user.plan === 'traveler'; 
+  const isFree = user.plan === 'free';
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -413,87 +403,80 @@ export default function Ads() {
             </TabsContent>
 
             <TabsContent value="campaigns">
-              <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid gap-6">
                 {campaigns.map((campaign) => (
-                  <Card key={campaign.id} className="relative overflow-hidden flex flex-col">
+                  <Card key={campaign.id} className="relative overflow-hidden">
                     {campaign.restricted && (
                       <div className="absolute top-0 right-0 bg-green-600 text-white px-2 py-1 text-xs">
                         Premium Access
                       </div>
                     )}
-                    <CardHeader className="pb-3">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-start">
-                          <Badge variant="outline" className="text-xs">{campaign.category}</Badge>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-green-600">{campaign.payPerPost}</div>
-                            <div className="text-xs text-muted-foreground">per post</div>
-                          </div>
-                        </div>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-base line-clamp-2">{campaign.title}</CardTitle>
-                          <p className="text-xs text-muted-foreground">{campaign.brand}</p>
+                          <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                          <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                          <div className="text-sm text-muted-foreground">per post</div>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="space-y-3 flex-1">
-                      <p className="text-sm text-muted-foreground line-clamp-2">{campaign.description}</p>
+                    <CardContent className="space-y-4">
+                      <p className="text-muted-foreground">{campaign.description}</p>
                       
-                      <div className="space-y-2">
+                      <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <h4 className="font-medium text-sm mb-1">Requirements</h4>
-                          <p className="text-xs text-muted-foreground line-clamp-1">{campaign.requirements}</p>
+                          <h4 className="font-semibold mb-2">Requirements</h4>
+                          <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                          <div>💰 {campaign.budget}</div>
-                          <div>👥 {campaign.spots}</div>
-                          <div className="col-span-2">📅 {campaign.deadline}</div>
+                        <div>
+                          <h4 className="font-semibold mb-2">Campaign Details</h4>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <p>💰 Budget: {campaign.budget}</p>
+                            <p>📅 Deadline: {campaign.deadline}</p>
+                            <p>👥 {campaign.spots}</p>
+                          </div>
                         </div>
                       </div>
                       
-                      <div className="flex flex-wrap gap-1">
-                        {campaign.tags.slice(0, 3).map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs px-1 py-0">
+                      <div className="flex flex-wrap gap-2">
+                        {campaign.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-xs">
                             #{tag}
                           </Badge>
                         ))}
-                        {campaign.tags.length > 3 && (
-                          <Badge variant="secondary" className="text-xs px-1 py-0">
-                            +{campaign.tags.length - 3}
-                          </Badge>
-                        )}
                       </div>
                       
-                      <div className="mt-auto pt-3">
-                        {campaign.restricted ? (
-                          <div className="bg-orange-50 dark:bg-orange-950/10 border border-orange-200 rounded-lg p-2">
-                            <div className="flex items-center gap-2">
-                              <Lock className="w-4 h-4 text-orange-600" />
-                              <div>
-                                <p className="font-medium text-xs text-orange-900 dark:text-orange-100">Premium Feature</p>
-                                <p className="text-xs text-orange-700 dark:text-orange-300">
-                                  Upgrade to Premium Earner to apply
-                                </p>
-                              </div>
+                      {campaign.restricted ? (
+                        <div className="bg-orange-50 dark:bg-orange-950/10 border border-orange-200 rounded-lg p-4">
+                          <div className="flex items-center gap-3">
+                            <Lock className="w-5 h-5 text-orange-600" />
+                            <div>
+                              <p className="font-medium text-orange-900 dark:text-orange-100">Premium Feature</p>
+                              <p className="text-sm text-orange-700 dark:text-orange-300">
+                                Upgrade to Premium Earner ($45/mo) to apply for campaigns and start earning
+                              </p>
                             </div>
-                            <Button size="sm" className="w-full mt-2 bg-orange-500 hover:bg-orange-600" asChild>
-                              <Link href="/subscribe">
-                                <Crown className="w-3 h-3 mr-1" />
-                                Upgrade
-                              </Link>
-                            </Button>
                           </div>
-                        ) : (
-                          <Button 
-                            size="sm"
-                            className="w-full bg-blue-600 hover:bg-blue-700"
-                            onClick={() => setSelectedCampaign(campaign.id)}
-                          >
-                            <Target className="w-3 h-3 mr-1" />
-                            Reserve Campaign
+                          <Button className="w-full mt-3 bg-orange-500 hover:bg-orange-600" asChild>
+                            <Link href="/subscribe">
+                              <Crown className="w-4 h-4 mr-2" />
+                              Upgrade to Premium
+                            </Link>
                           </Button>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <Button 
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          onClick={() => setSelectedCampaign(campaign.id)}
+                        >
+                          <Target className="w-4 h-4 mr-2" />
+                          Reserve Campaign
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
