@@ -58,6 +58,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   }, [userData?.youtubeUrl]);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
@@ -186,13 +187,26 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       return;
     }
     
+    // Step 1: Show loading for 5 seconds
     setIsConnecting(true);
-    try {
-      console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
-      await syncYouTube.mutateAsync(youtubeUrl.trim());
-    } finally {
+    
+    setTimeout(() => {
+      // Step 2: Switch to verifying for 5 seconds
       setIsConnecting(false);
-    }
+      setIsVerifyingConnection(true);
+      
+      setTimeout(async () => {
+        // Step 3: Actually call the API and complete
+        try {
+          console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
+          await syncYouTube.mutateAsync(youtubeUrl.trim());
+        } catch (error) {
+          console.error('Connect failed:', error);
+        } finally {
+          setIsVerifyingConnection(false);
+        }
+      }, 5000); // 5 seconds verifying
+    }, 5000); // 5 seconds loading
   };
 
   const handleVerify = async () => {
@@ -431,7 +445,22 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     🔗 Connecting Channel...
                   </h3>
                   <p className="text-blue-200 animate-pulse">
-                    Please wait while we verify your YouTube channel
+                    Establishing connection to YouTube servers
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {/* Full Screen Verifying Connection Overlay */}
+            {isVerifyingConnection && (
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+                  <div className="animate-spin w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">
+                    🔍 Verifying Channel...
+                  </h3>
+                  <p className="text-green-200 animate-pulse">
+                    Checking channel data and subscriber count
                   </p>
                 </div>
               </div>
@@ -474,7 +503,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
               <Button 
                 onClick={handleConnect}
-                disabled={isConnecting || !youtubeUrl.trim()}
+                disabled={isConnecting || isVerifyingConnection || !youtubeUrl.trim()}
                 className={`w-full bg-red-500 hover:bg-red-600 transition-all duration-500 ease-out transform ${isConnecting ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl hover:bg-red-400'}`}
               >
                 {isConnecting ? (
