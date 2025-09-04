@@ -170,18 +170,12 @@ export default function Landing() {
                 {!showLogin ? (
                   <>
                     <div className="flex flex-col sm:flex-row gap-4">
-                      <Button size="lg" className="px-8 py-4 bg-accent hover:bg-accent/90 text-accent-foreground" asChild>
-                        <a href="/document-signup">Sign Up Now</a>
-                      </Button>
-                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={handleDemoLogin}>
-                        Try Demo (Free)
-                      </Button>
-                      <Button size="lg" variant="ghost" className="px-8 py-4" onClick={() => setShowLogin(true)}>
+                      <Button size="lg" variant="outline" className="px-8 py-4" onClick={() => setShowLogin(true)}>
                         Login
                       </Button>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Sign up with document verification • Try demo for free • Existing users login
+                      Existing users can login here
                     </p>
                   </>
                 ) : (
