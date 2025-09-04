@@ -999,11 +999,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Stay is not available for booking" });
       }
       
-      // Calculate total price
+      // Calculate total price with 10% platform fee
       const checkIn = new Date(data.checkInDate!);
       const checkOut = new Date(data.checkOutDate!);
       const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      const totalPrice = (parseFloat(stay.pricePerNight) * nights).toString();
+      const basePrice = parseFloat(stay.pricePerNight) * nights;
+      const platformFee = basePrice * 0.10; // 10% platform fee
+      const totalPrice = (basePrice + platformFee).toString();
       
       const booking = await storage.createStayBooking({
         guestId: userId,
@@ -1017,7 +1019,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         action: "stay_booked",
         targetType: "stay_booking",
         targetId: booking.id,
-        metaJson: { stayId: id, nights, totalPrice },
+        metaJson: { stayId: id, nights, basePrice: basePrice.toString(), platformFee: platformFee.toString(), totalPrice },
         ipAddress: req.ip,
         userAgent: req.get("User-Agent"),
       });
@@ -1813,9 +1815,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/trips/:id/join', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const { message } = req.body;
-      const participant = await storage.joinTrip(req.params.id, req.user.claims.sub, message);
-      res.json(participant);
+      
+      // Get trip details for platform fee calculation
+      const trip = await storage.getTrip(req.params.id);
+      if (!trip) {
+        return res.status(404).json({ message: 'Trip not found' });
+      }
+      
+      // Calculate platform fee (10%) for tour package booking
+      const basePrice = parseFloat(trip.pricePerPerson || '0');
+      const platformFee = basePrice * 0.10; // 10% platform fee
+      const totalPrice = basePrice + platformFee;
+      
+      const participant = await storage.joinTrip(req.params.id, userId, message);
+      
+      // Log platform fee details
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "trip_joined",
+        targetType: "trip",
+        targetId: req.params.id,
+        metaJson: { tripId: req.params.id, basePrice: basePrice.toString(), platformFee: platformFee.toString(), totalPrice: totalPrice.toString() },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ ...participant, pricing: { basePrice, platformFee, totalPrice } });
     } catch (error) {
       console.error('Error joining trip:', error);
       res.status(500).json({ message: 'Failed to join trip' });

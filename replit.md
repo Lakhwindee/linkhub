@@ -8,6 +8,28 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**September 2025 - Platform Fee System Implementation**
+- Implemented 10% platform fee across all booking services:
+  - Stays bookings: 10% fee on accommodation prices  
+  - Tour packages (trips): 10% fee on trip booking prices
+  - Ads: 10% fee already existed and maintained in publisher campaigns
+- Created reusable PlatformFeeBreakdown.tsx component for consistent fee display
+- Created BookingConfirmation.tsx component for unified booking confirmations
+- Enhanced server-side audit logging to track platform fees for all services
+- All fees calculated server-side with proper validation and error handling
+
+**September 2025 - Location Data Standardization**  
+- Replaced all hardcoded country/city dropdowns with real-world data (250+ countries)
+- Updated Map.tsx, Stays.tsx, AdMarketplace.tsx, Feed.tsx, DiscoverTravelers.tsx with comprehensive global coverage
+- Integrated worldCountries data from locationData.ts across all location-based features
+
+**September 2025 - Ad Creation & Display Consistency**
+- Enhanced Publisher ad creation form with missing fields:
+  - Countries/locations selection with real-world data
+  - Campaign hashtags with live preview
+  - Campaign deadline date picker  
+- Perfect consistency between publisher ad creation and creator ad viewing experience
+
 **September 2025 - Critical Security Enhancement**
 - Implemented continuous YouTube channel verification system
 - Added fraud prevention for campaign access - prevents "friend's channel" verification abuse
