@@ -331,6 +331,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate verification code
       const verificationCode = `HUBLINK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
 
+      // Ensure user exists in database first
+      let user = await storage.getUser(userId);
+      if (!user) {
+        // Create user in database if it doesn't exist (for demo user)
+        user = await storage.upsertUser({
+          id: userId,
+          email: userId === 'demo-user-1' ? 'demo@hublink.com' : 'unknown@example.com',
+          firstName: userId === 'demo-user-1' ? 'Demo' : 'Unknown',
+          lastName: userId === 'demo-user-1' ? 'User' : 'User',
+          profileImageUrl: userId === 'demo-user-1' ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' : '',
+          username: userId === 'demo-user-1' ? 'demo_user' : `user_${userId.slice(0, 8)}`,
+          displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
+          country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
+          city: userId === 'demo-user-1' ? 'London' : undefined,
+          plan: userId === 'demo-user-1' ? 'creator' : 'free',
+          role: userId === 'demo-user-1' ? 'publisher' : 'user',
+        });
+      }
+
       // Update user with YouTube data (not verified yet)
       const updatedUser = await storage.updateUserProfile(userId, {
         youtubeUrl,

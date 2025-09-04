@@ -1106,25 +1106,6 @@ export class DatabaseStorage implements IStorage {
   
   // User operations
   async getUser(id: string): Promise<User | undefined> {
-    // Handle demo user specially
-    if (id === 'demo-user-1') {
-      return {
-        id: 'demo-user-1',
-        username: 'demo_user',
-        displayName: 'Demo User',
-        firstName: 'Demo',
-        lastName: 'User',
-        email: 'demo@hublink.com',
-        profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        country: 'United Kingdom',
-        city: 'London',
-        plan: 'creator',
-        role: 'publisher',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as User;
-    }
-
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
