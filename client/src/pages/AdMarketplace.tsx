@@ -192,15 +192,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           console.log('API success, showing congratulations'); // Debug log
           setIsVerifyingConnection(false);
           
-          // Force immediate state update
+          // IMMEDIATE state update with double-check
           console.log('Setting showCongratulations to true'); // Debug log
           setShowCongratulations(true);
-          console.log('showCongratulations state should be true now'); // Debug log
           
-          // Force component refresh
+          // Force re-render by updating multiple states
           setTimeout(() => {
-            console.log('Force refresh - congratulations should be visible now');
-          }, 50);
+            console.log('Forcing congratulations state again');
+            setShowCongratulations(true); // Force again
+          }, 10);
           
           setTimeout(() => {
             console.log('Hiding congratulations'); // Debug log
@@ -481,11 +481,13 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: 'rgba(255, 0, 0, 0.95)',
+                backgroundColor: showCongratulations ? 'rgba(255, 0, 0, 0.95)' : 'transparent',
                 zIndex: 999999,
                 display: showCongratulations ? 'flex' : 'none',
+                visibility: showCongratulations ? 'visible' : 'hidden',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                pointerEvents: showCongratulations ? 'all' : 'none'
               }}
             >
               <div style={{
@@ -516,8 +518,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </div>
             </div>
             
-            {/* Debug state constantly */}
+            {/* Enhanced debug with forced visibility check */}
             {console.log('=== CONGRATULATIONS STATE ===', showCongratulations, '=== TIME ===', new Date().toLocaleTimeString())}
+            {showCongratulations && console.log('🎉 CONGRATULATIONS SHOULD BE VISIBLE NOW! 🎉')}
+            {!showCongratulations && console.log('❌ Congratulations hidden')}
             
             {/* Connection Form */}
             <div className="space-y-4">
