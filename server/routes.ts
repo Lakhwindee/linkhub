@@ -40,6 +40,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
+      
+      // Debug log to see what we're returning
+      console.log('API returning user data:', {
+        id: user.id,
+        youtubeSubscribers: user.youtubeSubscribers,
+        youtubeTier: user.youtubeTier,
+        youtubeChannelId: user.youtubeChannelId,
+        youtubeVerified: user.youtubeVerified
+      });
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
