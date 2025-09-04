@@ -15,73 +15,22 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Calendar, MapPin, Users, Clock, Star, Plus, Search, Filter, Heart, 
   Eye, CheckCircle2, Plane, Camera, Utensils, Bed, Car, Shield, Award,
-  Package, Building2, Globe, Crown, Zap, X, DollarSign, Calculator, CreditCard
+  Package, Building2, Globe, X, DollarSign
 } from "lucide-react";
 
-interface TourPackage {
-  id: string;
-  title: string;
-  description: string;
-  destination: string;
-  duration: number;
-  price: number;
-  currency: string;
-  maxGroupSize: number;
-  difficulty: 'easy' | 'moderate' | 'challenging';
-  packageType: 'adventure' | 'cultural' | 'luxury' | 'backpacker' | 'family' | 'business';
-  operatorName: string;
-  operatorRating: number;
-  images: string[];
-  highlights: string[];
-  inclusions: string[];
-  exclusions: string[];
-  itinerary: any[];
-  departureDate: string;
-  availability: number;
-  rating: number;
-  reviewCount: number;
-  featured: boolean;
-  tags: string[];
-  createdAt: string;
-  budget: {
-    basePrice: number;
-    priceBreakdown: {
-      accommodation: number;
-      meals: number;
-      transportation: number;
-      activities: number;
-      guide: number;
-      insurance: number;
-      taxes: number;
-      other: number;
-    };
-    pricingTiers: {
-      budget: { price: number; description: string; features: string[] };
-      standard: { price: number; description: string; features: string[] };
-      premium: { price: number; description: string; features: string[] };
-    };
-    additionalCosts: {
-      name: string;
-      price: number;
-      optional: boolean;
-      description: string;
-    }[];
-    discounts: {
-      earlyBird: { percentage: number; deadline: string };
-      groupDiscount: { minPeople: number; percentage: number };
-      seasonalDiscount: { percentage: number; validFrom: string; validTo: string };
-    };
-    paymentTerms: {
-      deposit: number;
-      finalPayment: string;
-      cancellationPolicy: string;
-    };
-  };
-}
+// Use simplified tour package interface
+import { SimpleTourPackage } from '@/types/simpleTourPackage';
+import { worldCountries } from '@/data/locationData';
+import { PlatformFeeBreakdown } from '@/components/PlatformFeeBreakdown';
+import { BookingConfirmation } from '@/components/BookingConfirmation';
+
+type TourPackage = SimpleTourPackage;
 
 export default function TourPackages() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [bookingPackage, setBookingPackage] = useState<TourPackage | null>(null);
   const [searchFilters, setSearchFilters] = useState({
     destination: "",
     duration: "",
@@ -121,17 +70,36 @@ export default function TourPackages() {
     },
   });
 
+  // Book package mutation
+  const bookPackageMutation = useMutation({
+    mutationFn: async ({ packageId, travelers }: { packageId: string; travelers: number }) => {
+      const response = await fetch(`/api/tour-packages/${packageId}/book`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ travelers, message: "Booking through platform" }),
+      });
+      if (!response.ok) throw new Error("Failed to book package");
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsBookingModalOpen(true);
+    },
+  });
+
   const handleCreatePackage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     const packageData = {
-      title: formData.get("title"),
-      description: formData.get("description"),
-      destination: formData.get("destination"),
+      title: formData.get("title") as string,
+      description: formData.get("description") as string,
+      destination: formData.get("destination") as string,
+      country: formData.get("country") as string,
+      city: formData.get("city") as string,
       duration: Number(formData.get("duration")),
       price: Number(formData.get("price")),
-      currency: "GBP",
+      currency: formData.get("currency") as string || "USD",
       maxGroupSize: Number(formData.get("maxGroupSize")),
       difficulty: formData.get("difficulty"),
       packageType: formData.get("packageType"),
@@ -140,11 +108,17 @@ export default function TourPackages() {
       inclusions: (formData.get("inclusions") as string)?.split('\n').filter(i => i.trim()),
       exclusions: (formData.get("exclusions") as string)?.split('\n').filter(e => e.trim()),
       departureDate: formData.get("departureDate"),
+      returnDate: formData.get("returnDate"),
       availability: Number(formData.get("availability")),
       tags: (formData.get("tags") as string)?.split(',').map(t => t.trim()).filter(t => t),
     };
 
     createPackageMutation.mutate(packageData);
+  };
+
+  const handleBookNow = (pkg: TourPackage) => {
+    setBookingPackage(pkg);
+    bookPackageMutation.mutate({ packageId: pkg.id, travelers: 1 });
   };
 
   const getPackageTypeIcon = (type: string) => {
@@ -182,13 +156,8 @@ export default function TourPackages() {
           </Button>
         </div>
         <div className="absolute bottom-3 left-3 z-20 text-white">
-          <div className="text-2xl font-bold">{pkg.currency} {pkg.budget?.basePrice.toLocaleString() || pkg.price.toLocaleString()}</div>
+          <div className="text-2xl font-bold">{pkg.currency} {pkg.price.toLocaleString()}</div>
           <div className="text-sm opacity-90">per person</div>
-          {pkg.budget?.pricingTiers && (
-            <div className="text-xs opacity-75 mt-1">
-              From {pkg.currency} {pkg.budget.pricingTiers.budget.price.toLocaleString()} 
-            </div>
-          )}
         </div>
       </div>
 
@@ -240,54 +209,43 @@ export default function TourPackages() {
           ))}
         </div>
 
-        <div className="space-y-3">
-          {/* Budget Information */}
-          {pkg.budget?.pricingTiers && (
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950 dark:to-blue-950 rounded-lg p-3">
-              <div className="text-sm font-medium mb-2 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-green-600" />
-                Budget Options
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className="text-center">
-                  <div className="font-medium text-green-600">Budget</div>
-                  <div>{pkg.currency} {pkg.budget.pricingTiers.budget.price.toLocaleString()}</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-medium text-blue-600">Standard</div>
-                  <div>{pkg.currency} {pkg.budget.pricingTiers.standard.price.toLocaleString()}</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-medium text-purple-600">Premium</div>
-                  <div>{pkg.currency} {pkg.budget.pricingTiers.premium.price.toLocaleString()}</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-muted/50 rounded-lg p-3">
-            <div className="text-sm font-medium mb-1">Tour Operator</div>
+        {/* Simple Tour Operator Info - Travel Website Style */}
+        <div className="bg-muted/30 rounded-lg p-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-primary" />
-              <span className="font-medium">{pkg.operatorName}</span>
-              <div className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                <span className="text-xs">{pkg.operatorRating}</span>
-              </div>
+              <span className="font-medium text-sm">{pkg.operatorName}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <span className="text-xs font-medium">{pkg.operatorRating}</span>
             </div>
           </div>
         </div>
 
+        {/* Key Highlights */}
+        {pkg.highlights && pkg.highlights.length > 0 && (
+          <div className="space-y-2">
+            <div className="text-sm font-medium text-muted-foreground">Highlights:</div>
+            <div className="space-y-1">
+              {pkg.highlights.slice(0, 3).map((highlight, index) => (
+                <div key={index} className="flex items-start gap-2 text-sm">
+                  <CheckCircle2 className="w-3 h-3 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-muted-foreground text-xs leading-relaxed">{highlight}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2">
           <Button 
             size="sm" 
-            className="flex-1"
-            onClick={() => {
-              // Handle booking logic
-              console.log(`Booking package: ${pkg.id}`);
-            }}
+            className="flex-1 bg-primary hover:bg-primary/90"
+            onClick={() => handleBookNow(pkg)}
+            disabled={bookPackageMutation.isPending}
           >
-            Book Now
+            {bookPackageMutation.isPending ? "Booking..." : "Book Now"}
           </Button>
           <Button 
             size="sm" 
@@ -1109,6 +1067,26 @@ export default function TourPackages() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Booking Confirmation Modal */}
+      {bookingPackage && (
+        <BookingConfirmation
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setBookingPackage(null);
+          }}
+          bookingType="trip"
+          bookingData={{
+            itemName: bookingPackage.title,
+            basePrice: bookingPackage.price,
+            currency: bookingPackage.currency,
+            dates: `${bookingPackage.departureDate} - ${bookingPackage.returnDate || 'TBD'}`,
+            location: bookingPackage.destination,
+            duration: `${bookingPackage.duration} days`
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -1767,7 +1767,241 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Trips routes
+  // Tour Packages routes (Simplified Travel Website Style)
+  app.get('/api/tour-packages', async (req, res) => {
+    try {
+      const { country, city, packageType, priceRange, duration, limit } = req.query;
+      
+      // Simple demo tour packages data
+      const simpleTourPackages = [
+        {
+          id: 'tour-1',
+          title: 'Golden Triangle Adventure',
+          description: 'Experience the magic of India with visits to Delhi, Agra, and Jaipur. This classic tour covers the most iconic destinations including the Taj Mahal, Red Fort, and Pink City.',
+          destination: 'Delhi, Agra, Jaipur',
+          country: 'India',
+          city: 'Delhi',
+          duration: 7,
+          price: 899,
+          currency: 'USD',
+          maxGroupSize: 15,
+          difficulty: 'easy',
+          packageType: 'cultural',
+          operatorName: 'India Heritage Tours',
+          operatorRating: 4.8,
+          images: ['/api/placeholder/400/300'],
+          inclusions: [
+            'Accommodation in 4-star hotels',
+            'Daily breakfast and dinner',
+            'Professional English-speaking guide',
+            'Private AC transportation',
+            'All entrance fees to monuments',
+            'Airport transfers'
+          ],
+          exclusions: [
+            'International flights',
+            'Personal expenses',
+            'Travel insurance',
+            'Lunch (except on day tours)',
+            'Tips and gratuities'
+          ],
+          itinerary: [
+            {
+              day: 1,
+              title: 'Arrival in Delhi',
+              description: 'Welcome to India! Meet your guide and transfer to hotel.',
+              activities: ['Airport pickup', 'Hotel check-in', 'Welcome dinner'],
+              meals: ['dinner']
+            },
+            {
+              day: 2,
+              title: 'Delhi Sightseeing',
+              description: 'Full day exploring Old and New Delhi.',
+              activities: ['Red Fort', 'Jama Masjid', 'Raj Ghat', 'India Gate'],
+              meals: ['breakfast', 'dinner']
+            }
+          ],
+          departureDate: '2024-12-01',
+          returnDate: '2024-12-08',
+          availability: 8,
+          rating: 4.7,
+          reviewCount: 124,
+          featured: true,
+          tags: ['heritage', 'unesco', 'monuments'],
+          highlights: [
+            'Visit the iconic Taj Mahal at sunrise',
+            'Explore the magnificent Amber Fort',
+            'Experience the bustling streets of Old Delhi',
+            'Stay in heritage hotels',
+            'Professional photography assistance'
+          ],
+          createdAt: '2024-01-15T00:00:00Z'
+        },
+        {
+          id: 'tour-2',
+          title: 'Himalayan Adventure Trek',
+          description: 'Challenge yourself with this incredible trek through the Himalayas. Perfect for adventure seekers looking for breathtaking mountain views.',
+          destination: 'Himalayas, Nepal',
+          country: 'Nepal',
+          city: 'Kathmandu',
+          duration: 14,
+          price: 1599,
+          currency: 'USD',
+          maxGroupSize: 10,
+          difficulty: 'challenging',
+          packageType: 'adventure',
+          operatorName: 'Mountain Adventures Nepal',
+          operatorRating: 4.9,
+          images: ['/api/placeholder/400/300'],
+          inclusions: [
+            'Accommodation in mountain lodges',
+            'All meals during trek',
+            'Experienced trekking guide',
+            'Porter service',
+            'Trekking permits',
+            'Emergency evacuation insurance'
+          ],
+          exclusions: [
+            'International flights',
+            'Nepal visa fees',
+            'Personal trekking equipment',
+            'Alcoholic beverages',
+            'Personal expenses'
+          ],
+          itinerary: [
+            {
+              day: 1,
+              title: 'Arrival in Kathmandu',
+              description: 'Meet team and preparation day.',
+              activities: ['Airport pickup', 'Gear check', 'Team briefing'],
+              meals: ['dinner']
+            }
+          ],
+          departureDate: '2024-11-15',
+          returnDate: '2024-11-29',
+          availability: 5,
+          rating: 4.9,
+          reviewCount: 89,
+          featured: true,
+          tags: ['trekking', 'mountains', 'adventure'],
+          highlights: [
+            'Reach Everest Base Camp',
+            'Stunning Himalayan sunrise views',
+            'Visit ancient monasteries',
+            'Experience Sherpa culture',
+            'Professional mountain guides'
+          ],
+          createdAt: '2024-02-01T00:00:00Z'
+        },
+        {
+          id: 'tour-3',
+          title: 'Luxury European Capitals',
+          description: 'Indulge in the finest European experience visiting Paris, Rome, and Vienna in ultimate luxury and comfort.',
+          destination: 'Paris, Rome, Vienna',
+          country: 'France',
+          city: 'Paris',
+          duration: 10,
+          price: 3499,
+          currency: 'EUR',
+          maxGroupSize: 8,
+          difficulty: 'easy',
+          packageType: 'luxury',
+          operatorName: 'Elite European Tours',
+          operatorRating: 4.9,
+          images: ['/api/placeholder/400/300'],
+          inclusions: [
+            '5-star luxury hotel accommodations',
+            'First-class train travel',
+            'Fine dining experiences',
+            'Private guided tours',
+            'VIP museum access',
+            'Personal concierge service'
+          ],
+          exclusions: [
+            'International flights',
+            'Personal shopping',
+            'Spa treatments',
+            'Room service',
+            'Personal expenses'
+          ],
+          itinerary: [
+            {
+              day: 1,
+              title: 'Arrival in Paris',
+              description: 'VIP arrival and luxury hotel check-in.',
+              activities: ['Airport VIP transfer', 'Hotel check-in', 'Welcome champagne'],
+              meals: ['dinner']
+            }
+          ],
+          departureDate: '2024-10-15',
+          returnDate: '2024-10-25',
+          availability: 3,
+          rating: 4.8,
+          reviewCount: 67,
+          featured: true,
+          tags: ['luxury', 'culture', 'fine-dining'],
+          highlights: [
+            'Private Louvre Museum tours',
+            'Michelin-starred dining',
+            'First-class travel throughout',
+            'Personal photographer service',
+            '24/7 concierge assistance'
+          ],
+          createdAt: '2024-03-01T00:00:00Z'
+        }
+      ];
+      
+      let filteredPackages = [...simpleTourPackages];
+      
+      // Apply filters
+      if (country) {
+        filteredPackages = filteredPackages.filter(pkg => 
+          pkg.country.toLowerCase().includes(country.toString().toLowerCase())
+        );
+      }
+      
+      if (city) {
+        filteredPackages = filteredPackages.filter(pkg => 
+          pkg.city.toLowerCase().includes(city.toString().toLowerCase())
+        );
+      }
+      
+      if (packageType) {
+        filteredPackages = filteredPackages.filter(pkg => 
+          pkg.packageType === packageType
+        );
+      }
+      
+      res.json(filteredPackages.slice(0, Number(limit) || 50));
+    } catch (error) {
+      console.error('Error fetching tour packages:', error);
+      res.status(500).json({ message: 'Failed to fetch tour packages' });
+    }
+  });
+  
+  app.post('/api/tour-packages', isAuthenticated, async (req: any, res) => {
+    try {
+      const packageData = {
+        id: `tour-${Date.now()}`,
+        ...req.body,
+        operatorRating: 4.5, // Default rating for new operators
+        rating: 0,
+        reviewCount: 0,
+        featured: false,
+        createdAt: new Date().toISOString()
+      };
+      
+      // In a real app, this would be saved to database
+      console.log('Creating tour package:', packageData);
+      
+      res.json(packageData);
+    } catch (error) {
+      console.error('Error creating tour package:', error);
+      res.status(500).json({ message: 'Failed to create tour package' });
+    }
+  });
+
+  // Legacy Trips routes (keeping for compatibility)
   app.get('/api/trips', async (req, res) => {
     try {
       const { country, city, travelStyle, budget, tags, limit } = req.query;
@@ -1810,6 +2044,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating trip:', error);
       res.status(500).json({ message: 'Failed to create trip' });
+    }
+  });
+
+  // Tour Package Booking (Simple Travel Website Style)
+  app.post('/api/tour-packages/:id/book', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { travelers, message } = req.body;
+      const packageId = req.params.id;
+      
+      // For demo - In real app, fetch from database
+      const basePrice = 899; // This would be fetched from the actual package
+      const platformFee = basePrice * 0.10; // 10% platform fee
+      const totalPrice = basePrice + platformFee;
+      
+      const booking = {
+        id: `booking-${Date.now()}`,
+        packageId,
+        userId,
+        travelers: travelers || 1,
+        message: message || '',
+        status: 'confirmed',
+        basePrice,
+        platformFee,
+        totalPrice,
+        bookedAt: new Date().toISOString()
+      };
+      
+      // Log booking with platform fee details
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "tour_package_booked",
+        targetType: "tour_booking",
+        targetId: booking.id,
+        metaJson: { 
+          packageId, 
+          travelers: travelers.toString(),
+          basePrice: basePrice.toString(), 
+          platformFee: platformFee.toString(), 
+          totalPrice: totalPrice.toString() 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(booking);
+    } catch (error) {
+      console.error('Error booking tour package:', error);
+      res.status(500).json({ message: 'Failed to book tour package' });
     }
   });
 
