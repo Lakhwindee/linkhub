@@ -52,6 +52,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   useEffect(() => {
     if (userData?.youtubeUrl) {
       setYoutubeUrl(userData.youtubeUrl);
+    } else {
+      // Clear field if no YouTube URL in user data (after disconnect or refresh)
+      setYoutubeUrl("");
     }
   }, [userData?.youtubeUrl]);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -119,6 +122,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       return response.json();
     },
     onSuccess: (data) => {
+      // Clear the input field immediately
+      setYoutubeUrl("");
+      
       // For demo user, update local state and persist in localStorage
       if (isDemoUser) {
         setDemoDisconnected(true);
