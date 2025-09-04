@@ -202,7 +202,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           // Step 4: Switch to congratulations in same location
           console.log('API success, showing congratulations'); // Debug log
           setIsVerifyingConnection(false);
+          console.log('Setting showCongratulations to true'); // Debug log
           setShowCongratulations(true);
+          console.log('showCongratulations state should be true now'); // Debug log
           
           setTimeout(() => {
             console.log('Hiding congratulations'); // Debug log
@@ -475,22 +477,25 @@ function YouTubeCreatorSection({ user }: { user: any }) {
               </div>
             )}
             
-            {/* Congratulations Overlay */}
+            {/* Congratulations Overlay - DEBUG VERSION */}
             {showCongratulations && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ease-in-out">
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl transform transition-all duration-500 ease-out scale-105">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
-                    <CheckCircle className="w-10 h-10 text-white" />
+              <div className="fixed inset-0 bg-red-500/90 z-[9999] flex items-center justify-center">
+                <div className="bg-white rounded-2xl p-12 text-center border-4 border-green-500 shadow-2xl">
+                  <div className="w-20 h-20 bg-green-500 rounded-full mx-auto mb-6 flex items-center justify-center">
+                    <CheckCircle className="w-12 h-12 text-white" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-2">
-                    🎉 Congratulations!
+                  <h3 className="text-4xl font-bold text-black mb-4">
+                    🎉 SUCCESS!
                   </h3>
-                  <p className="text-green-200 text-lg">
-                    YouTube channel connected successfully!
+                  <p className="text-green-600 text-xl font-bold">
+                    YouTube Connected!
                   </p>
                 </div>
               </div>
             )}
+            
+            {/* Debug Info */}
+            {showCongratulations && console.log('CONGRATULATIONS OVERLAY IS RENDERING')}
             
             {/* Connection Form */}
             <div className="space-y-4">
