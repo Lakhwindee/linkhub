@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,40 @@ export default function Ads() {
   const [youtubeUrl, setYoutubeUrl] = useState<string>('');
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
   const [verificationCode, setVerificationCode] = useState<string>('');
+  const [demoDisconnected, setDemoDisconnected] = useState(false);
+
+  const queryClient = useQueryClient();
+
+  // YouTube Disconnect Mutation
+  const disconnectYouTube = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/youtube/disconnect");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      // Clear the input field immediately
+      setYoutubeUrl("");
+      
+      // For demo user, update local state 
+      const isDemoUser = user?.id?.includes('demo');
+      if (isDemoUser) {
+        setDemoDisconnected(true);
+        localStorage.setItem('demo_youtube_disconnected', 'true');
+      }
+      
+      console.log('Channel disconnected successfully');
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    },
+    onError: (error: any) => {
+      console.log('Disconnect Failed:', error.message);
+    },
+  });
+
+  const handleDisconnect = () => {
+    if (confirm("Are you sure you want to disconnect your YouTube channel? This will remove access to all earning campaigns.")) {
+      disconnectYouTube.mutate();
+    }
+  };
 
   // Mock campaign data
   const campaigns = [
@@ -263,6 +298,7 @@ export default function Ads() {
                         <Button 
                           className="w-full bg-orange-600 hover:bg-orange-700"
                           disabled={isVerifying}
+                          onClick={() => setIsVerifying(true)}
                         >
                           {isVerifying ? (
                             <div className="flex items-center gap-2">
@@ -277,6 +313,23 @@ export default function Ads() {
                           )}
                         </Button>
                       </>
+                    )}
+
+                    {/* Disconnect Option - if channel is connected */}
+                    {youtubeUrl && (
+                      <div className="pt-4 border-t border-orange-200">
+                        <p className="text-xs text-orange-600 mb-2">
+                          Need to change your YouTube channel?
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={handleDisconnect}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                        >
+                          Disconnect YouTube Channel
+                        </Button>
+                      </div>
                     )}
                   </CardContent>
                 </Card>
