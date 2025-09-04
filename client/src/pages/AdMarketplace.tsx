@@ -201,15 +201,18 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           
           // Step 4: Show congratulations for 3 seconds
           setIsVerifyingConnection(false);
+          console.log('API success, showing congratulations'); // Debug log
           setShowCongratulations(true);
           
           setTimeout(() => {
+            console.log('Hiding congratulations'); // Debug log
             setShowCongratulations(false);
           }, 3000); // 3 seconds congratulations
           
         } catch (error) {
           console.error('Connect failed:', error);
           setIsVerifyingConnection(false);
+          setShowCongratulations(false);
         }
       }, 5000); // 5 seconds verifying
     }, 5000); // 5 seconds loading
@@ -444,13 +447,13 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           <>
             {/* Full Screen Loading Overlay */}
             {isConnecting && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ease-in-out">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl transform transition-all duration-500 ease-out">
                   <div className="animate-spin w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">
+                  <h3 className="text-2xl font-bold text-white mb-2">
                     🔗 Connecting Channel...
                   </h3>
-                  <p className="text-blue-200 animate-pulse">
+                  <p className="text-blue-200">
                     Establishing connection to YouTube servers
                   </p>
                 </div>
@@ -459,13 +462,13 @@ function YouTubeCreatorSection({ user }: { user: any }) {
             
             {/* Full Screen Verifying Connection Overlay */}
             {isVerifyingConnection && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ease-in-out">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl transform transition-all duration-500 ease-out">
                   <div className="animate-spin w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-white mb-2 animate-pulse">
+                  <h3 className="text-2xl font-bold text-white mb-2">
                     🔍 Verifying Channel...
                   </h3>
-                  <p className="text-green-200 animate-pulse">
+                  <p className="text-green-200">
                     Checking channel data and subscriber count
                   </p>
                 </div>
@@ -474,15 +477,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
             
             {/* Congratulations Overlay */}
             {showCongratulations && (
-              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
-                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl animate-bounce">
-                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center transition-all duration-300 ease-in-out">
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 text-center border border-white/20 shadow-2xl transform transition-all duration-500 ease-out scale-105">
+                  <div className="w-16 h-16 bg-green-500 rounded-full mx-auto mb-4 flex items-center justify-center animate-pulse">
                     <CheckCircle className="w-10 h-10 text-white" />
                   </div>
-                  <h3 className="text-3xl font-bold text-white mb-2 animate-pulse">
+                  <h3 className="text-3xl font-bold text-white mb-2">
                     🎉 Congratulations!
                   </h3>
-                  <p className="text-green-200 animate-pulse text-lg">
+                  <p className="text-green-200 text-lg">
                     YouTube channel connected successfully!
                   </p>
                 </div>
