@@ -9,6 +9,7 @@ export function DemoLogin() {
   const handleDemoLogin = async () => {
     setIsLoading(true);
     try {
+      console.log('Starting demo login...');
       const response = await fetch('/api/demo-login', {
         method: 'POST',
         headers: {
@@ -17,13 +18,27 @@ export function DemoLogin() {
         credentials: 'include', // Important for cookie handling
       });
       
+      console.log('Demo login response:', response.status, response.ok);
+      
       if (response.ok) {
+        console.log('Setting localStorage...');
         // Set localStorage for frontend authentication
         localStorage.setItem('hublink_demo_user', 'true');
-        // Refresh page to activate demo session
-        window.location.reload();
+        
+        console.log('Testing auth API...');
+        // Test if auth API works immediately
+        const authTest = await fetch('/api/auth/user', {
+          credentials: 'include',
+        });
+        console.log('Auth test result:', authTest.status, authTest.ok);
+        
+        // Small delay then refresh page
+        setTimeout(() => {
+          console.log('Reloading page...');
+          window.location.reload();
+        }, 500);
       } else {
-        console.error('Demo login failed');
+        console.error('Demo login failed with status:', response.status);
       }
     } catch (error) {
       console.error('Demo login error:', error);
