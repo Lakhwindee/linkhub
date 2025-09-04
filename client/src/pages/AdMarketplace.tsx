@@ -22,7 +22,10 @@ import type { Ad, AdReservation } from "@shared/schema";
 function YouTubeCreatorSection({ user }: { user: any }) {
   // For demo user, check if they have been disconnected
   const isDemoUser = user?.id === 'demo-user-1';
-  const [demoDisconnected, setDemoDisconnected] = useState(false);
+  const [demoDisconnected, setDemoDisconnected] = useState(() => {
+    // Initialize from localStorage for demo user
+    return isDemoUser ? localStorage.getItem('demo_youtube_disconnected') === 'true' : false;
+  });
   const isYouTubeVerified = isDemoUser ? !demoDisconnected : user?.youtubeVerified;
   const [youtubeUrl, setYoutubeUrl] = useState(user?.youtubeUrl || '');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -41,6 +44,11 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     },
     onSuccess: (data) => {
       setVerificationCode(data.verificationCode);
+      // For demo user, clear disconnect state when reconnecting
+      if (isDemoUser) {
+        setDemoDisconnected(false);
+        localStorage.removeItem('demo_youtube_disconnected');
+      }
       toast({
         title: "YouTube Channel Connected!",
         description: `${data.subscriberCount.toLocaleString()} subscribers detected. Now verify ownership.`,
@@ -83,9 +91,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       return response.json();
     },
     onSuccess: (data) => {
-      // For demo user, update local state
+      // For demo user, update local state and persist in localStorage
       if (isDemoUser) {
         setDemoDisconnected(true);
+        localStorage.setItem('demo_youtube_disconnected', 'true');
       }
       toast({
         title: "Channel Disconnected",
