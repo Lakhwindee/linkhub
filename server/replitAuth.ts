@@ -133,6 +133,8 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     // Check session cookie to determine which demo user to use
     const sessionId = req.cookies?.session_id;
     
+    console.log('Session ID found:', sessionId); // Debug log
+    
     if (sessionId === 'demo-publisher-session') {
       req.user = {
         claims: { 
@@ -142,7 +144,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
           last_name: 'Publisher'
         }
       } as any;
-      console.log('Demo publisher authenticated:', req.user.claims.sub);
+      console.log('✅ Demo PUBLISHER authenticated:', req.user.claims.sub);
     } else if (sessionId === 'demo-creator-session') {
       req.user = {
         claims: { 
@@ -152,7 +154,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
           last_name: 'Creator'
         }
       } as any;
-      console.log('Demo creator authenticated:', req.user.claims.sub);
+      console.log('✅ Demo CREATOR authenticated:', req.user.claims.sub);
     } else {
       // Default to original demo user for backward compatibility
       req.user = {
@@ -163,7 +165,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
           last_name: 'User'
         }
       } as any;
-      console.log('Demo user authenticated:', req.user.claims.sub);
+      console.log('🔄 Default demo user authenticated:', req.user.claims.sub);
     }
     
     return next();
