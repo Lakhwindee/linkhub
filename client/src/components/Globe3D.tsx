@@ -23,8 +23,8 @@ interface Globe3DProps {
 
 export default function Globe3D({ 
   users, 
-  width = 800, 
-  height = 600, 
+  width = window.innerWidth, 
+  height = window.innerHeight, 
   onUserClick,
   onStayClick,
   selectedCountry,
@@ -1488,9 +1488,10 @@ export default function Globe3D({
       
       <div 
         ref={mapRef} 
-        className="w-full h-full"
+        className="w-full h-full absolute inset-0"
         style={{ 
-          minHeight: '500px',
+          minHeight: '100vh',
+          minWidth: '100vw',
           opacity: isLoading ? 0.3 : 1,
           transition: 'opacity 0.5s ease-in-out'
         }}

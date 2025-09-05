@@ -805,7 +805,7 @@ export default function DiscoverTravelers() {
   }
 
   return (
-    <div className="h-screen bg-background flex overflow-hidden">
+    <div className="h-screen w-full bg-background overflow-hidden fixed inset-0">
       {/* Controls Panel - Floating Overlay */}
       <div className="absolute top-20 left-4 z-50 w-72 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl p-4 space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
         {/* Toggle Controls Button */}
@@ -999,14 +999,16 @@ export default function DiscoverTravelers() {
         )}
       </div>
 
-      {/* Google Maps Integration - Full Screen */}
-      <div className="w-full h-full relative">
+      {/* Google Maps Integration - True Full Screen */}
+      <div className="w-full h-full absolute inset-0">
         <Globe3D 
           users={typedUsers} 
           selectedCountry={selectedCountry}
           selectedState={selectedState}
           showTravellers={showTravellers}
           showStays={showStays}
+          width={window.innerWidth}
+          height={window.innerHeight}
         />
       </div>
 
