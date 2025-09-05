@@ -549,8 +549,80 @@ export default function Ads() {
           </Tabs>
         )}
 
-        {/* Restricted View for Standard/Free Users */}
-        {!isPremium && (
+        {/* Standard Users View with Hover X */}
+        {isStandard && (
+          <div className="space-y-6">
+            <div className="grid gap-6">
+              {campaigns.map((campaign) => (
+                <Card 
+                  key={campaign.id} 
+                  className="relative group cursor-pointer hover:shadow-lg transition-all duration-300"
+                >
+                  {/* Hover X Indicator for Standard Users */}
+                  <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                    <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                  </div>
+                  
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                        <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                        <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                        <div className="text-sm text-muted-foreground">per post</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground">{campaign.description}</p>
+                    
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium mb-2">Requirements</h4>
+                        <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-2">Campaign Details</h4>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <div>Budget: {campaign.budget}</div>
+                          <div>Deadline: {campaign.deadline}</div>
+                          <div className="text-green-600">{campaign.spots}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {campaign.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="w-4 h-4" />
+                        <span>Closes {campaign.deadline}</span>
+                      </div>
+                      <Button disabled className="relative">
+                        <Lock className="w-4 h-4 mr-2" />
+                        Upgrade to Premium
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Restricted View for Free Users */}
+        {isFree && (
           <div className="space-y-6">
             <div className="grid gap-6">
               {campaigns.map((campaign) => (

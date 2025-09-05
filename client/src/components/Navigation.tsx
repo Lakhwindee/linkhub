@@ -96,7 +96,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads", restricted: user?.plan !== 'premium' },
+      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
     ];
   }
 
