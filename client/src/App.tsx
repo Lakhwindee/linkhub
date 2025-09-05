@@ -48,7 +48,6 @@ function Router() {
           {!isAuthenticated ? (
             <>
               <Route path="/" component={Landing} />
-              <Route path="/demo-login" component={DemoLogin} />
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />

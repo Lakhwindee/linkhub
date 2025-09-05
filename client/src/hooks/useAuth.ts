@@ -21,12 +21,12 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simple demo user authentication
+    // Check localStorage for demo user authentication
     const isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
     
     if (isDemoUserLoggedIn) {
-      // Simple demo user data
-      const demoUserData: User = {
+      // Simple demo user for development
+      const demoUserData = {
         id: 'demo-user-1',
         firstName: 'Demo',
         lastName: 'User', 
@@ -34,8 +34,8 @@ export function useAuth() {
         username: 'demo_user',
         email: 'demo@hublink.com',
         profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        plan: 'creator',
-        role: 'user',
+        plan: 'premium',
+        role: 'publisher',
         youtubeChannelId: 'UCHUAPEHzyyXrZU3WAHYh9MA',
         youtubeSubscribers: 939000,
         youtubeTier: 3

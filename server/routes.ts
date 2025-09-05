@@ -44,44 +44,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Check session cookie to differentiate roles
-      const sessionId = req.cookies?.session_id;
-      
-      // Modify user data based on role
-      let responseUser = { ...user };
-      
-      if (sessionId === 'demo-publisher-session') {
-        responseUser.role = 'publisher';
-        responseUser.displayName = 'Demo Publisher';
-        responseUser.firstName = 'Demo';
-        responseUser.lastName = 'Publisher';
-        responseUser.email = 'demo-publisher@hublink.com';
-        responseUser.plan = 'creator'; // Publisher has creator plan access
-        console.log('API returning PUBLISHER user data:', responseUser.role);
-      } else if (sessionId === 'demo-creator-session') {
-        responseUser.role = 'creator';
-        responseUser.displayName = 'Demo Creator';
-        responseUser.firstName = 'Demo';
-        responseUser.lastName = 'Creator';
-        responseUser.email = 'demo-creator@hublink.com';
-        responseUser.plan = 'creator';
-        console.log('API returning CREATOR user data:', responseUser.role);
-      } else {
-        // Default behavior
-        console.log('API returning DEFAULT user data:', {
-          id: user.id,
-          youtubeSubscribers: user.youtubeSubscribers,
-          youtubeTier: user.youtubeTier,
-          youtubeChannelId: user.youtubeChannelId,
-          youtubeVerified: user.youtubeVerified
-        });
-      }
+      // Debug log to see what we're returning
+      console.log('API returning user data:', {
+        id: user.id,
+        youtubeSubscribers: user.youtubeSubscribers,
+        youtubeTier: user.youtubeTier,
+        youtubeChannelId: user.youtubeChannelId,
+        youtubeVerified: user.youtubeVerified
+      });
       
       // Disable cache to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.set('Pragma', 'no-cache');
       res.set('Expires', '0');
-      res.json(responseUser);
+      res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -1990,67 +1966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Demo authentication endpoints - sets demo session for browser
-  
-  // Publisher Demo Login (Role 2)
-  app.post('/api/demo-login-publisher', async (req, res) => {
-    if (process.env.NODE_ENV === 'development') {
-      // Set publisher demo session cookie for browser
-      res.cookie('session_id', 'demo-publisher-session', { 
-        httpOnly: true, 
-        secure: false, 
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
-      });
-      
-      res.json({ 
-        message: "Publisher demo login successful", 
-        user: {
-          id: 'demo-publisher-1',
-          role: '2', // Publisher role
-          plan: 'creator',
-          displayName: 'Demo Publisher',
-          firstName: 'Demo',
-          lastName: 'Publisher',
-          email: 'demo-publisher@hublink.com'
-        } 
-      });
-    } else {
-      res.status(403).json({ message: "Demo login only available in development" });
-    }
-  });
-
-  // Creator Demo Login (Role 1) 
-  app.post('/api/demo-login-creator', async (req, res) => {
-    if (process.env.NODE_ENV === 'development') {
-      // Set creator demo session cookie for browser
-      res.cookie('session_id', 'demo-creator-session', { 
-        httpOnly: true, 
-        secure: false, 
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
-      });
-      
-      res.json({ 
-        message: "Creator demo login successful", 
-        user: {
-          id: 'demo-creator-1',
-          role: '1', // Creator role
-          plan: 'creator',
-          displayName: 'Demo Creator',
-          firstName: 'Demo',
-          lastName: 'Creator',
-          email: 'demo-creator@hublink.com'
-        } 
-      });
-    } else {
-      res.status(403).json({ message: "Demo login only available in development" });
-    }
-  });
-
-  // Original demo login kept for backward compatibility
+  // Demo authentication endpoint - sets demo session for browser
   app.post('/api/demo-login', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       // Set demo session cookie for browser
@@ -2058,8 +1974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         httpOnly: true, 
         secure: false, 
         sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        path: '/'
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
       
       res.json({ 

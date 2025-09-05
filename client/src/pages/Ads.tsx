@@ -1,8 +1,6 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/api";
-import PublisherAds from "./PublisherAds";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,8 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
   Lock, Zap, Target, BarChart3, CreditCard, CheckCircle,
-  Plus, MapPin, Users, Calendar, Building, User, Youtube,
-  AlertCircle, ExternalLink, Copy, CheckCircle2
+  Plus, MapPin, Users, Calendar, Building, User
 } from "lucide-react";
 import { Link } from "wouter";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
@@ -21,43 +18,6 @@ export default function Ads() {
   const { user, isAuthenticated } = useAuth();
   const { isFree, isStandard, isPremium } = usePlanAccess();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const [youtubeUrl, setYoutubeUrl] = useState<string>('');
-  const [isVerifying, setIsVerifying] = useState<boolean>(false);
-  const [verificationCode, setVerificationCode] = useState<string>('');
-  const [demoDisconnected, setDemoDisconnected] = useState(false);
-
-  const queryClient = useQueryClient();
-
-  // YouTube Disconnect Mutation
-  const disconnectYouTube = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/youtube/disconnect");
-      return response.json();
-    },
-    onSuccess: (data) => {
-      // Clear the input field immediately
-      setYoutubeUrl("");
-      
-      // For demo user, update local state 
-      const isDemoUser = user?.id?.includes('demo');
-      if (isDemoUser) {
-        setDemoDisconnected(true);
-        localStorage.setItem('demo_youtube_disconnected', 'true');
-      }
-      
-      console.log('Channel disconnected successfully');
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-    },
-    onError: (error: any) => {
-      console.log('Disconnect Failed:', error.message);
-    },
-  });
-
-  const handleDisconnect = () => {
-    if (confirm("Are you sure you want to disconnect your YouTube channel? This will remove access to all earning campaigns.")) {
-      disconnectYouTube.mutate();
-    }
-  };
 
   // Mock campaign data
   const campaigns = [
@@ -182,160 +142,14 @@ export default function Ads() {
         )}
 
         {isPremium && (
-          <Tabs defaultValue="youtube-creator" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="youtube-creator">YouTube Creator</TabsTrigger>
+          <Tabs defaultValue="campaigns" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
               <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
             </TabsList>
-
-            {/* YouTube Creator Dashboard */}
-            <TabsContent value="youtube-creator" className="space-y-6">
-              <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border border-red-200 rounded-lg p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-                    <Youtube className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-red-900 dark:text-red-100">YouTube Creator Dashboard</h2>
-                    <p className="text-sm text-red-700 dark:text-red-300">
-                      Discover brand campaigns and start earning from your content
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-red-600">{user?.youtubeSubscribers?.toLocaleString() || '0'}</div>
-                      <div className="text-sm text-muted-foreground">subscribers</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-lg font-semibold text-blue-600">Established Creator</div>
-                      <div className="text-sm text-muted-foreground">{user?.youtubeSubscribers && user.youtubeSubscribers > 70000 ? '70K+ subscribers range' : 'Growing'}</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <Button variant="outline" size="sm" className="text-xs">
-                        Tier {user?.youtubeTier || 1}
-                      </Button>
-                      <div className="text-sm text-muted-foreground mt-1">Status</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-lg font-semibold text-orange-600">Channel Not Verified</div>
-                      <div className="text-sm text-muted-foreground">Verification required to earn money</div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Channel Connection Section */}
-                <Card className="bg-yellow-50 border-yellow-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-orange-700">
-                      <AlertCircle className="w-5 h-5" />
-                      Verify Channel Ownership
-                    </CardTitle>
-                    <p className="text-sm text-orange-600">
-                      To prove you own this channel, add this verification code to your channel description:
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* YouTube Channel URL Input */}
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-orange-800">YouTube Channel URL</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="url"
-                          value={youtubeUrl}
-                          onChange={(e) => setYoutubeUrl(e.target.value)}
-                          placeholder="https://www.youtube.com/channel/YOUR_CHANNEL_ID"
-                          className="flex-1 p-3 border rounded-lg bg-white text-sm"
-                        />
-                        <Button 
-                          variant="outline" 
-                          className="px-4 text-orange-700 border-orange-300"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <p className="text-xs text-orange-600">
-                        Enter your YouTube channel URL to get started
-                      </p>
-                    </div>
-
-                    {/* Verification Code Display */}
-                    {youtubeUrl && (
-                      <>
-                        <div className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg border-2 border-dashed border-gray-300">
-                          <div className="flex items-center justify-between">
-                            <code className="text-sm font-mono">
-                              HUBLINK-VERIFY-{Math.random().toString(36).substring(2, 15).toUpperCase()}
-                            </code>
-                            <Button variant="ghost" size="sm">
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-medium text-orange-800">Steps:</h4>
-                          <ol className="text-sm text-orange-700 space-y-1 ml-4">
-                            <li>1. Go to your YouTube Studio</li>
-                            <li>2. Click "Customization" → "Basic Info"</li>
-                            <li>3. Add this verification code above to your channel description</li>
-                            <li>4. Save changes and click "Verify Channel Ownership" below</li>
-                          </ol>
-                        </div>
-
-                        <Button 
-                          className="w-full bg-orange-600 hover:bg-orange-700"
-                          disabled={isVerifying}
-                          onClick={() => setIsVerifying(true)}
-                        >
-                          {isVerifying ? (
-                            <div className="flex items-center gap-2">
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              Verifying...
-                            </div>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="w-4 h-4 mr-2" />
-                              Verify Channel Ownership
-                            </>
-                          )}
-                        </Button>
-                      </>
-                    )}
-
-                    {/* Disconnect Option - if channel is connected */}
-                    {youtubeUrl && (
-                      <div className="pt-4 border-t border-orange-200">
-                        <p className="text-xs text-orange-600 mb-2">
-                          Need to change your YouTube channel?
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={handleDisconnect}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
-                        >
-                          Disconnect YouTube Channel
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
 
             {/* Premium Earnings Dashboard */}
             <TabsContent value="earnings" className="space-y-6">

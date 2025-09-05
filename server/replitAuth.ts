@@ -130,44 +130,16 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   // Demo mode bypass - simplified for development
   if (process.env.NODE_ENV === 'development') {
-    // Check session cookie to determine which demo user to use
-    const sessionId = req.cookies?.session_id;
-    
-    console.log('🔍 Session ID found:', sessionId, 'from cookies:', Object.keys(req.cookies || {})); // Debug log
-    
-    if (sessionId === 'demo-publisher-session') {
-      req.user = {
-        claims: { 
-          sub: 'demo-user-1', // Map to existing demo user
-          email: 'demo-publisher@hublink.com',
-          first_name: 'Demo',
-          last_name: 'Publisher'
-        }
-      } as any;
-      console.log('✅ Demo PUBLISHER authenticated (mapped to demo-user-1):', req.user.claims.sub);
-    } else if (sessionId === 'demo-creator-session') {
-      req.user = {
-        claims: { 
-          sub: 'demo-user-1', // Map to existing demo user
-          email: 'demo@hublink.com',
-          first_name: 'Demo',
-          last_name: 'Creator'
-        }
-      } as any;
-      console.log('✅ Demo CREATOR authenticated (mapped to demo-user-1):', req.user.claims.sub);
-    } else {
-      // Default to original demo user for backward compatibility
-      req.user = {
-        claims: { 
-          sub: 'demo-user-1',
-          email: 'demo@hublink.com',
-          first_name: 'Demo',
-          last_name: 'User'
-        }
-      } as any;
-      console.log('🔄 Default demo user authenticated:', req.user.claims.sub);
-    }
-    
+    // Always authenticate as demo user in development for simplified testing
+    req.user = {
+      claims: { 
+        sub: 'demo-user-1',
+        email: 'demo@hublink.com',
+        first_name: 'Demo',
+        last_name: 'User'
+      }
+    } as any;
+    console.log('Demo user authenticated:', req.user.claims.sub);
     return next();
   }
 
