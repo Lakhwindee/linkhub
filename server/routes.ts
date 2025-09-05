@@ -1342,7 +1342,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { id } = req.params;
       
-      const user = await storage.getUser(userId);
+      let user = await storage.getUser(userId);
+      
+      // Auto-fix demo user plan if needed
+      if (userId === 'demo-user-1' && user?.plan !== 'premium') {
+        console.log('Updating demo user plan to premium');
+        user = await storage.updateUserProfile(userId, { plan: 'premium' });
+      }
       
       // For demo user, bypass plan check
       if (userId !== 'demo-user-1' && user?.plan !== 'premium') {
