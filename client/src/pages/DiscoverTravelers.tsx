@@ -806,20 +806,22 @@ export default function DiscoverTravelers() {
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
-      {/* Full Screen Toggle Button - Floating */}
-      <Button
-        onClick={() => setIsFullScreen(!isFullScreen)}
-        className="fixed top-20 left-4 z-50 shadow-lg"
-        size="sm"
-        variant="secondary"
-      >
-        {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-        {isFullScreen ? "Exit Full Screen" : "Full Screen"}
-      </Button>
+      {/* Controls Panel - Floating Overlay */}
+      <div className="absolute top-20 left-4 z-50 w-72 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl p-4 space-y-3 max-h-[calc(100vh-6rem)] overflow-y-auto">
+        {/* Toggle Controls Button */}
+        <Button
+          onClick={() => setIsFullScreen(!isFullScreen)}
+          className="w-full mb-2"
+          size="sm"
+          variant="secondary"
+        >
+          {isFullScreen ? <Minimize2 className="w-4 h-4 mr-2" /> : <Maximize2 className="w-4 h-4 mr-2" />}
+          {isFullScreen ? "Show Controls" : "Hide Controls"}
+        </Button>
 
-      {/* Sidebar with Controls - Hidden in full screen */}
-      {!isFullScreen && (
-        <div className="w-80 bg-card border-r border-border p-4 space-y-4 overflow-y-auto flex-shrink-0">
+        {/* Collapsible Controls */}
+        {!isFullScreen && (
+          <div className="space-y-3">
         {/* Header */}
         <div className="text-center space-y-2 mb-6">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -993,11 +995,12 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Google Maps Integration */}
-      <div className={`h-full relative ${isFullScreen ? 'w-full' : 'flex-1'}`}>
+      {/* Google Maps Integration - Full Screen */}
+      <div className="w-full h-full relative">
         <Globe3D 
           users={typedUsers} 
           selectedCountry={selectedCountry}
