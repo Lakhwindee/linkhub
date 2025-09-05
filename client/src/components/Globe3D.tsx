@@ -17,6 +17,8 @@ interface Globe3DProps {
   onStayClick?: (stay: Stay) => void;
   selectedCountry?: string;
   selectedState?: string;
+  showTravellers?: boolean;
+  showStays?: boolean;
 }
 
 export default function Globe3D({ 
@@ -26,7 +28,9 @@ export default function Globe3D({
   onUserClick,
   onStayClick,
   selectedCountry,
-  selectedState
+  selectedState,
+  showTravellers = true,
+  showStays = true
 }: Globe3DProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -398,9 +402,11 @@ export default function Globe3D({
     });
     markersRef.current = [];
 
-    users
-      .filter(user => user.lat && user.lng && user.showOnMap)
-      .forEach(user => {
+    // Only show travellers if toggle is enabled
+    if (showTravellers) {
+      users
+        .filter(user => user.lat && user.lng && user.showOnMap)
+        .forEach(user => {
         const color = user.plan === 'creator' ? '#10b981' : user.plan === 'traveler' ? '#3b82f6' : '#6b7280';
         const planIcon = user.plan === 'creator' ? '⭐' : user.plan === 'traveler' ? '✈️' : '👤';
         
@@ -551,6 +557,7 @@ export default function Globe3D({
 
         markersRef.current.push(marker);
       });
+    } // End of showTravellers condition
   };
 
   // Add stay markers to the map
@@ -562,11 +569,12 @@ export default function Globe3D({
     // Add user markers
     addPremiumMarkers(map);
 
-    // Add stay markers with bed icons
-    stays.forEach((stay) => {
-      if (!stay.lat || !stay.lng) return;
+    // Only show stays if toggle is enabled
+    if (showStays) {
+      stays.forEach((stay) => {
+        if (!stay.lat || !stay.lng) return;
 
-      // Create custom bed icon marker with better visibility
+        // Create custom bed icon marker with better visibility
       const bedIcon = {
         path: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm2 6h12v6H6v-6zm2-3h8v2H8V7z', // Better bed icon
         fillColor: '#EC4899', // Bright pink color for stays  
@@ -709,15 +717,16 @@ export default function Globe3D({
       });
 
       markersRef.current.push(marker);
-    });
+      });
+    } // End of showStays condition
   };
 
-  // Update markers when users or stays change
+  // Update markers when users, stays, or toggle states change
   useEffect(() => {
     if (mapInstanceRef.current && !isLoading) {
       addStayMarkers(mapInstanceRef.current);
     }
-  }, [users, stays, isLoading]);
+  }, [users, stays, isLoading, showTravellers, showStays]);
 
   // Handle country/city focus with smooth animations
   useEffect(() => {

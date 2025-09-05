@@ -710,6 +710,9 @@ export default function DiscoverTravelers() {
   const [searchQuery, setSearchQuery] = useState("");
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  // Toggle states for showing/hiding map data
+  const [showTravellers, setShowTravellers] = useState(true);
+  const [showStays, setShowStays] = useState(true);
   
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   
@@ -882,6 +885,44 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
+        {/* Map Display Controls */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Map Display
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-travellers"
+                checked={showTravellers}
+                onCheckedChange={setShowTravellers}
+              />
+              <Label htmlFor="show-travellers" className="text-xs">
+                Show Travellers
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="show-stays"
+                checked={showStays}
+                onCheckedChange={setShowStays}
+              />
+              <Label htmlFor="show-stays" className="text-xs">
+                Show Stays
+              </Label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {showTravellers && showStays ? "🗺️ Showing all on map" : 
+               showTravellers && !showStays ? "👥 Showing only travellers" :
+               !showTravellers && showStays ? "🏨 Showing only stays" :
+               "🚫 Map display disabled"}
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Live Sharing */}
         <Card>
           <CardHeader className="pb-3">
@@ -947,6 +988,8 @@ export default function DiscoverTravelers() {
           users={typedUsers} 
           selectedCountry={selectedCountry}
           selectedState={selectedState}
+          showTravellers={showTravellers}
+          showStays={showStays}
         />
       </div>
 
