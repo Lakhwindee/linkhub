@@ -1343,7 +1343,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       
       const user = await storage.getUser(userId);
-      if (user?.plan !== 'premium') {
+      
+      // For demo user, bypass plan check
+      if (userId !== 'demo-user-1' && user?.plan !== 'premium') {
         return res.status(403).json({ message: "Creator plan required" });
       }
 
