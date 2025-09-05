@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlanAccess } from "@/hooks/usePlanAccess";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -594,6 +595,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
 export default function AdMarketplace() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { isFree, isStandard, isPremium } = usePlanAccess();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -626,28 +628,28 @@ export default function AdMarketplace() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Check creator plan access
+  // Access check - allow all creators regardless of plan
   useEffect(() => {
-    if (user && user.plan !== 'creator') {
+    if (user && user.role !== 'creator') {
       toast({
-        title: "Creator Plan Required",
-        description: "You need a Creator plan to access the Ad Marketplace.",
+        title: "Creator Account Required",
+        description: "You need a Creator account to access the Ad Marketplace.",
         variant: "destructive",
       });
     }
   }, [user, toast]);
 
-  // Fetch ads
+  // Fetch ads - allow for creators regardless of plan
   const { data: ads = [], isLoading: adsLoading, error: adsError } = useQuery({
     queryKey: ["/api/ads"],
-    enabled: user?.plan === 'creator',
+    enabled: user?.role === 'creator',
     retry: false,
   });
 
   // Fetch user's reservations
   const { data: reservations = [], isLoading: reservationsLoading } = useQuery({
     queryKey: ["/api/reservations"],
-    enabled: user?.plan === 'creator',
+    enabled: user?.role === 'creator',
     retry: false,
   });
 
@@ -853,7 +855,7 @@ export default function AdMarketplace() {
     return null;
   }
 
-  if (user.plan !== 'creator') {
+  if (user.role !== 'creator') {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
@@ -861,13 +863,13 @@ export default function AdMarketplace() {
             <CardContent className="p-12 text-center">
               <DollarSign className="w-16 h-16 mx-auto mb-4 text-yellow-600 dark:text-yellow-400" />
               <h2 className="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">
-                Creator Plan Required
+                Creator Account Required
               </h2>
               <p className="text-yellow-700 dark:text-yellow-300 mb-6">
-                Upgrade to the Creator plan to access the Ad Marketplace and start earning from brand collaborations.
+                You need a Creator account to access the Ad Marketplace and start earning from brand collaborations.
               </p>
               <Button asChild className="bg-yellow-600 hover:bg-yellow-700 text-white" data-testid="button-upgrade-to-creator">
-                <Link href="/subscribe">Upgrade to Creator</Link>
+                <Link href="/subscribe">Get Creator Account</Link>
               </Button>
             </CardContent>
           </Card>
@@ -988,7 +990,21 @@ export default function AdMarketplace() {
               ) : (filteredAds as Ad[]).length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {(filteredAds as Ad[]).map((ad: Ad) => (
-                    <Card key={ad.id} className="travel-card" data-testid={`card-ad-${ad.id}`}>
+                    <Card 
+                      key={ad.id} 
+                      className={`travel-card ${isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
+                      data-testid={`card-ad-${ad.id}`}
+                    >
+                      {/* Hover X Indicator for Standard Users */}
+                      {isStandard && (
+                        <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                          <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
                       <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                           <div>
@@ -1067,12 +1083,14 @@ export default function AdMarketplace() {
                           <DialogTrigger asChild>
                             <Button 
                               size="sm" 
-                              className="w-full bg-accent hover:bg-accent/90"
-                              disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                              className={`w-full ${isStandard ? 'bg-gray-400 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'}`}
+                              disabled={isStandard || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
                               data-testid={`button-reserve-ad-${ad.id}`}
                             >
                               {reserveAdMutation.isPending ? (
                                 <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                              ) : isStandard ? (
+                                "Upgrade to Premium to Reserve"
                               ) : (
                                 "Reserve Campaign"
                               )}
