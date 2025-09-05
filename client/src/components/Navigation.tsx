@@ -77,28 +77,18 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   // Navigation items based on user role
   let navItems = [];
   
-  if (user?.role === '2' || user?.role === 'publisher') {
-    // Publisher role (role 2) only sees these 4 menus
-    navItems = [
-      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
-      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-ads" },
-      { href: "/billing", icon: CreditCard, label: "Billing", testId: "nav-billing" },
-    ];
-  } else {
-    // All other roles see full navigation
-    navItems = [
-      { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
-      { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
-      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
-      { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
-      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
-      { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
-      { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads", restricted: user?.plan !== 'premium' },
-    ];
-  }
+  // Simple full navigation for everyone
+  navItems = [
+    { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
+    { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
+    { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+    { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
+    { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
+    { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
+    { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
+    { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
+    { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads", restricted: user?.plan !== 'premium' },
+  ];
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">

@@ -137,11 +137,6 @@ export default function Ads() {
   }
 
 
-  // Role-based routing: Publishers see PublisherAds, Creators see YouTube Creator Dashboard
-  if (user?.role === '2' || user?.role === 'publisher') {
-    return <PublisherAds />;
-  }
-
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto space-y-6">
