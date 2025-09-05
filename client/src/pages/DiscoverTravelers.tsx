@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users } from "lucide-react";
+import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Globe3D from "@/components/Globe3D";
 import type { User } from "@shared/schema";
@@ -713,6 +713,8 @@ export default function DiscoverTravelers() {
   // Toggle states for showing/hiding map data
   const [showTravellers, setShowTravellers] = useState(true);
   const [showStays, setShowStays] = useState(true);
+  // Full screen toggle state
+  const [isFullScreen, setIsFullScreen] = useState(false);
   
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   
@@ -804,8 +806,20 @@ export default function DiscoverTravelers() {
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
-      {/* Sidebar with Controls */}
-      <div className="w-80 bg-card border-r border-border p-4 space-y-4 overflow-y-auto flex-shrink-0">
+      {/* Full Screen Toggle Button - Floating */}
+      <Button
+        onClick={() => setIsFullScreen(!isFullScreen)}
+        className="fixed top-20 left-4 z-50 shadow-lg"
+        size="sm"
+        variant="secondary"
+      >
+        {isFullScreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+        {isFullScreen ? "Exit Full Screen" : "Full Screen"}
+      </Button>
+
+      {/* Sidebar with Controls - Hidden in full screen */}
+      {!isFullScreen && (
+        <div className="w-80 bg-card border-r border-border p-4 space-y-4 overflow-y-auto flex-shrink-0">
         {/* Header */}
         <div className="text-center space-y-2 mb-6">
           <h1 className="text-xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -979,11 +993,11 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-
-      </div>
+        </div>
+      )}
 
       {/* Google Maps Integration */}
-      <div className="flex-1 h-full relative">
+      <div className={`h-full relative ${isFullScreen ? 'w-full' : 'flex-1'}`}>
         <Globe3D 
           users={typedUsers} 
           selectedCountry={selectedCountry}
