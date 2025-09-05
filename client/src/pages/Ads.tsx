@@ -126,22 +126,29 @@ export default function Ads() {
           </div>
         </div>
 
-        {/* Restriction Alert for Non-Premium Users */}
-        {!isPremium && (
+        {/* Restriction Alert for Free Users Only */}
+        {isFree && (
           <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950/10">
             <Lock className="h-4 w-4 text-orange-600" />
             <AlertDescription className="text-orange-800 dark:text-orange-200">
-              {isFree && (
-                <>You're on the Free plan. Upgrade to <strong>Standard ($25/mo)</strong> to view campaigns or <strong>Premium Earner ($45/mo)</strong> to apply and earn.</>
-              )}
-              {isStandard && (
-                <>You're on the Standard plan. You can view campaigns but need <strong>Premium Earner ($45/mo)</strong> to apply and start earning. <Link href="/subscribe" className="underline font-medium">Upgrade now</Link></>
-              )}
+              You're on the Free plan. Upgrade to <strong>Standard ($25/mo)</strong> to view campaigns or <strong>Premium Earner ($45/mo)</strong> to apply and earn.
+              <Link href="/subscribe" className="underline font-medium ml-1">Upgrade now</Link>
             </AlertDescription>
           </Alert>
         )}
 
-        {isPremium && (
+        {/* Info Alert for Standard Users */}
+        {isStandard && (
+          <Alert className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
+            <Crown className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 dark:text-blue-200">
+              You're on the Standard plan. You can view campaigns but need <strong>Premium Earner ($45/mo)</strong> to apply and start earning. 
+              <Link href="/subscribe" className="underline font-medium ml-1">Upgrade to Premium</Link>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {(isPremium || isStandard) && (
           <Tabs defaultValue="campaigns" className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
@@ -402,8 +409,22 @@ export default function Ads() {
             <TabsContent value="campaigns">
               <div className="grid gap-6">
                 {campaigns.map((campaign) => (
-                  <Card key={campaign.id} className="relative overflow-hidden">
-                    {campaign.restricted && (
+                  <Card 
+                    key={campaign.id} 
+                    className={`relative overflow-hidden ${isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
+                  >
+                    {/* Hover X Indicator for Standard Users */}
+                    {isStandard && (
+                      <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
+                        <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!isStandard && campaign.restricted && (
                       <div className="absolute top-0 right-0 bg-green-600 text-white px-2 py-1 text-xs">
                         Premium Access
                       </div>
@@ -447,7 +468,12 @@ export default function Ads() {
                         ))}
                       </div>
                       
-                      {campaign.restricted ? (
+                      {isStandard ? (
+                        <Button disabled className="w-full bg-gray-400">
+                          <Lock className="w-4 h-4 mr-2" />
+                          Upgrade to Premium to Apply
+                        </Button>
+                      ) : campaign.restricted ? (
                         <div className="bg-orange-50 dark:bg-orange-950/10 border border-orange-200 rounded-lg p-4">
                           <div className="flex items-center gap-3">
                             <Lock className="w-5 h-5 text-orange-600" />
@@ -547,78 +573,6 @@ export default function Ads() {
               </div>
             </TabsContent>
           </Tabs>
-        )}
-
-        {/* Standard Users View with Hover X */}
-        {isStandard && (
-          <div className="space-y-6">
-            <div className="grid gap-6">
-              {campaigns.map((campaign) => (
-                <Card 
-                  key={campaign.id} 
-                  className="relative group cursor-pointer hover:shadow-lg transition-all duration-300"
-                >
-                  {/* Hover X Indicator for Standard Users */}
-                  <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300">
-                    <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                  </div>
-                  
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg">{campaign.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{campaign.brand}</p>
-                        <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
-                        <div className="text-sm text-muted-foreground">per post</div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-muted-foreground">{campaign.description}</p>
-                    
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-medium mb-2">Requirements</h4>
-                        <p className="text-sm text-muted-foreground">{campaign.requirements}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-2">Campaign Details</h4>
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <div>Budget: {campaign.budget}</div>
-                          <div>Deadline: {campaign.deadline}</div>
-                          <div className="text-green-600">{campaign.spots}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {campaign.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">#{tag}</Badge>
-                      ))}
-                    </div>
-
-                    <div className="flex justify-between items-center pt-4 border-t">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" />
-                        <span>Closes {campaign.deadline}</span>
-                      </div>
-                      <Button disabled className="relative">
-                        <Lock className="w-4 h-4 mr-2" />
-                        Upgrade to Premium
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
         )}
 
         {/* Restricted View for Free Users */}
