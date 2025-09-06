@@ -529,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
           city: userId === 'demo-user-1' ? 'London' : undefined,
           plan: userId === 'demo-user-1' ? 'premium' : 'free',
-          role: userId === 'demo-user-1' ? 'publisher' : 'user',
+          role: userId === 'demo-user-1' ? 'creator' : 'user',
         });
       }
 
