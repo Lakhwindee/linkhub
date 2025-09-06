@@ -49,11 +49,14 @@ export default function Ads() {
       });
 
       const data = await response.json();
+      console.log('API Response Data:', data);
 
       if (response.ok) {
+        console.log('Setting verification code:', data.verificationCode);
         setVerificationCode(data.verificationCode);
-        setSuccessMessage(`YouTube channel connected successfully. ${data.subscribers.toLocaleString()} subscribers detected (Tier ${data.tier}).`);
-        setYoutubeUrl('');
+        setSuccessMessage(`YouTube channel connected successfully. ${data.subscriberCount.toLocaleString()} subscribers detected (Tier ${data.tier}).`);
+        // Don't clear URL - user needs to see back button
+        // setYoutubeUrl('');
       } else {
         setErrorMessage(data.message || 'Failed to connect YouTube channel');
       }
@@ -828,12 +831,13 @@ export default function Ads() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
+                            console.log('Back button clicked!');
                             setVerificationCode('');
                             setSuccessMessage('');
                             setErrorMessage('');
                             setYoutubeUrl('');
                           }}
-                          className="text-gray-600 hover:text-gray-800"
+                          className="text-white bg-red-600 hover:bg-red-700 font-bold px-4 py-2"
                         >
                           ← Back
                         </Button>
