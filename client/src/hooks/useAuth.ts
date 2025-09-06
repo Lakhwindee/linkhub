@@ -115,8 +115,11 @@ export function useAuth() {
     
     // Listen for custom events (from same tab)
     const handleAuthUpdate = () => {
-      console.log('🔄 Custom auth update event, re-checking...');
-      setTimeout(checkAuth, 50); // Small delay to ensure localStorage is updated
+      console.log('🔄 Custom auth update event received, re-checking...');
+      setTimeout(() => {
+        console.log('🔄 Now actually running checkAuth after authUpdate...');
+        checkAuth();
+      }, 100); // Increased delay to ensure localStorage is updated
     };
     
     window.addEventListener('storage', handleStorageChange);

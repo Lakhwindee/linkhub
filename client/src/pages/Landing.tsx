@@ -48,8 +48,11 @@ export default function Landing() {
           demo_user_id: localStorage.getItem('hublink_demo_user_id')
         });
         
-        // Trigger auth update event instead of page reload
-        window.dispatchEvent(new Event('authUpdate'));
+        // Wait a bit more to ensure localStorage is fully set before triggering auth update
+        setTimeout(() => {
+          console.log('🚀 About to trigger authUpdate event...');
+          window.dispatchEvent(new Event('authUpdate'));
+        }, 200);
         
         // Fallback: reload after delay if auth doesn't update
         setTimeout(() => {
