@@ -47,6 +47,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Debug log to see what we're returning
       console.log('API returning user data:', {
         id: user.id,
+        plan: user.plan,
+        role: user.role,
         youtubeSubscribers: user.youtubeSubscribers,
         youtubeTier: user.youtubeTier,
         youtubeChannelId: user.youtubeChannelId,
