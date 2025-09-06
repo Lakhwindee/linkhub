@@ -463,7 +463,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                         }}
                         className="w-full border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold text-lg py-3 animate-pulse"
                       >
-                        🔙 BACK BUTTON 🔙
+                        Back
                       </Button>
                       
                       {(user?.youtubeVerificationAttempts || 0) > 0 && (
