@@ -429,19 +429,28 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       <Button
                         variant="outline"
                         onClick={() => {
+                          console.log('🔴 BACK BUTTON CLICKED! Resetting states...');
                           // Reset states and go back to connection form
                           setYoutubeUrl('');
                           setVerificationCode('');
                           setIsVerifying(false);
                           setIsConnecting(false);
                           if (isDemoUser) {
+                            console.log('Demo user - setting disconnected state');
                             setDemoDisconnected(true);
                             localStorage.setItem('demo_youtube_disconnected', 'true');
                           }
+                          console.log('✅ Back button action completed');
+                          
+                          // Show visual feedback
+                          toast({
+                            title: "Going Back",
+                            description: "Returning to connection form...",
+                          });
                         }}
-                        className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        className="w-full border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold text-lg py-3 animate-pulse"
                       >
-                        🔙 Back
+                        🔙 BACK BUTTON 🔙
                       </Button>
                       
                       {(user?.youtubeVerificationAttempts || 0) > 0 && (
