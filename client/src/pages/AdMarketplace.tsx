@@ -214,8 +214,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           setIsVerifyingConnection(false);
           setShowCongratulations(false);
         }
-      }, 5000); // 5 seconds verifying, then API call
-    }, 5000); // 5 seconds loading
+      }, 3000); // 3 seconds verifying, then API call
+    }, 3000); // 3 seconds loading
   };
 
   const handleVerify = async () => {
