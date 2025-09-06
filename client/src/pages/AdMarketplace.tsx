@@ -430,22 +430,35 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                         variant="outline"
                         onClick={() => {
                           console.log('🔴 BACK BUTTON CLICKED! Resetting states...');
-                          // Reset states and go back to connection form
+                          console.log('Current demoDisconnected state:', demoDisconnected);
+                          
+                          // Reset ALL states and go back to connection form
                           setYoutubeUrl('');
                           setVerificationCode('');
                           setIsVerifying(false);
                           setIsConnecting(false);
+                          setIsVerifyingConnection(false);
+                          setShowCongratulations(false);
+                          
                           if (isDemoUser) {
-                            console.log('Demo user - setting disconnected state');
+                            console.log('Demo user - setting disconnected state to TRUE');
                             setDemoDisconnected(true);
                             localStorage.setItem('demo_youtube_disconnected', 'true');
+                            console.log('New demoDisconnected will be:', true);
+                          } else {
+                            // For real users, call disconnect API
+                            disconnectYouTube.mutate();
                           }
-                          console.log('✅ Back button action completed');
+                          
+                          // Force component refresh by refetching user data
+                          refetchUser();
+                          
+                          console.log('✅ Back button action completed - should show connection form now');
                           
                           // Show visual feedback
                           toast({
                             title: "Going Back",
-                            description: "Returning to connection form...",
+                            description: "Returning to YouTube connection form...",
                           });
                         }}
                         className="w-full border-2 border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700 font-bold text-lg py-3 animate-pulse"
