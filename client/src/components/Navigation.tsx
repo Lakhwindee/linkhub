@@ -82,7 +82,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-ads" },
+      { href: "/ads", icon: DollarSign, label: "Earn", testId: "nav-ads" },
       { href: "/billing", icon: CreditCard, label: "Billing", testId: "nav-billing" },
     ];
   } else {
