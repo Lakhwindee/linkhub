@@ -804,10 +804,23 @@ export default function Ads() {
                   {/* Verification Process */}
                   {verificationCode && (
                     <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
-                      <CardHeader>
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
                           🔐 Verification Required
                         </CardTitle>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setVerificationCode('');
+                            setSuccessMessage('');
+                            setErrorMessage('');
+                            setYoutubeUrl('');
+                          }}
+                          className="text-gray-600 hover:text-gray-800"
+                        >
+                          ← Back
+                        </Button>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="bg-white dark:bg-gray-900 border rounded-lg p-4">
