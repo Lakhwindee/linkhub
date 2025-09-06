@@ -21,9 +21,12 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    console.log('useAuth checking authentication state...');
     // Check localStorage for demo user authentication
     const isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
     const demoUserId = localStorage.getItem('hublink_demo_user_id');
+    
+    console.log('Auth check:', { isDemoUserLoggedIn, demoUserId });
     
     if (isDemoUserLoggedIn && demoUserId) {
       // Demo user data mapping
@@ -65,9 +68,11 @@ export function useAuth() {
       
       const selectedUser = demoUserMap[demoUserId as keyof typeof demoUserMap];
       if (selectedUser) {
+        console.log('Setting user:', selectedUser);
         setUser(selectedUser);
         setIsAuthenticated(true);
       } else {
+        console.log('No matching demo user found, using fallback');
         // Fallback to old demo user
         const demoUserData = {
           id: 'demo-creator-1',
@@ -84,6 +89,7 @@ export function useAuth() {
         setIsAuthenticated(true);
       }
     } else {
+      console.log('No demo user detected - setting unauthenticated');
       setUser(null);
       setIsAuthenticated(false);
     }
