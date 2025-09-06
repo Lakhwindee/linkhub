@@ -52,7 +52,7 @@ export default function Ads() {
 
       if (response.ok) {
         setVerificationCode(data.verificationCode);
-        setSuccessMessage(`Connected! You have ${data.subscribers.toLocaleString()} subscribers (Tier ${data.tier}).`);
+        setSuccessMessage(`YouTube channel connected successfully. ${data.subscribers.toLocaleString()} subscribers detected (Tier ${data.tier}).`);
         setYoutubeUrl('');
       } else {
         setErrorMessage(data.message || 'Failed to connect YouTube channel');
@@ -77,7 +77,7 @@ export default function Ads() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccessMessage('🎉 Channel verified successfully! You can now apply for campaigns.');
+        setSuccessMessage('Channel verification completed successfully. You can now access premium campaigns.');
         setVerificationCode('');
       } else {
         setErrorMessage(data.message || 'Verification failed');
@@ -97,7 +97,7 @@ export default function Ads() {
       });
 
       if (response.ok) {
-        setSuccessMessage('YouTube channel disconnected successfully.');
+        setSuccessMessage('YouTube channel has been disconnected from your account.');
         setVerificationCode('');
         setErrorMessage('');
       } else {
