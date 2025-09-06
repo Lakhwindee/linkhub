@@ -12,6 +12,7 @@ export default function Landing() {
     setIsLoading(true);
     setLoadingUser(userId);
     try {
+      console.log('Starting demo login for:', userId);
       const response = await fetch('/api/demo-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -20,9 +21,23 @@ export default function Landing() {
       });
       
       if (response.ok) {
+        console.log('Demo login API success, setting localStorage...');
+        // Clear any existing auth data first
+        localStorage.clear();
+        
+        // Set new demo user data
         localStorage.setItem('hublink_demo_user', 'true');
         localStorage.setItem('hublink_demo_user_id', userId);
-        window.location.href = '/';
+        
+        console.log('localStorage set:', {
+          demo_user: localStorage.getItem('hublink_demo_user'),
+          demo_user_id: localStorage.getItem('hublink_demo_user_id')
+        });
+        
+        // Force page reload to trigger useAuth hook
+        window.location.reload();
+      } else {
+        console.error('Demo login failed with status:', response.status);
       }
     } catch (error) {
       console.error('Demo login error:', error);
