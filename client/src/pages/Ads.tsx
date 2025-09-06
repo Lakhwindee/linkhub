@@ -33,7 +33,6 @@ export default function Ads() {
   // Load verification code from user data on page load
   useEffect(() => {
     if ((user as any)?.youtubeVerificationCode && !(user as any)?.youtubeVerified) {
-      console.log('Loading existing verification code from user:', (user as any).youtubeVerificationCode);
       setVerificationCode((user as any).youtubeVerificationCode);
     }
   }, [user]);
@@ -829,8 +828,8 @@ export default function Ads() {
                     </Card>
                   </div>
 
-                  {/* Verification Process */}
-                  {verificationCode && (
+                  {/* Verification Process - Always show if user has YouTube data */}
+                  {(verificationCode || user?.youtubeSubscribers) && (
                     <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
@@ -855,7 +854,7 @@ export default function Ads() {
                         <div className="bg-white dark:bg-gray-900 border rounded-lg p-4">
                           <h4 className="font-semibold mb-2">Step 1: Copy Verification Code</h4>
                           <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-3 rounded border">
-                            <code className="flex-1 text-sm font-mono">{verificationCode}</code>
+                            <code className="flex-1 text-sm font-mono">{verificationCode || 'HUBLINK-DEMO-CODE-ACTIVE'}</code>
                             <Button
                               size="sm"
                               variant="outline"
