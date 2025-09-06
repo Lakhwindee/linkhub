@@ -26,7 +26,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   };
 
   const handleLogout = () => {
-    localStorage.setItem('hublink_demo_user', 'false');
+    localStorage.clear(); // Clear all demo user data
     window.location.href = '/'; // Redirect to homepage
   };
 

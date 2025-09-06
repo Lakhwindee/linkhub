@@ -126,7 +126,7 @@ export default function DocumentSignup() {
       // Create demo user account
       const demoUserId = 'demo-' + Date.now();
       localStorage.setItem('hublink_demo_user', 'true');
-      localStorage.setItem('hublink_user_id', demoUserId);
+      localStorage.setItem('hublink_demo_user_id', demoUserId);
       localStorage.setItem('hublink_verification_complete', 'true');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
       
