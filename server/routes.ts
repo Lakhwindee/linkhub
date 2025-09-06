@@ -1990,22 +1990,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Demo authentication endpoint - sets demo session for browser
   app.post('/api/demo-login', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
+      const { userId, role, plan } = req.body;
+      
       // Set demo session cookie for browser
-      res.cookie('session_id', 'demo-session', { 
+      res.cookie('session_id', `demo-session-${userId}`, { 
         httpOnly: true, 
         secure: false, 
         sameSite: 'lax',
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
       
+      // Demo user data configuration
+      const demoUserData = {
+        'demo-creator-premium': {
+          id: 'demo-creator-premium',
+          email: 'creator-premium@hublink.com',
+          firstName: 'Premium',
+          lastName: 'Creator',
+          displayName: 'Premium Creator',
+          username: 'premium_creator',
+          plan: 'premium',
+          role: 'creator',
+          profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+          country: 'United Kingdom',
+          city: 'London'
+        },
+        'demo-creator-standard': {
+          id: 'demo-creator-standard',
+          email: 'creator-standard@hublink.com',
+          firstName: 'Standard',
+          lastName: 'Creator',
+          displayName: 'Standard Creator',
+          username: 'standard_creator',
+          plan: 'standard',
+          role: 'creator',
+          profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+          country: 'Spain',
+          city: 'Barcelona'
+        },
+        'demo-publisher': {
+          id: 'demo-publisher',
+          email: 'publisher@hublink.com',
+          firstName: 'Demo',
+          lastName: 'Publisher',
+          displayName: 'Demo Publisher',
+          username: 'demo_publisher',
+          plan: 'premium',
+          role: 'publisher',
+          profileImageUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+          country: 'United States',
+          city: 'New York'
+        }
+      };
+      
+      const selectedUser = demoUserData[userId as keyof typeof demoUserData];
+      if (!selectedUser) {
+        return res.status(400).json({ message: 'Invalid demo user' });
+      }
+      
+      // Ensure user exists in database
+      let existingUser = await storage.getUser(selectedUser.id);
+      if (!existingUser) {
+        await storage.upsertUser(selectedUser);
+      }
+      
       res.json({ 
         message: "Demo login successful", 
-        user: {
-          id: 'demo-user-1',
-          role: 'publisher',
-          plan: 'creator',
-          displayName: 'Demo User'
-        } 
+        user: selectedUser
       });
     } else {
       res.status(403).json({ message: "Demo login only available in development" });
