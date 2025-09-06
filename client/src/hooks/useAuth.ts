@@ -35,10 +35,7 @@ export function useAuth() {
         email: 'creator@hublink.com',
         profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
         plan: 'premium',
-        role: 'creator',
-        youtubeChannelId: 'UCHUAPEHzyyXrZU3WAHYh9MA',
-        youtubeSubscribers: 939000,
-        youtubeTier: 3
+        role: 'creator'
       };
       
       setUser(demoUserData);

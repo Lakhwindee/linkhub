@@ -625,10 +625,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // For demo user, simulate disconnect (for testing purposes)
+      // For demo user, actually clear the YouTube data
       if (userId === 'demo-user-1') {
+        await storage.updateUserProfile(userId, {
+          youtubeChannelId: null,
+          youtubeSubscribers: null,
+          youtubeTier: null,
+          youtubeVerified: false,
+          youtubeVerificationCode: null,
+          youtubeVerificationAttempts: 0,
+          youtubeUrl: null,
+          youtubeLastUpdated: null
+        });
+        
         return res.json({ 
-          message: "YouTube channel successfully disconnected (Demo mode)",
+          message: "YouTube channel successfully disconnected",
           user: { id: 'demo-user-1', youtubeVerified: false }
         });
       }
