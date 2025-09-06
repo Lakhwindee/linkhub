@@ -1,9 +1,67 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon } from "lucide-react";
+import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon, Crown, Zap, Megaphone } from "lucide-react";
+import { useState } from "react";
 
 export default function Landing() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingUser, setLoadingUser] = useState<string | null>(null);
+
+  const handleDemoLogin = async (userId: string, role: string, plan: string) => {
+    setIsLoading(true);
+    setLoadingUser(userId);
+    try {
+      const response = await fetch('/api/demo-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, role, plan }),
+        credentials: 'include',
+      });
+      
+      if (response.ok) {
+        localStorage.setItem('hublink_demo_user', 'true');
+        localStorage.setItem('hublink_demo_user_id', userId);
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+    } finally {
+      setIsLoading(false);
+      setLoadingUser(null);
+    }
+  };
+
+  const demoUsers = [
+    {
+      id: 'demo-creator-premium',
+      role: 'creator',
+      plan: 'premium',
+      name: 'Creator Premium',
+      description: 'Full creator access',
+      icon: Crown,
+      color: 'bg-purple-500',
+    },
+    {
+      id: 'demo-creator-standard',
+      role: 'creator',
+      plan: 'standard',
+      name: 'Creator Standard',
+      description: 'Basic creator access',
+      icon: Zap,
+      color: 'bg-blue-500',
+    },
+    {
+      id: 'demo-publisher',
+      role: 'publisher',
+      plan: 'premium',
+      name: 'Publisher',
+      description: 'Campaign creation',
+      icon: Megaphone,
+      color: 'bg-green-500',
+    }
+  ];
+
   const features = [
     {
       icon: MapPin,
@@ -389,6 +447,48 @@ export default function Landing() {
                 <a href="/document-signup">Join HubLink Today</a>
               </Button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Demo Login Section */}
+      <section className="py-10 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">🚀 Quick Demo Access</h2>
+            <p className="text-muted-foreground">Test different user types instantly - no signup required!</p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-4">
+            {demoUsers.map((user) => {
+              const IconComponent = user.icon;
+              const isLoadingThis = loadingUser === user.id;
+              
+              return (
+                <Card key={user.id} className="hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`w-10 h-10 ${user.color} rounded-full flex items-center justify-center flex-shrink-0`}>
+                        <IconComponent className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-sm">{user.name}</h3>
+                        <p className="text-xs text-muted-foreground">{user.description}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      onClick={() => handleDemoLogin(user.id, user.role, user.plan)}
+                      disabled={isLoading}
+                      className="w-full"
+                      size="sm"
+                      variant={user.plan === 'premium' ? 'default' : 'secondary'}
+                    >
+                      {isLoadingThis ? "Logging in..." : `Try ${user.name}`}
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
