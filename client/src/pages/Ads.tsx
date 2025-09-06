@@ -21,21 +21,6 @@ export default function Ads() {
   const { isFree, isStandard, isPremium } = usePlanAccess();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   
-  // YouTube Creator states
-  const [youtubeUrl, setYoutubeUrl] = useState('');
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [copied, setCopied] = useState(false);
-
-  // Load verification code from user data on page load
-  useEffect(() => {
-    if ((user as any)?.youtubeVerificationCode && !(user as any)?.youtubeVerified) {
-      setVerificationCode((user as any).youtubeVerificationCode);
-    }
-  }, [user]);
 
   // Demo campaigns data
   const campaigns = [
@@ -101,37 +86,14 @@ export default function Ads() {
         {/* Tabs */}
         {(isPremium || isStandard) && (
           <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className={`grid w-full ${(isPremium || user?.plan === 'premium') ? 'grid-cols-6' : 'grid-cols-5'}`}>
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
               <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
-              {(isPremium || user?.plan === 'premium') && <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>}
             </TabsList>
 
-            {/* YouTube Creator Dashboard - Premium Only */}
-            {(isPremium || user?.plan === 'premium') && (
-              <TabsContent value="youtube" className="space-y-6">
-                
-                {/* BIG VISIBLE TEST BUTTON */}
-                <div className="bg-red-500 p-12 text-center rounded-xl border-8 border-black shadow-2xl">
-                  <h1 className="text-white text-5xl font-bold mb-8">🎬 YOUTUBE CREATOR DASHBOARD 🎬</h1>
-                  <button 
-                    onClick={() => {
-                      alert('✅ BACK BUTTON IS WORKING! ✅');
-                      console.log('BACK BUTTON CLICKED SUCCESSFULLY!');
-                    }}
-                    className="bg-yellow-400 text-black px-16 py-8 text-3xl font-bold rounded-xl border-8 border-black hover:bg-yellow-300 animate-pulse shadow-2xl"
-                  >
-                    🔙 BACK BUTTON TEST 🔙
-                  </button>
-                  <p className="text-white text-2xl mt-6 font-bold">👆 यह button दिख रहा है क्या? 👆</p>
-                  <p className="text-yellow-200 text-xl mt-4">Click करके देखिए कि काम कर रहा है!</p>
-                </div>
-                
-              </TabsContent>
-            )}
 
             {/* Other tabs content would go here */}
             <TabsContent value="campaigns">
