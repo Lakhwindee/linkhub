@@ -22,9 +22,23 @@ export function useAuth() {
 
   const checkAuth = () => {
     console.log('🔍 useAuth checking authentication state...');
-    // Check localStorage for demo user authentication
-    const isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
-    const demoUserId = localStorage.getItem('hublink_demo_user_id');
+    // Check localStorage for demo user authentication with multiple attempts
+    let isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
+    let demoUserId = localStorage.getItem('hublink_demo_user_id');
+    
+    // If user is marked as logged in but no userId, try to read again
+    if (isDemoUserLoggedIn && !demoUserId) {
+      console.log('🔍 Demo user flag exists but no userId, checking all keys...');
+      // Try reading all localStorage keys to see what exists
+      const allKeys = Object.keys(localStorage);
+      console.log('🔍 All localStorage keys:', allKeys);
+      
+      // Try to read the userId again
+      setTimeout(() => {
+        demoUserId = localStorage.getItem('hublink_demo_user_id');
+        console.log('🔍 Retry reading demoUserId:', demoUserId);
+      }, 100);
+    }
     
     // Full localStorage scan for debugging
     const allLocalStorageKeys = Object.keys(localStorage);

@@ -26,15 +26,27 @@ export default function Landing() {
         // Clear any existing auth data first
         localStorage.clear();
         
-        // Set new demo user data
+        // Set new demo user data with multiple attempts
         console.log('Setting localStorage for userId:', userId);
-        localStorage.setItem('hublink_demo_user', 'true');
-        localStorage.setItem('hublink_demo_user_id', userId);
         
-        // Immediate verification
-        const checkUser = localStorage.getItem('hublink_demo_user');
-        const checkUserId = localStorage.getItem('hublink_demo_user_id');
-        console.log('✅ localStorage verified IMMEDIATELY:', { checkUser, checkUserId, expectedUserId: userId });
+        // Try setting multiple times with verification each time
+        for (let i = 0; i < 3; i++) {
+          localStorage.setItem('hublink_demo_user', 'true');
+          localStorage.setItem('hublink_demo_user_id', userId);
+          
+          const checkUser = localStorage.getItem('hublink_demo_user');
+          const checkUserId = localStorage.getItem('hublink_demo_user_id');
+          console.log(`🔄 Attempt ${i + 1}: localStorage set:`, { checkUser, checkUserId, expectedUserId: userId });
+          
+          if (checkUser === 'true' && checkUserId === userId) {
+            console.log(`✅ Success on attempt ${i + 1}!`);
+            break;
+          }
+          
+          if (i === 2) {
+            console.error('❌ Failed to set localStorage after 3 attempts!');
+          }
+        }
         
         // Check again after 100ms
         setTimeout(() => {
