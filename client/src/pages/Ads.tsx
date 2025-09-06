@@ -259,13 +259,13 @@ export default function Ads() {
 
         {(isPremium || isStandard) && (
           <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className={`grid w-full ${isPremium ? 'grid-cols-6' : 'grid-cols-5'}`}>
+            <TabsList className={`grid w-full ${(isPremium || user?.plan === 'premium') ? 'grid-cols-6' : 'grid-cols-5'}`}>
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
               <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
-              {isPremium && <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>}
+              {(isPremium || user?.plan === 'premium') && <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>}
             </TabsList>
 
             {/* Premium Earnings Dashboard */}
@@ -684,7 +684,7 @@ export default function Ads() {
             </TabsContent>
 
             {/* YouTube Creator Dashboard - Premium Only */}
-            {isPremium && (
+            {(isPremium || user?.plan === 'premium') && (
               <TabsContent value="youtube" className="space-y-6">
               <Card>
                 <CardHeader>
@@ -828,26 +828,25 @@ export default function Ads() {
                     </Card>
                   </div>
 
-                  {/* Verification Process - Always show if user has YouTube data */}
-                  {(verificationCode || user?.youtubeSubscribers) && (
-                    <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
+                  {/* Verification Process - ALWAYS SHOW for premium users with YouTube data */}
+                  <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
                           🔐 Verification Required
                         </CardTitle>
                         <Button
                           variant="outline"
-                          size="sm"
+                          size="lg"
                           onClick={() => {
-                            console.log('Back button clicked!');
+                            console.log('🔴 BACK BUTTON CLICKED!');
                             setVerificationCode('');
                             setSuccessMessage('');
                             setErrorMessage('');
                             setYoutubeUrl('');
                           }}
-                          className="text-white bg-red-600 hover:bg-red-700 font-bold px-4 py-2"
+                          className="text-white bg-red-600 hover:bg-red-700 font-bold px-6 py-3 text-lg border-2 border-red-800"
                         >
-                          ← Back
+                          ← BACK
                         </Button>
                       </CardHeader>
                       <CardContent className="space-y-4">
