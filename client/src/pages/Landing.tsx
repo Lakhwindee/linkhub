@@ -25,14 +25,15 @@ export default function Landing() {
         // Clear any existing auth data first
         localStorage.clear();
         
-        // Set new demo user data with delay
+        // Set new demo user data
+        console.log('Setting localStorage for userId:', userId);
         localStorage.setItem('hublink_demo_user', 'true');
         localStorage.setItem('hublink_demo_user_id', userId);
         
-        // Double check localStorage is set
+        // Immediate verification
         const checkUser = localStorage.getItem('hublink_demo_user');
         const checkUserId = localStorage.getItem('hublink_demo_user_id');
-        console.log('localStorage verification:', { checkUser, checkUserId });
+        console.log('✅ localStorage verified:', { checkUser, checkUserId, expectedUserId: userId });
         
         console.log('localStorage set:', {
           demo_user: localStorage.getItem('hublink_demo_user'),
