@@ -524,21 +524,30 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                backgroundColor: showCongratulations ? 'rgba(255, 0, 0, 0.95)' : 'transparent',
+                backgroundColor: showCongratulations ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
+                backdropFilter: showCongratulations ? 'blur(8px)' : 'none',
+                WebkitBackdropFilter: showCongratulations ? 'blur(8px)' : 'none',
                 zIndex: 999999,
                 display: showCongratulations ? 'flex' : 'none',
                 visibility: showCongratulations ? 'visible' : 'hidden',
                 alignItems: 'center',
                 justifyContent: 'center',
-                pointerEvents: showCongratulations ? 'all' : 'none'
+                pointerEvents: showCongratulations ? 'all' : 'none',
+                transition: 'all 0.3s ease-in-out'
               }}
             >
               <div style={{
-                backgroundColor: 'white',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 padding: '40px',
-                borderRadius: '16px',
+                borderRadius: '20px',
                 textAlign: 'center',
-                border: '4px solid green'
+                boxShadow: '0 25px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.3)',
+                border: '1px solid rgba(34, 197, 94, 0.4)',
+                maxWidth: '400px',
+                transform: 'scale(1)',
+                animation: 'fadeInScale 0.4s ease-out'
               }}>
                 <div style={{
                   width: '80px',
