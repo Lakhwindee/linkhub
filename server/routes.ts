@@ -528,7 +528,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
           country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
           city: userId === 'demo-user-1' ? 'London' : undefined,
-          plan: userId === 'demo-user-1' ? 'premium' : 'free',
+          plan: userId === 'demo-user-1' ? 'standard' : 'free',
           role: userId === 'demo-user-1' ? 'creator' : 'user',
         });
       }
@@ -1358,13 +1358,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUser(userId);
       
       // Auto-fix demo user plan if needed
-      if (userId === 'demo-user-1' && user?.plan !== 'premium') {
-        console.log('Updating demo user plan to premium');
-        user = await storage.updateUserProfile(userId, { plan: 'premium' });
+      if (userId === 'demo-user-1' && user?.plan !== 'standard') {
+        console.log('Updating demo user plan to standard');
+        user = await storage.updateUserProfile(userId, { plan: 'standard' });
       }
       
       // For demo user, bypass plan check  
-      if (userId !== 'demo-user-1' && user?.plan !== 'premium') {
+      if (userId !== 'demo-user-1' && user?.plan !== 'premium' && user?.plan !== 'standard') {
         return res.status(403).json({ message: "Creator plan required" });
       }
 
