@@ -946,8 +946,11 @@ export default function AdMarketplace() {
             </CardContent>
           </Card>
 
-          <Tabs value={currentTab === 'youtube-dashboard' ? 'campaigns' : currentTab} onValueChange={setCurrentTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-4xl grid-cols-4">
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
+            <TabsList className="grid w-full max-w-4xl grid-cols-5">
+              <TabsTrigger value="youtube-dashboard" data-testid="tab-youtube">
+                YouTube Creator
+              </TabsTrigger>
               <TabsTrigger value="campaigns" data-testid="tab-available">
                 Available Campaigns
               </TabsTrigger>
