@@ -2048,9 +2048,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid demo user' });
       }
       
+      console.log('Selected demo user:', selectedUser);
+      
       // Ensure user exists in database
       let existingUser = await storage.getUser(selectedUser.id);
       if (!existingUser) {
+        console.log('Creating new demo user in database:', selectedUser.id);
         await storage.upsertUser(selectedUser);
       }
       
