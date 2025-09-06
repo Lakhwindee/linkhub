@@ -4,12 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
   Lock, Zap, Target, BarChart3, CreditCard, CheckCircle,
-  Plus, MapPin, Users, Calendar, Building, User
+  Plus, MapPin, Users, Calendar, Building, User, Youtube,
+  Play, Link as LinkIcon, Copy, Check, Loader2
 } from "lucide-react";
 import { Link } from "wouter";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
@@ -18,6 +20,103 @@ export default function Ads() {
   const { user, isAuthenticated } = useAuth();
   const { isFree, isStandard, isPremium } = usePlanAccess();
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
+  
+  // YouTube Creator states
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  // YouTube functionality
+  const handleConnectYoutube = async () => {
+    if (!youtubeUrl.trim()) {
+      setErrorMessage('Please enter a YouTube channel URL');
+      return;
+    }
+
+    setIsConnecting(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('/api/youtube/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ youtubeUrl: youtubeUrl.trim() })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setVerificationCode(data.verificationCode);
+        setSuccessMessage(`Connected! You have ${data.subscribers.toLocaleString()} subscribers (Tier ${data.tier}).`);
+        setYoutubeUrl('');
+      } else {
+        setErrorMessage(data.message || 'Failed to connect YouTube channel');
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleVerifyChannel = async () => {
+    setIsVerifying(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/youtube/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage('🎉 Channel verified successfully! You can now apply for campaigns.');
+        setVerificationCode('');
+      } else {
+        setErrorMessage(data.message || 'Verification failed');
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleDisconnectYoutube = async () => {
+    try {
+      const response = await fetch('/api/youtube/disconnect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        setSuccessMessage('YouTube channel disconnected successfully.');
+        setVerificationCode('');
+        setErrorMessage('');
+      } else {
+        setErrorMessage('Failed to disconnect channel');
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.');
+    }
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
 
   // Mock campaign data
   const campaigns = [
@@ -150,12 +249,13 @@ export default function Ads() {
 
         {(isPremium || isStandard) && (
           <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
               <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
+              <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>
             </TabsList>
 
             {/* Premium Earnings Dashboard */}
@@ -571,6 +671,217 @@ export default function Ads() {
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            {/* YouTube Creator Dashboard */}
+            <TabsContent value="youtube" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Youtube className="w-5 h-5 text-red-600" />
+                    YouTube Creator Dashboard
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Connect your YouTube channel to access premium brand campaigns
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Current Status */}
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <Card className="border-2">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Play className="w-4 h-4" />
+                          Channel Status
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {user?.youtubeChannelId ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                              <Badge variant={(user as any).youtubeVerified ? "default" : "secondary"}>
+                                {(user as any).youtubeVerified ? "✓ Verified" : "⏳ Connected"}
+                              </Badge>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span>Subscribers:</span>
+                                <span className="font-medium">{(user as any).youtubeSubscribers?.toLocaleString() || 'N/A'}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Tier:</span>
+                                <span className="font-medium">Tier {(user as any).youtubeTier || 'N/A'}</span>
+                              </div>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleDisconnectYoutube}
+                              className="w-full text-red-600 hover:text-red-700"
+                            >
+                              Disconnect Channel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-center py-4">
+                            <Youtube className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                            <p className="text-muted-foreground">No channel connected</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-2">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <LinkIcon className="w-4 h-4" />
+                          Connect Channel
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">
+                              YouTube Channel URL
+                            </label>
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="https://youtube.com/channel/UCxxxxx or @username"
+                                value={youtubeUrl}
+                                onChange={(e) => setYoutubeUrl(e.target.value)}
+                                className="flex-1"
+                                disabled={isConnecting}
+                              />
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Paste your YouTube channel URL here
+                            </p>
+                          </div>
+                          
+                          <Button
+                            onClick={handleConnectYoutube}
+                            disabled={isConnecting || !youtubeUrl.trim()}
+                            className="w-full"
+                          >
+                            {isConnecting ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Connecting...
+                              </>
+                            ) : (
+                              <>
+                                <LinkIcon className="w-4 h-4 mr-2" />
+                                Connect Channel
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Verification Process */}
+                  {verificationCode && (
+                    <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
+                      <CardHeader>
+                        <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
+                          🔐 Verification Required
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="bg-white dark:bg-gray-900 border rounded-lg p-4">
+                          <h4 className="font-semibold mb-2">Step 1: Copy Verification Code</h4>
+                          <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 p-3 rounded border">
+                            <code className="flex-1 text-sm font-mono">{verificationCode}</code>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => copyToClipboard(verificationCode)}
+                            >
+                              {copied ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-gray-900 border rounded-lg p-4">
+                          <h4 className="font-semibold mb-2">Step 2: Add to Channel Description</h4>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            1. Go to your YouTube Studio → Customization → Basic Info<br/>
+                            2. Paste the verification code in your channel description<br/>
+                            3. Click Save and return here to verify
+                          </p>
+                        </div>
+
+                        <Button
+                          onClick={handleVerifyChannel}
+                          disabled={isVerifying}
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                        >
+                          {isVerifying ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Verifying...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Verify Channel
+                            </>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Success/Error Messages */}
+                  {successMessage && (
+                    <Alert className="border-green-200 bg-green-50 dark:bg-green-950/10">
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-800 dark:text-green-200">
+                        {successMessage}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {errorMessage && (
+                    <Alert className="border-red-200 bg-red-50 dark:bg-red-950/10">
+                      <Lock className="h-4 w-4 text-red-600" />
+                      <AlertDescription className="text-red-800 dark:text-red-200">
+                        {errorMessage}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Help Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Need Help?</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm">
+                      <div>
+                        <h5 className="font-medium">Requirements:</h5>
+                        <ul className="list-disc list-inside text-muted-foreground ml-2">
+                          <li>Minimum 10,000 subscribers</li>
+                          <li>Travel-related content</li>
+                          <li>Active channel (recent uploads)</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <h5 className="font-medium">Supported URL Formats:</h5>
+                        <ul className="list-disc list-inside text-muted-foreground ml-2">
+                          <li>https://youtube.com/channel/UCxxxxx</li>
+                          <li>https://youtube.com/@username</li>
+                          <li>https://youtube.com/c/channelname</li>
+                        </ul>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         )}
