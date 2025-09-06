@@ -21,10 +21,15 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   const checkAuth = () => {
-    console.log('useAuth checking authentication state...');
+    console.log('🔍 useAuth checking authentication state...');
     // Check localStorage for demo user authentication
     const isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
     const demoUserId = localStorage.getItem('hublink_demo_user_id');
+    
+    // Full localStorage scan for debugging
+    const allLocalStorageKeys = Object.keys(localStorage);
+    const hubLinkKeys = allLocalStorageKeys.filter(key => key.includes('hublink'));
+    console.log('🔍 ALL localStorage hublink keys:', hubLinkKeys.map(key => ({ key, value: localStorage.getItem(key) })));
     
     console.log('Auth check:', { isDemoUserLoggedIn, demoUserId });
     

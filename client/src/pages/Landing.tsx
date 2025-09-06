@@ -9,6 +9,7 @@ export default function Landing() {
   const [loadingUser, setLoadingUser] = useState<string | null>(null);
 
   const handleDemoLogin = async (userId: string, role: string, plan: string) => {
+    console.log('🔴 BUTTON CLICKED! Demo login triggered for:', { userId, role, plan });
     setIsLoading(true);
     setLoadingUser(userId);
     try {
@@ -33,7 +34,14 @@ export default function Landing() {
         // Immediate verification
         const checkUser = localStorage.getItem('hublink_demo_user');
         const checkUserId = localStorage.getItem('hublink_demo_user_id');
-        console.log('✅ localStorage verified:', { checkUser, checkUserId, expectedUserId: userId });
+        console.log('✅ localStorage verified IMMEDIATELY:', { checkUser, checkUserId, expectedUserId: userId });
+        
+        // Check again after 100ms
+        setTimeout(() => {
+          const doubleCheckUser = localStorage.getItem('hublink_demo_user');
+          const doubleCheckUserId = localStorage.getItem('hublink_demo_user_id');
+          console.log('🕐 localStorage 100ms later:', { doubleCheckUser, doubleCheckUserId });
+        }, 100);
         
         console.log('localStorage set:', {
           demo_user: localStorage.getItem('hublink_demo_user'),
