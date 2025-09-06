@@ -828,8 +828,9 @@ export default function Ads() {
                     </Card>
                   </div>
 
-                  {/* Verification Process - ALWAYS SHOW for premium users with YouTube data */}
-                  <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/10">
+                  {/* VERIFICATION CARD - ALWAYS VISIBLE */}
+                  <div className="mt-6">
+                    <Card className="border-4 border-red-500 bg-blue-50 dark:bg-blue-950/10 shadow-2xl">
                       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-lg text-blue-800 dark:text-blue-200">
                           🔐 Verification Required
@@ -844,9 +845,9 @@ export default function Ads() {
                             setErrorMessage('');
                             setYoutubeUrl('');
                           }}
-                          className="text-white bg-red-600 hover:bg-red-700 font-bold px-6 py-3 text-lg border-2 border-red-800"
+                          className="text-white bg-red-600 hover:bg-red-700 font-bold px-8 py-4 text-xl border-4 border-red-800 shadow-2xl animate-pulse"
                         >
-                          ← BACK
+                          🔙 BACK BUTTON 🔙
                         </Button>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -896,7 +897,7 @@ export default function Ads() {
                         </Button>
                       </CardContent>
                     </Card>
-                  )}
+                  </div>
 
                   {/* Success/Error Messages */}
                   {successMessage && (
