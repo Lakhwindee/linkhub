@@ -77,6 +77,7 @@ function Router() {
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
               <Route path="/ads" component={AdsWrapper} />
+              <Route path="/earn" component={AdsWrapper} />
               <Route path="/messages" component={Messages} />
               <Route path="/admin" component={Admin} />
               <Route path="/subscribe" component={Subscribe} />
