@@ -40,10 +40,20 @@ export default function Landing() {
           demo_user_id: localStorage.getItem('hublink_demo_user_id')
         });
         
-        // Wait a bit then reload to ensure localStorage is set
+        // Trigger auth update event instead of page reload
+        window.dispatchEvent(new Event('authUpdate'));
+        
+        // Fallback: reload after delay if auth doesn't update
         setTimeout(() => {
-          window.location.reload();
-        }, 100);
+          const currentAuthState = localStorage.getItem('hublink_demo_user');
+          console.log('🔍 Checking if auth updated, current state:', currentAuthState);
+          if (currentAuthState === 'true') {
+            console.log('✅ Auth updated successfully without reload');
+          } else {
+            console.log('⚠️ Auth not updated, forcing page reload');
+            window.location.reload();
+          }
+        }, 500);
       } else {
         console.error('Demo login failed with status:', response.status);
       }

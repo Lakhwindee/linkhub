@@ -20,7 +20,7 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const checkAuth = () => {
     console.log('useAuth checking authentication state...');
     // Check localStorage for demo user authentication
     const isDemoUserLoggedIn = localStorage.getItem('hublink_demo_user') === 'true';
@@ -95,6 +95,32 @@ export function useAuth() {
     }
     
     setIsLoading(false);
+  };
+
+  useEffect(() => {
+    checkAuth();
+    
+    // Listen for localStorage changes (from other tabs or manual changes)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'hublink_demo_user' || e.key === 'hublink_demo_user_id') {
+        console.log('🔄 localStorage changed, re-checking auth...', e.key, e.newValue);
+        checkAuth();
+      }
+    };
+    
+    // Listen for custom events (from same tab)
+    const handleAuthUpdate = () => {
+      console.log('🔄 Custom auth update event, re-checking...');
+      setTimeout(checkAuth, 50); // Small delay to ensure localStorage is updated
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('authUpdate', handleAuthUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authUpdate', handleAuthUpdate);
+    };
   }, []);
 
   return {
