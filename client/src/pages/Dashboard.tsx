@@ -24,7 +24,7 @@ export default function Dashboard() {
     lastName: 'User',
     displayName: 'Demo User',
     username: 'demo',
-    plan: 'creator',
+    plan: 'premium',
     profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
   };
 
@@ -144,7 +144,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="badge-user-plan">
-              Creator Plan
+              Premium Plan
             </Badge>
           </div>
         </div>
