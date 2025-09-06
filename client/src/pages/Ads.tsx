@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
   DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
   Lock, Zap, Target, BarChart3, CreditCard, CheckCircle,
   Plus, MapPin, Users, Calendar, Building, User, Youtube,
-  Play, Link as LinkIcon, Copy, Check, Loader2
+  Play, Link as LinkIcon, Copy, Check, Loader2, AlertTriangle
 } from "lucide-react";
 import { Link } from "wouter";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
@@ -855,6 +855,27 @@ export default function Ads() {
                       </AlertDescription>
                     </Alert>
                   )}
+
+                  {/* Verification Instructions */}
+                  <Alert className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/10">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    <AlertTitle className="text-yellow-800 dark:text-yellow-200">
+                      Channel Verification Instructions
+                    </AlertTitle>
+                    <AlertDescription className="text-yellow-800 dark:text-yellow-200 space-y-2">
+                      <div>To verify your YouTube channel, you need to add the verification code to your channel description:</div>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>Go to YouTube Studio → Settings → Channel → Basic info</li>
+                        <li>Copy your verification code from above</li>
+                        <li>Add the code anywhere in your channel description</li>
+                        <li>Click "Save" in YouTube Studio</li>
+                        <li>Return here and click "Verify Channel"</li>
+                      </ol>
+                      <div className="mt-2 text-sm">
+                        <strong>Note:</strong> The verification code must remain in your channel description to maintain verified status.
+                      </div>
+                    </AlertDescription>
+                  </Alert>
 
                   {/* Help Section */}
                   <Card>
