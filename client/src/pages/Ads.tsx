@@ -260,13 +260,13 @@ export default function Ads() {
 
         {(isPremium || isStandard) && (
           <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className={`grid w-full ${isPremium ? 'grid-cols-6' : 'grid-cols-5'}`}>
               <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
               <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
               <TabsTrigger value="earnings">Earnings</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="payouts">Payouts</TabsTrigger>
-              <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>
+              {isPremium && <TabsTrigger value="youtube">YouTube Creator</TabsTrigger>}
             </TabsList>
 
             {/* Premium Earnings Dashboard */}
@@ -684,8 +684,9 @@ export default function Ads() {
               </div>
             </TabsContent>
 
-            {/* YouTube Creator Dashboard */}
-            <TabsContent value="youtube" className="space-y-6">
+            {/* YouTube Creator Dashboard - Premium Only */}
+            {isPremium && (
+              <TabsContent value="youtube" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -946,6 +947,7 @@ export default function Ads() {
                 </CardContent>
               </Card>
             </TabsContent>
+            )}
           </Tabs>
         )}
 
