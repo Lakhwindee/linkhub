@@ -734,14 +734,30 @@ export default function Ads() {
                                 <span className="font-medium">Tier {(user as any).youtubeTier || 'N/A'}</span>
                               </div>
                             </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={handleDisconnectYoutube}
-                              className="w-full text-red-600 hover:text-red-700"
-                            >
-                              Disconnect Channel
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setVerificationCode('');
+                                  setSuccessMessage('');
+                                  setErrorMessage('');
+                                  setYoutubeUrl('');
+                                  handleDisconnectYoutube();
+                                }}
+                                className="flex-1 text-blue-600 hover:text-blue-700"
+                              >
+                                Change Channel
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleDisconnectYoutube}
+                                className="flex-1 text-red-600 hover:text-red-700"
+                              >
+                                Disconnect
+                              </Button>
+                            </div>
                           </div>
                         ) : (
                           <div className="text-center py-4">
