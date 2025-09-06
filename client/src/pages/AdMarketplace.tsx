@@ -425,6 +425,25 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                         )}
                       </Button>
                       
+                      {/* Back Button */}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          // Reset states and go back to connection form
+                          setYoutubeUrl('');
+                          setVerificationCode('');
+                          setIsVerifying(false);
+                          setIsConnecting(false);
+                          if (isDemoUser) {
+                            setDemoDisconnected(true);
+                            localStorage.setItem('demo_youtube_disconnected', 'true');
+                          }
+                        }}
+                        className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        🔙 Back
+                      </Button>
+                      
                       {(user?.youtubeVerificationAttempts || 0) > 0 && (
                         <p className="text-xs text-yellow-600">
                           Verification attempts: {user.youtubeVerificationAttempts}/5
