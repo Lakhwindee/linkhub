@@ -25,17 +25,24 @@ export default function Landing() {
         // Clear any existing auth data first
         localStorage.clear();
         
-        // Set new demo user data
+        // Set new demo user data with delay
         localStorage.setItem('hublink_demo_user', 'true');
         localStorage.setItem('hublink_demo_user_id', userId);
+        
+        // Double check localStorage is set
+        const checkUser = localStorage.getItem('hublink_demo_user');
+        const checkUserId = localStorage.getItem('hublink_demo_user_id');
+        console.log('localStorage verification:', { checkUser, checkUserId });
         
         console.log('localStorage set:', {
           demo_user: localStorage.getItem('hublink_demo_user'),
           demo_user_id: localStorage.getItem('hublink_demo_user_id')
         });
         
-        // Force page reload to trigger useAuth hook
-        window.location.reload();
+        // Wait a bit then reload to ensure localStorage is set
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       } else {
         console.error('Demo login failed with status:', response.status);
       }
