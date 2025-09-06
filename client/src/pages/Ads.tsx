@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,6 +29,14 @@ export default function Ads() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Load verification code from user data on page load
+  useEffect(() => {
+    if ((user as any)?.youtubeVerificationCode && !(user as any)?.youtubeVerified) {
+      console.log('Loading existing verification code from user:', (user as any).youtubeVerificationCode);
+      setVerificationCode((user as any).youtubeVerificationCode);
+    }
+  }, [user]);
 
   // YouTube functionality
   const handleConnectYoutube = async () => {
