@@ -12,8 +12,9 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Check if demo user is authenticated
-  const isDemoUser = localStorage.getItem('hublink_demo_user') === 'true';
+  // Check if demo user is authenticated via new localStorage system
+  const demoUser = localStorage.getItem('demo_user');
+  const isDemoUser = !!demoUser;
   
   const headers: Record<string, string> = {};
   
@@ -21,9 +22,12 @@ export async function apiRequest(
     headers["Content-Type"] = "application/json";
   }
   
-  // Add demo user header for authentication bypass
+  // Add demo session header for authentication
   if (isDemoUser) {
-    headers["x-demo-user"] = "true";
+    const demoSession = localStorage.getItem('demo_session');
+    if (demoSession) {
+      headers["x-demo-session"] = demoSession;
+    }
   }
   
   const res = await fetch(url, {
@@ -43,14 +47,18 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    // Check if demo user is authenticated
-    const isDemoUser = localStorage.getItem('hublink_demo_user') === 'true';
+    // Check if demo user is authenticated via new localStorage system
+    const demoUser = localStorage.getItem('demo_user');
+    const isDemoUser = !!demoUser;
     
     const headers: Record<string, string> = {};
     
-    // Add demo user header for authentication bypass
+    // Add demo session header for authentication
     if (isDemoUser) {
-      headers["x-demo-user"] = "true";
+      const demoSession = localStorage.getItem('demo_session');
+      if (demoSession) {
+        headers["x-demo-session"] = demoSession;
+      }
     }
     
     // Construct URL with query parameters properly

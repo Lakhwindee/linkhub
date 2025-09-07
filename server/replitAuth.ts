@@ -142,9 +142,20 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       console.log('✅ Extracted demo user ID:', demoUserId);
     }
     
-    // No fallback - if no session, user is not authenticated
+    // Fallback: Check for demo session header (for localStorage fallback)
     if (!demoUserId) {
-      console.log('❌ No valid demo session found');
+      const demoSessionHeader = req.headers['x-demo-session'];
+      console.log('🔍 Demo session header:', demoSessionHeader);
+      
+      if (demoSessionHeader && typeof demoSessionHeader === 'string' && demoSessionHeader.startsWith('demo-session-')) {
+        demoUserId = demoSessionHeader.replace('demo-session-', '');
+        console.log('✅ Extracted demo user ID from header:', demoUserId);
+      }
+    }
+    
+    // No valid session found
+    if (!demoUserId) {
+      console.log('❌ No valid demo session found in cookies or headers');
       return res.status(401).json({ message: 'Not authenticated' });
     }
     
