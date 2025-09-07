@@ -38,6 +38,9 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       if (response.ok) {
         console.log('✅ Login successful:', result);
         
+        // Clear any existing auth data first
+        localStorage.clear();
+        
         // Store session info in localStorage AND set cookie manually
         localStorage.setItem('demo_session', `demo-session-${result.user.id}`);
         localStorage.setItem('demo_user', JSON.stringify(result.user));

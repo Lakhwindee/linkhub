@@ -23,14 +23,25 @@ export function useAuth() {
   const checkAuth = async () => {
     console.log('🔍 useAuth checking authentication state...');
     
-    // First clear any old localStorage demo data that's interfering
-    const oldKeys = ['hublink_demo_user', 'hublink_demo_user_id', 'hublink_demo_role'];
-    oldKeys.forEach(key => {
-      if (localStorage.getItem(key)) {
-        console.log('🧹 Clearing old localStorage key:', key);
-        localStorage.removeItem(key);
+    // Clear ALL old localStorage demo data that's interfering
+    const oldKeys = ['hublink_demo_user', 'hublink_demo_user_id', 'hublink_demo_role', 'demo_user', 'demo_session'];
+    const currentUser = localStorage.getItem('demo_user');
+    
+    // Check if current user is invalid (not admin)
+    if (currentUser) {
+      try {
+        const userData = JSON.parse(currentUser);
+        if (userData.id !== 'demo-admin') {
+          console.log('🧹 Clearing invalid demo user:', userData.id);
+          oldKeys.forEach(key => localStorage.removeItem(key));
+          // Clear cookies too
+          document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+      } catch (e) {
+        console.log('🧹 Clearing corrupted demo user data');
+        oldKeys.forEach(key => localStorage.removeItem(key));
       }
-    });
+    }
     
     // Check for real authentication via session
     try {
