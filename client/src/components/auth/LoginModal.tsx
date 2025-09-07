@@ -101,6 +101,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </DialogDescription>
         </DialogHeader>
         
+        {/* Demo Login Credentials */}
+        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+          <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">Demo Login Credentials:</div>
+          <div className="text-xs text-blue-700 dark:text-blue-300">
+            <div>User ID: <span className="font-mono bg-white dark:bg-gray-800 px-1 rounded">ADMIN_001</span></div>
+            <div>Password: <span className="font-mono bg-white dark:bg-gray-800 px-1 rounded">admin123</span></div>
+          </div>
+        </div>
+        
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

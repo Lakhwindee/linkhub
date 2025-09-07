@@ -97,8 +97,9 @@ export function useAuth() {
       localStorage.removeItem('demo_session');
     }
     
-    // No authentication found
+    // No authentication found - show demo login instructions
     console.log('No authentication - setting unauthenticated');
+    console.log('💡 Demo Login Available - Use ID: ADMIN_001, Password: admin123');
     setUser(null);
     setIsAuthenticated(false);
     setIsLoading(false);
