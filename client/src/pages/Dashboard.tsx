@@ -130,10 +130,10 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-2 md:p-4 space-y-4 md:space-y-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background p-2 md:p-4 space-y-4 md:space-y-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto w-full">
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 w-full">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
               Welcome back, {user?.displayName || user?.firstName || 'Demo User'}! 👋
@@ -176,7 +176,7 @@ export default function Dashboard() {
         </div>
 
         {/* Top Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-6 md:mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 md:mb-8 w-full">
           <Button variant="default" asChild data-testid="button-my-profile-top">
             <Link href={`/profile/${user.id}`}>
               <UserIcon className="w-4 h-4 mr-2" />
@@ -191,12 +191,12 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 w-full">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 min-w-0">
 
             {/* Recent Posts */}
-            <Card data-testid="card-recent-posts">
+            <Card data-testid="card-recent-posts" className="w-full overflow-hidden">
               <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <CardTitle className="flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-accent" />
@@ -206,7 +206,7 @@ export default function Dashboard() {
                   <Link href="/feed">View All</Link>
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 overflow-hidden">
                 {postsLoading ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
@@ -267,9 +267,9 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4 md:space-y-6">
+          <div className="space-y-4 md:space-y-6 min-w-0">
             {/* Connect Requests */}
-            <Card data-testid="card-connect-requests">
+            <Card data-testid="card-connect-requests" className="w-full overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex flex-wrap items-center gap-2">
                   <Users className="w-5 h-5 text-accent" />
@@ -332,7 +332,7 @@ export default function Dashboard() {
             <FollowersFollowingSection userId={user.id} />
 
             {/* Upcoming Events */}
-            <Card data-testid="card-upcoming-events">
+            <Card data-testid="card-upcoming-events" className="w-full overflow-hidden">
               <CardHeader>
                 <CardTitle className="flex flex-wrap items-center gap-2">
                   <Calendar className="w-5 h-5 text-accent" />
