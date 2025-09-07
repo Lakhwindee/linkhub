@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import Globe3D from "@/components/Globe3D";
 import { UserCard } from "@/components/UserCard";
 import type { User, Stay } from "@shared/schema";
 import { worldCountries } from "@/data/locationData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Map() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -21,6 +22,17 @@ export default function Map() {
   const [liveLocationSharing, setLiveLocationSharing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showStays, setShowStays] = useState(true);
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const updateSize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
   
   // Fetch travelers data
   const { data: users = [], isLoading } = useQuery<User[]>({
@@ -53,8 +65,16 @@ export default function Map() {
     return true;
   });
 
-  const globeWidth = isFullscreen ? window.innerWidth - 100 : 1200;
-  const globeHeight = isFullscreen ? window.innerHeight - 200 : 800;
+  const globeWidth = isFullscreen 
+    ? windowSize.width - (isMobile ? 20 : 100)
+    : isMobile 
+      ? Math.min(windowSize.width - 40, 380) 
+      : 1200;
+  const globeHeight = isFullscreen 
+    ? windowSize.height - (isMobile ? 100 : 200)
+    : isMobile 
+      ? Math.min(windowSize.height * 0.4, 300)
+      : 800;
 
   if (isLoading) {
     return (
@@ -68,8 +88,8 @@ export default function Map() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-2 md:p-4">
+      <div className="max-w-7xl mx-auto space-y-4 md:space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center space-x-3">
@@ -77,10 +97,10 @@ export default function Map() {
               <Globe className="w-8 h-8 text-accent" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground" data-testid="heading-world-map">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground" data-testid="heading-world-map">
                 World Traveler Map
               </h1>
-              <p className="text-muted-foreground" data-testid="text-map-subtitle">
+              <p className="text-sm md:text-base text-muted-foreground" data-testid="text-map-subtitle">
                 Discover travelers around the world in 3D
               </p>
             </div>
@@ -111,7 +131,7 @@ export default function Map() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Country Filter */}
               <div className="space-y-2">
                 <Label>Country</Label>
@@ -175,9 +195,9 @@ export default function Map() {
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-6 gap-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-6 gap-4 md:gap-6">
           {/* Map */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 order-2 lg:order-1">
             <Card data-testid="card-3d-globe">
               <CardContent className="p-0">
                 {isFullscreen ? (
@@ -205,16 +225,18 @@ export default function Map() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6 flex items-center justify-center bg-slate-50 dark:bg-slate-900 rounded-lg">
-                    <Globe3D
-                      users={filteredUsers}
-                      width={globeWidth}
-                      height={globeHeight}
-                      onUserClick={handleUserClick}
-                      onStayClick={handleStayClick}
-                      selectedCountry={selectedCountry}
-                      selectedState={selectedCity}
-                    />
+                  <div className="p-2 md:p-6 flex items-center justify-center bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden">
+                    <div className="w-full flex justify-center">
+                      <Globe3D
+                        users={filteredUsers}
+                        width={globeWidth}
+                        height={globeHeight}
+                        onUserClick={handleUserClick}
+                        onStayClick={handleStayClick}
+                        selectedCountry={selectedCountry}
+                        selectedState={selectedCity}
+                      />
+                    </div>
                   </div>
                 )}
               </CardContent>
@@ -222,7 +244,7 @@ export default function Map() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6 order-1 lg:order-2">
             {/* Selected User */}
             {selectedUser && (
               <Card data-testid="card-selected-user">
@@ -280,18 +302,23 @@ export default function Map() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" data-testid="button-find-nearby">
-                  <MapPin className="w-4 h-4 mr-2" />
-                  Find Nearby
-                </Button>
-                <Button variant="outline" className="w-full justify-start" data-testid="button-connect-travelers">
-                  <Users className="w-4 h-4 mr-2" />
-                  Connect with Travelers
-                </Button>
-                <Button variant="outline" className="w-full justify-start" data-testid="button-share-location">
-                  <Search className="w-4 h-4 mr-2" />
-                  Share My Location
-                </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-2">
+                  <Button variant="outline" className="w-full justify-start" data-testid="button-find-nearby">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Find Nearby</span>
+                    <span className="sm:hidden">Nearby</span>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" data-testid="button-connect-travelers">
+                    <Users className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Connect with Travelers</span>
+                    <span className="sm:hidden">Connect</span>
+                  </Button>
+                  <Button variant="outline" className="w-full justify-start" data-testid="button-share-location">
+                    <Search className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Share My Location</span>
+                    <span className="sm:hidden">Share</span>
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
