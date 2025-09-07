@@ -570,8 +570,8 @@ export default function Landing() {
                 <img 
                   src="/hublink-logo.png" 
                   alt="HubLink" 
-                  className="h-8 w-auto brightness-0 invert" 
-                  style={{ maxWidth: '150px' }}
+                  className="w-auto brightness-0 invert" 
+                  style={{ height: '200px', maxWidth: '750px' }}
                 />
               </div>
               <p className="text-primary-foreground/80">
