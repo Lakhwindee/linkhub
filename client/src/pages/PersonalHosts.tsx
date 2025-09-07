@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,67 +7,171 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, MapPin, Star, DollarSign, Users, Calendar, Edit, Eye, Trash2, Home, Map, Coffee, Car, UserCheck } from "lucide-react";
+import { Plus, Search, MapPin, Star, DollarSign, Users, Calendar, Edit, Eye, Trash2, Home, Map, Coffee, Car, UserCheck, Loader2 } from "lucide-react";
+import HostProfileForm from "@/components/HostProfileForm";
+import { toast } from "sonner";
+
+interface PersonalHost {
+  id: string;
+  title: string;
+  description?: string;
+  location: string;
+  country: string;
+  city: string;
+  hostType: string;
+  priceType: string;
+  pricePerDay: string;
+  currency: string;
+  maxGuests: number;
+  amenities?: string[];
+  languages?: string[];
+  imageUrls?: string[];
+  isActive: boolean;
+  createdAt: string;
+}
 
 export default function PersonalHosts() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingHost, setEditingHost] = useState<PersonalHost | null>(null);
+  const [myHosts, setMyHosts] = useState<PersonalHost[]>([]);
+  const [allHosts, setAllHosts] = useState<PersonalHost[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [myHostsLoading, setMyHostsLoading] = useState(true);
 
-  // Sample data - this will be replaced with real API calls
-  const myHosts = [
-    {
-      id: "1",
-      title: "Cozy Home Stay in Mumbai",
-      description: "Beautiful 2-bedroom apartment with modern amenities",
-      location: "Mumbai, India",
-      hostType: "accommodation",
-      priceType: "paid",
-      pricePerDay: 50,
-      currency: "USD",
-      maxGuests: 4,
-      imageUrls: ["https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=300&h=200&fit=crop"],
-      isActive: true,
-      bookings: 12,
-      rating: 4.8
+  // Fetch my hosts
+  useEffect(() => {
+    if (user?.id) {
+      fetchMyHosts();
     }
-  ];
+  }, [user?.id]);
 
-  const allHosts = [
-    {
-      id: "2",
-      title: "Local Guide & Host",
-      description: "Show you the best hidden gems in Delhi",
-      location: "Delhi, India", 
-      hostType: "guide",
-      priceType: "free",
-      pricePerDay: 0,
-      currency: "USD",
-      maxGuests: 6,
-      imageUrls: ["https://images.unsplash.com/photo-1599838819909-14d1e3320cd3?w=300&h=200&fit=crop"],
-      hostName: "Raj Sharma",
-      languages: ["English", "Hindi"],
-      rating: 4.9,
-      totalBookings: 45
-    },
-    {
-      id: "3", 
-      title: "Coffee Experience Tour",
-      description: "Learn about local coffee culture and brewing",
-      location: "Bangalore, India",
-      hostType: "experience",
-      priceType: "paid",
-      pricePerDay: 25,
-      currency: "USD", 
-      maxGuests: 8,
-      imageUrls: ["https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=300&h=200&fit=crop"],
-      hostName: "Priya Nair", 
-      languages: ["English", "Tamil"],
-      rating: 4.7,
-      totalBookings: 23
+  // Fetch all hosts for browsing
+  useEffect(() => {
+    fetchAllHosts();
+  }, []);
+
+  const fetchMyHosts = async () => {
+    try {
+      setMyHostsLoading(true);
+      const response = await fetch('/api/personal-hosts/my-hosts', {
+        headers: {
+          'X-Demo-Session': user?.id || ''
+        }
+      });
+      if (response.ok) {
+        const hosts = await response.json();
+        setMyHosts(hosts);
+      }
+    } catch (error) {
+      console.error('Error fetching my hosts:', error);
+      toast.error('Failed to load your host profiles');
+    } finally {
+      setMyHostsLoading(false);
     }
-  ];
+  };
+
+  const fetchAllHosts = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams({
+        limit: '20'
+      });
+      if (searchQuery) params.append('country', searchQuery);
+      if (filterType !== 'all') params.append('hostType', filterType);
+
+      const response = await fetch(`/api/personal-hosts?${params}`);
+      if (response.ok) {
+        const hosts = await response.json();
+        setAllHosts(hosts);
+      }
+    } catch (error) {
+      console.error('Error fetching hosts:', error);
+      toast.error('Failed to load hosts');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateHost = async (data: any) => {
+    try {
+      const response = await fetch('/api/personal-hosts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Demo-Session': user?.id || ''
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        const newHost = await response.json();
+        setMyHosts([newHost, ...myHosts]);
+        setShowCreateDialog(false);
+        toast.success('Host profile created successfully!');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to create host profile');
+      }
+    } catch (error) {
+      console.error('Error creating host:', error);
+      toast.error('Failed to create host profile');
+    }
+  };
+
+  const handleEditHost = async (data: any) => {
+    if (!editingHost) return;
+
+    try {
+      const response = await fetch(`/api/personal-hosts/${editingHost.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Demo-Session': user?.id || ''
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        const updatedHost = await response.json();
+        setMyHosts(myHosts.map(h => h.id === editingHost.id ? updatedHost : h));
+        setEditingHost(null);
+        toast.success('Host profile updated successfully!');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to update host profile');
+      }
+    } catch (error) {
+      console.error('Error updating host:', error);
+      toast.error('Failed to update host profile');
+    }
+  };
+
+  const handleDeleteHost = async (hostId: string) => {
+    if (!confirm('Are you sure you want to delete this host profile?')) return;
+
+    try {
+      const response = await fetch(`/api/personal-hosts/${hostId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Demo-Session': user?.id || ''
+        }
+      });
+
+      if (response.ok) {
+        setMyHosts(myHosts.filter(h => h.id !== hostId));
+        toast.success('Host profile deleted successfully!');
+      } else {
+        const error = await response.json();
+        toast.error(error.message || 'Failed to delete host profile');
+      }
+    } catch (error) {
+      console.error('Error deleting host:', error);
+      toast.error('Failed to delete host profile');
+    }
+  };
 
   const getHostTypeIcon = (type: string) => {
     switch (type) {
@@ -79,9 +183,17 @@ export default function PersonalHosts() {
     }
   };
 
+  // Filter and search functionality
+  useEffect(() => {
+    fetchAllHosts();
+  }, [searchQuery, filterType]);
+
   const filteredHosts = allHosts.filter(host => {
-    const matchesSearch = host.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         host.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = searchQuery === "" || 
+                         host.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         host.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         host.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         host.city.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === "all" || host.hostType === filterType;
     return matchesSearch && matchesType;
   });
@@ -116,13 +228,14 @@ export default function PersonalHosts() {
                 Become a Host
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-4xl max-h-[90vh]">
               <DialogHeader>
                 <DialogTitle>Create Host Profile</DialogTitle>
               </DialogHeader>
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Host creation form will be implemented here</p>
-              </div>
+              <HostProfileForm
+                onSubmit={handleCreateHost}
+                onCancel={() => setShowCreateDialog(false)}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -162,66 +275,91 @@ export default function PersonalHosts() {
             </div>
 
             {/* Hosts Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredHosts.map((host) => {
-                const HostIcon = getHostTypeIcon(host.hostType);
-                return (
-                  <Card key={host.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="aspect-video relative">
-                      <img 
-                        src={host.imageUrls[0]} 
-                        alt={host.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2 left-2">
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <HostIcon className="w-3 h-3" />
-                          {host.hostType}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-2 right-2">
-                        <Badge variant={host.priceType === 'free' ? 'outline' : 'default'}>
-                          {host.priceType === 'free' ? 'FREE' : `$${host.pricePerDay}/day`}
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2">{host.title}</h3>
-                      <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                        {host.description}
-                      </p>
-                      
-                      <div className="flex items-center text-sm text-muted-foreground mb-2">
-                        <MapPin className="w-4 h-4 mr-1" />
-                        {host.location}
-                      </div>
-                      
-                      <div className="flex items-center text-sm text-muted-foreground mb-3">
-                        <Users className="w-4 h-4 mr-1" />
-                        Up to {host.maxGuests} guests
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center text-sm">
-                          <Star className="w-4 h-4 text-yellow-500 mr-1" />
-                          {host.rating} ({host.totalBookings} bookings)
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredHosts.length === 0 ? (
+                  <div className="col-span-full text-center py-12">
+                    <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Hosts Found</h3>
+                    <p className="text-muted-foreground">
+                      Try adjusting your search filters to find hosts
+                    </p>
+                  </div>
+                ) : (
+                  filteredHosts.map((host) => {
+                    const HostIcon = getHostTypeIcon(host.hostType);
+                    return (
+                      <Card key={host.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                        <div className="aspect-video relative">
+                          {host.imageUrls && host.imageUrls.length > 0 ? (
+                            <img 
+                              src={host.imageUrls[0]} 
+                              alt={host.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <HostIcon className="w-12 h-12 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 left-2">
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <HostIcon className="w-3 h-3" />
+                              {host.hostType}
+                            </Badge>
+                          </div>
+                          <div className="absolute top-2 right-2">
+                            <Badge variant={host.priceType === 'free' ? 'outline' : 'default'}>
+                              {host.priceType === 'free' ? 'FREE' : `$${host.pricePerDay}/day`}
+                            </Badge>
+                          </div>
                         </div>
-                        <Button size="sm" variant="outline">
-                          <Eye className="w-4 h-4 mr-1" />
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        
+                        <CardContent className="p-4">
+                          <h3 className="font-semibold text-lg mb-2">{host.title}</h3>
+                          <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                            {host.description || 'No description provided'}
+                          </p>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground mb-2">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {host.location || `${host.city}, ${host.country}`}
+                          </div>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground mb-3">
+                            <Users className="w-4 h-4 mr-1" />
+                            Up to {host.maxGuests} guests
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <div className="text-sm text-muted-foreground">
+                              Host in {host.country}
+                            </div>
+                            <Button size="sm" variant="outline">
+                              <Eye className="w-4 h-4 mr-1" />
+                              View Details
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })
+                )}
+              </div>
+            )}
           </TabsContent>
 
           {/* My Host Profiles Tab */}
           <TabsContent value="my-hosts" className="space-y-6">
-            {myHosts.length === 0 ? (
+            {myHostsLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : myHosts.length === 0 ? (
               <Card>
                 <CardContent className="text-center py-12">
                   <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
@@ -242,42 +380,64 @@ export default function PersonalHosts() {
                   return (
                     <Card key={host.id}>
                       <div className="aspect-video relative">
-                        <img 
-                          src={host.imageUrls[0]} 
-                          alt={host.title}
-                          className="w-full h-full object-cover"
-                        />
+                        {host.imageUrls && host.imageUrls.length > 0 ? (
+                          <img 
+                            src={host.imageUrls[0]} 
+                            alt={host.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <HostIcon className="w-12 h-12 text-muted-foreground" />
+                          </div>
+                        )}
                         <div className="absolute top-2 left-2">
                           <Badge variant={host.isActive ? 'default' : 'secondary'}>
                             {host.isActive ? 'Active' : 'Inactive'}
                           </Badge>
                         </div>
+                        <div className="absolute top-2 right-2">
+                          <Badge variant={host.priceType === 'free' ? 'outline' : 'default'}>
+                            {host.priceType === 'free' ? 'FREE' : `$${host.pricePerDay}/day`}
+                          </Badge>
+                        </div>
                       </div>
                       
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg mb-2">{host.title}</h3>
-                        <div className="flex items-center text-sm text-muted-foreground mb-3">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {host.location}
+                        <div className="flex items-start gap-2 mb-2">
+                          <HostIcon className="w-4 h-4 mt-1 text-primary" />
+                          <h3 className="font-semibold text-lg flex-1">{host.title}</h3>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4 mb-4">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-foreground">{host.bookings}</div>
-                            <div className="text-xs text-muted-foreground">Bookings</div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-foreground">{host.rating}</div>
-                            <div className="text-xs text-muted-foreground">Rating</div>
-                          </div>
+                        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                          {host.description || 'No description provided'}
+                        </p>
+                        
+                        <div className="flex items-center text-sm text-muted-foreground mb-3">
+                          <MapPin className="w-4 h-4 mr-1" />
+                          {host.location || `${host.city}, ${host.country}`}
+                        </div>
+                        
+                        <div className="flex items-center text-sm text-muted-foreground mb-4">
+                          <Users className="w-4 h-4 mr-1" />
+                          Up to {host.maxGuests} guests
                         </div>
 
                         <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="flex-1">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="flex-1"
+                            onClick={() => setEditingHost(host)}
+                          >
                             <Edit className="w-4 h-4 mr-1" />
                             Edit
                           </Button>
-                          <Button size="sm" variant="outline">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleDeleteHost(host.id)}
+                          >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -303,6 +463,23 @@ export default function PersonalHosts() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Host Dialog */}
+      {editingHost && (
+        <Dialog open={!!editingHost} onOpenChange={() => setEditingHost(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh]">
+            <DialogHeader>
+              <DialogTitle>Edit Host Profile</DialogTitle>
+            </DialogHeader>
+            <HostProfileForm
+              onSubmit={handleEditHost}
+              onCancel={() => setEditingHost(null)}
+              initialData={editingHost}
+              isEditing={true}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
