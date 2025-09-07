@@ -112,15 +112,15 @@ export default function Billing() {
                 <CardContent>
                   <div className="grid md:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-green-600">£1,247.50</h3>
+                      <h3 className="text-2xl font-bold text-green-600">$1,247.50</h3>
                       <p className="text-sm text-muted-foreground">Total Earnings</p>
                     </div>
                     <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-blue-600">£892.30</h3>
+                      <h3 className="text-2xl font-bold text-blue-600">$892.30</h3>
                       <p className="text-sm text-muted-foreground">Available for Payout</p>
                     </div>
                     <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-orange-600">£355.20</h3>
+                      <h3 className="text-2xl font-bold text-orange-600">$355.20</h3>
                       <p className="text-sm text-muted-foreground">Pending</p>
                     </div>
                   </div>
@@ -159,7 +159,7 @@ export default function Billing() {
                       <TableRow>
                         <TableCell>{format(new Date(), 'MMM dd, yyyy')}</TableCell>
                         <TableCell>Ad Campaign Payment</TableCell>
-                        <TableCell className="font-semibold text-green-600">+£45.50</TableCell>
+                        <TableCell className="font-semibold text-green-600">+$45.50</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-green-100 text-green-800">
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -170,7 +170,7 @@ export default function Billing() {
                       <TableRow>
                         <TableCell>{format(new Date(Date.now() - 86400000), 'MMM dd, yyyy')}</TableCell>
                         <TableCell>Stay Booking Commission</TableCell>
-                        <TableCell className="font-semibold text-green-600">+£12.75</TableCell>
+                        <TableCell className="font-semibold text-green-600">+$12.75</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-green-100 text-green-800">
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -181,7 +181,7 @@ export default function Billing() {
                       <TableRow>
                         <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
                         <TableCell>Payout to PayPal</TableCell>
-                        <TableCell className="font-semibold text-red-600">-£250.00</TableCell>
+                        <TableCell className="font-semibold text-red-600">-$250.00</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-orange-100 text-orange-800">
                             <AlertCircle className="w-3 h-3 mr-1" />
@@ -237,7 +237,7 @@ export default function Billing() {
                 <CardContent className="space-y-4">
                   <div>
                     <label className="text-sm font-medium">Minimum Payout</label>
-                    <p className="text-2xl font-bold">£100</p>
+                    <p className="text-2xl font-bold">$500</p>
                     <p className="text-xs text-muted-foreground">Automatic payout when reached</p>
                   </div>
                   <Button variant="outline" className="w-full">

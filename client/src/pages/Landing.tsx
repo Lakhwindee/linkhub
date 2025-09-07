@@ -188,7 +188,7 @@ export default function Landing() {
     {
       name: "Free",
       description: "Perfect for browsing",
-      price: "£0",
+      price: "$0",
       period: "Forever free",
       features: [
         "View global feed",
@@ -202,7 +202,7 @@ export default function Landing() {
     {
       name: "Traveler",
       description: "For active travelers",
-      price: "£25",
+      price: "$25",
       period: "per month",
       popular: true,
       features: [
@@ -215,7 +215,7 @@ export default function Landing() {
     {
       name: "Creator",
       description: "Earn from content",
-      price: "£45", 
+      price: "$45", 
       period: "per month",
       features: [
         "Everything in Traveler",
@@ -269,7 +269,7 @@ export default function Landing() {
                   <div className="text-sm text-muted-foreground">Countries</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-foreground" >£2M+</div>
+                  <div className="text-2xl font-bold text-foreground" >$2M+</div>
                   <div className="text-sm text-muted-foreground">Creator Earnings</div>
                 </div>
               </div>
@@ -494,7 +494,7 @@ export default function Landing() {
                   <div className="text-muted-foreground">Connections Made</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-foreground" >£2M+</div>
+                  <div className="text-3xl font-bold text-foreground" >$2M+</div>
                   <div className="text-muted-foreground">Creator Earnings</div>
                 </div>
               </div>

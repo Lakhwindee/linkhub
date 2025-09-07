@@ -597,9 +597,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   You need at least 10,000 subscribers to participate.
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 10k-40k subscribers: £120 per campaign</li>
-                  <li>• 40k-70k subscribers: £240 per campaign</li>  
-                  <li>• 70k+ subscribers: £360 per campaign</li>
+                  <li>• 10k-40k subscribers: $150 per campaign</li>
+                  <li>• 40k-70k subscribers: $300 per campaign</li>  
+                  <li>• 70k+ subscribers: $450 per campaign</li>
                 </ul>
               </div>
 
@@ -1470,7 +1470,7 @@ export default function AdMarketplace() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                          <p className="text-2xl font-bold text-green-600">£1,245</p>
+                          <p className="text-2xl font-bold text-green-600">$1,245</p>
                         </div>
                         <TrendingUp className="w-8 h-8 text-green-600" />
                       </div>
@@ -1481,7 +1481,7 @@ export default function AdMarketplace() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">Available</p>
-                          <p className="text-2xl font-bold text-blue-600">£890</p>
+                          <p className="text-2xl font-bold text-blue-600">$890</p>
                         </div>
                         <Banknote className="w-8 h-8 text-blue-600" />
                       </div>
@@ -1492,7 +1492,7 @@ export default function AdMarketplace() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                          <p className="text-2xl font-bold text-orange-600">£355</p>
+                          <p className="text-2xl font-bold text-orange-600">$355</p>
                         </div>
                         <Clock className="w-8 h-8 text-orange-600" />
                       </div>
@@ -1503,7 +1503,7 @@ export default function AdMarketplace() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-medium text-muted-foreground">Total Earned</p>
-                          <p className="text-2xl font-bold text-purple-600">£8,750</p>
+                          <p className="text-2xl font-bold text-purple-600">$8,750</p>
                         </div>
                         <DollarSign className="w-8 h-8 text-purple-600" />
                       </div>
@@ -1522,10 +1522,10 @@ export default function AdMarketplace() {
                   <CardContent className="space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                       <p className="text-sm text-blue-800">
-                        <strong>Available for withdrawal:</strong> £890.00
+                        <strong>Available for withdrawal:</strong> $890.00
                       </p>
                       <p className="text-xs text-blue-600 mt-1">
-                        Minimum withdrawal amount: £100
+                        Minimum withdrawal amount: $500
                       </p>
                     </div>
                     
@@ -1609,7 +1609,7 @@ export default function AdMarketplace() {
                           <div>Dec 15, 2024</div>
                           <div className="text-muted-foreground">14:30</div>
                         </div>
-                        <div className="font-semibold text-green-600">£450.00</div>
+                        <div className="font-semibold text-green-600">$450.00</div>
                         <div className="text-sm">
                           <div>Bank Transfer</div>
                           <div className="text-muted-foreground">****1234</div>
@@ -1627,7 +1627,7 @@ export default function AdMarketplace() {
                           <div>Nov 28, 2024</div>
                           <div className="text-muted-foreground">09:15</div>
                         </div>
-                        <div className="font-semibold text-green-600">£320.00</div>
+                        <div className="font-semibold text-green-600">$320.00</div>
                         <div className="text-sm">
                           <div>PayPal</div>
                           <div className="text-muted-foreground">creator@email.com</div>
@@ -1645,7 +1645,7 @@ export default function AdMarketplace() {
                           <div>Nov 12, 2024</div>
                           <div className="text-muted-foreground">16:45</div>
                         </div>
-                        <div className="font-semibold text-orange-600">£275.00</div>
+                        <div className="font-semibold text-orange-600">$275.00</div>
                         <div className="text-sm">
                           <div>Bank Transfer</div>
                           <div className="text-muted-foreground">****1234</div>
@@ -1663,7 +1663,7 @@ export default function AdMarketplace() {
                           <div>Oct 30, 2024</div>
                           <div className="text-muted-foreground">11:20</div>
                         </div>
-                        <div className="font-semibold text-green-600">£180.00</div>
+                        <div className="font-semibold text-green-600">$180.00</div>
                         <div className="text-sm">
                           <div>Stripe Express</div>
                           <div className="text-muted-foreground">acct_****xyz</div>
@@ -1681,7 +1681,7 @@ export default function AdMarketplace() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                       <Card>
                         <CardContent className="p-4 text-center">
-                          <div className="text-2xl font-bold text-green-600">£1,225</div>
+                          <div className="text-2xl font-bold text-green-600">$1,225</div>
                           <div className="text-sm text-muted-foreground">Total Paid Out</div>
                         </CardContent>
                       </Card>

@@ -381,7 +381,7 @@ export default function Dashboard() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">£0</div>
+                    <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">$0</div>
                     <div className="text-xs text-muted-foreground">Total Earnings</div>
                   </div>
                   <div className="text-center">

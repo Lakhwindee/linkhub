@@ -30,8 +30,8 @@ export function PayoutDialog({
       alert("Amount exceeds available balance");
       return;
     }
-    if (amount < 10) {
-      alert("Minimum payout amount is £10");
+    if (amount < 500) {
+      alert("Minimum payout amount is $500");
       return;
     }
     
@@ -58,7 +58,7 @@ export function PayoutDialog({
               <div className="text-center">
                 <div className="flex items-center justify-center space-x-2">
                   <DollarSign className="w-5 h-5 text-green-500" />
-                  <span className="text-2xl font-bold text-green-600">£{availableBalance.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-green-600">${availableBalance.toFixed(2)}</span>
                 </div>
                 <p className="text-sm text-muted-foreground">Available for payout</p>
               </div>
@@ -67,7 +67,7 @@ export function PayoutDialog({
 
           {/* Payout Amount */}
           <div className="space-y-2">
-            <Label htmlFor="payout-amount">Payout Amount (£)</Label>
+            <Label htmlFor="payout-amount">Payout Amount ($)</Label>
             <Input
               id="payout-amount"
               type="number"
@@ -79,8 +79,8 @@ export function PayoutDialog({
               step="0.01"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Minimum: £10.00</span>
-              <span>Maximum: £{availableBalance.toFixed(2)}</span>
+              <span>Minimum: $500.00</span>
+              <span>Maximum: ${availableBalance.toFixed(2)}</span>
             </div>
           </div>
 
