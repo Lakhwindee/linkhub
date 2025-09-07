@@ -455,6 +455,277 @@ export default function Admin() {
           {/* Section Content */}
           <div className="space-y-6">
             {activeSection === "dashboard" && renderDashboardSection()}
+
+            {/* User Management Section */}
+            {activeSection === "users" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">User Management</h2>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Users
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Bulk Actions
+                    </Button>
+                  </div>
+                </div>
+
+                {/* User Search and Filters */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Search className="w-5 h-5" />
+                      <span>Search & Filter Users</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-4 gap-4">
+                      <Input
+                        placeholder="Search by name, email..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                      />
+                      <Select value={filterRole} onValueChange={setFilterRole}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Roles</SelectItem>
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="creator">Creator</SelectItem>
+                          <SelectItem value="publisher">Publisher</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filter by status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Status</SelectItem>
+                          <SelectItem value="active">Active</SelectItem>
+                          <SelectItem value="banned">Banned</SelectItem>
+                          <SelectItem value="pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button>
+                        <Filter className="w-4 h-4 mr-2" />
+                        Apply Filters
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Users Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>All Users</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>User</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Plan</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Join Date</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
+                                <span className="text-xs font-medium">JD</span>
+                              </div>
+                              <div>
+                                <div className="font-medium">John Doe</div>
+                                <div className="text-sm text-muted-foreground">@johndoe</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>john@example.com</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">Creator</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">Premium</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+                          </TableCell>
+                          <TableCell>Jan 15, 2024</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-1">
+                              <Button variant="outline" size="sm">
+                                <Edit3 className="w-3 h-3" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Lock className="w-3 h-3" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                        {/* More user rows would be populated dynamically */}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* System Settings Section */}
+            {activeSection === "settings" && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-foreground">System Settings</h2>
+                
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Platform Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Settings className="w-5 h-5" />
+                        <span>Platform Configuration</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Site Name</label>
+                        <Input defaultValue="HubLink" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Site Description</label>
+                        <Textarea defaultValue="Connect travelers and creators globally" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Maintenance Mode</label>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="maintenance" />
+                          <label htmlFor="maintenance" className="text-sm">Enable maintenance mode</label>
+                        </div>
+                      </div>
+                      <Button>Save Platform Settings</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* User Registration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>User Registration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Registration Status</label>
+                        <Select defaultValue="open">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open">Open to all</SelectItem>
+                            <SelectItem value="invite">Invite only</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Email Verification</label>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="email-verify" defaultChecked />
+                          <label htmlFor="email-verify" className="text-sm">Require email verification</label>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Default User Role</label>
+                        <Select defaultValue="user">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="creator">Creator</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button>Save User Settings</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Payment Settings */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Payment & Billing</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Platform Fee (%)</label>
+                        <Input defaultValue="10" type="number" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Currency</label>
+                        <Select defaultValue="gbp">
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gbp">GBP (£)</SelectItem>
+                            <SelectItem value="inr">INR (₹)</SelectItem>
+                            <SelectItem value="usd">USD ($)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Subscription Plans</label>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between p-2 border rounded">
+                            <span>Free Plan</span>
+                            <Badge variant="outline">£0/month</Badge>
+                          </div>
+                          <div className="flex items-center justify-between p-2 border rounded">
+                            <span>Premium Plan</span>
+                            <Badge variant="secondary">£45/month</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <Button>Save Payment Settings</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Security Settings */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Security & Privacy</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Two-Factor Authentication</label>
+                        <div className="flex items-center space-x-2">
+                          <input type="checkbox" id="2fa" />
+                          <label htmlFor="2fa" className="text-sm">Require 2FA for admin accounts</label>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Session Timeout (minutes)</label>
+                        <Input defaultValue="30" type="number" />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Data Retention (days)</label>
+                        <Input defaultValue="365" type="number" />
+                      </div>
+                      <Button>Save Security Settings</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
             
             {activeSection === "users" && (
               <div className="space-y-6">

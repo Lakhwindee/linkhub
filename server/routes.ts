@@ -2123,7 +2123,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin routes
   app.get('/api/admin/dashboard', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
       if (!['admin', 'superadmin', 'moderator'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -2143,7 +2152,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/submissions', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
       if (!['admin', 'superadmin', 'moderator'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
       }
