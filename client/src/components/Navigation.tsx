@@ -114,37 +114,40 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16 relative">
-          <Link href="/">
-            <div className="flex items-center space-x-2">
-              <img 
-                src="/hublink-logo.png" 
-                alt="HubLink" 
-                className="h-12 w-auto" 
-                style={{ maxWidth: '200px' }}
-              />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center items-center h-16">
+          <div className="flex items-center space-x-6">
+            {/* Logo */}
+            <Link href="/">
+              <div className="flex items-center space-x-2">
+                <img 
+                  src="/hublink-logo.png" 
+                  alt="HubLink" 
+                  className="h-12 w-auto" 
+                  style={{ maxWidth: '200px' }}
+                />
+              </div>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-3">
+              {navItems.map((item) => (
+                <Link key={item.href} href={item.href}>
+                  <Button
+                    variant={location === item.href ? "default" : "ghost"}
+                    className="flex items-center space-x-2"
+                    data-testid={item.testId}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.label}</span>
+                    {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
+                  </Button>
+                </Link>
+              ))}
             </div>
-          </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-3 absolute left-1/2 transform -translate-x-1/2">
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant={location === item.href ? "default" : "ghost"}
-                  className="flex items-center space-x-2"
-                  data-testid={item.testId}
-                >
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                  {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
-                </Button>
-              </Link>
-            ))}
-          </div>
-
-          <div className="flex items-center space-x-2 ml-auto">
+            {/* Right side controls */}
+            <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="icon"
@@ -220,6 +223,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
