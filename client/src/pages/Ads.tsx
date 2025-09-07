@@ -86,12 +86,12 @@ export default function Ads() {
 
         {/* Tabs - Now accessible to all users */}
         <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
-            <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
-            <TabsTrigger value="earnings">Earnings</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
+            <TabsTrigger value="campaigns" className="text-xs md:text-sm">Available Campaigns</TabsTrigger>
+            <TabsTrigger value="mycampaigns" className="text-xs md:text-sm">My Campaigns</TabsTrigger>
+            <TabsTrigger value="earnings" className="text-xs md:text-sm">Earnings</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
+            <TabsTrigger value="payouts" className="text-xs md:text-sm">Payouts</TabsTrigger>
           </TabsList>
 
 

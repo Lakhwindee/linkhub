@@ -1018,20 +1018,20 @@ export default function AdMarketplace() {
           </Card>
 
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-4xl grid-cols-5">
-              <TabsTrigger value="youtube-dashboard" data-testid="tab-youtube">
+            <TabsList className="grid w-full max-w-4xl grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
+              <TabsTrigger value="youtube-dashboard" data-testid="tab-youtube" className="text-xs md:text-sm">
                 YouTube Creator
               </TabsTrigger>
-              <TabsTrigger value="campaigns" data-testid="tab-available">
+              <TabsTrigger value="campaigns" data-testid="tab-available" className="text-xs md:text-sm">
                 Available Campaigns
               </TabsTrigger>
-              <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns">
+              <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns" className="text-xs md:text-sm">
                 My Campaigns
               </TabsTrigger>
-              <TabsTrigger value="earnings" data-testid="tab-earnings">
+              <TabsTrigger value="earnings" data-testid="tab-earnings" className="text-xs md:text-sm">
                 Earnings
               </TabsTrigger>
-              <TabsTrigger value="payout-history" data-testid="tab-payout-history">
+              <TabsTrigger value="payout-history" data-testid="tab-payout-history" className="text-xs md:text-sm">
                 Payment History
               </TabsTrigger>
             </TabsList>
