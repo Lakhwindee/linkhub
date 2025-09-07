@@ -23,23 +23,25 @@ export function useAuth() {
   const checkAuth = async () => {
     console.log('🔍 useAuth checking authentication state...');
     
-    // Clear ALL old localStorage demo data that's interfering
-    const oldKeys = ['hublink_demo_user', 'hublink_demo_user_id', 'hublink_demo_role', 'demo_user', 'demo_session'];
+    // Only clear old localStorage data that's actually corrupted or invalid
     const currentUser = localStorage.getItem('demo_user');
     
-    // Check if current user is invalid (not admin)
+    // Only clear if data is corrupted, don't clear valid demo sessions
     if (currentUser) {
       try {
         const userData = JSON.parse(currentUser);
-        if (userData.id !== 'demo-admin') {
-          console.log('🧹 Clearing invalid demo user:', userData.id);
-          oldKeys.forEach(key => localStorage.removeItem(key));
-          // Clear cookies too
+        // Only clear if the data is malformed or corrupted, not just because it's not admin
+        if (!userData.id || !userData.email) {
+          console.log('🧹 Clearing corrupted demo user data');
+          localStorage.removeItem('demo_user');
+          localStorage.removeItem('demo_session');
           document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         }
       } catch (e) {
         console.log('🧹 Clearing corrupted demo user data');
-        oldKeys.forEach(key => localStorage.removeItem(key));
+        localStorage.removeItem('demo_user');
+        localStorage.removeItem('demo_session');
+        document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
       }
     }
     
