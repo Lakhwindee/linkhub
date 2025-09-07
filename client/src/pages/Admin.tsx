@@ -251,7 +251,9 @@ export default function Admin() {
   // Navigation items for admin panel
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
-    { id: "users", label: "User Management", icon: Users, description: "Manage all users" },
+    { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
+    { id: "discount-codes", label: "Discount Codes", icon: CreditCard, description: "Manage promo codes", badge: "New" },
+    { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
     { id: "reports", label: "Reports & Flags", icon: Flag, description: "User reports" },
