@@ -8,6 +8,19 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**September 2025 - Instagram-like User Profile Feature**
+- Implemented Instagram-style user profile pages accessible via clickable usernames in the feed
+- Created comprehensive UserProfile.tsx component with responsive design featuring:
+  - User stats (posts, followers, following) displayed prominently
+  - Instagram-like tabs for Posts, Photos, and Liked content  
+  - Clickable usernames in both compact and full PostCard layouts
+  - Social media links integration (Instagram, YouTube)
+  - Follow/unfollow functionality and messaging buttons
+  - Bio, location, interests, and languages display
+  - Grid layout for photo gallery view with hover effects
+- Enhanced social discovery by making all usernames in feed clickable to navigate to profiles
+- Added new route `/profile/:userId` to support dynamic user profile viewing
+
 **September 2025 - Platform Fee System Implementation**
 - Implemented 10% platform fee across all booking services:
   - Stays bookings: 10% fee on accommodation prices  
