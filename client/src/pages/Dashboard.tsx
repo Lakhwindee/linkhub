@@ -147,7 +147,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="badge-user-plan">
-              {user?.plan === 'premium' ? 'Premium Plan' : user?.plan === 'standard' ? 'Standard Plan' : 'Free Plan'}
+              {user?.plan === 'premium' ? 'Premium Plan' : 'Free Plan'}
             </Badge>
           </div>
         </div>

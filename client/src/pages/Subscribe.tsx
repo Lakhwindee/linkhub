@@ -78,36 +78,19 @@ export default function Subscribe() {
 
   const plans = [
     {
-      id: "standard",
-      name: "Standard",
-      description: "Essential features for travelers",
-      price: "$19",
-      period: "per month",
-      popular: false,
-      icon: Heart,
-      color: "bg-blue-500",
-      features: [
-        "Full map access with travelers worldwide",
-        "Send connect requests to any user",
-        "Direct messaging with connections",
-        "Create and join travel events",
-        "Basic travel dashboard",
-        "Standard customer support",
-        "Privacy controls",
-        "Profile customization"
-      ]
-    },
-    {
       id: "premium",
       name: "Premium",
-      description: "Earn money through campaigns",
-      price: "$29",
+      description: "Full access to all features and earn money",
+      price: "$45",
       period: "per month",
       popular: true,
       icon: Star,
       color: "bg-chart-2",
       features: [
-        "Everything in Standard plan",
+        "Full map access with travelers worldwide",
+        "Send connect requests to any user",
+        "Direct messaging with connections",
+        "Create and join travel events",
         "✨ Access to Campaign Marketplace",
         "✨ Apply to brand advertising campaigns",
         "✨ Earnings dashboard and analytics",
@@ -115,7 +98,7 @@ export default function Subscribe() {
         "✨ Priority campaign notifications",
         "✨ Creator verification features",
         "✨ Advanced earning tools",
-        "✨ Unlimited earning potential"
+        "✨ Priority customer support"
       ]
     }
   ];
@@ -135,7 +118,7 @@ export default function Subscribe() {
         setClientSecret(data.clientSecret);
       }
     } catch (error) {
-      if (isUnauthorizedError(error)) {
+      if (isUnauthorizedError(error as Error)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -148,7 +131,7 @@ export default function Subscribe() {
       }
       toast({
         title: "Checkout Failed",
-        description: error.message || "Failed to start checkout process.",
+        description: (error as Error).message || "Failed to start checkout process.",
         variant: "destructive",
       });
       setSelectedPlan(null);
@@ -330,7 +313,7 @@ export default function Subscribe() {
                   ) : (
                     <Zap className="w-5 h-5 mr-2" />
                   )}
-                  {plan.id === 'standard' ? 'Get Standard' : 'Get Premium'}
+                  Get Premium
                 </Button>
 
                 <div className="space-y-3">
@@ -346,30 +329,16 @@ export default function Subscribe() {
                 </div>
 
                 {/* Plan-specific highlights */}
-                {plan.id === 'traveler' && (
-                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <span className="font-semibold text-blue-800 dark:text-blue-200 text-sm">
-                        Perfect for Travelers
-                      </span>
-                    </div>
-                    <p className="text-blue-700 dark:text-blue-300 text-xs">
-                      Connect with travelers worldwide, join events, and explore with confidence.
-                    </p>
-                  </div>
-                )}
-
-                {plan.id === 'creator' && (
+                {plan.id === 'premium' && (
                   <div className="bg-yellow-50 dark:bg-yellow-950 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                     <div className="flex items-center space-x-2 mb-2">
                       <DollarSign className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
                       <span className="font-semibold text-yellow-800 dark:text-yellow-200 text-sm">
-                        Start Earning Today
+                        Complete Travel & Earning Experience
                       </span>
                     </div>
                     <p className="text-yellow-700 dark:text-yellow-300 text-xs">
-                      Access exclusive brand campaigns and earn money from your travel content.
+                      Full access to all features plus earn money from brand campaigns.
                     </p>
                   </div>
                 )}
@@ -390,8 +359,7 @@ export default function Subscribe() {
                   <tr className="border-b border-border">
                     <th className="text-left py-3 font-semibold">Features</th>
                     <th className="text-center py-3 font-semibold">Free</th>
-                    <th className="text-center py-3 font-semibold">Traveler</th>
-                    <th className="text-center py-3 font-semibold">Creator</th>
+                    <th className="text-center py-3 font-semibold">Premium</th>
                   </tr>
                 </thead>
                 <tbody className="text-sm">
@@ -399,42 +367,35 @@ export default function Subscribe() {
                     <td className="py-3">Global feed access</td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Full map access</td>
                     <td className="text-center py-3 text-muted-foreground">Limited</td>
-                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Connect requests & DM</td>
                     <td className="text-center py-3 text-red-500">✗</td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Create & join events</td>
                     <td className="text-center py-3 text-red-500">✗</td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
-                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Ad Marketplace</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
                     <td className="text-center py-3 text-red-500">✗</td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Earnings & payouts</td>
                     <td className="text-center py-3 text-red-500">✗</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr>
                     <td className="py-3">Priority support</td>
                     <td className="text-center py-3 text-red-500">✗</td>
-                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                 </tbody>

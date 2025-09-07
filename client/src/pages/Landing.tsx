@@ -200,25 +200,15 @@ export default function Landing() {
       ]
     },
     {
-      name: "Traveler",
-      description: "For active travelers",
-      price: "$25",
+      name: "Premium",
+      description: "Full access & earn money",
+      price: "$45", 
       period: "per month",
       popular: true,
       features: [
         "Full map access",
         "Connect requests & DM",
         "Create & join events",
-        "Basic analytics"
-      ]
-    },
-    {
-      name: "Creator",
-      description: "Earn from content",
-      price: "$45", 
-      period: "per month",
-      features: [
-        "Everything in Traveler",
         "Ad Marketplace access",
         "Earnings dashboard",
         "Priority support"
