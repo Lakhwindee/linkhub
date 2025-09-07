@@ -114,89 +114,88 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-center items-center h-16">
-          <div className="flex items-center space-x-6">
-            {/* Logo */}
-            <Link href="/">
-              <div className="flex items-center space-x-2">
-                <img 
-                  src="/hublink-logo.png" 
-                  alt="HubLink" 
-                  className="w-auto" 
-                  style={{ height: '120px', maxWidth: '500px' }}
-                />
-              </div>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-3">
-              {navItems.map((item) => (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={location === item.href ? "default" : "ghost"}
-                    className="flex items-center space-x-2"
-                    data-testid={item.testId}
-                  >
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                    {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-
-            {/* Right side controls */}
+      <div className="max-w-full px-2 sm:px-4 lg:max-w-6xl lg:mx-auto lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/">
             <div className="flex items-center space-x-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              data-testid="button-theme-toggle"
-            >
-              {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </Button>
+              <img 
+                src="/hublink-logo.png" 
+                alt="HubLink" 
+                className="w-auto" 
+                style={{ height: '120px', maxWidth: '300px' }}
+              />
+            </div>
+          </Link>
 
-            {/* Mobile Menu */}
-            <Sheet>
-              <SheetTrigger asChild className="md:hidden">
-                <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
-                  <Menu className="h-5 w-5" />
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1 lg:space-x-3 flex-1 justify-center max-w-3xl overflow-x-auto">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant={location === item.href ? "default" : "ghost"}
+                  className="flex items-center space-x-1 text-xs lg:text-sm whitespace-nowrap min-w-fit"
+                  data-testid={item.testId}
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                  {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
                 </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <div className="flex flex-col space-y-4 mt-8">
-                  {navItems.map((item) => (
-                    <Link key={item.href} href={item.href}>
-                      <Button
-                        variant={location === item.href ? "default" : "ghost"}
-                        className="w-full justify-start space-x-2"
-                        data-testid={`mobile-${item.testId}`}
-                      >
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.label}</span>
-                        {(item as any).restricted && <Lock className="w-3 h-3 ml-auto text-muted-foreground" />}
-                      </Button>
-                    </Link>
-                  ))}
-                </div>
-              </SheetContent>
-            </Sheet>
+              </Link>
+            ))}
+          </div>
 
-            {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profileImageUrl || ""} alt={user?.displayName || user?.username} />
-                    <AvatarFallback data-testid="text-user-initials">
-                      {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuItem asChild>
+          {/* Right side controls */}
+          <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+            data-testid="button-theme-toggle"
+          >
+            {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+          </Button>
+
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] sm:w-[350px]">
+              <div className="flex flex-col space-y-4 mt-8">
+                {navItems.map((item) => (
+                  <Link key={item.href} href={item.href}>
+                    <Button
+                      variant={location === item.href ? "default" : "ghost"}
+                      className="w-full justify-start space-x-2"
+                      data-testid={`mobile-${item.testId}`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                      {(item as any).restricted && <Lock className="w-3 h-3 ml-auto text-muted-foreground" />}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.profileImageUrl || ""} alt={user?.displayName || user?.username} />
+                  <AvatarFallback data-testid="text-user-initials">
+                    {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mr-2" align="end" sideOffset={8}>
+              <DropdownMenuItem asChild>
                   <Link href="/profile" data-testid="link-profile">
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
@@ -221,9 +220,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </div>
         </div>
       </div>
