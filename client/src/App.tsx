@@ -27,6 +27,7 @@ import Map from "@/pages/Map";
 import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
+import OTPVerification from "@/pages/OTPVerification";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -56,6 +57,7 @@ function Router() {
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
               <Route path="/signup-completion" component={SignupCompletion} />
+              <Route path="/verify-otp" component={OTPVerification} />
             </>
           ) : (
             <>
@@ -91,6 +93,7 @@ function Router() {
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
               <Route path="/signup-completion" component={SignupCompletion} />
+              <Route path="/verify-otp" component={OTPVerification} />
             </>
           )}
           <Route component={NotFound} />

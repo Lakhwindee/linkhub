@@ -128,6 +128,10 @@ export default function DocumentSignup() {
       sessionStorage.setItem('hublink_signup_type', 'document');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
       
+      // Store OTP verification data
+      localStorage.setItem('signup_email', formData.email);
+      localStorage.setItem('verification_type', 'email');
+      
       // Success stage with animation
       setSuccessStage('success');
       
@@ -137,9 +141,9 @@ export default function DocumentSignup() {
       // Redirecting stage
       setSuccessStage('redirecting');
       
-      // Final redirect to completion process
+      // Final redirect to OTP verification
       setTimeout(() => {
-        window.location.href = '/signup-completion';
+        window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&type=email`;
       }, 1000);
       
     } catch (error) {

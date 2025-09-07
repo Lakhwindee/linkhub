@@ -235,8 +235,13 @@ export default function ProfessionalSignup() {
       localStorage.setItem('hublink_demo_user', 'true');
       localStorage.setItem('hublink_demo_user_id', demoUserId);
       localStorage.setItem('hublink_user_role', selectedRole || 'creator');
-      localStorage.setItem('hublink_verification_complete', 'true');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
+      
+      // Store OTP verification data
+      localStorage.setItem('signup_email', formData.email);
+      localStorage.setItem('signup_phone', `${formData.countryCode}${formData.phone}`);
+      localStorage.setItem('verification_type', 'both');
+      localStorage.setItem('signup_role', selectedRole || 'creator');
       
       // Success stage with animation
       setSuccessStage('success');
@@ -247,13 +252,10 @@ export default function ProfessionalSignup() {
       // Redirecting stage
       setSuccessStage('redirecting');
       
-      // Final redirect
+      // Final redirect to OTP verification
       setTimeout(() => {
-        if (selectedRole === 'publisher') {
-          window.location.href = '/stays';
-        } else {
-          window.location.href = '/dashboard';
-        }
+        const phone = `${formData.countryCode}${formData.phone}`;
+        window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&phone=${encodeURIComponent(phone)}&type=both`;
       }, 1000);
       
     } catch (error) {
