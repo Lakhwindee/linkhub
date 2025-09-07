@@ -2008,9 +2008,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Demo login with ID and Password
   app.post("/api/demo-login", async (req, res) => {
+    console.log('🔄 Demo login endpoint hit!');
+    console.log('🔍 Request body:', req.body);
+    
     const { id, password } = req.body;
     
     console.log('Demo login request for ID:', id);
+    console.log('Password received:', password);
     
     // Define valid ID/Password combinations
     const validCredentials = {
