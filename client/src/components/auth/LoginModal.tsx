@@ -72,14 +72,6 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </DialogDescription>
         </DialogHeader>
         
-        <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-          <h4 className="font-semibold text-sm mb-2">Demo Credentials:</h4>
-          <div className="text-xs space-y-1">
-            <div><strong>Premium Creator:</strong> ID: CREATOR_PREMIUM_001, Password: premium123</div>
-            <div><strong>Standard Creator:</strong> ID: CREATOR_STD_002, Password: standard123</div>
-            <div><strong>Publisher:</strong> ID: PUBLISHER_003, Password: publisher123</div>
-          </div>
-        </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

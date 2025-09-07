@@ -6,7 +6,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { DemoLogin } from "@/components/DemoLogin";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
@@ -53,7 +52,6 @@ function Router() {
           {!isAuthenticated ? (
             <>
               <Route path="/" component={Landing} />
-              <Route path="/demo-login" component={DemoLogin} />
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
