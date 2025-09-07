@@ -18,8 +18,9 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin
+  Save, MapPin, Plus, Percent, Send
 } from "lucide-react";
+import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
 import { Link } from "wouter";
 import type { AdSubmission, Report } from "@shared/schema";
@@ -252,7 +253,9 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
-    { id: "discount-codes", label: "Discount Codes", icon: CreditCard, description: "Manage promo codes", badge: "New" },
+    { id: "payment-accounts", label: "Payment Accounts", icon: CreditCard, description: "Manage payment systems", badge: "New" },
+    { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
+    { id: "discount-codes", label: "Discount Codes", icon: Percent, description: "Manage promo codes", badge: "New" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
@@ -459,7 +462,405 @@ export default function Admin() {
           <div className="space-y-6">
             {activeSection === "dashboard" && renderDashboardSection()}
 
+            {/* Payment Accounts Management */}
+            {activeSection === "payment-accounts" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Payment Accounts Management</h2>
+                  <Button className="bg-green-600 hover:bg-green-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Payment Account
+                  </Button>
+                </div>
+
+                {/* Payment Gateway Settings */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Stripe Account */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Stripe Integration
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                        <Badge variant="outline">Live Mode</Badge>
+                      </div>
+                      <div>
+                        <Label>Publishable Key</Label>
+                        <Input value="pk_live_••••••••••••3456" disabled className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Webhook Endpoint</Label>
+                        <Input value="https://api.hublink.com/webhooks/stripe" disabled className="mt-1" />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-sm text-muted-foreground mb-2">Platform Fee: 10%</p>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="sm">Configure</Button>
+                          <Button variant="outline" size="sm">Test Connection</Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* PayPal Account */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <DollarSign className="w-5 h-5 mr-2" />
+                        PayPal Integration
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <Badge variant="destructive">Disconnected</Badge>
+                        <Badge variant="outline">Sandbox</Badge>
+                      </div>
+                      <div>
+                        <Label>Client ID</Label>
+                        <Input placeholder="Enter PayPal Client ID" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Client Secret</Label>
+                        <Input placeholder="Enter PayPal Client Secret" type="password" className="mt-1" />
+                      </div>
+                      <div className="pt-2">
+                        <Button className="w-full">Connect PayPal</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Financial Overview */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Financial Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">£12,450</div>
+                        <div className="text-sm text-muted-foreground">Total Revenue</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">£1,245</div>
+                        <div className="text-sm text-muted-foreground">Platform Fees</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">£234</div>
+                        <div className="text-sm text-muted-foreground">Processing Fees</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">£10,971</div>
+                        <div className="text-sm text-muted-foreground">Net Revenue</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Email Management System */}
+            {activeSection === "email-management" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Email Management System</h2>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Campaign
+                  </Button>
+                </div>
+
+                {/* Email Service Settings */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* SMTP Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Server className="w-5 h-5 mr-2" />
+                        SMTP Configuration
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>SMTP Host</Label>
+                        <Input defaultValue="smtp.hublink.com" className="mt-1" />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label>Port</Label>
+                          <Input defaultValue="587" className="mt-1" />
+                        </div>
+                        <div>
+                          <Label>Security</Label>
+                          <Input defaultValue="TLS" className="mt-1" />
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Username</Label>
+                        <Input defaultValue="notifications@hublink.com" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Password</Label>
+                        <Input type="password" defaultValue="••••••••" className="mt-1" />
+                      </div>
+                      <Button className="w-full">Test Connection</Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Email Templates */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <FileText className="w-5 h-5 mr-2" />
+                        Email Templates
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-2 border rounded">
+                          <span className="text-sm">Welcome Email</span>
+                          <Button variant="outline" size="sm">Edit</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-2 border rounded">
+                          <span className="text-sm">Password Reset</span>
+                          <Button variant="outline" size="sm">Edit</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-2 border rounded">
+                          <span className="text-sm">Subscription Update</span>
+                          <Button variant="outline" size="sm">Edit</Button>
+                        </div>
+                        <div className="flex items-center justify-between p-2 border rounded">
+                          <span className="text-sm">Payment Receipt</span>
+                          <Button variant="outline" size="sm">Edit</Button>
+                        </div>
+                      </div>
+                      <Button variant="outline" className="w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Template
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Bulk Email Campaign */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Email Campaigns & User Communications</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Campaign Type</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="newsletter">Newsletter</SelectItem>
+                            <SelectItem value="promotion">Promotion</SelectItem>
+                            <SelectItem value="update">Platform Update</SelectItem>
+                            <SelectItem value="announcement">Announcement</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Target Audience</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select audience" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Users</SelectItem>
+                            <SelectItem value="premium">Premium Users</SelectItem>
+                            <SelectItem value="free">Free Users</SelectItem>
+                            <SelectItem value="creators">Creators</SelectItem>
+                            <SelectItem value="inactive">Inactive Users</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Schedule</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Send now" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="now">Send Now</SelectItem>
+                            <SelectItem value="scheduled">Schedule Later</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Email Subject</Label>
+                      <Input placeholder="Enter email subject..." className="mt-1" />
+                    </div>
+                    <div>
+                      <Label>Email Content</Label>
+                      <div className="mt-1 p-4 border rounded min-h-[120px] bg-muted/20">
+                        <p className="text-sm text-muted-foreground">Rich text editor would go here...</p>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button>Send Campaign</Button>
+                      <Button variant="outline">Save Draft</Button>
+                      <Button variant="outline">Preview</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Email Analytics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Email Analytics</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">2,341</div>
+                        <div className="text-sm text-muted-foreground">Emails Sent</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">89.2%</div>
+                        <div className="text-sm text-muted-foreground">Delivery Rate</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">34.5%</div>
+                        <div className="text-sm text-muted-foreground">Open Rate</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">12.3%</div>
+                        <div className="text-sm text-muted-foreground">Click Rate</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* User Management Section */}
+            {/* Discount Codes Management */}
+            {activeSection === "discount-codes" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Discount Codes Management</h2>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create New Code
+                  </Button>
+                </div>
+
+                {/* Discount Codes Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Active Discount Codes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2">Code</th>
+                            <th className="text-left p-2">Discount</th>
+                            <th className="text-left p-2">Usage</th>
+                            <th className="text-left p-2">Expires</th>
+                            <th className="text-left p-2">Status</th>
+                            <th className="text-left p-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="p-2 font-mono font-bold">WELCOME50</td>
+                            <td className="p-2">50% off</td>
+                            <td className="p-2">23/100</td>
+                            <td className="p-2">30 days</td>
+                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 font-mono font-bold">SAVE10</td>
+                            <td className="p-2">£10 off</td>
+                            <td className="p-2">8/50</td>
+                            <td className="p-2">60 days</td>
+                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Branding & Logo Management */}
+            {activeSection === "branding" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Branding & Logo Management</h2>
+                  <Button variant="outline">
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Preview Changes
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Logo Upload */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Logo & Images</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Website Logo</Label>
+                        <div className="mt-2 p-4 border-2 border-dashed rounded-lg text-center">
+                          <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Click to upload logo</p>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Favicon</Label>
+                        <div className="mt-2 p-4 border-2 border-dashed rounded-lg text-center">
+                          <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">Click to upload favicon</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Brand Settings */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Brand Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Website Name</Label>
+                        <Input defaultValue="HubLink" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Primary Color</Label>
+                        <Input type="color" defaultValue="#0066cc" className="mt-1 h-10" />
+                      </div>
+                      <div>
+                        <Label>Secondary Color</Label>
+                        <Input type="color" defaultValue="#f0f9ff" className="mt-1 h-10" />
+                      </div>
+                      <Button className="w-full">Save Changes</Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
             {activeSection === "users" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
