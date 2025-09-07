@@ -726,6 +726,253 @@ export default function Admin() {
                 </div>
               </div>
             )}
+
+            {/* Analytics Section */}
+            {activeSection === "analytics" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Analytics Dashboard</h2>
+                  <Button variant="outline" size="sm">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Report
+                  </Button>
+                </div>
+
+                {/* Key Metrics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <Users className="w-8 h-8 text-blue-500" />
+                        <div>
+                          <div className="text-2xl font-bold">2,847</div>
+                          <div className="text-sm text-muted-foreground">Total Users</div>
+                          <div className="text-xs text-green-600">+12.5%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <DollarSign className="w-8 h-8 text-green-500" />
+                        <div>
+                          <div className="text-2xl font-bold">£34,521</div>
+                          <div className="text-sm text-muted-foreground">Revenue</div>
+                          <div className="text-xs text-green-600">+8.2%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-8 h-8 text-purple-500" />
+                        <div>
+                          <div className="text-2xl font-bold">1,283</div>
+                          <div className="text-sm text-muted-foreground">Posts Created</div>
+                          <div className="text-xs text-green-600">+15.3%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <TrendingUp className="w-8 h-8 text-orange-500" />
+                        <div>
+                          <div className="text-2xl font-bold">94.2%</div>
+                          <div className="text-sm text-muted-foreground">Engagement</div>
+                          <div className="text-xs text-green-600">+2.1%</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Content Performance */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Content Performance</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Travel Posts</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 h-2 bg-muted rounded">
+                              <div className="w-16 h-2 bg-blue-500 rounded"></div>
+                            </div>
+                            <span className="text-sm font-medium">80%</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Event Posts</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 h-2 bg-muted rounded">
+                              <div className="w-12 h-2 bg-green-500 rounded"></div>
+                            </div>
+                            <span className="text-sm font-medium">60%</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Stays & Bookings</span>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-20 h-2 bg-muted rounded">
+                              <div className="w-14 h-2 bg-purple-500 rounded"></div>
+                            </div>
+                            <span className="text-sm font-medium">70%</span>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Top Performing Content</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-sm">Amazing sunset in Bali</div>
+                            <div className="text-xs text-muted-foreground">Travel Post</div>
+                          </div>
+                          <Badge variant="secondary">2.3k views</Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-sm">London Food Festival</div>
+                            <div className="text-xs text-muted-foreground">Event</div>
+                          </div>
+                          <Badge variant="secondary">1.8k views</Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <div className="font-medium text-sm">Cozy Cottage in Peak District</div>
+                            <div className="text-xs text-muted-foreground">Stay</div>
+                          </div>
+                          <Badge variant="secondary">1.2k views</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Content Moderation Section */}
+            {activeSection === "content" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Content Moderation</h2>
+                  <Button variant="outline" size="sm">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Moderation Rules
+                  </Button>
+                </div>
+
+                {/* Content Overview */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-8 h-8 text-blue-500" />
+                        <div>
+                          <div className="text-2xl font-bold">1,847</div>
+                          <div className="text-sm text-muted-foreground">Total Posts</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <Flag className="w-8 h-8 text-red-500" />
+                        <div>
+                          <div className="text-2xl font-bold">23</div>
+                          <div className="text-sm text-muted-foreground">Flagged Content</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <Calendar className="w-8 h-8 text-green-500" />
+                        <div>
+                          <div className="text-2xl font-bold">156</div>
+                          <div className="text-sm text-muted-foreground">Events</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <MapPin className="w-8 h-8 text-purple-500" />
+                        <div>
+                          <div className="text-2xl font-bold">89</div>
+                          <div className="text-sm text-muted-foreground">Stays Listed</div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Content Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Content</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Content</TableHead>
+                          <TableHead>Author</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">Beautiful beaches in Thailand</div>
+                              <div className="text-sm text-muted-foreground">Amazing experience visiting...</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>John Doe</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">Travel Post</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">Published</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-1">
+                              <Button variant="outline" size="sm">
+                                <Eye className="w-3 h-3" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Edit3 className="w-3 h-3" />
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
             
             {activeSection === "users" && (
               <div className="space-y-6">
