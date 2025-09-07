@@ -652,15 +652,15 @@ function YouTubeCreatorSection({ user }: { user: any }) {
           </>
         )}
       </CardContent>
+      
+      {/* Eligibility Modal for Low Subscriber Count */}
+      <EligibilityModal 
+        open={showEligibilityModal}
+        onOpenChange={setShowEligibilityModal}
+        currentSubscribers={eligibilityData.currentSubs}
+        requiredSubscribers={eligibilityData.requiredSubs}
+      />
     </Card>
-    
-    {/* Eligibility Modal for Low Subscriber Count */}
-    <EligibilityModal 
-      open={showEligibilityModal}
-      onOpenChange={setShowEligibilityModal}
-      currentSubscribers={eligibilityData.currentSubs}
-      requiredSubscribers={eligibilityData.requiredSubs}
-    />
   );
 }
 
