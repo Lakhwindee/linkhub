@@ -30,6 +30,9 @@ export default function SignupCompletion() {
           },
           credentials: 'include',
           body: JSON.stringify(data),
+        }).catch((error) => {
+          console.error('Network error during signup completion:', error);
+          throw new Error(`Network error: ${error.message}`);
         });
 
         if (response.ok) {

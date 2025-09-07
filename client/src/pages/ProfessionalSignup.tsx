@@ -148,6 +148,9 @@ export default function ProfessionalSignup() {
           documentUrl: url,
           documentType: documentType
         }),
+      }).catch((error) => {
+        console.error('Network error during document verification:', error);
+        throw new Error(`Network error: ${error.message}`);
       });
 
       const result = await response.json();
