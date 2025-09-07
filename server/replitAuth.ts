@@ -142,7 +142,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       console.log('✅ Extracted demo user ID:', demoUserId);
     }
     
-    // Fallback: Check for demo session header (for localStorage fallback)
+    // PRIMARY: Check for demo session header (localStorage fallback)
     if (!demoUserId) {
       const demoSessionHeader = req.headers['x-demo-session'];
       console.log('🔍 Demo session header:', demoSessionHeader);
@@ -153,7 +153,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       }
     }
     
-    // Additional fallback: Check localStorage via manual header setting
+    // SECONDARY: Check Authorization header
     if (!demoUserId) {
       const authHeader = req.headers['authorization'];
       if (authHeader && authHeader.startsWith('Bearer demo-session-')) {

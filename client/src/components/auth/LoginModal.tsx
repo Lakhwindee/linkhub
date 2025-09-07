@@ -47,10 +47,11 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         document.cookie = cookieValue;
         console.log('🍪 Setting client cookie:', cookieValue);
         
-        // Force reload to ensure cookie is properly set in headers
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
+        // Skip reload, use immediate localStorage authentication
+        console.log('✅ Skipping reload, using localStorage auth');
+        
+        // Immediate auth update
+        window.dispatchEvent(new Event('authUpdate'));
         
         // Verify cookie was set
         setTimeout(() => {
