@@ -197,21 +197,21 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                     Profile Settings
                   </Link>
                 </DropdownMenuItem>
-                {user?.plan !== 'free' ? (
+                {user?.plan !== 'free' && user?.role !== 'publisher' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/billing" data-testid="link-billing">
                       <DollarSign className="mr-2 h-4 w-4" />
                       Billing
                     </Link>
                   </DropdownMenuItem>
-                ) : (
+                ) : user?.plan === 'free' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/subscribe" data-testid="link-upgrade">
                       <Crown className="mr-2 h-4 w-4 text-orange-500" />
                       Upgrade Plan
                     </Link>
                   </DropdownMenuItem>
-                )}
+                ) : null}
                 <DropdownMenuItem onClick={handleLogout} data-testid="link-logout">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out

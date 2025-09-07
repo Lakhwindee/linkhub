@@ -321,9 +321,11 @@ export default function Profile() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary" data-testid="badge-plan">
-              {user.plan} Plan
-            </Badge>
+            {user.role !== 'publisher' && (
+              <Badge variant="secondary" data-testid="badge-plan">
+                {user.plan} Plan
+              </Badge>
+            )}
             {!isEditing ? (
               <Button onClick={() => setIsEditing(true)} data-testid="button-edit-profile">
                 <Settings className="w-4 h-4 mr-2" />
