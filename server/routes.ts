@@ -7,7 +7,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations } from "@shared/schema";
+import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -1330,6 +1330,240 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user stays:", error);
       res.status(500).json({ message: "Failed to fetch your stays" });
+    }
+  });
+
+  // Personal Hosts routes
+  app.get('/api/personal-hosts', async (req, res) => {
+    try {
+      const { country, city, hostType, priceType, maxGuests, limit = 20 } = req.query;
+      const hosts = await storage.getPersonalHosts({
+        country: country as string,
+        city: city as string,
+        hostType: hostType as string,
+        priceType: priceType as string,
+        maxGuests: maxGuests ? parseInt(maxGuests as string) : undefined,
+        limit: parseInt(limit as string)
+      });
+      res.json(hosts);
+    } catch (error) {
+      console.error("Error fetching personal hosts:", error);
+      res.status(500).json({ message: "Failed to fetch personal hosts" });
+    }
+  });
+
+  app.get('/api/personal-hosts/my-hosts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const hosts = await storage.getMyPersonalHosts(userId);
+      res.json(hosts);
+    } catch (error) {
+      console.error("Error fetching my hosts:", error);
+      res.status(500).json({ message: "Failed to fetch your host profiles" });
+    }
+  });
+
+  app.post('/api/personal-hosts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const data = insertPersonalHostSchema.parse(req.body);
+      
+      const host = await storage.createPersonalHost({
+        userId,
+        ...data
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "personal_host_created",
+        targetType: "personal_host",
+        targetId: host.id,
+        metaJson: { hostType: data.hostType, priceType: data.priceType, location: data.location },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(host);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error creating personal host:", error);
+      res.status(500).json({ message: "Failed to create host profile" });
+    }
+  });
+
+  app.get('/api/personal-hosts/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const host = await storage.getPersonalHostById(id);
+      if (!host) {
+        return res.status(404).json({ message: "Host not found" });
+      }
+      res.json(host);
+    } catch (error) {
+      console.error("Error fetching host:", error);
+      res.status(500).json({ message: "Failed to fetch host details" });
+    }
+  });
+
+  app.patch('/api/personal-hosts/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const data = insertPersonalHostSchema.parse(req.body);
+      
+      // Check if user owns this host
+      const existingHost = await storage.getPersonalHostById(id);
+      if (!existingHost || existingHost.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const host = await storage.updatePersonalHost(id, data);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "personal_host_updated",
+        targetType: "personal_host",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(host);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error updating personal host:", error);
+      res.status(500).json({ message: "Failed to update host profile" });
+    }
+  });
+
+  app.delete('/api/personal-hosts/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      
+      // Check if user owns this host
+      const existingHost = await storage.getPersonalHostById(id);
+      if (!existingHost || existingHost.userId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.deletePersonalHost(id);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "personal_host_deleted",
+        targetType: "personal_host",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ message: "Host profile deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting personal host:", error);
+      res.status(500).json({ message: "Failed to delete host profile" });
+    }
+  });
+
+  app.post('/api/personal-hosts/:id/book', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const data = insertHostBookingSchema.parse({ ...req.body, hostId: id });
+      
+      // Check if host exists and is available
+      const host = await storage.getPersonalHostById(id);
+      if (!host) {
+        return res.status(404).json({ message: "Host not found" });
+      }
+      
+      if (!host.isActive) {
+        return res.status(400).json({ message: "Host is not available for booking" });
+      }
+      
+      // Calculate total price with 10% platform fee
+      const checkIn = new Date(data.checkIn!);
+      const checkOut = new Date(data.checkOut!);
+      const days = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+      const basePrice = parseFloat(host.pricePerDay) * days;
+      const platformFee = basePrice * 0.10; // 10% platform fee
+      const totalAmount = (basePrice + platformFee).toString();
+      
+      const booking = await storage.createHostBooking({
+        guestId: userId,
+        totalAmount,
+        platformFee: platformFee.toString(),
+        ...data
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "host_booked",
+        targetType: "host_booking",
+        targetId: booking.id,
+        metaJson: { hostId: id, days, basePrice: basePrice.toString(), platformFee: platformFee.toString(), totalAmount },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(booking);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Error booking host:", error);
+      res.status(500).json({ message: "Failed to book host" });
+    }
+  });
+
+  app.get('/api/personal-hosts/bookings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { type = 'guest' } = req.query;
+      
+      let bookings;
+      if (type === 'host') {
+        bookings = await storage.getMyHostBookings(userId);
+      } else {
+        bookings = await storage.getUserHostBookings(userId);
+      }
+      
+      res.json(bookings);
+    } catch (error) {
+      console.error("Error fetching host bookings:", error);
+      res.status(500).json({ message: "Failed to fetch host bookings" });
+    }
+  });
+
+  app.patch('/api/personal-hosts/bookings/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      if (!['confirmed', 'cancelled', 'completed'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const booking = await storage.updateHostBookingStatus(id, status);
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: `host_booking_${status}`,
+        targetType: "host_booking",
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(booking);
+    } catch (error) {
+      console.error("Error updating host booking status:", error);
+      res.status(500).json({ message: "Failed to update booking status" });
     }
   });
 

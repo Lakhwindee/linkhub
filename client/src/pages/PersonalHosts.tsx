@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, MapPin, Star, DollarSign, Users, Calendar, Edit, Eye, Trash2, Home, Map, Coffee, Car } from "lucide-react";
+import { Plus, Search, MapPin, Star, DollarSign, Users, Calendar, Edit, Eye, Trash2, Home, Map, Coffee, Car, UserCheck } from "lucide-react";
 
 export default function PersonalHosts() {
   const { user } = useAuth();
