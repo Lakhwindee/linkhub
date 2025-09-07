@@ -2259,27 +2259,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         plan: 'premium',
         name: 'System Administrator'
       },
-      'CREATOR_PREMIUM_001': {
-        password: 'premium123',
-        userId: 'demo-creator-premium',
-        role: 'creator',
-        plan: 'premium',
-        name: 'Premium Creator'
-      },
-      'CREATOR_STD_002': {
-        password: 'standard123', 
-        userId: 'demo-creator-standard',
-        role: 'creator', 
-        plan: 'standard',
-        name: 'Standard Creator'
-      },
-      'PUBLISHER_003': {
-        password: 'publisher123',
-        userId: 'demo-publisher', 
-        role: 'publisher',
-        plan: 'premium', 
-        name: 'Demo Publisher'
-      }
     };
     
     try {

@@ -36,7 +36,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       console.log('Logout error:', error);
     }
     
-    localStorage.clear(); // Clear all demo user data
+    localStorage.clear(); // Clear all user data
     window.location.href = '/'; // Redirect to homepage
   };
 

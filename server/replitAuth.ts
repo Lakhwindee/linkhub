@@ -167,30 +167,6 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         first_name: 'System',
         last_name: 'Administrator'
       },
-      'demo-creator-premium': {
-        sub: 'demo-creator-premium',
-        email: 'creator-premium@hublink.com',
-        first_name: 'Premium',
-        last_name: 'Creator'
-      },
-      'demo-creator-standard': {
-        sub: 'demo-creator-standard',
-        email: 'creator-standard@hublink.com',
-        first_name: 'Standard',
-        last_name: 'Creator'
-      },
-      'demo-publisher': {
-        sub: 'demo-publisher',
-        email: 'publisher@hublink.com',
-        first_name: 'Demo',
-        last_name: 'Publisher'
-      },
-      'demo-user-1': {
-        sub: 'demo-user-1',
-        email: 'demo@hublink.com',
-        first_name: 'Demo',
-        last_name: 'User'
-      }
     };
     
     const demoUser = demoUserMap[demoUserId as keyof typeof demoUserMap];
