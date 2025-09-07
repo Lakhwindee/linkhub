@@ -19,6 +19,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Ad, AdReservation } from "@shared/schema";
 import { worldCountries } from "@/data/locationData";
+import { EligibilityModal } from "@/components/EligibilityModal";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
@@ -54,6 +55,8 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [showEligibilityModal, setShowEligibilityModal] = useState(false);
+  const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 10000 });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
@@ -99,7 +102,17 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     },
     onError: (error: any) => {
       console.log('Connection Failed:', error.message);
-      // No popup - show error in VFX instead
+      
+      // Check if error is about low subscriber count
+      if (error.message && error.message.includes('only') && error.message.includes('subsc')) {
+        // Extract subscriber count from error message
+        const match = error.message.match(/only ([\d,]+) subsc/);
+        const currentSubs = match ? parseInt(match[1].replace(/,/g, '')) : 0;
+        
+        setEligibilityData({ currentSubs, requiredSubs: 10000 });
+        setShowEligibilityModal(true);
+      }
+      // No popup for other errors - show error in VFX instead
     },
   });
 
@@ -640,6 +653,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         )}
       </CardContent>
     </Card>
+    
+    {/* Eligibility Modal for Low Subscriber Count */}
+    <EligibilityModal 
+      open={showEligibilityModal}
+      onOpenChange={setShowEligibilityModal}
+      currentSubscribers={eligibilityData.currentSubs}
+      requiredSubscribers={eligibilityData.requiredSubs}
+    />
   );
 }
 
