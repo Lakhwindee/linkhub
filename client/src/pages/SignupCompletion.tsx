@@ -49,7 +49,8 @@ export default function SignupCompletion() {
           
           // Redirect based on signup type
           if (signupType === 'document') {
-            window.location.href = '/dashboard';
+            // Document users need to login first, redirect to home with success message
+            window.location.href = '/?signup=success';
           } else {
             // Professional signup goes to subscription
             window.location.href = '/subscribe';
@@ -70,8 +71,8 @@ export default function SignupCompletion() {
           variant: "destructive",
         });
         
-        // Redirect to signup
-        window.location.href = '/signup';
+        // Redirect to home page since /signup doesn't exist
+        window.location.href = '/';
       } finally {
         setIsCompleting(false);
       }

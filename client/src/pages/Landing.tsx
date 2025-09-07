@@ -1,9 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon, CheckCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function Landing() {
+  const [showSignupSuccess, setShowSignupSuccess] = useState(false);
+
+  useEffect(() => {
+    // Check if user was redirected here after successful signup
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('signup') === 'success') {
+      setShowSignupSuccess(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
 
   const features = [
     {
@@ -119,6 +132,18 @@ export default function Landing() {
 
   return (
     <div className="bg-background">
+      {/* Success Message */}
+      {showSignupSuccess && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
+          <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertDescription className="text-green-800 dark:text-green-200">
+              🎉 Signup completed successfully! Please sign in with your credentials to access your account.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+      
       {/* Hero Section */}
       <section className="relative pt-24 pb-12 overflow-hidden">
         <div className="absolute inset-0 gradient-mesh opacity-5"></div>
