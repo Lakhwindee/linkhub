@@ -51,7 +51,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                   src="/hublink-logo.png" 
                   alt="HubLink" 
                   className="w-auto" 
-                  style={{ height: '240px', maxWidth: '1000px' }}
+                  style={{ height: '120px', maxWidth: '500px' }}
                 />
               </div>
             </Link>
@@ -124,7 +124,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                   src="/hublink-logo.png" 
                   alt="HubLink" 
                   className="w-auto" 
-                  style={{ height: '240px', maxWidth: '1000px' }}
+                  style={{ height: '120px', maxWidth: '500px' }}
                 />
               </div>
             </Link>
