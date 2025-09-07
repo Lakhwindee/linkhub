@@ -253,9 +253,10 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
+    { id: "trial-management", label: "Trial Management", icon: Clock, description: "Manage user trials & auto-billing", badge: "New" },
     { id: "payment-accounts", label: "Payment Accounts", icon: CreditCard, description: "Manage payment systems", badge: "New" },
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
-    { id: "discount-codes", label: "Discount Codes", icon: Percent, description: "Manage promo codes", badge: "New" },
+    { id: "discount-codes", label: "Discount Codes & Trials", icon: Percent, description: "Manage promo & trial codes", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
@@ -743,21 +744,222 @@ export default function Admin() {
             )}
 
             {/* User Management Section */}
-            {/* Discount Codes Management */}
-            {activeSection === "discount-codes" && (
+            {/* Trial Management System */}
+            {activeSection === "trial-management" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">Discount Codes Management</h2>
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <h2 className="text-2xl font-bold text-foreground">Trial Management & Auto-Billing</h2>
+                  <Button className="bg-purple-600 hover:bg-purple-700">
                     <Plus className="w-4 h-4 mr-2" />
-                    Create New Code
+                    Create Trial Code
                   </Button>
                 </div>
 
-                {/* Discount Codes Table */}
+                {/* Trial Statistics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">45</div>
+                        <div className="text-sm text-muted-foreground">Active Trials</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">75.3%</div>
+                        <div className="text-sm text-muted-foreground">Conversion Rate</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">£2,305</div>
+                        <div className="text-sm text-muted-foreground">Revenue Lost</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">£2,025</div>
+                        <div className="text-sm text-muted-foreground">Projected Revenue</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Active Trials Table */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Active Discount Codes</CardTitle>
+                    <CardTitle className="flex items-center">
+                      <Clock className="w-5 h-5 mr-2" />
+                      Active User Trials
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2">User</th>
+                            <th className="text-left p-2">Coupon Code</th>
+                            <th className="text-left p-2">Plan Type</th>
+                            <th className="text-left p-2">Days Left</th>
+                            <th className="text-left p-2">Auto-Debit</th>
+                            <th className="text-left p-2">Price</th>
+                            <th className="text-left p-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="p-2">
+                              <div>
+                                <div className="font-medium">john@example.com</div>
+                                <div className="text-xs text-muted-foreground">user_123</div>
+                              </div>
+                            </td>
+                            <td className="p-2 font-mono">TRIAL30</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Premium</Badge>
+                            </td>
+                            <td className="p-2">
+                              <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1 text-orange-600" />
+                                <span className="font-bold text-orange-600">25 days</span>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Enabled</Badge>
+                            </td>
+                            <td className="p-2 font-semibold">£45/mo</td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm" className="text-red-600">Cancel</Button>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2">
+                              <div>
+                                <div className="font-medium">sarah@example.com</div>
+                                <div className="text-xs text-muted-foreground">user_456</div>
+                              </div>
+                            </td>
+                            <td className="p-2 font-mono">FREETRIAL7</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Creator</Badge>
+                            </td>
+                            <td className="p-2">
+                              <div className="flex items-center">
+                                <Clock className="w-4 h-4 mr-1 text-red-600" />
+                                <span className="font-bold text-red-600">3 days</span>
+                              </div>
+                            </td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Enabled</Badge>
+                            </td>
+                            <td className="p-2 font-semibold">£45/mo</td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm" className="text-red-600">Cancel</Button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Trial Creation Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create New Trial Coupon</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Coupon Code</Label>
+                        <Input placeholder="TRIAL30" className="mt-1 font-mono" />
+                      </div>
+                      <div>
+                        <Label>Trial Period</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="7">7 Days</SelectItem>
+                            <SelectItem value="14">14 Days</SelectItem>
+                            <SelectItem value="30">30 Days</SelectItem>
+                            <SelectItem value="60">60 Days</SelectItem>
+                            <SelectItem value="90">90 Days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Plan Type</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="premium">Premium (£45/mo)</SelectItem>
+                            <SelectItem value="creator">Creator (£45/mo)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Max Uses</Label>
+                        <Input type="number" placeholder="100" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Auto-Debit After Trial</Label>
+                        <Select defaultValue="enabled">
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="enabled">✅ Enabled (Recommended)</SelectItem>
+                            <SelectItem value="disabled">❌ Disabled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Input placeholder="30 days free trial - Premium Plan" className="mt-1" />
+                    </div>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Create Trial Coupon
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Discount Codes & Trials Management */}
+            {activeSection === "discount-codes" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Discount Codes & Trial Management</h2>
+                  <div className="flex space-x-2">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Discount Code
+                    </Button>
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Trial Code
+                    </Button>
+                  </div>
+                </div>
+
+                {/* All Codes Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>All Discount & Trial Codes</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
@@ -765,7 +967,8 @@ export default function Admin() {
                         <thead>
                           <tr className="border-b">
                             <th className="text-left p-2">Code</th>
-                            <th className="text-left p-2">Discount</th>
+                            <th className="text-left p-2">Type</th>
+                            <th className="text-left p-2">Benefit</th>
                             <th className="text-left p-2">Usage</th>
                             <th className="text-left p-2">Expires</th>
                             <th className="text-left p-2">Status</th>
@@ -775,6 +978,7 @@ export default function Admin() {
                         <tbody>
                           <tr className="border-b">
                             <td className="p-2 font-mono font-bold">WELCOME50</td>
+                            <td className="p-2"><Badge>Discount</Badge></td>
                             <td className="p-2">50% off</td>
                             <td className="p-2">23/100</td>
                             <td className="p-2">30 days</td>
@@ -785,9 +989,42 @@ export default function Admin() {
                           </tr>
                           <tr className="border-b">
                             <td className="p-2 font-mono font-bold">SAVE10</td>
+                            <td className="p-2"><Badge>Discount</Badge></td>
                             <td className="p-2">£10 off</td>
                             <td className="p-2">8/50</td>
                             <td className="p-2">60 days</td>
+                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </td>
+                          </tr>
+                          <tr className="border-b bg-purple-50 dark:bg-purple-900/20">
+                            <td className="p-2 font-mono font-bold text-purple-700">TRIAL30</td>
+                            <td className="p-2"><Badge className="bg-purple-600">Trial</Badge></td>
+                            <td className="p-2">
+                              <div>
+                                <div className="font-semibold">30 days free</div>
+                                <div className="text-xs text-muted-foreground">Premium Plan</div>
+                              </div>
+                            </td>
+                            <td className="p-2">45/500</td>
+                            <td className="p-2">90 days</td>
+                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
+                            <td className="p-2">
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </td>
+                          </tr>
+                          <tr className="border-b bg-purple-50 dark:bg-purple-900/20">
+                            <td className="p-2 font-mono font-bold text-purple-700">FREETRIAL7</td>
+                            <td className="p-2"><Badge className="bg-purple-600">Trial</Badge></td>
+                            <td className="p-2">
+                              <div>
+                                <div className="font-semibold">7 days free</div>
+                                <div className="text-xs text-muted-foreground">Creator Plan</div>
+                              </div>
+                            </td>
+                            <td className="p-2">12/100</td>
+                            <td className="p-2">30 days</td>
                             <td className="p-2"><Badge variant="secondary">Active</Badge></td>
                             <td className="p-2">
                               <Button variant="outline" size="sm">Edit</Button>
