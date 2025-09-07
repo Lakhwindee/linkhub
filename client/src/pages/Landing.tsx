@@ -239,7 +239,7 @@ export default function Landing() {
   return (
     <div className="bg-background">
       {/* Hero Section */}
-      <section className="relative pt-12 pb-12 overflow-hidden">
+      <section className="relative pt-24 pb-12 overflow-hidden">
         <div className="absolute inset-0 gradient-mesh opacity-5"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
