@@ -1987,6 +1987,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo login by username endpoint
+  app.post("/api/demo-login-username", async (req, res) => {
+    const { username } = req.body;
+    
+    console.log('Demo username login request for:', username);
+    
+    try {
+      // Get user from database by username
+      const user = await storage.getUserByUsername(username);
+      
+      if (user) {
+        console.log('Found demo user:', user);
+        
+        // Create session for this user (simulate Replit auth)
+        (req as any).session.user = {
+          id: user.id,
+          email: user.email || '',
+          firstName: user.firstName || '',
+          lastName: user.lastName || '', 
+          displayName: user.displayName || user.username,
+          username: user.username,
+          plan: user.plan || 'free',
+          role: user.role || 'traveler',
+          profileImageUrl: user.profileImageUrl || '',
+          country: user.country || '',
+          city: user.city || ''
+        };
+        
+        res.json({ 
+          success: true, 
+          message: 'Demo login successful',
+          user: (req as any).session.user
+        });
+      } else {
+        res.status(404).json({ 
+          success: false, 
+          message: 'Demo user not found' 
+        });
+      }
+    } catch (error) {
+      console.error('Demo login error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: 'Demo login failed' 
+      });
+    }
+  });
+
   // Demo authentication endpoint - sets demo session for browser
   app.post('/api/demo-login', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
