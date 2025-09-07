@@ -47,6 +47,9 @@ function Router() {
       <Navigation isAuthenticated={isAuthenticated} />
       <main className={isAuthenticated ? "pt-16" : ""}>
         <Switch>
+          {/* Admin route accessible to everyone - handles its own auth */}
+          <Route path="/admin" component={Admin} />
+          
           {!isAuthenticated ? (
             <>
               <Route path="/" component={Landing} />
@@ -84,7 +87,6 @@ function Router() {
               <Route path="/ads" component={AdsWrapper} />
               <Route path="/earn" component={AdsWrapper} />
               <Route path="/messages" component={Messages} />
-              <Route path="/admin" component={Admin} />
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
