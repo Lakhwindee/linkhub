@@ -153,6 +153,15 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       }
     }
     
+    // Additional fallback: Check localStorage via manual header setting
+    if (!demoUserId) {
+      const authHeader = req.headers['authorization'];
+      if (authHeader && authHeader.startsWith('Bearer demo-session-')) {
+        demoUserId = authHeader.replace('Bearer demo-session-', '');
+        console.log('✅ Extracted demo user ID from Authorization header:', demoUserId);
+      }
+    }
+    
     // No valid session found
     if (!demoUserId) {
       console.log('❌ No valid demo session found in cookies or headers');

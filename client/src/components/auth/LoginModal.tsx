@@ -36,20 +36,40 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       const result = await response.json();
       
       if (response.ok) {
-        console.log('Demo login successful!');
+        console.log('✅ Login successful:', result);
         
-        // Store session info in localStorage as backup for cookie issues
+        // Store session info in localStorage AND set cookie manually
         localStorage.setItem('demo_session', `demo-session-${result.user.id}`);
         localStorage.setItem('demo_user', JSON.stringify(result.user));
+        
+        // Set cookie manually for server authentication
+        const cookieValue = `session_id=demo-session-${result.user.id}; path=/; max-age=${7*24*60*60}; samesite=lax`;
+        document.cookie = cookieValue;
+        console.log('🍪 Setting client cookie:', cookieValue);
+        
+        // Verify cookie was set
+        setTimeout(() => {
+          const cookies = document.cookie;
+          console.log('🔍 All cookies after login:', cookies);
+          console.log('🔍 Session cookie check:', cookies.includes('session_id=demo-session-'));
+        }, 100);
         
         // Trigger auth update event
         window.dispatchEvent(new Event('authUpdate'));
         
-        // Close modal and redirect
-        onOpenChange(false);
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 100);
+        // For admin users, redirect to admin panel
+        if (result.user?.role === 'admin') {
+          onOpenChange(false);
+          setTimeout(() => {
+            window.location.href = '/admin';
+          }, 300);
+        } else {
+          // For other users, redirect to dashboard  
+          onOpenChange(false);
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 300);
+        }
         return;
       } else {
         alert(result.message || 'Login failed');

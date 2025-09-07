@@ -34,8 +34,18 @@ export function useAuth() {
     
     // Check for real authentication via session
     try {
+      // Prepare headers for authentication
+      const sessionId = localStorage.getItem('demo_session');
+      const headers: HeadersInit = {};
+      
+      if (sessionId) {
+        headers['X-Demo-Session'] = sessionId;
+        headers['Authorization'] = `Bearer ${sessionId}`;
+      }
+      
       const response = await fetch('/api/auth/user', {
-        credentials: 'include'
+        credentials: 'include',
+        headers
       });
       
       if (response.ok) {
