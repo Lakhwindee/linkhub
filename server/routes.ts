@@ -55,6 +55,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // OTP Generation and Verification Endpoints
+  const otpStore = new Map(); // Simple in-memory store for demo
+
+  app.post('/api/auth/send-otp', async (req, res) => {
+    try {
+      const { email, phone, type } = req.body;
+      
+      if (!email && !phone) {
+        return res.status(400).json({ message: 'Email or phone number required' });
+      }
+
+      // Generate 6-digit OTP
+      const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      const smsOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+      // Store OTP(s) with expiration
+      if (type === 'email' || type === 'both') {
+        otpStore.set(`email:${email}`, { otp: emailOTP, expiresAt });
+        console.log(`📧 Email OTP for ${email}: ${emailOTP}`);
+      }
+      
+      if (type === 'sms' || type === 'both') {
+        otpStore.set(`sms:${phone}`, { otp: smsOTP, expiresAt });
+        console.log(`📱 SMS OTP for ${phone}: ${smsOTP}`);
+      }
+
+      // In a real app, send actual email/SMS here
+      // For demo, we log the OTPs to console
+      
+      res.json({ 
+        message: 'OTP sent successfully',
+        // For demo purposes, include OTPs in response (never do this in production!)
+        debug: {
+          emailOTP: type === 'email' || type === 'both' ? emailOTP : null,
+          smsOTP: type === 'sms' || type === 'both' ? smsOTP : null
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      res.status(500).json({ message: 'Failed to send OTP' });
+    }
+  });
+
+  app.post('/api/auth/resend-otp', async (req, res) => {
+    try {
+      const { email, phone, type } = req.body;
+      
+      // Same as send-otp but for resending
+      const emailOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      const smsOTP = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiresAt = Date.now() + 10 * 60 * 1000;
+
+      if (type === 'email' || type === 'both') {
+        otpStore.set(`email:${email}`, { otp: emailOTP, expiresAt });
+        console.log(`📧 Resent Email OTP for ${email}: ${emailOTP}`);
+      }
+      
+      if (type === 'sms' || type === 'both') {
+        otpStore.set(`sms:${phone}`, { otp: smsOTP, expiresAt });
+        console.log(`📱 Resent SMS OTP for ${phone}: ${smsOTP}`);
+      }
+
+      res.json({ 
+        message: 'OTP resent successfully',
+        debug: {
+          emailOTP: type === 'email' || type === 'both' ? emailOTP : null,
+          smsOTP: type === 'sms' || type === 'both' ? smsOTP : null
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      res.status(500).json({ message: 'Failed to resend OTP' });
+    }
+  });
+
+  app.post('/api/auth/verify-otp', async (req, res) => {
+    try {
+      const { email, phone, emailOTP, smsOTP, type } = req.body;
+      
+      let verified = true;
+      let errorMessage = '';
+
+      // Verify email OTP if required
+      if ((type === 'email' || type === 'both') && email) {
+        const stored = otpStore.get(`email:${email}`);
+        if (!stored) {
+          verified = false;
+          errorMessage = 'Email OTP not found or expired';
+        } else if (stored.expiresAt < Date.now()) {
+          verified = false;
+          errorMessage = 'Email OTP expired';
+          otpStore.delete(`email:${email}`);
+        } else if (stored.otp !== emailOTP) {
+          verified = false;
+          errorMessage = 'Invalid email OTP';
+        } else {
+          // Valid email OTP
+          otpStore.delete(`email:${email}`);
+        }
+      }
+
+      // Verify SMS OTP if required
+      if ((type === 'sms' || type === 'both') && phone && verified) {
+        const stored = otpStore.get(`sms:${phone}`);
+        if (!stored) {
+          verified = false;
+          errorMessage = 'SMS OTP not found or expired';
+        } else if (stored.expiresAt < Date.now()) {
+          verified = false;
+          errorMessage = 'SMS OTP expired';
+          otpStore.delete(`sms:${phone}`);
+        } else if (stored.otp !== smsOTP) {
+          verified = false;
+          errorMessage = 'Invalid SMS OTP';
+        } else {
+          // Valid SMS OTP
+          otpStore.delete(`sms:${phone}`);
+        }
+      }
+
+      if (verified) {
+        console.log(`✅ OTP verification successful for ${email || phone}`);
+        res.json({ 
+          verified: true, 
+          message: 'OTP verified successfully' 
+        });
+      } else {
+        console.log(`❌ OTP verification failed: ${errorMessage}`);
+        res.status(400).json({ 
+          verified: false, 
+          message: errorMessage 
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      res.status(500).json({ message: 'Failed to verify OTP' });
+    }
+  });
+
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

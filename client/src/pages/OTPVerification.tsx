@@ -42,9 +42,43 @@ export default function OTPVerification() {
     setPhone(storedPhone);
     setVerificationType(storedType as 'email' | 'sms' | 'both');
     
+    // Auto-send OTP when page loads
+    if (storedEmail || storedPhone) {
+      sendInitialOTP(storedEmail, storedPhone, storedType);
+    }
+    
     // Start countdown timer
     startCountdown();
   }, []);
+
+  const sendInitialOTP = async (email: string, phone: string, type: string) => {
+    try {
+      const response = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: type === 'email' || type === 'both' ? email : null,
+          phone: type === 'sms' || type === 'both' ? phone : null,
+          type
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('🎯 OTP sent successfully:', data.debug);
+        toast({
+          title: "Verification Code Sent!",
+          description: `Check your ${type === 'both' ? 'email and phone' : type} for the verification code.`,
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error('Error sending initial OTP:', error);
+    }
+  };
 
   const startCountdown = () => {
     setCountdown(60);
