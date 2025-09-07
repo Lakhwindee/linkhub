@@ -2369,8 +2369,405 @@ export default function Admin() {
               </div>
             )}
 
+            {/* Live Monitoring Section */}
+            {activeSection === "monitoring" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Live System Monitoring</h2>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <span className="text-sm text-muted-foreground">Live</span>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+                </div>
+
+                {/* System Status Overview */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Server Status</div>
+                          <div className="text-lg font-bold text-green-600">Online</div>
+                        </div>
+                        <Wifi className="w-8 h-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Database</div>
+                          <div className="text-lg font-bold text-green-600">Connected</div>
+                        </div>
+                        <Database className="w-8 h-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Active Users</div>
+                          <div className="text-lg font-bold">1,247</div>
+                        </div>
+                        <Users className="w-8 h-8 text-blue-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm text-muted-foreground">Response Time</div>
+                          <div className="text-lg font-bold text-green-600">142ms</div>
+                        </div>
+                        <TrendingUp className="w-8 h-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Real-time Activity Feed */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Activity className="w-5 h-5 mr-2" />
+                      Real-time Activity Feed
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      <div className="flex items-start space-x-3 p-3 border rounded">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            <span className="font-medium">New user registration:</span> sarah@example.com
+                          </div>
+                          <div className="text-xs text-muted-foreground">2 minutes ago</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border rounded">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            <span className="font-medium">Payment processed:</span> £45.00 subscription
+                          </div>
+                          <div className="text-xs text-muted-foreground">5 minutes ago</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border rounded">
+                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            <span className="font-medium">Trial expired:</span> user_123 converted to paid
+                          </div>
+                          <div className="text-xs text-muted-foreground">8 minutes ago</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border rounded">
+                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            <span className="font-medium">Content reported:</span> Post ID 456 flagged for review
+                          </div>
+                          <div className="text-xs text-muted-foreground">12 minutes ago</div>
+                        </div>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border rounded">
+                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="text-sm">
+                            <span className="font-medium">Ad submission:</span> New campaign pending review
+                          </div>
+                          <div className="text-xs text-muted-foreground">15 minutes ago</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* System Performance Metrics */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <Monitor className="w-5 h-5 mr-2" />
+                        Server Performance
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm">
+                          <span>CPU Usage</span>
+                          <span>23%</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2 mt-1">
+                          <div className="bg-green-600 h-2 rounded-full" style={{width: '23%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm">
+                          <span>Memory Usage</span>
+                          <span>67%</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2 mt-1">
+                          <div className="bg-yellow-600 h-2 rounded-full" style={{width: '67%'}}></div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm">
+                          <span>Disk Usage</span>
+                          <span>45%</span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2 mt-1">
+                          <div className="bg-blue-600 h-2 rounded-full" style={{width: '45%'}}></div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        <AlertCircle className="w-5 h-5 mr-2" />
+                        System Alerts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2 p-2 border border-yellow-200 rounded bg-yellow-50 dark:bg-yellow-900/20">
+                          <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                          <span className="text-sm">High memory usage detected</span>
+                        </div>
+                        <div className="flex items-center space-x-2 p-2 border border-green-200 rounded bg-green-50 dark:bg-green-900/20">
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm">All services operational</span>
+                        </div>
+                        <div className="flex items-center space-x-2 p-2 border border-blue-200 rounded bg-blue-50 dark:bg-blue-900/20">
+                          <Bell className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm">Scheduled maintenance in 2 hours</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* Audit Logs Section */}
+            {activeSection === "audit" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Audit Logs & Activity Tracking</h2>
+                  <div className="flex space-x-2">
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Actions</SelectItem>
+                        <SelectItem value="user_actions">User Actions</SelectItem>
+                        <SelectItem value="admin_actions">Admin Actions</SelectItem>
+                        <SelectItem value="system_events">System Events</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Logs
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Audit Statistics */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">2,456</div>
+                        <div className="text-sm text-muted-foreground">Total Actions Today</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-red-600">12</div>
+                        <div className="text-sm text-muted-foreground">Failed Login Attempts</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">89</div>
+                        <div className="text-sm text-muted-foreground">Admin Actions</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">234</div>
+                        <div className="text-sm text-muted-foreground">Security Events</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Audit Logs Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recent Audit Logs</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left p-2">Timestamp</th>
+                            <th className="text-left p-2">Action</th>
+                            <th className="text-left p-2">User</th>
+                            <th className="text-left p-2">Target</th>
+                            <th className="text-left p-2">IP Address</th>
+                            <th className="text-left p-2">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:23:45</td>
+                            <td className="p-2">
+                              <Badge variant="outline">User Login</Badge>
+                            </td>
+                            <td className="p-2 text-sm">sarah@example.com</td>
+                            <td className="p-2 text-sm">Authentication</td>
+                            <td className="p-2 text-sm font-mono">192.168.1.45</td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:20:12</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Apply Trial Coupon</Badge>
+                            </td>
+                            <td className="p-2 text-sm">john@example.com</td>
+                            <td className="p-2 text-sm">TRIAL30</td>
+                            <td className="p-2 text-sm font-mono">192.168.1.67</td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:18:33</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Admin Action</Badge>
+                            </td>
+                            <td className="p-2 text-sm">admin@hublink.com</td>
+                            <td className="p-2 text-sm">User: user_456</td>
+                            <td className="p-2 text-sm font-mono">192.168.1.10</td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:15:21</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Failed Login</Badge>
+                            </td>
+                            <td className="p-2 text-sm">unknown@attacker.com</td>
+                            <td className="p-2 text-sm">Authentication</td>
+                            <td className="p-2 text-sm font-mono">45.123.87.234</td>
+                            <td className="p-2">
+                              <Badge variant="destructive">Failed</Badge>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:12:45</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Payment Processed</Badge>
+                            </td>
+                            <td className="p-2 text-sm">emma@example.com</td>
+                            <td className="p-2 text-sm">£45.00 Subscription</td>
+                            <td className="p-2 text-sm font-mono">192.168.1.89</td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="p-2 text-sm">2024-12-07 15:10:12</td>
+                            <td className="p-2">
+                              <Badge variant="outline">Create Trial Code</Badge>
+                            </td>
+                            <td className="p-2 text-sm">admin@hublink.com</td>
+                            <td className="p-2 text-sm">FREETRIAL7</td>
+                            <td className="p-2 text-sm font-mono">192.168.1.10</td>
+                            <td className="p-2">
+                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Security Events */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Shield className="w-5 h-5 mr-2" />
+                      Security Events & Threats
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-start space-x-3 p-3 border border-red-200 rounded bg-red-50 dark:bg-red-900/20">
+                        <AlertTriangle className="w-5 h-5 text-red-600 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">Suspicious Login Activity</div>
+                          <div className="text-xs text-muted-foreground">
+                            Multiple failed login attempts from IP: 45.123.87.234
+                          </div>
+                          <div className="text-xs text-muted-foreground">15 minutes ago</div>
+                        </div>
+                        <Button size="sm" variant="outline">Block IP</Button>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border border-yellow-200 rounded bg-yellow-50 dark:bg-yellow-900/20">
+                        <AlertCircle className="w-5 h-5 text-yellow-600 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">Unusual Payment Pattern</div>
+                          <div className="text-xs text-muted-foreground">
+                            Large number of trial-to-paid conversions from same region
+                          </div>
+                          <div className="text-xs text-muted-foreground">1 hour ago</div>
+                        </div>
+                        <Button size="sm" variant="outline">Investigate</Button>
+                      </div>
+                      <div className="flex items-start space-x-3 p-3 border border-green-200 rounded bg-green-50 dark:bg-green-900/20">
+                        <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
+                        <div className="flex-1">
+                          <div className="text-sm font-medium">Security Scan Complete</div>
+                          <div className="text-xs text-muted-foreground">
+                            No vulnerabilities detected in latest security scan
+                          </div>
+                          <div className="text-xs text-muted-foreground">2 hours ago</div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Placeholder sections for future development */}
-            {["content", "settings", "monitoring", "audit"].includes(activeSection) && (
+            {["content", "settings"].includes(activeSection) && (
               <Card>
                 <CardContent className="p-12 text-center">
                   <Settings className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
