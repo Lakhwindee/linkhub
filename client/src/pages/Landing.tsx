@@ -384,69 +384,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Demo Login Credentials Section */}
-      <section className="py-10 bg-muted/30">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-2">🔑 Demo Login Credentials</h2>
-            <p className="text-muted-foreground">Use these credentials on the main login page to test different user roles!</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            <Card className="border-2 border-orange-200 bg-orange-50">
-              <CardContent className="p-6 text-center">
-                <Crown className="w-12 h-12 mx-auto mb-4 text-orange-600" />
-                <h3 className="font-bold text-lg mb-2">Creator Premium</h3>
-                <div className="space-y-2 text-sm bg-white p-4 rounded-lg">
-                  <div><strong>Username:</strong> <code className="bg-gray-100 px-2 py-1 rounded">premium_creator</code></div>
-                  <div><strong>Email:</strong> <code className="bg-gray-100 px-2 py-1 rounded">creator-premium@hublink.com</code></div>
-                  <div><strong>Access:</strong> Full premium creator features</div>
-                </div>
-                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigator.clipboard.writeText('premium_creator')}>
-                  Copy Username
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-blue-200 bg-blue-50">
-              <CardContent className="p-6 text-center">
-                <Zap className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                <h3 className="font-bold text-lg mb-2">Creator Standard</h3>
-                <div className="space-y-2 text-sm bg-white p-4 rounded-lg">
-                  <div><strong>Username:</strong> <code className="bg-gray-100 px-2 py-1 rounded">standard_creator</code></div>
-                  <div><strong>Email:</strong> <code className="bg-gray-100 px-2 py-1 rounded">creator-standard@hublink.com</code></div>
-                  <div><strong>Access:</strong> Standard creator features</div>
-                </div>
-                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigator.clipboard.writeText('standard_creator')}>
-                  Copy Username
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-purple-200 bg-purple-50">
-              <CardContent className="p-6 text-center">
-                <Megaphone className="w-12 h-12 mx-auto mb-4 text-purple-600" />
-                <h3 className="font-bold text-lg mb-2">Publisher</h3>
-                <div className="space-y-2 text-sm bg-white p-4 rounded-lg">
-                  <div><strong>Username:</strong> <code className="bg-gray-100 px-2 py-1 rounded">demo_publisher</code></div>
-                  <div><strong>Email:</strong> <code className="bg-gray-100 px-2 py-1 rounded">publisher@hublink.com</code></div>
-                  <div><strong>Access:</strong> Full publisher features</div>
-                </div>
-                <Button variant="outline" size="sm" className="mt-4 w-full" onClick={() => navigator.clipboard.writeText('demo_publisher')}>
-                  Copy Username
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="text-center mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-blue-800">
-              <strong>How to use:</strong> Click "Sign In" in the top navigation, then use any of these usernames. 
-              No password needed - this is a demo system!
-            </p>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="bg-primary text-primary-foreground py-20">
