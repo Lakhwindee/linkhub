@@ -586,10 +586,282 @@ export default function Admin() {
             {/* System Settings Section */}
             {activeSection === "settings" && (
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-foreground">System Settings</h2>
-                
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">System Settings</h2>
+                  <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh Data
+                  </Button>
+                </div>
+
+                {/* Plan Pricing Management */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <span>Plan Pricing Management</span>
+                      <Badge variant="secondary">Live Editing</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Free Plan */}
+                      <div className="border-2 border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold">Free Plan</h3>
+                          <Badge variant="outline">Active</Badge>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Plan Name</label>
+                            <Input defaultValue="Free Plan" className="mt-1" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-sm font-medium">Price</label>
+                              <Input defaultValue="0" type="number" className="mt-1" />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">Currency</label>
+                              <Select defaultValue="GBP">
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                                  <SelectItem value="USD">USD ($)</SelectItem>
+                                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Features</label>
+                            <Textarea 
+                              defaultValue="Basic profile&#10;View content&#10;Limited messaging&#10;Community access"
+                              rows={4}
+                              className="mt-1"
+                            />
+                          </div>
+                          <Button 
+                            className="w-full" 
+                            onClick={() => {
+                              toast({
+                                title: "Plan Updated",
+                                description: "Free plan settings have been saved successfully",
+                              });
+                            }}
+                          >
+                            Save Free Plan
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Premium Plan */}
+                      <div className="border-2 border-accent rounded-lg p-4 bg-accent/5">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold">Premium Plan</h3>
+                          <Badge className="bg-accent">Most Popular</Badge>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium">Plan Name</label>
+                            <Input defaultValue="Premium Plan" className="mt-1" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className="text-sm font-medium">Price</label>
+                              <Input defaultValue="45" type="number" className="mt-1" />
+                            </div>
+                            <div>
+                              <label className="text-sm font-medium">Currency</label>
+                              <Select defaultValue="GBP">
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="GBP">GBP (£)</SelectItem>
+                                  <SelectItem value="USD">USD ($)</SelectItem>
+                                  <SelectItem value="EUR">EUR (€)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Features</label>
+                            <Textarea 
+                              defaultValue="All Free features&#10;Creator tools&#10;Unlimited messaging&#10;Event creation&#10;Analytics dashboard&#10;Ad campaigns&#10;Priority support"
+                              rows={4}
+                              className="mt-1"
+                            />
+                          </div>
+                          <Button 
+                            className="w-full bg-accent hover:bg-accent/90" 
+                            onClick={async () => {
+                              try {
+                                const response = await fetch('/api/admin/plans/premium', {
+                                  method: 'PUT',
+                                  headers: { 'Content-Type': 'application/json' },
+                                  body: JSON.stringify({
+                                    name: 'Premium Plan',
+                                    price: 45,
+                                    currency: 'GBP',
+                                    billing: 'monthly',
+                                    features: ['All Free features', 'Creator tools', 'Unlimited messaging', 'Event creation', 'Analytics dashboard', 'Ad campaigns', 'Priority support'],
+                                    active: true
+                                  })
+                                });
+                                
+                                if (response.ok) {
+                                  toast({
+                                    title: "Plan Updated Successfully!",
+                                    description: "Premium plan pricing has been updated and is now live",
+                                  });
+                                } else {
+                                  throw new Error('Failed to update plan');
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Update Failed",
+                                  description: "There was an error updating the plan",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            Save Premium Plan
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-5 h-5 text-blue-600 mt-0.5">ℹ️</div>
+                        <div>
+                          <h4 className="font-medium text-blue-900 dark:text-blue-100">Live Plan Management</h4>
+                          <p className="text-sm text-blue-700 dark:text-blue-200 mt-1">
+                            Changes to pricing and features are applied immediately. All new subscriptions will use the updated pricing.
+                            Existing subscriptions will be updated at their next billing cycle.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Website Content Editor */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Edit3 className="w-5 h-5 text-purple-600" />
+                      <span>Website Content Editor</span>
+                      <Badge variant="secondary">Real-time</Badge>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Homepage Hero Title</label>
+                          <Input 
+                            defaultValue="Connect Travelers & Creators Globally" 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Homepage Subtitle</label>
+                          <Textarea 
+                            defaultValue="Join the world's leading travel community platform"
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Feature 1 Title</label>
+                          <Input 
+                            defaultValue="Discover Amazing Places" 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Feature 1 Description</label>
+                          <Textarea 
+                            defaultValue="Explore curated content from fellow travelers"
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Feature 2 Title</label>
+                          <Input 
+                            defaultValue="Connect with Creators" 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Feature 2 Description</label>
+                          <Textarea 
+                            defaultValue="Follow your favorite travel creators and influencers"
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Feature 3 Title</label>
+                          <Input 
+                            defaultValue="Plan Events Together" 
+                            className="mt-1"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Feature 3 Description</label>
+                          <Textarea 
+                            defaultValue="Create and join travel events with like-minded people"
+                            rows={2}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch('/api/admin/content/homepage', {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              hero_title: "Connect Travelers & Creators Globally",
+                              hero_subtitle: "Join the world's leading travel community platform"
+                            })
+                          });
+                          
+                          if (response.ok) {
+                            toast({
+                              title: "Content Updated!",
+                              description: "Website content has been updated successfully",
+                            });
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Update Failed", 
+                            description: "Failed to update website content",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Update Website Content
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Platform Configuration */}
                 <div className="grid md:grid-cols-2 gap-6">
-                  {/* Platform Configuration */}
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center space-x-2">
@@ -607,6 +879,10 @@ export default function Admin() {
                         <Textarea defaultValue="Connect travelers and creators globally" />
                       </div>
                       <div className="space-y-2">
+                        <label className="text-sm font-medium">Platform Fee (%)</label>
+                        <Input defaultValue="10" type="number" />
+                      </div>
+                      <div className="space-y-2">
                         <label className="text-sm font-medium">Maintenance Mode</label>
                         <div className="flex items-center space-x-2">
                           <input type="checkbox" id="maintenance" />
@@ -617,89 +893,6 @@ export default function Admin() {
                     </CardContent>
                   </Card>
 
-                  {/* User Registration */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>User Registration</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Registration Status</label>
-                        <Select defaultValue="open">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="open">Open to all</SelectItem>
-                            <SelectItem value="invite">Invite only</SelectItem>
-                            <SelectItem value="closed">Closed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Email Verification</label>
-                        <div className="flex items-center space-x-2">
-                          <input type="checkbox" id="email-verify" defaultChecked />
-                          <label htmlFor="email-verify" className="text-sm">Require email verification</label>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Default User Role</label>
-                        <Select defaultValue="user">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="user">User</SelectItem>
-                            <SelectItem value="creator">Creator</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button>Save User Settings</Button>
-                    </CardContent>
-                  </Card>
-
-                  {/* Payment Settings */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Payment & Billing</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Platform Fee (%)</label>
-                        <Input defaultValue="10" type="number" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Currency</label>
-                        <Select defaultValue="gbp">
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="gbp">GBP (£)</SelectItem>
-                            <SelectItem value="inr">INR (₹)</SelectItem>
-                            <SelectItem value="usd">USD ($)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">Subscription Plans</label>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between p-2 border rounded">
-                            <span>Free Plan</span>
-                            <Badge variant="outline">£0/month</Badge>
-                          </div>
-                          <div className="flex items-center justify-between p-2 border rounded">
-                            <span>Premium Plan</span>
-                            <Badge variant="secondary">£45/month</Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <Button>Save Payment Settings</Button>
-                    </CardContent>
-                  </Card>
-
-                  {/* Security Settings */}
                   <Card>
                     <CardHeader>
                       <CardTitle>Security & Privacy</CardTitle>

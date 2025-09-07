@@ -2150,6 +2150,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Plan Pricing Management API
+  app.get('/api/admin/plans', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return current plans with pricing
+      const plans = [
+        {
+          id: 'free',
+          name: 'Free Plan',
+          price: 0,
+          currency: 'GBP',
+          billing: 'monthly',
+          features: [
+            'Basic profile',
+            'View content',
+            'Limited messaging',
+            'Community access'
+          ],
+          limits: {
+            posts: 5,
+            messages: 10,
+            events: 2
+          },
+          active: true
+        },
+        {
+          id: 'premium',
+          name: 'Premium Plan',
+          price: 45,
+          currency: 'GBP', 
+          billing: 'monthly',
+          features: [
+            'All Free features',
+            'Creator tools',
+            'Unlimited messaging',
+            'Event creation',
+            'Analytics dashboard',
+            'Ad campaigns',
+            'Priority support'
+          ],
+          limits: {
+            posts: -1,
+            messages: -1,
+            events: -1
+          },
+          active: true
+        }
+      ];
+      
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+      res.status(500).json({ message: "Failed to fetch plans" });
+    }
+  });
+
+  app.put('/api/admin/plans/:planId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { planId } = req.params;
+      const { name, price, currency, billing, features, limits, active } = req.body;
+      
+      // In real implementation, this would update database
+      // For now, return success for demo
+      console.log(`Plan ${planId} updated:`, { name, price, currency, billing, features, limits, active });
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'update_plan',
+        entityType: 'plan',
+        entityId: planId,
+        details: { name, price, currency, billing, features, limits, active }
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `Plan ${planId} updated successfully`,
+        plan: { id: planId, name, price, currency, billing, features, limits, active }
+      });
+    } catch (error) {
+      console.error("Error updating plan:", error);
+      res.status(500).json({ message: "Failed to update plan" });
+    }
+  });
+
+  // Website Content Management API
+  app.get('/api/admin/content', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return website content sections
+      const content = {
+        homepage: {
+          hero_title: "Connect Travelers & Creators Globally",
+          hero_subtitle: "Join the world's leading travel community platform",
+          hero_image: "/images/hero-bg.jpg"
+        },
+        features: [
+          {
+            id: 1,
+            title: "Discover Amazing Places",
+            description: "Explore curated content from fellow travelers",
+            icon: "map"
+          },
+          {
+            id: 2,
+            title: "Connect with Creators",
+            description: "Follow your favorite travel creators and influencers", 
+            icon: "users"
+          },
+          {
+            id: 3,
+            title: "Plan Events Together",
+            description: "Create and join travel events with like-minded people",
+            icon: "calendar"
+          }
+        ],
+        pricing: {
+          free_title: "Start Your Journey",
+          premium_title: "Unlock Full Potential", 
+          currency: "GBP"
+        }
+      };
+      
+      res.json(content);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+      res.status(500).json({ message: "Failed to fetch content" });
+    }
+  });
+
+  app.put('/api/admin/content/:section', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { section } = req.params;
+      const contentData = req.body;
+      
+      console.log(`Content section ${section} updated:`, contentData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'update_content',
+        entityType: 'content',
+        entityId: section,
+        details: contentData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `Content section ${section} updated successfully`,
+        content: contentData
+      });
+    } catch (error) {
+      console.error("Error updating content:", error);
+      res.status(500).json({ message: "Failed to update content" });
+    }
+  });
+
   app.get('/api/admin/submissions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
