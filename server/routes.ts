@@ -2103,8 +2103,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Old demo authentication endpoint - remove this duplicate
-  app.post('/api/demo-login-old', async (req, res) => {
+  // DISABLED - Old demo authentication endpoint 
+  app.post('/api/demo-login-DISABLED', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       const { userId, role, plan } = req.body;
       
