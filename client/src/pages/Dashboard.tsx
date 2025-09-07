@@ -175,128 +175,6 @@ export default function Dashboard() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            
-            {/* My Profile Section */}
-            <Card data-testid="card-my-profile">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <UserIcon className="w-5 h-5 text-accent" />
-                  <span>My Profile</span>
-                </CardTitle>
-                <Button variant="outline" size="sm" asChild data-testid="button-view-full-profile">
-                  <Link href={`/profile/${user.id}`}>
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Full Profile
-                  </Link>
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Profile Header */}
-                <div className="flex items-center space-x-4">
-                  <Avatar className="w-20 h-20">
-                    <AvatarImage src={user.profileImageUrl || undefined} />
-                    <AvatarFallback className="text-xl">
-                      {user.firstName?.[0]}{user.lastName?.[0]}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-foreground">
-                      {user.displayName || `${user.firstName} ${user.lastName}`}
-                    </h3>
-                    <p className="text-muted-foreground">@{user.username || user.id}</p>
-                    
-                    {/* Profile Stats */}
-                    <div className="flex space-x-6 mt-3">
-                      <div className="text-center">
-                        <div className="text-lg font-bold">0</div>
-                        <div className="text-xs text-muted-foreground">posts</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold">{followers.length}</div>
-                        <div className="text-xs text-muted-foreground">followers</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-lg font-bold">{following.length}</div>
-                        <div className="text-xs text-muted-foreground">following</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col space-y-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href="/profile">
-                        <Settings className="w-4 h-4 mr-2" />
-                        Edit Profile
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Bio */}
-                {(user as any).bio && (
-                  <div className="text-sm text-foreground leading-relaxed">
-                    {(user as any).bio}
-                  </div>
-                )}
-
-                {/* Location */}
-                {(user as any).city && (user as any).country && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    <span>{(user as any).city}, {(user as any).country}</span>
-                  </div>
-                )}
-
-                {/* Recent Posts Grid */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold flex items-center space-x-2">
-                      <Grid className="w-4 h-4" />
-                      <span>Recent Posts</span>
-                    </h4>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/feed">
-                        <Camera className="w-4 h-4 mr-2" />
-                        Create Post
-                      </Link>
-                    </Button>
-                  </div>
-                  
-                  {/* Posts Grid */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* Sample posts - in real app this would be user's actual posts */}
-                    {[
-                      'https://images.unsplash.com/photo-1506905925346-21bea4d5618d?w=300&h=300&fit=crop',
-                      'https://images.unsplash.com/photo-1488646953014-e52207ff888f?w=300&h=300&fit=crop',
-                      'https://images.unsplash.com/photo-1507003211169-0a1dd7ef0a96?w=300&h=300&fit=crop',
-                      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=300&h=300&fit=crop',
-                      'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=300&h=300&fit=crop',
-                      'https://images.unsplash.com/photo-1504893524553-b855bce32c67?w=300&h=300&fit=crop'
-                    ].slice(0, 6).map((imageUrl, index) => (
-                      <div key={index} className="aspect-square relative group cursor-pointer">
-                        <img 
-                          src={imageUrl}
-                          alt={`Post ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
-                          <div className="flex items-center space-x-2 text-white text-sm">
-                            <MessageCircle className="w-4 h-4" />
-                            <span>{Math.floor(Math.random() * 20) + 5}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* View All Posts */}
-                  <Button variant="outline" size="sm" className="w-full mt-3" asChild>
-                    <Link href={`/profile/${user.id}`}>View All Posts</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
 
             {/* Recent Posts */}
             <Card data-testid="card-recent-posts">
@@ -528,6 +406,12 @@ export default function Dashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
+                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-my-profile">
+                  <Link href={`/profile/${user.id}`}>
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    My Profile
+                  </Link>
+                </Button>
                 <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-post-quick">
                   <Link href="/feed">
                     <Globe className="w-4 h-4 mr-2" />
