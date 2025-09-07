@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star, User, Grid, Camera, Settings, ExternalLink } from "lucide-react";
+import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star, User as UserIcon, Grid, Camera, Settings, ExternalLink } from "lucide-react";
 import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
@@ -180,7 +180,7 @@ export default function Dashboard() {
             <Card data-testid="card-my-profile">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-accent" />
+                  <UserIcon className="w-5 h-5 text-accent" />
                   <span>My Profile</span>
                 </CardTitle>
                 <Button variant="outline" size="sm" asChild data-testid="button-view-full-profile">
@@ -234,17 +234,17 @@ export default function Dashboard() {
                 </div>
 
                 {/* Bio */}
-                {user.bio && (
+                {(user as any).bio && (
                   <div className="text-sm text-foreground leading-relaxed">
-                    {user.bio}
+                    {(user as any).bio}
                   </div>
                 )}
 
                 {/* Location */}
-                {user.city && user.country && (
+                {(user as any).city && (user as any).country && (
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="w-4 h-4 mr-2" />
-                    <span>{user.city}, {user.country}</span>
+                    <span>{(user as any).city}, {(user as any).country}</span>
                   </div>
                 )}
 
@@ -337,7 +337,9 @@ export default function Dashboard() {
                         country: 'United Kingdom',
                         visibility: 'public',
                         createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-                        mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop']
+                        mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop'],
+                        mediaType: 'image',
+                        status: 'active'
                       } as Post}
                       compact={false}
                     />
@@ -351,7 +353,9 @@ export default function Dashboard() {
                         country: 'Greece',
                         visibility: 'public',
                         createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                        mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop']
+                        mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop'],
+                        mediaType: 'image',
+                        status: 'active'
                       } as Post}
                       compact={false}
                     />
