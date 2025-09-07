@@ -90,6 +90,15 @@ export default function Landing() {
 
   const demoUsers = [
     {
+      id: 'demo-admin',
+      role: 'admin',
+      plan: 'premium',
+      name: 'Admin',
+      description: 'Platform management',
+      icon: Shield,
+      color: 'bg-red-500',
+    },
+    {
       id: 'demo-creator-premium',
       role: 'creator',
       plan: 'premium',
