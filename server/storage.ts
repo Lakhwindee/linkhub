@@ -22,6 +22,8 @@ import {
   stays,
   stayBookings,
   stayReviews,
+  personalHosts,
+  hostBookings,
   type User,
   type UpsertUser,
   type ConnectRequest,
@@ -45,9 +47,13 @@ import {
   type Stay,
   type StayBooking,
   type StayReview,
+  type PersonalHost,
+  type HostBooking,
   insertStaySchema,
   insertStayBookingSchema,
   insertStayReviewSchema,
+  insertPersonalHostSchema,
+  insertHostBookingSchema,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql, count, like, ilike, gt } from "drizzle-orm";
@@ -192,6 +198,21 @@ export interface IStorage {
   createGroupMessage(data: { conversationId: string; fromUserId: string; body?: string; mediaUrl?: string; mediaType?: string }): Promise<GroupMessage>;
   getGroupConversationMessages(conversationId: string, limit?: number): Promise<GroupMessage[]>;
   updateGroupConversationLastMessage(conversationId: string, messageId: string): Promise<void>;
+  
+  // Personal Hosts
+  getPersonalHosts(filters?: { country?: string; city?: string; hostType?: string; priceType?: string; maxGuests?: number; limit?: number }): Promise<PersonalHost[]>;
+  getPersonalHostById(id: string): Promise<PersonalHost | undefined>;
+  createPersonalHost(data: any): Promise<PersonalHost>;
+  updatePersonalHost(id: string, data: any): Promise<PersonalHost>;
+  deletePersonalHost(id: string): Promise<void>;
+  getMyPersonalHosts(userId: string): Promise<PersonalHost[]>;
+  
+  // Host Bookings
+  createHostBooking(data: any): Promise<HostBooking>;
+  getHostBookingById(id: string): Promise<HostBooking | undefined>;
+  updateHostBookingStatus(id: string, status: string): Promise<HostBooking>;
+  getUserHostBookings(userId: string): Promise<HostBooking[]>;
+  getMyHostBookings(userId: string): Promise<HostBooking[]>;
 }
 
 // Test data for demo/development
@@ -2001,6 +2022,95 @@ export class DatabaseStorage implements IStorage {
   
   async getStayReviews(stayId: string): Promise<StayReview[]> {
     return await db.select().from(stayReviews).where(eq(stayReviews.stayId, stayId));
+  }
+
+  // Personal Hosts implementation
+  async getPersonalHosts(filters?: { country?: string; city?: string; hostType?: string; priceType?: string; maxGuests?: number; limit?: number }): Promise<PersonalHost[]> {
+    let query = db.select().from(personalHosts).where(eq(personalHosts.isActive, true));
+    
+    if (filters?.country) {
+      query = query.where(eq(personalHosts.country, filters.country));
+    }
+    if (filters?.city) {
+      query = query.where(eq(personalHosts.city, filters.city));
+    }
+    if (filters?.hostType) {
+      query = query.where(eq(personalHosts.hostType, filters.hostType));
+    }
+    if (filters?.priceType) {
+      query = query.where(eq(personalHosts.priceType, filters.priceType));
+    }
+    if (filters?.maxGuests) {
+      query = query.where(sql`${personalHosts.maxGuests} >= ${filters.maxGuests}`);
+    }
+    
+    const limit = filters?.limit || 20;
+    return await query.limit(limit).orderBy(desc(personalHosts.createdAt));
+  }
+
+  async getPersonalHostById(id: string): Promise<PersonalHost | undefined> {
+    const [host] = await db.select().from(personalHosts).where(eq(personalHosts.id, id));
+    return host;
+  }
+
+  async createPersonalHost(data: any): Promise<PersonalHost> {
+    const [host] = await db.insert(personalHosts).values(data).returning();
+    return host;
+  }
+
+  async updatePersonalHost(id: string, data: any): Promise<PersonalHost> {
+    const [host] = await db.update(personalHosts).set({
+      ...data,
+      updatedAt: new Date()
+    }).where(eq(personalHosts.id, id)).returning();
+    return host;
+  }
+
+  async deletePersonalHost(id: string): Promise<void> {
+    await db.delete(personalHosts).where(eq(personalHosts.id, id));
+  }
+
+  async getMyPersonalHosts(userId: string): Promise<PersonalHost[]> {
+    return await db.select().from(personalHosts).where(eq(personalHosts.userId, userId)).orderBy(desc(personalHosts.createdAt));
+  }
+
+  // Host Bookings implementation
+  async createHostBooking(data: any): Promise<HostBooking> {
+    const [booking] = await db.insert(hostBookings).values(data).returning();
+    return booking;
+  }
+
+  async getHostBookingById(id: string): Promise<HostBooking | undefined> {
+    const [booking] = await db.select().from(hostBookings).where(eq(hostBookings.id, id));
+    return booking;
+  }
+
+  async updateHostBookingStatus(id: string, status: string): Promise<HostBooking> {
+    const [booking] = await db.update(hostBookings).set({
+      status,
+      updatedAt: new Date()
+    }).where(eq(hostBookings.id, id)).returning();
+    return booking;
+  }
+
+  async getUserHostBookings(userId: string): Promise<HostBooking[]> {
+    return await db.select().from(hostBookings).where(eq(hostBookings.guestId, userId)).orderBy(desc(hostBookings.createdAt));
+  }
+
+  async getMyHostBookings(userId: string): Promise<HostBooking[]> {
+    // Get bookings for hosts owned by this user
+    const query = db
+      .select({
+        booking: hostBookings,
+        host: personalHosts
+      })
+      .from(hostBookings)
+      .innerJoin(personalHosts, eq(hostBookings.hostId, personalHosts.id))
+      .where(eq(personalHosts.userId, userId))
+      .orderBy(desc(hostBookings.createdAt));
+    
+    const result = await query;
+    return result.map(r => r.booking);
   }
 
   // Trips implementation
