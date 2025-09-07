@@ -9,12 +9,16 @@ export default function Landing() {
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
 
   useEffect(() => {
-    // Check if user was redirected here after successful signup
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('signup') === 'success') {
-      setShowSignupSuccess(true);
-      // Clean up URL
-      window.history.replaceState({}, '', '/');
+    try {
+      // Check if user was redirected here after successful signup
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('signup') === 'success') {
+        setShowSignupSuccess(true);
+        // Clean up URL
+        window.history.replaceState({}, '', '/');
+      }
+    } catch (error) {
+      console.error('Landing page error:', error);
     }
   }, []);
 
