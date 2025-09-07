@@ -50,8 +50,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                 <img 
                   src="/hublink-logo.png" 
                   alt="HubLink" 
-                  className="h-8 w-auto" 
-                  style={{ maxWidth: '120px' }}
+                  className="h-12 w-auto" 
+                  style={{ maxWidth: '200px' }}
                 />
               </div>
             </Link>
@@ -121,8 +121,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               <img 
                 src="/hublink-logo.png" 
                 alt="HubLink" 
-                className="h-8 w-auto" 
-                style={{ maxWidth: '120px' }}
+                className="h-12 w-auto" 
+                style={{ maxWidth: '200px' }}
               />
             </div>
           </Link>
