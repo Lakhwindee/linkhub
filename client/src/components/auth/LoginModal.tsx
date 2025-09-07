@@ -33,8 +33,16 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         });
         
         if (response.ok) {
-          console.log('Demo login successful, reloading...');
-          window.location.href = '/dashboard'; // Redirect to dashboard
+          console.log('Demo login successful!');
+          
+          // Trigger auth update event
+          window.dispatchEvent(new Event('authUpdate'));
+          
+          // Close modal and redirect
+          onOpenChange(false);
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 100);
           return;
         } else {
           alert('Demo login failed. Try: premium_creator, standard_creator, or demo_publisher');
