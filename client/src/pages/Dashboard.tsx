@@ -136,10 +136,13 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
-              Welcome back, Demo User! 👋
+              Welcome back, {user?.displayName || user?.firstName || 'Demo User'}! 👋
             </h1>
             <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
-              Discover new travelers and share your journey
+              {user?.plan === 'free' 
+                ? 'Explore basic features - upgrade to unlock full access to the travel community' 
+                : 'Discover new travelers, share your journey, and access premium features'
+              }
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -186,6 +189,19 @@ export default function Dashboard() {
               Create Post
             </Link>
           </Button>
+          {user?.plan !== 'free' ? (
+            <Button variant="outline" asChild data-testid="button-discover-map-top">
+              <Link href="/discover">
+                <MapPin className="w-4 h-4 mr-2" />
+                Discover Map
+              </Link>
+            </Button>
+          ) : (
+            <Button variant="outline" className="opacity-60" disabled data-testid="button-discover-locked">
+              <MapPin className="w-4 h-4 mr-2" />
+              🔒 Discover Map
+            </Button>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -230,7 +246,7 @@ export default function Dashboard() {
                         city: 'London',
                         country: 'United Kingdom',
                         visibility: 'public',
-                        createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
+                        createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
                         mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop'],
                         mediaType: 'image',
                         status: 'active'
@@ -246,7 +262,7 @@ export default function Dashboard() {
                         city: 'Santorini',
                         country: 'Greece',
                         visibility: 'public',
-                        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
                         mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop'],
                         mediaType: 'image',
                         status: 'active'
@@ -390,30 +406,55 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Creator Dashboard */}
-            <Card data-testid="card-creator-dashboard">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <DollarSign className="w-5 h-5 text-yellow-600" />
-                  <span>Creator Dashboard</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">$0</div>
-                    <div className="text-xs text-muted-foreground">Total Earnings</div>
+            {/* Creator Dashboard - Premium Only */}
+            {user?.plan !== 'free' ? (
+              <Card data-testid="card-creator-dashboard">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <DollarSign className="w-5 h-5 text-yellow-600" />
+                    <span>Creator Dashboard</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground" data-testid="text-earnings">$0</div>
+                      <div className="text-xs text-muted-foreground">Total Earnings</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground" data-testid="text-campaigns">0</div>
+                      <div className="text-xs text-muted-foreground">Active Campaigns</div>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-foreground" data-testid="text-campaigns">0</div>
-                    <div className="text-xs text-muted-foreground">Active Campaigns</div>
+                  <Button className="w-full bg-gray-900 hover:bg-gray-800" asChild data-testid="button-browse-ads">
+                    <Link href="/ads">Browse Campaigns</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card data-testid="card-upgrade-creator" className="border-orange-200 bg-orange-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <DollarSign className="w-5 h-5 text-orange-600" />
+                    <span>🔒 Creator Features</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center space-y-2">
+                    <div className="text-sm text-orange-700">Upgrade to unlock:</div>
+                    <ul className="text-xs text-orange-600 space-y-1">
+                      <li>• Browse ad campaigns</li>
+                      <li>• Earn money from content</li>
+                      <li>• Creator dashboard</li>
+                      <li>• Priority support</li>
+                    </ul>
                   </div>
-                </div>
-                <Button className="w-full bg-gray-900 hover:bg-gray-800" asChild data-testid="button-browse-ads">
-                  <Link href="/ads">Browse Campaigns</Link>
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button className="w-full bg-orange-600 hover:bg-orange-700 text-white" asChild data-testid="button-upgrade-creator">
+                    <Link href="/subscribe">Upgrade to Premium</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
 
             {/* Quick Actions */}
@@ -422,18 +463,46 @@ export default function Dashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-event-quick">
-                  <Link href="/events">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Create Event
-                  </Link>
-                </Button>
-                <Button className="w-full justify-start" asChild data-testid="button-upgrade-quick">
-                  <Link href="/subscribe">
-                    <Star className="w-4 h-4 mr-2" />
-                    Upgrade Plan
-                  </Link>
-                </Button>
+                {user?.plan !== 'free' ? (
+                  <>
+                    <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-event-quick">
+                      <Link href="/events">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Create Event
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild data-testid="button-messages-quick">
+                      <Link href="/messages">
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Messages
+                      </Link>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild data-testid="button-discover-quick">
+                      <Link href="/discover">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        Discover Map
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center p-4 bg-muted rounded-lg">
+                      <div className="text-sm text-muted-foreground mb-2">🔒 Premium Features Locked</div>
+                      <ul className="text-xs text-muted-foreground space-y-1 mb-3">
+                        <li>• Create events & meetups</li>
+                        <li>• Send direct messages</li>
+                        <li>• Full map access</li>
+                        <li>• Connect with travelers</li>
+                      </ul>
+                    </div>
+                    <Button className="w-full justify-start bg-orange-600 hover:bg-orange-700" asChild data-testid="button-upgrade-quick">
+                      <Link href="/subscribe">
+                        <Star className="w-4 h-4 mr-2" />
+                        Upgrade to Premium
+                      </Link>
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

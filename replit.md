@@ -8,6 +8,16 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**September 2025 - Plan-Based Feature Differentiation**
+- Updated Dashboard.tsx to properly show features based on user's subscription plan:
+  - **Free Plan Users**: See limited features with upgrade prompts for premium content
+  - **Premium Plan Users**: Access to full feature set including Creator Dashboard, events, messaging, and map
+- Implemented plan-specific welcome messages and feature descriptions
+- Added visual indicators (🔒) and upgrade buttons for locked features on free plan
+- Creator Dashboard now only shows for premium users, replaced with upgrade prompt for free users
+- Quick Actions section differentiates between free (locked features) and premium (full access)
+- Top action buttons include locked state for Discover Map feature on free plan
+
 **September 2025 - Instagram-like User Profile Feature**
 - Implemented Instagram-style user profile pages accessible via clickable usernames in the feed
 - Created comprehensive UserProfile.tsx component with responsive design featuring:
