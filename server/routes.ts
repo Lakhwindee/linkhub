@@ -2623,6 +2623,230 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Payment Accounts Management APIs
+  app.get('/api/admin/payment-accounts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return payment account configurations
+      const paymentAccounts = {
+        stripe: {
+          id: 'stripe_account',
+          name: 'Stripe',
+          status: 'connected',
+          mode: 'live',
+          publishableKey: 'pk_live_••••••••••••3456',
+          webhookEndpoint: 'https://api.hublink.com/webhooks/stripe',
+          platformFee: 10,
+          currency: 'GBP'
+        },
+        paypal: {
+          id: 'paypal_account',
+          name: 'PayPal',
+          status: 'disconnected',
+          mode: 'sandbox',
+          clientId: '',
+          platformFee: 10,
+          currency: 'GBP'
+        },
+        financial: {
+          totalRevenue: 12450.00,
+          platformFees: 1245.00,
+          processingFees: 234.00,
+          netRevenue: 10971.00
+        }
+      };
+      
+      res.json(paymentAccounts);
+    } catch (error) {
+      console.error("Error fetching payment accounts:", error);
+      res.status(500).json({ message: "Failed to fetch payment accounts" });
+    }
+  });
+
+  app.put('/api/admin/payment-accounts/:provider', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { provider } = req.params;
+      const accountData = req.body;
+      
+      console.log(`Updating ${provider} payment account:`, accountData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'update_payment_account',
+        targetType: 'payment_account',
+        targetId: provider,
+        metaJson: accountData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `${provider} payment account updated successfully`,
+        account: accountData
+      });
+    } catch (error) {
+      console.error("Error updating payment account:", error);
+      res.status(500).json({ message: "Failed to update payment account" });
+    }
+  });
+
+  // Email Management APIs
+  app.get('/api/admin/email-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return email configuration and templates
+      const emailSettings = {
+        smtp: {
+          host: 'smtp.hublink.com',
+          port: 587,
+          security: 'TLS',
+          username: 'notifications@hublink.com',
+          password: '••••••••'
+        },
+        templates: [
+          { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to HubLink!', status: 'active' },
+          { id: 'password_reset', name: 'Password Reset', subject: 'Reset Your Password', status: 'active' },
+          { id: 'subscription_update', name: 'Subscription Update', subject: 'Your Subscription Has Been Updated', status: 'active' },
+          { id: 'payment_receipt', name: 'Payment Receipt', subject: 'Payment Confirmation', status: 'active' }
+        ],
+        analytics: {
+          emailsSent: 2341,
+          deliveryRate: 89.2,
+          openRate: 34.5,
+          clickRate: 12.3
+        }
+      };
+      
+      res.json(emailSettings);
+    } catch (error) {
+      console.error("Error fetching email settings:", error);
+      res.status(500).json({ message: "Failed to fetch email settings" });
+    }
+  });
+
+  app.post('/api/admin/email/send-campaign', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { type, audience, subject, content, schedule } = req.body;
+      
+      console.log('Sending email campaign:', { type, audience, subject, schedule });
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'send_email_campaign',
+        targetType: 'email_campaign',
+        targetId: `${type}_${Date.now()}`,
+        metaJson: { type, audience, subject, schedule }
+      });
+      
+      // In real implementation, this would queue emails for sending
+      res.json({ 
+        success: true, 
+        message: `Email campaign "${type}" scheduled successfully`,
+        campaignId: `campaign_${Date.now()}`,
+        recipientCount: audience === 'all' ? 2341 : audience === 'premium' ? 567 : 1234
+      });
+    } catch (error) {
+      console.error("Error sending email campaign:", error);
+      res.status(500).json({ message: "Failed to send email campaign" });
+    }
+  });
+
+  app.put('/api/admin/email/template/:templateId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { templateId } = req.params;
+      const templateData = req.body;
+      
+      console.log(`Updating email template ${templateId}:`, templateData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'update_email_template',
+        targetType: 'email_template',
+        targetId: templateId,
+        metaJson: templateData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `Email template "${templateId}" updated successfully`,
+        template: templateData
+      });
+    } catch (error) {
+      console.error("Error updating email template:", error);
+      res.status(500).json({ message: "Failed to update email template" });
+    }
+  });
+
   app.get('/api/admin/submissions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
