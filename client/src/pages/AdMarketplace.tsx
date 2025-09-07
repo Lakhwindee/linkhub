@@ -1018,20 +1018,20 @@ export default function AdMarketplace() {
           </Card>
 
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-6">
-            <TabsList className="grid w-full max-w-4xl grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-              <TabsTrigger value="youtube-dashboard" data-testid="tab-youtube" className="text-xs md:text-sm">
+            <TabsList className="w-full max-w-4xl flex md:grid md:grid-cols-5 overflow-x-auto md:overflow-x-visible gap-1 scrollbar-hide">
+              <TabsTrigger value="youtube-dashboard" data-testid="tab-youtube" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
                 YouTube Creator
               </TabsTrigger>
-              <TabsTrigger value="campaigns" data-testid="tab-available" className="text-xs md:text-sm">
+              <TabsTrigger value="campaigns" data-testid="tab-available" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
                 Available Campaigns
               </TabsTrigger>
-              <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns" className="text-xs md:text-sm">
+              <TabsTrigger value="my-campaigns" data-testid="tab-my-campaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
                 My Campaigns
               </TabsTrigger>
-              <TabsTrigger value="earnings" data-testid="tab-earnings" className="text-xs md:text-sm">
+              <TabsTrigger value="earnings" data-testid="tab-earnings" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
                 Earnings
               </TabsTrigger>
-              <TabsTrigger value="payout-history" data-testid="tab-payout-history" className="text-xs md:text-sm">
+              <TabsTrigger value="payout-history" data-testid="tab-payout-history" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
                 Payment History
               </TabsTrigger>
             </TabsList>

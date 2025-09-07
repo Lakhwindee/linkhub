@@ -86,12 +86,12 @@ export default function Ads() {
 
         {/* Tabs - Now accessible to all users */}
         <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1">
-            <TabsTrigger value="campaigns" className="text-xs md:text-sm">Available Campaigns</TabsTrigger>
-            <TabsTrigger value="mycampaigns" className="text-xs md:text-sm">My Campaigns</TabsTrigger>
-            <TabsTrigger value="earnings" className="text-xs md:text-sm">Earnings</TabsTrigger>
-            <TabsTrigger value="analytics" className="text-xs md:text-sm">Analytics</TabsTrigger>
-            <TabsTrigger value="payouts" className="text-xs md:text-sm">Payouts</TabsTrigger>
+          <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto md:overflow-x-visible gap-1 scrollbar-hide">
+            <TabsTrigger value="campaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">Available Campaigns</TabsTrigger>
+            <TabsTrigger value="mycampaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">My Campaigns</TabsTrigger>
+            <TabsTrigger value="earnings" className="text-xs md:text-sm whitespace-nowrap min-w-fit">Earnings</TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs md:text-sm whitespace-nowrap min-w-fit">Analytics</TabsTrigger>
+            <TabsTrigger value="payouts" className="text-xs md:text-sm whitespace-nowrap min-w-fit">Payouts</TabsTrigger>
           </TabsList>
 
 
