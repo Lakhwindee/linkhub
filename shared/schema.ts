@@ -446,7 +446,7 @@ export const discountCodes = pgTable("discount_codes", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   code: varchar("code").unique().notNull(),
   description: text("description"),
-  discountType: varchar("discount_type").notNull(), // percentage, fixed_amount
+  discountType: varchar("discount_type").notNull(), // percentage, fixed_amount, trial
   discountValue: decimal("discount_value", { precision: 10, scale: 2 }).notNull(),
   maxUses: integer("max_uses"),
   usedCount: integer("used_count").default(0),
@@ -455,6 +455,10 @@ export const discountCodes = pgTable("discount_codes", {
   validUntil: timestamp("valid_until"),
   isActive: boolean("is_active").default(true),
   applicablePlans: text("applicable_plans").array(), // ['premium', 'free'] etc.
+  // Trial-specific fields
+  trialPeriodDays: integer("trial_period_days"), // How many days of trial
+  trialPlanType: varchar("trial_plan_type"), // 'premium', 'creator' etc.
+  autoDebitEnabled: boolean("auto_debit_enabled").default(true), // Auto-charge after trial
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -478,8 +482,30 @@ export const discountCodeUsage = pgTable("discount_code_usage", {
   codeId: varchar("code_id").references(() => discountCodes.id, { onDelete: "cascade" }),
   userId: varchar("user_id").references(() => users.id),
   subscriptionId: varchar("subscription_id").references(() => subscriptions.id),
-  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).notNull(),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }),
+  // Trial tracking
+  trialGranted: boolean("trial_granted").default(false),
+  trialStartDate: timestamp("trial_start_date"),
+  trialEndDate: timestamp("trial_end_date"),
+  trialStatus: varchar("trial_status").default("active"), // active, expired, converted, cancelled
   usedAt: timestamp("used_at").defaultNow(),
+});
+
+// User trial tracking
+export const userTrials = pgTable("user_trials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  codeUsageId: varchar("code_usage_id").references(() => discountCodeUsage.id),
+  planType: varchar("plan_type").notNull(), // 'premium', 'creator'
+  trialStartDate: timestamp("trial_start_date").defaultNow(),
+  trialEndDate: timestamp("trial_end_date").notNull(),
+  trialDays: integer("trial_days").notNull(),
+  status: varchar("status").default("active"), // active, expired, converted, cancelled
+  autoDebitEnabled: boolean("auto_debit_enabled").default(true),
+  originalPrice: decimal("original_price", { precision: 10, scale: 2 }),
+  currency: varchar("currency").default("GBP"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Relations
@@ -924,3 +950,4 @@ export type HostBooking = typeof hostBookings.$inferSelect;
 export type DiscountCode = typeof discountCodes.$inferSelect;
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type DiscountCodeUsage = typeof discountCodeUsage.$inferSelect;
+export type UserTrial = typeof userTrials.$inferSelect;

@@ -2455,7 +2455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      // Get discount codes with usage stats
+      // Get discount codes with usage stats including trial codes
       const codes = [
         {
           id: 'demo-1',
@@ -2483,6 +2483,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
           validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
           isActive: true,
           applicablePlans: ['premium'],
+          createdAt: new Date(),
+        },
+        {
+          id: 'demo-3',
+          code: 'TRIAL30',
+          description: '30 days free trial - Premium Plan',
+          discountType: 'trial',
+          discountValue: 0,
+          trialPeriodDays: 30,
+          trialPlanType: 'premium',
+          autoDebitEnabled: true,
+          maxUses: 500,
+          usedCount: 45,
+          validFrom: new Date(),
+          validUntil: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+          isActive: true,
+          applicablePlans: ['premium'],
+          createdAt: new Date(),
+        },
+        {
+          id: 'demo-4',
+          code: 'FREETRIAL7',
+          description: '7 days free trial - Creator Plan',
+          discountType: 'trial',
+          discountValue: 0,
+          trialPeriodDays: 7,
+          trialPlanType: 'creator',
+          autoDebitEnabled: true,
+          maxUses: 100,
+          usedCount: 12,
+          validFrom: new Date(),
+          validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          isActive: true,
+          applicablePlans: ['creator'],
           createdAt: new Date(),
         }
       ];
@@ -2844,6 +2878,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating email template:", error);
       res.status(500).json({ message: "Failed to update email template" });
+    }
+  });
+
+  // Trial System APIs
+  app.post('/api/admin/coupon/apply-trial', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { couponCode } = req.body;
+      
+      console.log(`User ${userId} applying trial coupon: ${couponCode}`);
+      
+      // Validate coupon code (in real implementation, check database)
+      const trialCoupons = {
+        'TRIAL30': { days: 30, planType: 'premium', price: 45 },
+        'FREETRIAL7': { days: 7, planType: 'creator', price: 45 },
+        'TRIAL14': { days: 14, planType: 'premium', price: 45 },
+        'TRIAL60': { days: 60, planType: 'premium', price: 45 },
+      };
+      
+      const coupon = trialCoupons[couponCode as keyof typeof trialCoupons];
+      if (!coupon) {
+        return res.status(400).json({ message: "Invalid trial coupon code" });
+      }
+      
+      // Check if user already has an active trial
+      // In real implementation, check userTrials table
+      
+      // Calculate trial end date
+      const trialEndDate = new Date();
+      trialEndDate.setDate(trialEndDate.getDate() + coupon.days);
+      
+      // Create trial record
+      const trialRecord = {
+        id: `trial_${Date.now()}`,
+        userId,
+        couponCode,
+        planType: coupon.planType,
+        trialDays: coupon.days,
+        trialStartDate: new Date(),
+        trialEndDate,
+        status: 'active',
+        autoDebitEnabled: true,
+        originalPrice: coupon.price,
+        currency: 'GBP'
+      };
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'apply_trial_coupon',
+        targetType: 'user_trial',
+        targetId: trialRecord.id,
+        metaJson: { couponCode, trialDays: coupon.days, planType: coupon.planType }
+      });
+      
+      res.json({
+        success: true,
+        message: `${coupon.days}-day trial activated successfully!`,
+        trial: trialRecord,
+        autoDebitWarning: `Your card will be charged £${coupon.price}/month after the trial period ends.`
+      });
+    } catch (error) {
+      console.error("Error applying trial coupon:", error);
+      res.status(500).json({ message: "Failed to apply trial coupon" });
+    }
+  });
+
+  app.get('/api/admin/user-trials', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return trial statistics and active trials
+      const trialData = {
+        activeTrials: [
+          {
+            id: 'trial_1',
+            userId: 'user_123',
+            userEmail: 'john@example.com',
+            couponCode: 'TRIAL30',
+            planType: 'premium',
+            trialDays: 30,
+            daysRemaining: 25,
+            trialEndDate: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000),
+            autoDebitEnabled: true,
+            originalPrice: 45,
+            status: 'active'
+          },
+          {
+            id: 'trial_2', 
+            userId: 'user_456',
+            userEmail: 'sarah@example.com',
+            couponCode: 'FREETRIAL7',
+            planType: 'creator',
+            trialDays: 7,
+            daysRemaining: 3,
+            trialEndDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+            autoDebitEnabled: true,
+            originalPrice: 45,
+            status: 'active'
+          }
+        ],
+        trialStats: {
+          totalTrialsGiven: 157,
+          activeTrials: 45,
+          expiredTrials: 89,
+          convertedToSubscription: 67,
+          conversionRate: '75.3%',
+          totalRevenueLost: 2305, // Revenue lost due to trials
+          projectedRevenue: 2025 // Expected revenue from trial conversions
+        }
+      };
+      
+      res.json(trialData);
+    } catch (error) {
+      console.error("Error fetching trial data:", error);
+      res.status(500).json({ message: "Failed to fetch trial data" });
+    }
+  });
+
+  app.post('/api/admin/trial/cancel/:trialId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { trialId } = req.params;
+      
+      console.log(`Admin cancelling trial: ${trialId}`);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'cancel_user_trial',
+        targetType: 'user_trial',
+        targetId: trialId,
+        metaJson: { reason: 'admin_cancelled' }
+      });
+      
+      res.json({
+        success: true,
+        message: 'Trial cancelled successfully',
+        trialId
+      });
+    } catch (error) {
+      console.error("Error cancelling trial:", error);
+      res.status(500).json({ message: "Failed to cancel trial" });
     }
   });
 
