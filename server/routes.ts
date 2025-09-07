@@ -58,6 +58,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      
+      // Handle demo admin user
+      if (userId === 'demo-admin') {
+        const demoAdminUser = {
+          id: 'demo-admin',
+          email: 'admin@hublink.com',
+          firstName: 'System',
+          lastName: 'Administrator',
+          displayName: 'System Administrator',
+          username: 'admin',
+          profileImageUrl: null,
+          role: 'admin',
+          plan: 'premium',
+          preferences: {},
+          socialMedia: {},
+          youtubeSubscribers: 0,
+          youtubeTier: 0,
+          youtubeChannelId: null,
+          youtubeVerified: false
+        };
+        
+        console.log('✅ Returning demo admin user:', demoAdminUser.role);
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
+        return res.json(demoAdminUser);
+      }
+      
+      // Handle regular users
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
