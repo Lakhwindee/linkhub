@@ -22,6 +22,7 @@ import Billing from "@/pages/Billing";
 import Stays from "@/pages/Stays";
 import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
+import PersonalHosts from "@/pages/PersonalHosts";
 import Map from "@/pages/Map";
 import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
@@ -74,6 +75,7 @@ function Router() {
               <Route path="/stays" component={Stays} />
               <Route path="/trips" component={Trips} />
               <Route path="/tour-packages" component={TourPackages} />
+              <Route path="/personal-hosts" component={PersonalHosts} />
               <Route path="/map" component={Map} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
