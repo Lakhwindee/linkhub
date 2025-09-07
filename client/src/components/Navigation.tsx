@@ -128,7 +128,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-3">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
@@ -144,7 +144,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             ))}
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <Button
               variant="ghost"
               size="icon"
