@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users, ThumbsDown, Send, Instagram, Twitter, Facebook, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
@@ -204,21 +205,20 @@ export function PostCard({ post, compact = false }: PostCardProps) {
               variant="outline"
               showIcon={false}
             />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" data-testid={`button-post-menu-${post.id}`}>
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem data-testid={`button-report-post-${post.id}`}>
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report Post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" data-testid={`button-post-menu-${post.id}`}>
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem data-testid={`button-report-post-${post.id}`}>
-                <Flag className="w-4 h-4 mr-2" />
-                Report Post
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {/* Post Content */}
