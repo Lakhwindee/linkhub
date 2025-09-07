@@ -253,10 +253,9 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
-    { id: "trial-management", label: "Trial Management", icon: Clock, description: "Manage user trials & auto-billing", badge: "New" },
     { id: "payment-accounts", label: "Payment Accounts", icon: CreditCard, description: "Manage payment systems", badge: "New" },
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
-    { id: "discount-codes", label: "Discount Codes & Trials", icon: Percent, description: "Manage promo & trial codes", badge: "Updated" },
+    { id: "discount-codes", label: "Coupons & Trials", icon: Percent, description: "Manage discount codes, trial coupons & auto-billing", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
@@ -744,18 +743,24 @@ export default function Admin() {
             )}
 
             {/* User Management Section */}
-            {/* Trial Management System */}
-            {activeSection === "trial-management" && (
+            {/* Coupons & Trials Management */}
+            {activeSection === "discount-codes" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">Trial Management & Auto-Billing</h2>
-                  <Button className="bg-purple-600 hover:bg-purple-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Trial Code
-                  </Button>
+                  <h2 className="text-2xl font-bold text-foreground">Coupons & Trials Management</h2>
+                  <div className="flex space-x-2">
+                    <Button className="bg-blue-600 hover:bg-blue-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Discount Code
+                    </Button>
+                    <Button className="bg-purple-600 hover:bg-purple-700">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Trial Code
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Trial Statistics */}
+                {/* Trial Statistics Dashboard */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Card>
                     <CardContent className="p-4">
@@ -791,12 +796,12 @@ export default function Admin() {
                   </Card>
                 </div>
 
-                {/* Active Trials Table */}
+                {/* Active Trials Monitoring */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Clock className="w-5 h-5 mr-2" />
-                      Active User Trials
+                      Active User Trials (Auto-Billing Tracking)
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -869,92 +874,6 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Trial Creation Form */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Create New Trial Coupon</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <Label>Coupon Code</Label>
-                        <Input placeholder="TRIAL30" className="mt-1 font-mono" />
-                      </div>
-                      <div>
-                        <Label>Trial Period</Label>
-                        <Select>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select period" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="7">7 Days</SelectItem>
-                            <SelectItem value="14">14 Days</SelectItem>
-                            <SelectItem value="30">30 Days</SelectItem>
-                            <SelectItem value="60">60 Days</SelectItem>
-                            <SelectItem value="90">90 Days</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Plan Type</Label>
-                        <Select>
-                          <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select plan" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="premium">Premium (£45/mo)</SelectItem>
-                            <SelectItem value="creator">Creator (£45/mo)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Max Uses</Label>
-                        <Input type="number" placeholder="100" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label>Auto-Debit After Trial</Label>
-                        <Select defaultValue="enabled">
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="enabled">✅ Enabled (Recommended)</SelectItem>
-                            <SelectItem value="disabled">❌ Disabled</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div>
-                      <Label>Description</Label>
-                      <Input placeholder="30 days free trial - Premium Plan" className="mt-1" />
-                    </div>
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                      Create Trial Coupon
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-
-            {/* Discount Codes & Trials Management */}
-            {activeSection === "discount-codes" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">Discount Codes & Trial Management</h2>
-                  <div className="flex space-x-2">
-                    <Button className="bg-blue-600 hover:bg-blue-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Discount Code
-                    </Button>
-                    <Button className="bg-purple-600 hover:bg-purple-700">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Trial Code
-                    </Button>
-                  </div>
-                </div>
 
                 {/* All Codes Table */}
                 <Card>
@@ -1033,6 +952,73 @@ export default function Admin() {
                         </tbody>
                       </table>
                     </div>
+                  </CardContent>
+                </Card>
+
+                {/* Trial Creation Form */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create New Trial Coupon</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label>Coupon Code</Label>
+                        <Input placeholder="TRIAL30" className="mt-1 font-mono" />
+                      </div>
+                      <div>
+                        <Label>Trial Period</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="7">7 Days</SelectItem>
+                            <SelectItem value="14">14 Days</SelectItem>
+                            <SelectItem value="30">30 Days</SelectItem>
+                            <SelectItem value="60">60 Days</SelectItem>
+                            <SelectItem value="90">90 Days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Plan Type</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select plan" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="premium">Premium (£45/mo)</SelectItem>
+                            <SelectItem value="creator">Creator (£45/mo)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>Max Uses</Label>
+                        <Input type="number" placeholder="100" className="mt-1" />
+                      </div>
+                      <div>
+                        <Label>Auto-Debit After Trial</Label>
+                        <Select defaultValue="enabled">
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="enabled">✅ Enabled (Recommended)</SelectItem>
+                            <SelectItem value="disabled">❌ Disabled</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Description</Label>
+                      <Input placeholder="30 days free trial - Premium Plan" className="mt-1" />
+                    </div>
+                    <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      Create Trial Coupon
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
