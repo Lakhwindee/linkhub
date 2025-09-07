@@ -74,16 +74,19 @@ export default function Landing() {
   const plans = [
     {
       name: "Free",
-      description: "Perfect for browsing",
+      description: "Perfect for browsing & connecting",
       price: "$0",
       period: "Forever free",
       features: [
         "View global feed",
-        "Limited map preview", 
+        "Connect requests & DM",
+        "Create & join events",
+        "View stays & tour packages",
+        "Full map access",
         "Basic profile"
       ],
       limitations: [
-        "No DM access"
+        "Cannot earn money from ads"
       ]
     },
     {
@@ -93,11 +96,11 @@ export default function Landing() {
       period: "per month",
       popular: true,
       features: [
-        "Full map access",
-        "Connect requests & DM",
-        "Create & join events",
+        "Everything in Free",
         "Ad Marketplace access",
+        "Apply to brand campaigns",
         "Earnings dashboard",
+        "Creator monetization",
         "Priority support"
       ]
     }
