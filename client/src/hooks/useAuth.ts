@@ -63,32 +63,36 @@ export function useAuth() {
       });
       
       if (response && response.ok) {
-        const userData = await response.json();
-        console.log('✅ Found authenticated user:', userData);
-        setUser(userData);
-        setIsAuthenticated(true);
-        setIsLoading(false);
-        return;
+        try {
+          const userData = await response.json();
+          console.log('✅ Found authenticated user:', userData);
+          setUser(userData);
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          return;
+        } catch (jsonError) {
+          console.log('Failed to parse response JSON:', jsonError);
+        }
       }
     } catch (error) {
       console.log('No authenticated session found:', error);
     }
     
     // Fallback: Check localStorage for demo session
-    const demoUser = localStorage.getItem('demo_user');
-    if (demoUser) {
-      try {
+    try {
+      const demoUser = localStorage.getItem('demo_user');
+      if (demoUser) {
         const userData = JSON.parse(demoUser);
         console.log('✅ Found demo user in localStorage:', userData);
         setUser(userData);
         setIsAuthenticated(true);
         setIsLoading(false);
         return;
-      } catch (error) {
-        console.log('Failed to parse demo user from localStorage');
-        localStorage.removeItem('demo_user');
-        localStorage.removeItem('demo_session');
       }
+    } catch (error) {
+      console.log('Failed to parse demo user from localStorage:', error);
+      localStorage.removeItem('demo_user');
+      localStorage.removeItem('demo_session');
     }
     
     // No authentication found
