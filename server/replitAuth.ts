@@ -134,12 +134,17 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const sessionId = req.cookies?.session_id;
     let demoUserId = null;
     
+    console.log('🍪 Checking cookies:', req.cookies);
+    console.log('🔍 Session ID from cookie:', sessionId);
+    
     if (sessionId?.startsWith('demo-session-')) {
       demoUserId = sessionId.replace('demo-session-', '');
+      console.log('✅ Extracted demo user ID:', demoUserId);
     }
     
     // No fallback - if no session, user is not authenticated
     if (!demoUserId) {
+      console.log('❌ No valid demo session found');
       return res.status(401).json({ message: 'Not authenticated' });
     }
     

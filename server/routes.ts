@@ -1,4 +1,5 @@
 import type { Express } from "express";
+import cookieParser from "cookie-parser";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
@@ -20,6 +21,9 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 }) : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Cookie parser middleware
+  app.use(cookieParser());
+  
   // Auth middleware
   await setupAuth(app);
 
