@@ -31,30 +31,55 @@ export default function PayPalButton({
   intent,
 }: PayPalButtonProps) {
   const createOrder = async () => {
-    const orderPayload = {
-      amount: amount,
-      currency: currency,
-      intent: intent,
-    };
-    const response = await fetch("/paypal/order", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(orderPayload),
-    });
-    const output = await response.json();
-    return { orderId: output.id };
+    try {
+      const orderPayload = {
+        amount: amount,
+        currency: currency,
+        intent: intent,
+      };
+      const response = await fetch("/paypal/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      }).catch((error) => {
+        console.error('PayPal order creation network error:', error);
+        throw new Error(`Network error: ${error.message}`);
+      });
+      
+      if (!response.ok) {
+        throw new Error(`PayPal order creation failed: ${response.status}`);
+      }
+      
+      const output = await response.json();
+      return { orderId: output.id };
+    } catch (error) {
+      console.error('PayPal createOrder failed:', error);
+      throw error;
+    }
   };
 
   const captureOrder = async (orderId: string) => {
-    const response = await fetch(`/paypal/order/${orderId}/capture`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-    const data = await response.json();
-
-    return data;
+    try {
+      const response = await fetch(`/paypal/order/${orderId}/capture`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).catch((error) => {
+        console.error('PayPal capture network error:', error);
+        throw new Error(`Network error: ${error.message}`);
+      });
+      
+      if (!response.ok) {
+        throw new Error(`PayPal capture failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('PayPal captureOrder failed:', error);
+      throw error;
+    }
   };
 
   const onApprove = async (data: any) => {

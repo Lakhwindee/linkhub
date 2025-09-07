@@ -30,15 +30,23 @@ export async function apiRequest(
     }
   }
   
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    }).catch((error) => {
+      console.log('Network error in apiRequest:', error);
+      throw new Error(`Network error: ${error.message}`);
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    return res;
+  } catch (error) {
+    console.log('API request failed:', error);
+    throw error;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -75,17 +83,25 @@ export const getQueryFn: <T>(options: {
       url = queryKey.join("/");
     }
     
-    const res = await fetch(url, {
-      headers,
-      credentials: "include",
-    });
+    try {
+      const res = await fetch(url, {
+        headers,
+        credentials: "include",
+      }).catch((error) => {
+        console.log('Network error in getQueryFn:', error);
+        throw new Error(`Network error: ${error.message}`);
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      return await res.json();
+    } catch (error) {
+      console.log('Query function failed:', error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
