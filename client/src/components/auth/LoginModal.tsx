@@ -57,10 +57,6 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     setIsLoading(false);
   };
 
-  const handleDemoLogin = () => {
-    localStorage.setItem('hublink_demo_user', 'true');
-    window.location.reload();
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
