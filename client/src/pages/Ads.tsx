@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { usePlanAccess } from "@/hooks/usePlanAccess";
+import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 export default function Ads() {
   const { user, isAuthenticated } = useAuth();
@@ -73,7 +74,7 @@ export default function Ads() {
           <div className="flex items-center gap-3">
             <Badge variant={isPremium ? "default" : isStandard ? "secondary" : "outline"} className="text-sm">
               {isPremium && <Crown className="w-4 h-4 mr-1" />}
-              {user.plan === 'free' ? 'Free Plan' : user.plan === 'standard' ? 'Standard Plan' : 'Premium Plan'}
+              {user?.plan === 'free' ? 'Free Plan' : user?.plan === 'standard' ? 'Standard Plan' : 'Premium Plan'}
             </Badge>
             {!isPremium && (
               <Button asChild size="sm">
@@ -83,99 +84,124 @@ export default function Ads() {
           </div>
         </div>
 
-        {/* Tabs */}
-        {(isPremium || isStandard) && (
-          <Tabs defaultValue="campaigns" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
-              <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
-              <TabsTrigger value="earnings">Earnings</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="payouts">Payouts</TabsTrigger>
-            </TabsList>
+        {/* Tabs - Now accessible to all users */}
+        <Tabs defaultValue="campaigns" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="campaigns">Available Campaigns</TabsTrigger>
+            <TabsTrigger value="mycampaigns">My Campaigns</TabsTrigger>
+            <TabsTrigger value="earnings">Earnings</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+          </TabsList>
 
 
-            {/* Other tabs content would go here */}
             <TabsContent value="campaigns">
-              <div className="grid gap-6">
-                {campaigns.map((campaign) => (
-                  <Card key={campaign.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">{campaign.title}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{campaign.brand}</p>
-                          <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+              {(isStandard || isPremium) ? (
+                <div className="grid gap-6">
+                  {campaigns.map((campaign) => (
+                    <Card key={campaign.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">{campaign.title}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                            <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                            <div className="text-sm text-muted-foreground">per post</div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
-                          <div className="text-sm text-muted-foreground">per post</div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-muted-foreground mb-4">{campaign.description}</p>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Clock className="w-4 h-4" />
+                            <span>Closes {campaign.deadline}</span>
+                          </div>
+                          <Button disabled={!isPremium}>
+                            {isPremium ? "Apply Now" : "Premium Required"}
+                          </Button>
                         </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4">{campaign.description}</p>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Clock className="w-4 h-4" />
-                          <span>Closes {campaign.deadline}</span>
-                        </div>
-                        <Button>
-                          Apply Now
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <SubscriptionUpgrade 
+                  feature="View and Apply to Brand Campaigns"
+                  description="Connect with brands and start earning from sponsored content"
+                  size="lg"
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="mycampaigns">
-              <div className="text-center py-12">
-                <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Reserved Campaigns</h3>
-                <p className="text-muted-foreground">Apply to campaigns to see them here</p>
-              </div>
+              {(isStandard || isPremium) ? (
+                <div className="text-center py-12">
+                  <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Reserved Campaigns</h3>
+                  <p className="text-muted-foreground">Apply to campaigns to see them here</p>
+                </div>
+              ) : (
+                <SubscriptionUpgrade 
+                  feature="Track Your Reserved Campaigns"
+                  description="View and manage campaigns you've applied to"
+                  size="lg"
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="earnings">
-              <div className="text-center py-12">
-                <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Earnings Yet</h3>
-                <p className="text-muted-foreground">Complete campaigns to start earning</p>
-              </div>
+              {isPremium ? (
+                <div className="text-center py-12">
+                  <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Earnings Yet</h3>
+                  <p className="text-muted-foreground">Complete campaigns to start earning</p>
+                </div>
+              ) : (
+                <SubscriptionUpgrade 
+                  feature="View Your Earnings Dashboard"
+                  description="Track payments and revenue from completed campaigns"
+                  size="lg"
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="analytics">
-              <div className="text-center py-12">
-                <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">Analytics Coming Soon</h3>
-                <p className="text-muted-foreground">Track your campaign performance</p>
-              </div>
+              {isPremium ? (
+                <div className="text-center py-12">
+                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">Analytics Coming Soon</h3>
+                  <p className="text-muted-foreground">Track your campaign performance</p>
+                </div>
+              ) : (
+                <SubscriptionUpgrade 
+                  feature="Access Performance Analytics"
+                  description="Get insights into your campaign performance and engagement"
+                  size="lg"
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="payouts">
-              <div className="text-center py-12">
-                <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-lg font-semibold mb-2">No Payouts Available</h3>
-                <p className="text-muted-foreground">Complete campaigns to receive payouts</p>
-              </div>
+              {isPremium ? (
+                <div className="text-center py-12">
+                  <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">No Payouts Available</h3>
+                  <p className="text-muted-foreground">Complete campaigns to receive payouts</p>
+                </div>
+              ) : (
+                <SubscriptionUpgrade 
+                  feature="Manage Your Payouts"
+                  description="Set up payment methods and withdraw your earnings"
+                  size="lg"
+                />
+              )}
             </TabsContent>
 
-          </Tabs>
-        )}
-
-        {/* Free users view */}
-        {isFree && (
-          <div className="text-center py-12">
-            <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h1 className="text-2xl font-bold mb-4">Unlock Earning Opportunities</h1>
-            <p className="text-muted-foreground mb-6">Upgrade to access brand campaigns and start earning</p>
-            <Button asChild>
-              <Link href="/subscribe">Upgrade Now</Link>
-            </Button>
-          </div>
-        )}
+        </Tabs>
       </div>
     </div>
   );

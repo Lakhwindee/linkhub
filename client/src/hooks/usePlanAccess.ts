@@ -30,6 +30,6 @@ export function usePlanAccess(): PlanAccess {
     canAccessWallet: isPremium,
     canAccessAnalytics: isPremium,
     canAccessPayouts: isPremium,
-    hasEarnAccess: isStandard || isPremium,
+    hasEarnAccess: true, // Allow all users to access earn menu
   };
 }
