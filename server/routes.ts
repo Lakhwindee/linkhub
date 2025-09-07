@@ -2252,6 +2252,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     // Define valid ID/Password combinations
     const validCredentials = {
+      'ADMIN_001': {
+        password: 'admin123',
+        userId: 'demo-admin',
+        role: 'admin',
+        plan: 'premium',
+        name: 'System Administrator'
+      },
       'CREATOR_PREMIUM_001': {
         password: 'premium123',
         userId: 'demo-creator-premium',

@@ -144,19 +144,98 @@ export default function Admin() {
 
   if (!user || !['admin', 'superadmin', 'moderator'].includes(user.role || '')) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
-            <CardContent className="p-12 text-center">
-              <AlertTriangle className="w-16 h-16 mx-auto mb-4 text-red-600 dark:text-red-400" />
-              <h2 className="text-2xl font-bold text-red-800 dark:text-red-200 mb-4">
-                Access Denied
-              </h2>
-              <p className="text-red-700 dark:text-red-300 mb-6">
-                You don't have permission to access the admin panel. Contact a system administrator if you believe this is an error.
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="max-w-md w-full">
+          <Card className="border-2 border-accent">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <Shield className="w-16 h-16 text-accent" />
+              </div>
+              <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
+              <p className="text-muted-foreground">
+                Access the HubLink administration panel
               </p>
-              <Button variant="outline" asChild data-testid="button-go-home">
-                <Link href="/">Go Home</Link>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Admin ID</label>
+                <Input 
+                  type="text" 
+                  placeholder="Enter Admin ID"
+                  className="w-full"
+                  id="admin-id"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Password</label>
+                <Input 
+                  type="password" 
+                  placeholder="Enter Password"
+                  className="w-full"
+                  id="admin-password"
+                />
+              </div>
+              <Button 
+                className="w-full bg-accent hover:bg-accent/90" 
+                onClick={async () => {
+                  const id = (document.getElementById('admin-id') as HTMLInputElement)?.value;
+                  const password = (document.getElementById('admin-password') as HTMLInputElement)?.value;
+                  
+                  if (!id || !password) {
+                    toast({
+                      title: "Missing Credentials",
+                      description: "Please enter both Admin ID and Password",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  try {
+                    const response = await fetch('/api/demo-login', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id, password }),
+                      credentials: 'include',
+                    });
+                    
+                    if (response.ok) {
+                      toast({
+                        title: "Login Successful",
+                        description: "Welcome to HubLink Admin Panel",
+                      });
+                      setTimeout(() => {
+                        window.location.reload();
+                      }, 1000);
+                    } else {
+                      toast({
+                        title: "Login Failed",
+                        description: "Invalid Admin ID or Password",
+                        variant: "destructive",
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Network error occurred",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Login to Admin Panel
+              </Button>
+              
+              <div className="mt-6 p-4 bg-muted rounded-lg">
+                <h3 className="font-semibold text-sm mb-2">Admin Credentials:</h3>
+                <div className="text-xs space-y-1 font-mono">
+                  <div><strong>ID:</strong> ADMIN_001</div>
+                  <div><strong>Password:</strong> admin123</div>
+                </div>
+              </div>
+              
+              <Button variant="outline" className="w-full" asChild>
+                <Link href="/">Back to Home</Link>
               </Button>
             </CardContent>
           </Card>
