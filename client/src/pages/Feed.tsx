@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { PostCard } from "@/components/PostCard";
 import { UserSearch } from "@/components/UserSearch";
-import { Globe, Users, MapPin, Plus, Image, Video, Send, Filter, Search } from "lucide-react";
+import { Globe, Users, MapPin, Image, Video, Send, Filter, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPostSchema } from "@shared/schema";
@@ -27,7 +27,7 @@ export default function Feed() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(true);
   const [activeTab, setActiveTab] = useState("global");
   const [countryFilter, setCountryFilter] = useState("");
 
@@ -89,7 +89,6 @@ export default function Feed() {
       });
       queryClient.invalidateQueries({ queryKey: ["/api/feed"] });
       reset();
-      setIsCreatePostOpen(false);
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
@@ -188,151 +187,133 @@ export default function Feed() {
               Share your journey and discover stories from travelers worldwide
             </p>
           </div>
-          <Button 
-            onClick={() => setIsCreatePostOpen(!isCreatePostOpen)}
-            className="bg-accent hover:bg-accent/90"
-            data-testid="button-create-post"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Post
-          </Button>
         </div>
 
         {/* Create Post */}
-        {isCreatePostOpen && (
-          <Card data-testid="card-create-post">
-            <CardHeader>
-              <CardTitle>Create New Post</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <Textarea
-                  {...register("body")}
-                  placeholder="Share your travel experience..."
-                  rows={4}
-                  className="resize-none"
-                  data-testid="textarea-post-body"
-                />
-                {errors.body && (
-                  <p className="text-sm text-destructive" data-testid="error-post-body">
-                    {errors.body.message}
-                  </p>
-                )}
+        <Card data-testid="card-create-post">
+          <CardHeader>
+            <CardTitle>Create New Post</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <Textarea
+                {...register("body")}
+                placeholder="Share your travel experience..."
+                rows={4}
+                className="resize-none"
+                data-testid="textarea-post-body"
+              />
+              {errors.body && (
+                <p className="text-sm text-destructive" data-testid="error-post-body">
+                  {errors.body.message}
+                </p>
+              )}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Select
-                    value={watchedValues.visibility || "public"}
-                    onValueChange={(value) => setValue("visibility", value as "public" | "followers" | "private")}
-                  >
-                    <SelectTrigger data-testid="select-post-visibility">
-                      <SelectValue placeholder="Visibility" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="public">🌍 Public</SelectItem>
-                      <SelectItem value="followers">👥 Followers Only</SelectItem>
-                      <SelectItem value="private">🔒 Private</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Select
+                  value={watchedValues.visibility || "public"}
+                  onValueChange={(value) => setValue("visibility", value as "public" | "followers" | "private")}
+                >
+                  <SelectTrigger data-testid="select-post-visibility">
+                    <SelectValue placeholder="Visibility" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="public">🌍 Public</SelectItem>
+                    <SelectItem value="followers">👥 Followers Only</SelectItem>
+                    <SelectItem value="private">🔒 Private</SelectItem>
+                  </SelectContent>
+                </Select>
 
-                  <Select
-                    value={watchedValues.country || ""}
-                    onValueChange={(value) => setValue("country", value)}
-                  >
-                    <SelectTrigger data-testid="select-post-country">
-                      <SelectValue placeholder="Country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No Location</SelectItem>
-                      {/* Real-world countries (250+ with flags) */}
-                      {worldCountries.map((country) => (
-                        <SelectItem key={country.name} value={country.name}>
-                          {country.flag} {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Select
+                  value={watchedValues.country || ""}
+                  onValueChange={(value) => setValue("country", value)}
+                >
+                  <SelectTrigger data-testid="select-post-country">
+                    <SelectValue placeholder="Country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No Location</SelectItem>
+                    {/* Real-world countries (250+ with flags) */}
+                    {worldCountries.map((country) => (
+                      <SelectItem key={country.name} value={country.name}>
+                        {country.flag} {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-                  <Select
-                    value={watchedValues.city || ""}
-                    onValueChange={(value) => setValue("city", value)}
+                <Select
+                  value={watchedValues.city || ""}
+                  onValueChange={(value) => setValue("city", value)}
+                >
+                  <SelectTrigger data-testid="select-post-city">
+                    <SelectValue placeholder="City" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No City</SelectItem>
+                    <SelectItem value="London">London</SelectItem>
+                    <SelectItem value="Mumbai">Mumbai</SelectItem>
+                    <SelectItem value="New York">New York</SelectItem>
+                    <SelectItem value="Paris">Paris</SelectItem>
+                    <SelectItem value="Berlin">Berlin</SelectItem>
+                    <SelectItem value="Tokyo">Tokyo</SelectItem>
+                    <SelectItem value="Sydney">Sydney</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex space-x-2">
+                  <ObjectUploader
+                    maxNumberOfFiles={4}
+                    maxFileSize={10 * 1024 * 1024} // 10MB
+                    onGetUploadParameters={handleMediaUpload}
+                    onComplete={handleMediaComplete}
+                    buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
                   >
-                    <SelectTrigger data-testid="select-post-city">
-                      <SelectValue placeholder="City" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">No City</SelectItem>
-                      <SelectItem value="London">London</SelectItem>
-                      <SelectItem value="Mumbai">Mumbai</SelectItem>
-                      <SelectItem value="New York">New York</SelectItem>
-                      <SelectItem value="Paris">Paris</SelectItem>
-                      <SelectItem value="Berlin">Berlin</SelectItem>
-                      <SelectItem value="Tokyo">Tokyo</SelectItem>
-                      <SelectItem value="Sydney">Sydney</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <Image className="w-4 h-4 mr-2" />
+                    Add Photos
+                  </ObjectUploader>
+
+                  <ObjectUploader
+                    maxNumberOfFiles={1}
+                    maxFileSize={50 * 1024 * 1024} // 50MB
+                    onGetUploadParameters={handleMediaUpload}
+                    onComplete={handleMediaComplete}
+                    buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
+                  >
+                    <Video className="w-4 h-4 mr-2" />
+                    Add Video
+                  </ObjectUploader>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
-                    <ObjectUploader
-                      maxNumberOfFiles={4}
-                      maxFileSize={10 * 1024 * 1024} // 10MB
-                      onGetUploadParameters={handleMediaUpload}
-                      onComplete={handleMediaComplete}
-                      buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
-                    >
-                      <Image className="w-4 h-4 mr-2" />
-                      Add Photos
-                    </ObjectUploader>
+                <div className="flex space-x-2">
+                  <Button 
+                    type="submit" 
+                    disabled={createPostMutation.isPending || !watchedValues.body?.trim()}
+                    data-testid="button-submit-post"
+                  >
+                    {createPostMutation.isPending ? (
+                      <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
+                    ) : (
+                      <Send className="w-4 h-4 mr-2" />
+                    )}
+                    Post
+                  </Button>
+                </div>
+              </div>
 
-                    <ObjectUploader
-                      maxNumberOfFiles={1}
-                      maxFileSize={50 * 1024 * 1024} // 50MB
-                      onGetUploadParameters={handleMediaUpload}
-                      onComplete={handleMediaComplete}
-                      buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
-                    >
-                      <Video className="w-4 h-4 mr-2" />
-                      Add Video
-                    </ObjectUploader>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setIsCreatePostOpen(false)}
-                      data-testid="button-cancel-post"
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit" 
-                      disabled={createPostMutation.isPending || !watchedValues.body?.trim()}
-                      data-testid="button-submit-post"
-                    >
-                      {createPostMutation.isPending ? (
-                        <div className="animate-spin w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
-                      ) : (
-                        <Send className="w-4 h-4 mr-2" />
-                      )}
-                      Post
-                    </Button>
+              {watchedValues.mediaUrls && watchedValues.mediaUrls.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Uploaded Media:</p>
+                  <div className="text-sm text-muted-foreground">
+                    {watchedValues.mediaUrls.length} file(s) uploaded
                   </div>
                 </div>
-
-                {watchedValues.mediaUrls && watchedValues.mediaUrls.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Uploaded Media:</p>
-                    <div className="text-sm text-muted-foreground">
-                      {watchedValues.mediaUrls.length} file(s) uploaded
-                    </div>
-                  </div>
-                )}
-              </form>
-            </CardContent>
-          </Card>
-        )}
+              )}
+            </form>
+          </CardContent>
+        </Card>
 
         {/* Feed Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -404,17 +385,9 @@ export default function Feed() {
                   <CardContent className="p-12 text-center">
                     <Globe className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                     <h3 className="text-lg font-semibold text-foreground mb-2">No posts yet</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Be the first to share your travel experience with the community!
+                    <p className="text-muted-foreground">
+                      Be the first to share your travel experience with the community using the form above!
                     </p>
-                    <Button 
-                      onClick={() => setIsCreatePostOpen(true)}
-                      className="bg-accent hover:bg-accent/90"
-                      data-testid="button-create-first-post"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Your First Post
-                    </Button>
                   </CardContent>
                 </Card>
               )}
