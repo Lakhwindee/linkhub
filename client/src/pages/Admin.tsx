@@ -68,21 +68,21 @@ export default function Admin() {
   // Fetch dashboard data
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
     queryKey: ["/api/admin/dashboard"],
-    enabled: user && ['admin', 'superadmin', 'moderator'].includes(user.role || ''),
+    enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
     retry: false,
   });
 
   // Fetch ad submissions
   const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
     queryKey: ["/api/admin/submissions"],
-    enabled: user && ['admin', 'superadmin', 'moderator'].includes(user.role || ''),
+    enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
     retry: false,
   });
 
   // Fetch reports
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
     queryKey: ["/api/admin/reports"],
-    enabled: user && ['admin', 'superadmin', 'moderator'].includes(user.role || ''),
+    enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
     retry: false,
   });
 
@@ -244,8 +244,8 @@ export default function Admin() {
     );
   }
 
-  const pendingSubmissions = submissions.filter((s: AdSubmission) => s.status === 'pending');
-  const pendingReports = reports.filter((r: Report) => r.status === 'pending');
+  const pendingSubmissions = Array.isArray(submissions) ? submissions.filter((s: AdSubmission) => s.status === 'pending') : [];
+  const pendingReports = Array.isArray(reports) ? reports.filter((r: Report) => r.status === 'pending') : [];
 
   // Navigation items for admin panel
   const navigationItems = [
@@ -271,7 +271,7 @@ export default function Admin() {
                 <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{dashboardData?.totalUsers || 0}</div>
+                <div className="text-2xl font-bold">{(dashboardData as any)?.totalUsers || 0}</div>
                 <div className="text-sm text-muted-foreground">Total Users</div>
               </div>
             </div>
@@ -285,7 +285,7 @@ export default function Admin() {
                 <FileText className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <div className="text-2xl font-bold">{dashboardData?.totalPosts || 0}</div>
+                <div className="text-2xl font-bold">{(dashboardData as any)?.totalPosts || 0}</div>
                 <div className="text-sm text-muted-foreground">Total Posts</div>
               </div>
             </div>
