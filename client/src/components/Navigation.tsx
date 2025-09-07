@@ -25,7 +25,17 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     window.location.href = '/professional-signup';
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      // Call logout API to clear server session
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.log('Logout error:', error);
+    }
+    
     localStorage.clear(); // Clear all demo user data
     window.location.href = '/'; // Redirect to homepage
   };

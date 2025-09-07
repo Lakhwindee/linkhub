@@ -36,6 +36,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes
+  app.post('/api/auth/logout', async (req: any, res) => {
+    req.session.destroy((err: any) => {
+      if (err) {
+        console.error('Session destroy error:', err);
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
+  });
+
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
