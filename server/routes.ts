@@ -2307,7 +2307,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user from database or create demo user for admin
+      console.log('🔍 Attempting to get user from database:', credential.userId);
       let user = await storage.getUser(credential.userId);
+      console.log('🔍 Database lookup result:', user ? 'Found user' : 'User not found');
+      console.log('🔍 Credential role:', credential.role);
       
       // If user not found in database, create demo user object (especially for admin)
       if (!user && credential.role === 'admin') {
