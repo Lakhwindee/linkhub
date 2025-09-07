@@ -189,19 +189,6 @@ export default function Dashboard() {
               Create Post
             </Link>
           </Button>
-          {user?.plan !== 'free' ? (
-            <Button variant="outline" asChild data-testid="button-discover-map-top">
-              <Link href="/discover">
-                <MapPin className="w-4 h-4 mr-2" />
-                Discover Map
-              </Link>
-            </Button>
-          ) : (
-            <Button variant="outline" className="opacity-60" disabled data-testid="button-discover-locked">
-              <MapPin className="w-4 h-4 mr-2" />
-              🔒 Discover Map
-            </Button>
-          )}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
