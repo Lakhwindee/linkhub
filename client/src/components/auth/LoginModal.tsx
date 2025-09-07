@@ -38,6 +38,10 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       if (response.ok) {
         console.log('Demo login successful!');
         
+        // Store session info in localStorage as backup for cookie issues
+        localStorage.setItem('demo_session', `demo-session-${result.user.id}`);
+        localStorage.setItem('demo_user', JSON.stringify(result.user));
+        
         // Trigger auth update event
         window.dispatchEvent(new Event('authUpdate'));
         

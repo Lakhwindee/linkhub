@@ -50,6 +50,23 @@ export function useAuth() {
       console.log('No authenticated session found');
     }
     
+    // Fallback: Check localStorage for demo session
+    const demoUser = localStorage.getItem('demo_user');
+    if (demoUser) {
+      try {
+        const userData = JSON.parse(demoUser);
+        console.log('✅ Found demo user in localStorage:', userData);
+        setUser(userData);
+        setIsAuthenticated(true);
+        setIsLoading(false);
+        return;
+      } catch (error) {
+        console.log('Failed to parse demo user from localStorage');
+        localStorage.removeItem('demo_user');
+        localStorage.removeItem('demo_session');
+      }
+    }
+    
     // No authentication found
     console.log('No authentication - setting unauthenticated');
     setUser(null);
