@@ -115,7 +115,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center h-16 relative">
           <Link href="/">
             <div className="flex items-center space-x-2">
               <img 
@@ -128,7 +128,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-3 absolute left-1/2 transform -translate-x-1/2">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
@@ -144,7 +144,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             ))}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 ml-auto">
             <Button
               variant="ghost"
               size="icon"
