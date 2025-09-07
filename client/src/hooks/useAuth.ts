@@ -57,9 +57,12 @@ export function useAuth() {
       const response = await fetch('/api/auth/user', {
         credentials: 'include',
         headers
+      }).catch((error) => {
+        console.log('Network error during auth check:', error);
+        return null;
       });
       
-      if (response.ok) {
+      if (response && response.ok) {
         const userData = await response.json();
         console.log('✅ Found authenticated user:', userData);
         setUser(userData);
@@ -68,7 +71,7 @@ export function useAuth() {
         return;
       }
     } catch (error) {
-      console.log('No authenticated session found');
+      console.log('No authenticated session found:', error);
     }
     
     // Fallback: Check localStorage for demo session
@@ -97,12 +100,19 @@ export function useAuth() {
   };
 
   useEffect(() => {
-    checkAuth();
+    checkAuth().catch((error) => {
+      console.log('Auth check failed:', error);
+      setUser(null);
+      setIsAuthenticated(false);
+      setIsLoading(false);
+    });
     
     // Listen for custom auth events
     const handleAuthUpdate = () => {
       console.log('🔄 Auth update event received, re-checking...');
-      checkAuth();
+      checkAuth().catch((error) => {
+        console.log('Auth update failed:', error);
+      });
     };
     
     window.addEventListener('authUpdate', handleAuthUpdate);
