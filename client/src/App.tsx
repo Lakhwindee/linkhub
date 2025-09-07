@@ -90,6 +90,7 @@ function Router() {
               <Route path="/billing" component={Billing} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
+              <Route path="/signup-completion" component={SignupCompletion} />
             </>
           )}
           <Route component={NotFound} />

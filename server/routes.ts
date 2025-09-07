@@ -333,9 +333,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Complete signup with document verification
-  app.post('/api/complete-signup', isAuthenticated, async (req: any, res) => {
+  app.post('/api/complete-signup', async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      // Get userId from session or create new user
+      let userId = req.session?.userId;
+      
+      if (!userId) {
+        // Generate new user ID for signup
+        userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      }
       const {
         username,
         email,
@@ -384,6 +390,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const user = await storage.updateUserProfile(userId, userData);
+      
+      // Set user session after successful signup
+      req.session.userId = userId;
+      req.session.user = user;
+      req.session.isAuthenticated = true;
       
       res.json({ 
         success: true, 
