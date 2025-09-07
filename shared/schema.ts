@@ -441,6 +441,47 @@ export const auditLogs = pgTable("audit_logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Discount codes
+export const discountCodes = pgTable("discount_codes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: varchar("code").unique().notNull(),
+  description: text("description"),
+  discountType: varchar("discount_type").notNull(), // percentage, fixed_amount
+  discountValue: decimal("discount_value", { precision: 10, scale: 2 }).notNull(),
+  maxUses: integer("max_uses"),
+  usedCount: integer("used_count").default(0),
+  minOrderValue: decimal("min_order_value", { precision: 10, scale: 2 }),
+  validFrom: timestamp("valid_from").defaultNow(),
+  validUntil: timestamp("valid_until"),
+  isActive: boolean("is_active").default(true),
+  applicablePlans: text("applicable_plans").array(), // ['premium', 'free'] etc.
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Site settings for branding and configuration
+export const siteSettings = pgTable("site_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  settingKey: varchar("setting_key").unique().notNull(),
+  settingValue: text("setting_value"),
+  settingType: varchar("setting_type").default("text"), // text, json, boolean, number, image
+  description: text("description"),
+  isPublic: boolean("is_public").default(false), // if true, can be accessed without auth
+  updatedBy: varchar("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Discount code usage tracking
+export const discountCodeUsage = pgTable("discount_code_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  codeId: varchar("code_id").references(() => discountCodes.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").references(() => users.id),
+  subscriptionId: varchar("subscription_id").references(() => subscriptions.id),
+  discountAmount: decimal("discount_amount", { precision: 10, scale: 2 }).notNull(),
+  usedAt: timestamp("used_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   authProviders: many(authProviders),
@@ -880,3 +921,6 @@ export type TripParticipant = typeof tripParticipants.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type PersonalHost = typeof personalHosts.$inferSelect;
 export type HostBooking = typeof hostBookings.$inferSelect;
+export type DiscountCode = typeof discountCodes.$inferSelect;
+export type SiteSetting = typeof siteSettings.$inferSelect;
+export type DiscountCodeUsage = typeof discountCodeUsage.$inferSelect;

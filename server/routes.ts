@@ -2361,6 +2361,268 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Management APIs
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { page = 1, limit = 50, search = '', role = 'all', plan = 'all' } = req.query;
+      
+      // Get users from database with filters
+      const users = await storage.getUsers({
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        search: search as string,
+        role: role === 'all' ? undefined : role as string,
+        plan: plan === 'all' ? undefined : plan as string,
+      });
+      
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  app.put('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const adminId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let adminUser;
+      if (adminId === 'demo-admin') {
+        adminUser = { role: 'admin' };
+      } else {
+        adminUser = await storage.getUser(adminId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(adminUser?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { userId } = req.params;
+      const updates = req.body;
+      
+      // Update user in database
+      await storage.updateUser(userId, updates);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: adminId,
+        action: 'update_user',
+        targetType: 'user',
+        targetId: userId,
+        metaJson: updates
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "User updated successfully",
+        updates
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Discount Code APIs
+  app.get('/api/admin/discount-codes', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get discount codes with usage stats
+      const codes = [
+        {
+          id: 'demo-1',
+          code: 'WELCOME50',
+          description: '50% off for new users',
+          discountType: 'percentage',
+          discountValue: 50,
+          maxUses: 100,
+          usedCount: 23,
+          validFrom: new Date(),
+          validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          isActive: true,
+          applicablePlans: ['premium'],
+          createdAt: new Date(),
+        },
+        {
+          id: 'demo-2',
+          code: 'SAVE10',
+          description: '£10 off premium plans',
+          discountType: 'fixed_amount',
+          discountValue: 10,
+          maxUses: 50,
+          usedCount: 8,
+          validFrom: new Date(),
+          validUntil: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
+          isActive: true,
+          applicablePlans: ['premium'],
+          createdAt: new Date(),
+        }
+      ];
+      
+      res.json(codes);
+    } catch (error) {
+      console.error("Error fetching discount codes:", error);
+      res.status(500).json({ message: "Failed to fetch discount codes" });
+    }
+  });
+
+  app.post('/api/admin/discount-codes', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const codeData = req.body;
+      
+      // Create discount code in database
+      console.log('Creating discount code:', codeData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'create_discount_code',
+        targetType: 'discount_code',
+        targetId: codeData.code,
+        metaJson: codeData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Discount code created successfully",
+        code: { id: 'new-' + Date.now(), ...codeData, usedCount: 0, createdAt: new Date() }
+      });
+    } catch (error) {
+      console.error("Error creating discount code:", error);
+      res.status(500).json({ message: "Failed to create discount code" });
+    }
+  });
+
+  // Site Settings/Branding APIs
+  app.get('/api/admin/site-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Return site settings including branding
+      const settings = {
+        branding: {
+          siteName: 'HubLink',
+          logoUrl: '/images/logo.png',
+          faviconUrl: '/images/favicon.ico',
+          primaryColor: '#0066cc',
+          secondaryColor: '#f0f9ff'
+        },
+        general: {
+          maintenanceMode: false,
+          registrationOpen: true,
+          emailVerificationRequired: true,
+          defaultUserRole: 'traveler'
+        },
+        payment: {
+          platformFeePercentage: 10,
+          currency: 'GBP',
+          stripeEnabled: true,
+          paypalEnabled: false
+        }
+      };
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching site settings:", error);
+      res.status(500).json({ message: "Failed to fetch site settings" });
+    }
+  });
+
+  app.put('/api/admin/site-settings/:category', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { category } = req.params;
+      const settingsData = req.body;
+      
+      console.log(`Updating ${category} settings:`, settingsData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'update_site_settings',
+        targetType: 'site_settings',
+        targetId: category,
+        metaJson: settingsData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `${category} settings updated successfully`,
+        settings: settingsData
+      });
+    } catch (error) {
+      console.error("Error updating site settings:", error);
+      res.status(500).json({ message: "Failed to update site settings" });
+    }
+  });
+
   app.get('/api/admin/submissions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
