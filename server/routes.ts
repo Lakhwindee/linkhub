@@ -2054,6 +2054,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (user) {
         console.log('Login successful for:', credential.name);
+        console.log('Database user ID:', user.id);
         
         // Set session cookie for demo user authentication  
         res.cookie('session_id', `demo-session-${user.id}`, {
