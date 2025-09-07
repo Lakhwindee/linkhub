@@ -37,12 +37,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth routes
   app.post('/api/auth/logout', async (req: any, res) => {
+    // Clear demo session cookie
+    res.clearCookie('session_id');
+    res.clearCookie('connect.sid');
+    
     req.session.destroy((err: any) => {
       if (err) {
         console.error('Session destroy error:', err);
         return res.status(500).json({ message: 'Logout failed' });
       }
-      res.clearCookie('connect.sid');
+      console.log('User logged out successfully');
       res.json({ message: 'Logged out successfully' });
     });
   });
@@ -2011,25 +2015,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (user) {
         console.log('Found demo user:', user);
         
-        // Create session for this user (simulate Replit auth)
-        (req as any).session.user = {
-          id: user.id,
-          email: user.email || '',
-          firstName: user.firstName || '',
-          lastName: user.lastName || '', 
-          displayName: user.displayName || user.username,
-          username: user.username,
-          plan: user.plan || 'free',
-          role: user.role || 'traveler',
-          profileImageUrl: user.profileImageUrl || '',
-          country: user.country || '',
-          city: user.city || ''
-        };
+        // Set session cookie for demo user authentication  
+        res.cookie('session_id', `demo-session-${user.id}`, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+        });
+        
+        console.log('Setting session cookie:', `demo-session-${user.id}`);
         
         res.json({ 
           success: true, 
           message: 'Demo login successful',
-          user: (req as any).session.user
+          user: user
         });
       } else {
         res.status(404).json({ 

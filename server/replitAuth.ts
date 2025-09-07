@@ -132,10 +132,15 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     // Check which demo user is authenticated
     const sessionId = req.cookies?.session_id;
-    let demoUserId = 'demo-user-1'; // fallback
+    let demoUserId = null;
     
     if (sessionId?.startsWith('demo-session-')) {
       demoUserId = sessionId.replace('demo-session-', '');
+    }
+    
+    // No fallback - if no session, user is not authenticated
+    if (!demoUserId) {
+      return res.status(401).json({ message: 'Not authenticated' });
     }
     
     // Demo user mapping
@@ -166,7 +171,11 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       }
     };
     
-    const demoUser = demoUserMap[demoUserId as keyof typeof demoUserMap] || demoUserMap['demo-user-1'];
+    const demoUser = demoUserMap[demoUserId as keyof typeof demoUserMap];
+    
+    if (!demoUser) {
+      return res.status(401).json({ message: 'Invalid demo user' });
+    }
     
     req.user = {
       claims: demoUser
