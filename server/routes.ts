@@ -2306,12 +2306,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Get user from database
-      const user = await storage.getUser(credential.userId);
+      // Get user from database or create demo user for admin
+      let user = await storage.getUser(credential.userId);
+      
+      // If user not found in database, create demo user object (especially for admin)
+      if (!user && credential.role === 'admin') {
+        user = {
+          id: credential.userId,
+          email: 'admin@hublink.com',
+          firstName: 'System',
+          lastName: 'Administrator',
+          displayName: credential.name,
+          username: 'admin',
+          profileImageUrl: null,
+          role: credential.role,
+          plan: credential.plan,
+          preferences: {},
+          socialMedia: {},
+          youtubeSubscribers: 0,
+          youtubeTier: 0,
+          youtubeChannelId: null,
+          youtubeVerified: false
+        };
+        console.log('Created demo admin user object:', user);
+      }
       
       if (user) {
         console.log('Login successful for:', credential.name);
-        console.log('Database user ID:', user.id);
+        console.log('User ID:', user.id);
         
         // Set session cookie for demo user authentication  
         res.cookie('session_id', `demo-session-${user.id}`, {
