@@ -2076,7 +2076,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.cookie('session_id', `demo-session-${user.id}`, {
           httpOnly: false, // Allow JavaScript access for debugging
           secure: false, // Allow HTTP in development
-          sameSite: 'none', // Allow cross-origin
+          sameSite: 'lax', // Fixed for development
           domain: undefined, // Use default domain
           path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
@@ -2086,7 +2086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Cookie options:', {
           httpOnly: false,
           secure: false,
-          sameSite: 'none',
+          sameSite: 'lax',
           path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000
         });
