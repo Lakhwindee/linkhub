@@ -130,10 +130,10 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4 space-y-6">
+    <div className="min-h-screen bg-background p-2 md:p-4 space-y-4 md:space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
               Welcome back, {user?.displayName || user?.firstName || 'Demo User'}! 👋
@@ -153,7 +153,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
           {quickStats.map((stat, index) => (
             <Card key={index} data-testid={`card-stat-${index}`}>
               <CardContent className="p-4">
@@ -176,7 +176,7 @@ export default function Dashboard() {
         </div>
 
         {/* Top Action Buttons */}
-        <div className="flex gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row gap-3 mb-6 md:mb-8">
           <Button variant="default" asChild data-testid="button-my-profile-top">
             <Link href={`/profile/${user.id}`}>
               <UserIcon className="w-4 h-4 mr-2" />
@@ -191,13 +191,13 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
 
             {/* Recent Posts */}
             <Card data-testid="card-recent-posts">
-              <CardHeader className="flex flex-row items-center justify-between">
+              <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                 <CardTitle className="flex items-center space-x-2">
                   <Globe className="w-5 h-5 text-accent" />
                   <span>Recent Posts</span>
@@ -267,11 +267,11 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Connect Requests */}
             <Card data-testid="card-connect-requests">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex flex-wrap items-center gap-2">
                   <Users className="w-5 h-5 text-accent" />
                   <span>Connect Requests</span>
                   {connectRequests.length > 0 && (
@@ -334,7 +334,7 @@ export default function Dashboard() {
             {/* Upcoming Events */}
             <Card data-testid="card-upcoming-events">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
+                <CardTitle className="flex flex-wrap items-center gap-2">
                   <Calendar className="w-5 h-5 text-accent" />
                   <span>Upcoming Events</span>
                 </CardTitle>
