@@ -132,9 +132,11 @@ export function PostCard({ post, compact = false }: PostCardProps) {
               {post.userId?.charAt(0)?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium" data-testid={`text-post-author-${post.id}`}>
-            @{post.userId}
-          </span>
+          <Link href={`/profile/${post.userId}`}>
+            <span className="text-sm font-medium hover:text-primary cursor-pointer transition-colors" data-testid={`text-post-author-${post.id}`}>
+              @{post.userId}
+            </span>
+          </Link>
           <span className="text-xs text-muted-foreground" data-testid={`text-post-time-${post.id}`}>
             {formatDistanceToNow(new Date(post.createdAt!))} ago
           </span>
@@ -165,9 +167,11 @@ export function PostCard({ post, compact = false }: PostCardProps) {
             </Avatar>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-semibold text-card-foreground" data-testid={`text-post-author-name-${post.id}`}>
-                  @{post.userId}
-                </span>
+                <Link href={`/profile/${post.userId}`}>
+                  <span className="font-semibold text-card-foreground hover:text-primary cursor-pointer transition-colors" data-testid={`text-post-author-name-${post.id}`}>
+                    @{post.userId}
+                  </span>
+                </Link>
                 <Badge variant="outline" className="text-xs flex items-center space-x-1">
                   {getVisibilityIcon(post.visibility || 'public')}
                   <span>{getVisibilityLabel(post.visibility || 'public')}</span>
