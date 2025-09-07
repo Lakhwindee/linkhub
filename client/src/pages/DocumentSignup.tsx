@@ -35,8 +35,8 @@ export default function DocumentSignup() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
   const [formData, setFormData] = useState({
-    username: '',
     email: '',
+    username: '',
     firstName: '',
     lastName: '',
     bio: '',
@@ -46,8 +46,8 @@ export default function DocumentSignup() {
 
   const fillDemoData = () => {
     const demoData = {
-      username: 'priya_mumbai',
       email: 'priya.sharma@example.com',
+      username: 'priya_mumbai',
       firstName: 'Priya',
       lastName: 'Sharma',
       bio: 'Mumbai-based travel enthusiast and content creator exploring India\'s hidden gems.',
@@ -380,15 +380,6 @@ export default function DocumentSignup() {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="Enter your username"
-                    />
-                  </div>
-                  <div>
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
@@ -396,6 +387,15 @@ export default function DocumentSignup() {
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="Enter your email"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="username">Username</Label>
+                    <Input
+                      id="username"
+                      value={formData.username}
+                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                      placeholder="Enter your username"
                     />
                   </div>
                 </div>

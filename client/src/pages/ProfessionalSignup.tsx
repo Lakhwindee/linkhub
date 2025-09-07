@@ -40,9 +40,9 @@ export default function ProfessionalSignup() {
   
   const [formData, setFormData] = useState({
     // Personal Information
+    email: '',
     firstName: '',
     lastName: '',
-    email: '',
     phone: '',
     dateOfBirth: '',
     gender: '',
@@ -559,6 +559,17 @@ export default function ProfessionalSignup() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="john@example.com"
+                      required
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="firstName">First Name *</Label>
                     <Input
                       id="firstName"
@@ -575,17 +586,6 @@ export default function ProfessionalSignup() {
                       value={formData.lastName}
                       onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
                       placeholder="Smith"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email Address *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="john@example.com"
                       required
                     />
                   </div>
