@@ -150,7 +150,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {quickStats.map((stat, index) => (
             <Card key={index} data-testid={`card-stat-${index}`}>
               <CardContent className="p-4">
@@ -170,6 +170,22 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* Top Action Buttons */}
+        <div className="flex gap-3 mb-8">
+          <Button variant="default" asChild data-testid="button-my-profile-top">
+            <Link href={`/profile/${user.id}`}>
+              <UserIcon className="w-4 h-4 mr-2" />
+              My Profile
+            </Link>
+          </Button>
+          <Button variant="outline" asChild data-testid="button-create-post-top">
+            <Link href="/feed">
+              <Globe className="w-4 h-4 mr-2" />
+              Create Post
+            </Link>
+          </Button>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
@@ -406,18 +422,6 @@ export default function Dashboard() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-my-profile">
-                  <Link href={`/profile/${user.id}`}>
-                    <UserIcon className="w-4 h-4 mr-2" />
-                    My Profile
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-post-quick">
-                  <Link href="/feed">
-                    <Globe className="w-4 h-4 mr-2" />
-                    Create Post
-                  </Link>
-                </Button>
                 <Button variant="outline" className="w-full justify-start" asChild data-testid="button-create-event-quick">
                   <Link href="/events">
                     <Calendar className="w-4 h-4 mr-2" />
