@@ -10,7 +10,7 @@ interface LoginModalProps {
 }
 
 export function LoginModal({ open, onOpenChange }: LoginModalProps) {
-  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,43 +18,40 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
     e.preventDefault();
     setIsLoading(true);
     
-    // Check if it's a demo username (no @ means username)
-    const isUsername = !email.includes('@');
-    const demoUsernames = ['premium_creator', 'standard_creator', 'demo_publisher'];
+    if (!userId || !password) {
+      alert('Please enter both User ID and Password');
+      setIsLoading(false);
+      return;
+    }
     
-    if (isUsername && demoUsernames.includes(email)) {
-      try {
-        console.log('Demo username login for:', email);
-        const response = await fetch('/api/demo-login-username', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: email }),
-          credentials: 'include'
-        });
+    try {
+      console.log('Demo login for User ID:', userId);
+      const response = await fetch('/api/demo-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: userId, password }),
+        credentials: 'include'
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        console.log('Demo login successful!');
         
-        if (response.ok) {
-          console.log('Demo login successful!');
-          
-          // Trigger auth update event
-          window.dispatchEvent(new Event('authUpdate'));
-          
-          // Close modal and redirect
-          onOpenChange(false);
-          setTimeout(() => {
-            window.location.href = '/dashboard';
-          }, 100);
-          return;
-        } else {
-          alert('Demo login failed. Try: premium_creator, standard_creator, or demo_publisher');
-        }
-      } catch (error) {
-        alert('Demo login error. Try: premium_creator, standard_creator, or demo_publisher');
+        // Trigger auth update event
+        window.dispatchEvent(new Event('authUpdate'));
+        
+        // Close modal and redirect
+        onOpenChange(false);
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 100);
+        return;
+      } else {
+        alert(result.message || 'Login failed');
       }
-    } else if (email === "demo@hublink.com" || (email === "test" && password === "password")) {
-      localStorage.setItem('hublink_demo_user', 'true');
-      window.location.reload();
-    } else {
-      alert('Use demo usernames: premium_creator, standard_creator, or demo_publisher (no password needed)');
+    } catch (error) {
+      alert('Login error. Please try again.');
     }
     
     setIsLoading(false);
@@ -71,19 +68,28 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         <DialogHeader>
           <DialogTitle>Sign In to HubLink</DialogTitle>
           <DialogDescription>
-            Enter your credentials to access your account
+            Enter your User ID and Password to access your account
           </DialogDescription>
         </DialogHeader>
         
+        <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+          <h4 className="font-semibold text-sm mb-2">Demo Credentials:</h4>
+          <div className="text-xs space-y-1">
+            <div><strong>Premium Creator:</strong> ID: CREATOR_PREMIUM_001, Password: premium123</div>
+            <div><strong>Standard Creator:</strong> ID: CREATOR_STD_002, Password: standard123</div>
+            <div><strong>Publisher:</strong> ID: PUBLISHER_003, Password: publisher123</div>
+          </div>
+        </div>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Username or Email</Label>
+            <Label htmlFor="userId">User ID</Label>
             <Input
-              id="email"
+              id="userId"
               type="text"
-              placeholder="premium_creator, standard_creator, or demo_publisher"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your User ID"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
               required
             />
           </div>
@@ -104,21 +110,8 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Signing In..." : "Sign In"}
             </Button>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleDemoLogin}
-              className="w-full"
-            >
-              Quick Demo Login
-            </Button>
           </div>
         </form>
-        
-        <div className="text-center text-sm text-muted-foreground space-y-1">
-          <p><strong>Demo Usernames (no password needed):</strong></p>
-          <p><code>premium_creator</code> • <code>standard_creator</code> • <code>demo_publisher</code></p>
-        </div>
       </DialogContent>
     </Dialog>
   );

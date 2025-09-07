@@ -42,8 +42,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post('/api/auth/logout', async (req: any, res) => {
     // Clear demo session cookie
-    res.clearCookie('session_id');
-    res.clearCookie('connect.sid');
+    res.clearCookie('session_id', { path: '/' });
+    res.clearCookie('connect.sid', { path: '/' });
     
     req.session.destroy((err: any) => {
       if (err) {
@@ -2006,23 +2006,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Demo login by username endpoint
-  app.post("/api/demo-login-username", async (req, res) => {
-    const { username } = req.body;
+  // Demo login with ID and Password
+  app.post("/api/demo-login", async (req, res) => {
+    const { id, password } = req.body;
     
-    console.log('Demo username login request for:', username);
+    console.log('Demo login request for ID:', id);
+    
+    // Define valid ID/Password combinations
+    const validCredentials = {
+      'CREATOR_PREMIUM_001': {
+        password: 'premium123',
+        userId: 'demo-creator-premium',
+        role: 'creator',
+        plan: 'premium',
+        name: 'Premium Creator'
+      },
+      'CREATOR_STD_002': {
+        password: 'standard123', 
+        userId: 'demo-creator-standard',
+        role: 'creator', 
+        plan: 'standard',
+        name: 'Standard Creator'
+      },
+      'PUBLISHER_003': {
+        password: 'publisher123',
+        userId: 'demo-publisher', 
+        role: 'publisher',
+        plan: 'premium', 
+        name: 'Demo Publisher'
+      }
+    };
     
     try {
-      // Get user from database by username
-      const user = await storage.getUserByUsername(username);
+      // Check if credentials are valid
+      const credential = validCredentials[id as keyof typeof validCredentials];
+      
+      if (!credential || credential.password !== password) {
+        console.log('Invalid credentials for ID:', id);
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid ID or Password' 
+        });
+      }
+      
+      // Get user from database
+      const user = await storage.getUser(credential.userId);
       
       if (user) {
-        console.log('Found demo user:', user);
+        console.log('Login successful for:', credential.name);
         
         // Set session cookie for demo user authentication  
         res.cookie('session_id', `demo-session-${user.id}`, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: false, // Allow HTTP in development
+          sameSite: 'lax',
+          path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
         });
         
@@ -2030,26 +2068,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         res.json({ 
           success: true, 
-          message: 'Demo login successful',
+          message: `Login successful as ${credential.name}`,
           user: user
         });
       } else {
         res.status(404).json({ 
           success: false, 
-          message: 'Demo user not found' 
+          message: 'User not found in database' 
         });
       }
     } catch (error) {
       console.error('Demo login error:', error);
       res.status(500).json({ 
         success: false, 
-        message: 'Demo login failed' 
+        message: 'Login failed' 
       });
     }
   });
 
-  // Demo authentication endpoint - sets demo session for browser
-  app.post('/api/demo-login', async (req, res) => {
+  // Old demo authentication endpoint - remove this duplicate
+  app.post('/api/demo-login-old', async (req, res) => {
     if (process.env.NODE_ENV === 'development') {
       const { userId, role, plan } = req.body;
       
