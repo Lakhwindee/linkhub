@@ -47,12 +47,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           <div className="flex justify-between items-center h-16">
             <Link href="/">
               <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-primary-foreground" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                  </svg>
-                </div>
-                <span className="text-xl font-bold text-foreground">HubLink</span>
+                <img 
+                  src="/hublink-logo.png" 
+                  alt="HubLink" 
+                  className="h-8 w-auto" 
+                  style={{ maxWidth: '120px' }}
+                />
               </div>
             </Link>
 
@@ -118,12 +118,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
         <div className="flex justify-between items-center h-16">
           <Link href="/">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-primary-foreground" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-              </div>
-              <span className="text-xl font-bold text-foreground">HubLink</span>
+              <img 
+                src="/hublink-logo.png" 
+                alt="HubLink" 
+                className="h-8 w-auto" 
+                style={{ maxWidth: '120px' }}
+              />
             </div>
           </Link>
 

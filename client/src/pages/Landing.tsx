@@ -567,12 +567,12 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary-foreground/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-primary-foreground" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                  </svg>
-                </div>
-                <span className="text-xl font-bold">HubLink</span>
+                <img 
+                  src="/hublink-logo.png" 
+                  alt="HubLink" 
+                  className="h-6 w-auto brightness-0 invert" 
+                  style={{ maxWidth: '100px' }}
+                />
               </div>
               <p className="text-primary-foreground/80">
                 Your global travel community platform. Connect, share, and earn from your travel experiences.
