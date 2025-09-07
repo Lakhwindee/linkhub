@@ -161,6 +161,12 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     
     // Demo user mapping
     const demoUserMap = {
+      'demo-admin': {
+        sub: 'demo-admin',
+        email: 'admin@hublink.com',
+        first_name: 'System',
+        last_name: 'Administrator'
+      },
       'demo-creator-premium': {
         sub: 'demo-creator-premium',
         email: 'creator-premium@hublink.com',
