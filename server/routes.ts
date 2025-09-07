@@ -2319,10 +2319,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Set session cookie for demo user authentication  
         res.cookie('session_id', `demo-session-${user.id}`, {
-          httpOnly: false, // Allow JavaScript access for debugging
+          httpOnly: false, // Allow JavaScript access
           secure: false, // Allow HTTP in development
-          sameSite: 'lax', // Fixed for development
-          domain: undefined, // Use default domain
+          sameSite: 'lax',
           path: '/',
           maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
         });

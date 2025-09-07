@@ -42,10 +42,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         localStorage.setItem('demo_session', `demo-session-${result.user.id}`);
         localStorage.setItem('demo_user', JSON.stringify(result.user));
         
-        // Set cookie manually for server authentication
+        // Set cookie manually for server authentication with explicit domain
         const cookieValue = `session_id=demo-session-${result.user.id}; path=/; max-age=${7*24*60*60}; samesite=lax`;
         document.cookie = cookieValue;
         console.log('🍪 Setting client cookie:', cookieValue);
+        
+        // Force reload to ensure cookie is properly set in headers
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
         
         // Verify cookie was set
         setTimeout(() => {
