@@ -123,11 +123,9 @@ export default function DocumentSignup() {
         verificationStatus,
       };
 
-      // Create demo user account
-      const demoUserId = 'demo-' + Date.now();
-      localStorage.setItem('hublink_demo_user', 'true');
-      localStorage.setItem('hublink_demo_user_id', demoUserId);
-      localStorage.setItem('hublink_verification_complete', 'true');
+      // Store signup data for completion process
+      sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      sessionStorage.setItem('hublink_signup_type', 'document');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
       
       // Success stage with animation
@@ -139,9 +137,9 @@ export default function DocumentSignup() {
       // Redirecting stage
       setSuccessStage('redirecting');
       
-      // Final redirect
+      // Final redirect to completion process
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        window.location.href = '/signup-completion';
       }, 1000);
       
     } catch (error) {
