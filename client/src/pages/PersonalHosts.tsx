@@ -218,32 +218,39 @@ export default function PersonalHosts() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Personal Hosts</h1>
             <p className="text-muted-foreground mt-2">
-              List yourself as a host or book other hosts for unique travel experiences
+              {user?.role === 'publisher' 
+                ? 'List yourself as a host or book other hosts for unique travel experiences'
+                : 'Book hosts for unique travel experiences'
+              }
             </p>
           </div>
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Become a Host
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh]">
-              <DialogHeader>
-                <DialogTitle>Create Host Profile</DialogTitle>
-              </DialogHeader>
-              <HostProfileForm
-                onSubmit={handleCreateHost}
-                onCancel={() => setShowCreateDialog(false)}
-              />
-            </DialogContent>
-          </Dialog>
+          {user?.role === 'publisher' && (
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Become a Host
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh]">
+                <DialogHeader>
+                  <DialogTitle>Create Host Profile</DialogTitle>
+                </DialogHeader>
+                <HostProfileForm
+                  onSubmit={handleCreateHost}
+                  onCancel={() => setShowCreateDialog(false)}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         <Tabs defaultValue="browse" className="space-y-6">
           <TabsList>
             <TabsTrigger value="browse">Browse Hosts</TabsTrigger>
-            <TabsTrigger value="my-hosts">My Host Profiles</TabsTrigger>
+            {user?.role === 'publisher' && (
+              <TabsTrigger value="my-hosts">My Host Profiles</TabsTrigger>
+            )}
             <TabsTrigger value="bookings">My Bookings</TabsTrigger>
           </TabsList>
 
@@ -353,101 +360,103 @@ export default function PersonalHosts() {
             )}
           </TabsContent>
 
-          {/* My Host Profiles Tab */}
-          <TabsContent value="my-hosts" className="space-y-6">
-            {myHostsLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : myHosts.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Host Profiles Yet</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Create your first host profile to start earning and connecting with travelers
-                  </p>
-                  <Button onClick={() => setShowCreateDialog(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Host Profile
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {myHosts.map((host) => {
-                  const HostIcon = getHostTypeIcon(host.hostType);
-                  return (
-                    <Card key={host.id}>
-                      <div className="aspect-video relative">
-                        {host.imageUrls && host.imageUrls.length > 0 ? (
-                          <img 
-                            src={host.imageUrls[0]} 
-                            alt={host.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <HostIcon className="w-12 h-12 text-muted-foreground" />
+          {/* My Host Profiles Tab - Only for Publishers */}
+          {user?.role === 'publisher' && (
+            <TabsContent value="my-hosts" className="space-y-6">
+              {myHostsLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                </div>
+              ) : myHosts.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Host Profiles Yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Create your first host profile to start earning and connecting with travelers
+                    </p>
+                    <Button onClick={() => setShowCreateDialog(true)}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Host Profile
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {myHosts.map((host) => {
+                    const HostIcon = getHostTypeIcon(host.hostType);
+                    return (
+                      <Card key={host.id}>
+                        <div className="aspect-video relative">
+                          {host.imageUrls && host.imageUrls.length > 0 ? (
+                            <img 
+                              src={host.imageUrls[0]} 
+                              alt={host.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <HostIcon className="w-12 h-12 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="absolute top-2 left-2">
+                            <Badge variant={host.isActive ? 'default' : 'secondary'}>
+                              {host.isActive ? 'Active' : 'Inactive'}
+                            </Badge>
                           </div>
-                        )}
-                        <div className="absolute top-2 left-2">
-                          <Badge variant={host.isActive ? 'default' : 'secondary'}>
-                            {host.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </div>
-                        <div className="absolute top-2 right-2">
-                          <Badge variant={host.priceType === 'free' ? 'outline' : 'default'}>
-                            {host.priceType === 'free' ? 'FREE' : `$${host.pricePerDay}/day`}
-                          </Badge>
-                        </div>
-                      </div>
-                      
-                      <CardContent className="p-4">
-                        <div className="flex items-start gap-2 mb-2">
-                          <HostIcon className="w-4 h-4 mt-1 text-primary" />
-                          <h3 className="font-semibold text-lg flex-1">{host.title}</h3>
+                          <div className="absolute top-2 right-2">
+                            <Badge variant={host.priceType === 'free' ? 'outline' : 'default'}>
+                              {host.priceType === 'free' ? 'FREE' : `$${host.pricePerDay}/day`}
+                            </Badge>
+                          </div>
                         </div>
                         
-                        <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                          {host.description || 'No description provided'}
-                        </p>
-                        
-                        <div className="flex items-center text-sm text-muted-foreground mb-3">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {host.location || `${host.city}, ${host.country}`}
-                        </div>
-                        
-                        <div className="flex items-center text-sm text-muted-foreground mb-4">
-                          <Users className="w-4 h-4 mr-1" />
-                          Up to {host.maxGuests} guests
-                        </div>
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-2 mb-2">
+                            <HostIcon className="w-4 h-4 mt-1 text-primary" />
+                            <h3 className="font-semibold text-lg flex-1">{host.title}</h3>
+                          </div>
+                          
+                          <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                            {host.description || 'No description provided'}
+                          </p>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground mb-3">
+                            <MapPin className="w-4 h-4 mr-1" />
+                            {host.location || `${host.city}, ${host.country}`}
+                          </div>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground mb-4">
+                            <Users className="w-4 h-4 mr-1" />
+                            Up to {host.maxGuests} guests
+                          </div>
 
-                        <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="flex-1"
-                            onClick={() => setEditingHost(host)}
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleDeleteHost(host.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={() => setEditingHost(host)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleDeleteHost(host.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </TabsContent>
+          )}
 
           {/* My Bookings Tab */}
           <TabsContent value="bookings">
