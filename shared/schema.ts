@@ -759,6 +759,99 @@ export const insertTripParticipantSchema = createInsertSchema(tripParticipants).
   message: true,
 });
 
+// Personal Host tables
+export const personalHosts = pgTable("personal_hosts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  location: varchar("location").notNull(),
+  country: varchar("country").notNull(),
+  city: varchar("city").notNull(),
+  lat: real("lat"),
+  lng: real("lng"),
+  hostType: varchar("host_type").notNull(), // 'accommodation', 'guide', 'experience', 'transport'
+  priceType: varchar("price_type").notNull(), // 'free', 'paid'
+  pricePerDay: decimal("price_per_day", { precision: 10, scale: 2 }).default('0'),
+  currency: varchar("currency").default("USD"),
+  maxGuests: integer("max_guests").default(1),
+  amenities: text("amenities").array(),
+  languages: text("languages").array(),
+  imageUrls: text("image_urls").array(),
+  availability: jsonb("availability"), // {start: date, end: date, blockedDates: []}
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+export const hostBookings = pgTable("host_bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  hostId: varchar("host_id").notNull().references(() => personalHosts.id, { onDelete: "cascade" }),
+  guestId: varchar("guest_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  checkIn: timestamp("check_in").notNull(),
+  checkOut: timestamp("check_out").notNull(),
+  guests: integer("guests").default(1),
+  totalAmount: decimal("total_amount", { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).default('0'),
+  status: varchar("status").default("pending"), // pending, confirmed, cancelled, completed
+  specialRequests: text("special_requests"),
+  contactInfo: jsonb("contact_info"), // phone, email for coordination
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
+// Relations for Personal Hosts
+export const personalHostsRelations = relations(personalHosts, ({ one, many }) => ({
+  host: one(users, {
+    fields: [personalHosts.userId],
+    references: [users.id],
+  }),
+  bookings: many(hostBookings),
+}));
+
+export const hostBookingsRelations = relations(hostBookings, ({ one }) => ({
+  host: one(personalHosts, {
+    fields: [hostBookings.hostId],
+    references: [personalHosts.id],
+  }),
+  guest: one(users, {
+    fields: [hostBookings.guestId],
+    references: [users.id],
+  }),
+}));
+
+export const insertPersonalHostSchema = createInsertSchema(personalHosts).pick({
+  title: true,
+  description: true,
+  location: true,
+  country: true,
+  city: true,
+  lat: true,
+  lng: true,
+  hostType: true,
+  priceType: true,
+  pricePerDay: true,
+  currency: true,
+  maxGuests: true,
+  amenities: true,
+  languages: true,
+  imageUrls: true,
+  availability: true,
+}).extend({
+  amenities: z.array(z.string()).optional(),
+  languages: z.array(z.string()).optional(),
+  imageUrls: z.array(z.string()).optional(),
+});
+
+export const insertHostBookingSchema = createInsertSchema(hostBookings).pick({
+  hostId: true,
+  checkIn: true,
+  checkOut: true,
+  guests: true,
+  specialRequests: true,
+  contactInfo: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -785,3 +878,5 @@ export type StayReview = typeof stayReviews.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
 export type TripParticipant = typeof tripParticipants.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
+export type PersonalHost = typeof personalHosts.$inferSelect;
+export type HostBooking = typeof hostBookings.$inferSelect;
