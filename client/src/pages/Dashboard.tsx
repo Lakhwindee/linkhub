@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -7,16 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star, User as UserIcon, Grid, Camera, Settings, ExternalLink } from "lucide-react";
+import { MapPin, Users, MessageCircle, Calendar, DollarSign, TrendingUp, Globe, Star, User as UserIcon, Grid, Camera, Settings, ExternalLink, Send, Image } from "lucide-react";
 import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import { FollowersFollowingSection } from "@/components/FollowersFollowingSection";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { User, Post, Event } from "@shared/schema";
 
 export default function Dashboard() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const [postContent, setPostContent] = useState("");
+  const [postLocation, setPostLocation] = useState("");
 
   // Demo user with more realistic data
   const demoUser = {
@@ -172,6 +176,72 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Quick Post Creation */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Globe className="w-5 h-5 text-accent" />
+              <span>Share Your Journey</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-start space-x-3">
+              <Avatar className="w-10 h-10">
+                <AvatarImage src={user.profileImageUrl || undefined} />
+                <AvatarFallback>
+                  {user.firstName?.[0]}{user.lastName?.[0]}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-3">
+                <Textarea
+                  placeholder="What's happening on your journey?"
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  className="min-h-[100px] resize-none"
+                />
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Select value={postLocation} onValueChange={setPostLocation}>
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Add location" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="london-uk">📍 London, UK</SelectItem>
+                        <SelectItem value="paris-france">📍 Paris, France</SelectItem>
+                        <SelectItem value="tokyo-japan">📍 Tokyo, Japan</SelectItem>
+                        <SelectItem value="mumbai-india">📍 Mumbai, India</SelectItem>
+                        <SelectItem value="nyc-usa">📍 New York, USA</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    <Button variant="ghost" size="sm">
+                      <Image className="w-4 h-4 mr-2" />
+                      Photo
+                    </Button>
+                  </div>
+                  
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    disabled={!postContent.trim()}
+                    onClick={() => {
+                      toast({
+                        title: "Post shared!",
+                        description: "Your journey update has been shared with the community.",
+                      });
+                      setPostContent("");
+                      setPostLocation("");
+                    }}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Top Action Buttons */}
         <div className="flex gap-3 mb-8">
           <Button variant="default" asChild data-testid="button-my-profile-top">
@@ -183,7 +253,7 @@ export default function Dashboard() {
           <Button variant="outline" asChild data-testid="button-create-post-top">
             <Link href="/feed">
               <Globe className="w-4 h-4 mr-2" />
-              Create Post
+              View Feed
             </Link>
           </Button>
         </div>
