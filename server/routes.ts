@@ -2038,11 +2038,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     };
     
     try {
+      console.log('Checking credentials for ID:', id, 'Password:', password);
+      console.log('Available credentials:', Object.keys(validCredentials));
+      
       // Check if credentials are valid
       const credential = validCredentials[id as keyof typeof validCredentials];
+      console.log('Found credential:', credential);
       
-      if (!credential || credential.password !== password) {
-        console.log('Invalid credentials for ID:', id);
+      if (!credential) {
+        console.log('No credential found for ID:', id);
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Invalid ID or Password' 
+        });
+      }
+      
+      if (credential.password !== password) {
+        console.log('Password mismatch. Expected:', credential.password, 'Got:', password);
         return res.status(401).json({ 
           success: false, 
           message: 'Invalid ID or Password' 
