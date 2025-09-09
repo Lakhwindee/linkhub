@@ -796,7 +796,12 @@ export default function Admin() {
                           <CreditCard className="w-5 h-5 mr-2" />
                           Stripe API Keys
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                        <Badge 
+                          variant={apiSettings?.stripe?.status === 'active' ? "secondary" : "destructive"}
+                          className={apiSettings?.stripe?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {apiSettings?.stripe?.status === 'active' ? 'Active' : 'Inactive'}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -806,7 +811,11 @@ export default function Admin() {
                           <Input 
                             type="password" 
                             placeholder="pk_live_..." 
-                            defaultValue="pk_live_••••••••••••3456" 
+                            value={apiFormData.stripe?.publishableKey || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              stripe: { ...prev.stripe, publishableKey: e.target.value }
+                            }))}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -819,7 +828,11 @@ export default function Admin() {
                           <Input 
                             type="password" 
                             placeholder="sk_live_..." 
-                            defaultValue="sk_live_••••••••••••7890" 
+                            value={apiFormData.stripe?.secretKey || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              stripe: { ...prev.stripe, secretKey: e.target.value }
+                            }))}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -832,7 +845,11 @@ export default function Admin() {
                           <Input 
                             type="password" 
                             placeholder="whsec_..." 
-                            defaultValue="whsec_••••••••••••1234" 
+                            value={apiFormData.stripe?.webhookSecret || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              stripe: { ...prev.stripe, webhookSecret: e.target.value }
+                            }))}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -840,8 +857,34 @@ export default function Admin() {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm">Update Keys</Button>
-                        <Button variant="outline" size="sm">Test Connection</Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            if (!apiFormData.stripe?.publishableKey && !apiFormData.stripe?.secretKey) {
+                              toast({
+                                title: "API Keys Required",
+                                description: "Please enter at least one Stripe API key.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            saveApiSettingsMutation.mutate({
+                              service: 'stripe',
+                              settings: apiFormData.stripe || {}
+                            });
+                          }}
+                          disabled={saveApiSettingsMutation.isPending}
+                        >
+                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Update Keys'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => testApiConnectionMutation.mutate('stripe')}
+                          disabled={testApiConnectionMutation.isPending}
+                        >
+                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -854,7 +897,12 @@ export default function Admin() {
                           <DollarSign className="w-5 h-5 mr-2" />
                           PayPal API Keys
                         </div>
-                        <Badge variant="destructive">Inactive</Badge>
+                        <Badge 
+                          variant={apiSettings?.paypal?.status === 'active' ? "secondary" : "destructive"}
+                          className={apiSettings?.paypal?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {apiSettings?.paypal?.status === 'active' ? 'Active' : 'Inactive'}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -863,7 +911,12 @@ export default function Admin() {
                         <div className="flex space-x-2 mt-1">
                           <Input 
                             type="password" 
-                            placeholder="Enter PayPal Client ID" 
+                            placeholder="Enter PayPal Client ID"
+                            value={apiFormData.paypal?.clientId || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              paypal: { ...prev.paypal, clientId: e.target.value }
+                            }))} 
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -875,7 +928,12 @@ export default function Admin() {
                         <div className="flex space-x-2 mt-1">
                           <Input 
                             type="password" 
-                            placeholder="Enter PayPal Client Secret" 
+                            placeholder="Enter PayPal Client Secret"
+                            value={apiFormData.paypal?.clientSecret || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              paypal: { ...prev.paypal, clientSecret: e.target.value }
+                            }))} 
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -895,8 +953,34 @@ export default function Admin() {
                         </Select>
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm">Save Keys</Button>
-                        <Button variant="outline" size="sm">Test Connection</Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            if (!apiFormData.paypal?.clientId || !apiFormData.paypal?.clientSecret) {
+                              toast({
+                                title: "API Keys Required",
+                                description: "Please enter both PayPal Client ID and Secret.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            saveApiSettingsMutation.mutate({
+                              service: 'paypal',
+                              settings: apiFormData.paypal || {}
+                            });
+                          }}
+                          disabled={saveApiSettingsMutation.isPending}
+                        >
+                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save Keys'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => testApiConnectionMutation.mutate('paypal')}
+                          disabled={testApiConnectionMutation.isPending}
+                        >
+                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -909,7 +993,12 @@ export default function Admin() {
                           <Globe className="w-5 h-5 mr-2" />
                           YouTube API Key
                         </div>
-                        <Badge variant="destructive">Inactive</Badge>
+                        <Badge 
+                          variant={apiSettings?.youtube?.status === 'active' ? "secondary" : "destructive"}
+                          className={apiSettings?.youtube?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {apiSettings?.youtube?.status === 'active' ? 'Active' : 'Inactive'}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -918,7 +1007,12 @@ export default function Admin() {
                         <div className="flex space-x-2 mt-1">
                           <Input 
                             type="password" 
-                            placeholder="Enter YouTube API Key" 
+                            placeholder="Enter YouTube API Key"
+                            value={apiFormData.youtube?.apiKey || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              youtube: { ...prev.youtube, apiKey: e.target.value }
+                            }))} 
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -930,11 +1024,42 @@ export default function Admin() {
                         <Input 
                           placeholder="Google Cloud Project ID" 
                           className="mt-1"
+                          value={apiFormData.youtube?.projectId || ''}
+                          onChange={(e) => setApiFormData(prev => ({
+                            ...prev,
+                            youtube: { ...prev.youtube, projectId: e.target.value }
+                          }))}
                         />
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm">Save API Key</Button>
-                        <Button variant="outline" size="sm">Test API</Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            if (!apiFormData.youtube?.apiKey) {
+                              toast({
+                                title: "API Key Required",
+                                description: "Please enter YouTube API key.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            saveApiSettingsMutation.mutate({
+                              service: 'youtube',
+                              settings: apiFormData.youtube || {}
+                            });
+                          }}
+                          disabled={saveApiSettingsMutation.isPending}
+                        >
+                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save API Key'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => testApiConnectionMutation.mutate('youtube')}
+                          disabled={testApiConnectionMutation.isPending}
+                        >
+                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test API'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
