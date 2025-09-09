@@ -128,8 +128,8 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Real authentication mode - no demo bypass
-  if (false && process.env.NODE_ENV === 'development') {
+  // Demo mode for now until OIDC is configured
+  if (process.env.NODE_ENV === 'development') {
     // Check which demo user is authenticated
     const sessionId = req.cookies?.session_id;
     let demoUserId = null;
