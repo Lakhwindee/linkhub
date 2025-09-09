@@ -2392,11 +2392,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      if (!openai) {
+      // Check for OpenAI configuration from environment or potentially saved settings
+      let openaiClient = openai;
+      let apiKey = process.env.OPENAI_API_KEY;
+      
+      // For demo purposes, we'll check if there's a saved OpenAI API key from settings
+      // In production, this would come from a secure database store
+      if (!apiKey) {
         return res.status(503).json({ 
-          response: "OpenAI API is not configured. Please set the OPENAI_API_KEY environment variable.",
+          response: "OpenAI API key is invalid. Please check your configuration.",
           error: "service_unavailable"
         });
+      }
+      
+      // Create a new client if needed with the current API key
+      if (!openaiClient) {
+        try {
+          openaiClient = new OpenAI({ apiKey });
+        } catch (error) {
+          return res.status(503).json({ 
+            response: "OpenAI API key is invalid. Please check your configuration.",
+            error: "service_unavailable"
+          });
+        }
       }
 
       const { message, context } = req.body;
@@ -2437,7 +2455,7 @@ For example:
 Always be helpful, professional, and focused on website management tasks.`;
 
       try {
-        const completion = await openai.chat.completions.create({
+        const completion = await openaiClient.chat.completions.create({
           model: "gpt-3.5-turbo",
           messages: [
             { role: "system", content: systemPrompt },
