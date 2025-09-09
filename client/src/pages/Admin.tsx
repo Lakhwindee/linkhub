@@ -209,13 +209,9 @@ export default function Admin() {
   // API Settings mutations
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
-      console.log('🚀 Sending API settings save request:', data);
-      const response = await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
-      console.log('✅ API settings save response:', response);
-      return response;
+      return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
     },
     onSuccess: (data, variables) => {
-      console.log('✅ Save success callback:', { data, variables });
       toast({
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
@@ -223,7 +219,6 @@ export default function Admin() {
       refetchApiSettings();
     },
     onError: (error: any) => {
-      console.error('❌ Save error callback:', error);
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save API settings.",

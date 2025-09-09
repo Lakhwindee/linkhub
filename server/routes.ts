@@ -3105,19 +3105,9 @@ Always be helpful, professional, and focused on website management tasks.`;
       const { service } = req.params;
       const settingsData = req.body;
       
-      console.log('🔍 PUT /api/admin/api-settings/:service');
-      console.log('  Service param received:', JSON.stringify(service));
-      console.log('  Service type:', typeof service);
-      console.log('  Service length:', service?.length);
-      console.log('  Settings data:', JSON.stringify(settingsData));
-      
       // Validate service type
       const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'database', 'storage', 'email'];
-      console.log('  Valid services:', validServices);
-      console.log('  Service in valid list?', validServices.includes(service));
-      
       if (!validServices.includes(service)) {
-        console.error('❌ Invalid service type received:', service);
         return res.status(400).json({ message: "Invalid service type" });
       }
       
