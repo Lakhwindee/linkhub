@@ -114,7 +114,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
-      <div className="max-w-full px-2 sm:px-4 lg:max-w-6xl lg:mx-auto lg:px-8">
+      <div className="max-w-full px-1 sm:px-2 lg:max-w-7xl lg:mx-auto lg:px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/">
@@ -129,12 +129,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-2 flex-1 justify-center overflow-hidden">
+          <div className="hidden md:flex items-center space-x-0.5 lg:space-x-1 flex-1 justify-center max-w-none">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
                   variant={location === item.href ? "default" : "ghost"}
-                  className="flex items-center space-x-1 text-xs whitespace-nowrap px-1.5 lg:px-2 py-1 shrink-0"
+                  className="flex items-center space-x-1 text-xs whitespace-nowrap px-1 lg:px-1.5 py-1 h-8 min-w-fit"
                   data-testid={item.testId}
                 >
                   <item.icon className="w-4 h-4" />
