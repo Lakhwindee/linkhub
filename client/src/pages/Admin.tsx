@@ -250,6 +250,34 @@ export default function Admin() {
   // API Settings form state
   const [apiFormData, setApiFormData] = useState<any>({});
 
+  // Initialize form data with API settings
+  useEffect(() => {
+    if (apiSettings) {
+      setApiFormData({
+        openai: {
+          apiKey: '', // Don't pre-populate sensitive data
+          model: apiSettings.openai?.model || 'gpt-3.5-turbo',
+          maxTokens: apiSettings.openai?.maxTokens || 1000,
+          temperature: apiSettings.openai?.temperature || 0.7,
+        },
+        stripe: {
+          publishableKey: '',
+          secretKey: '',
+          webhookSecret: '',
+        },
+        paypal: {
+          clientId: '',
+          clientSecret: '',
+          environment: apiSettings.paypal?.environment || 'sandbox',
+        },
+        youtube: {
+          apiKey: '',
+          projectId: apiSettings.youtube?.projectId || '',
+        }
+      });
+    }
+  }, [apiSettings]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
