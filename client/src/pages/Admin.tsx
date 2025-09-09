@@ -2952,17 +2952,23 @@ export default function Admin() {
               </div>
             )}
 
-            {/* End of Financial Section - Continue to Email Management */}
+            {/* Email Management System */}
             {activeSection === "email-management" && (
-                        <CardContent className="p-12 text-center">
-                          <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                          <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
-                          <p className="text-muted-foreground">
-                            No ad submissions pending review at the moment.
-                          </p>
-                        </CardContent>
-                      </Card>
-                    )}
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Email Management System</h2>
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Send className="w-4 h-4 mr-2" />
+                    Send Campaign
+                  </Button>
+                </div>
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Mail className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Email System Ready</h3>
+                    <p className="text-muted-foreground">
+                      Configure your email settings and start sending campaigns.
+                    </p>
                   </CardContent>
                 </Card>
               </div>
