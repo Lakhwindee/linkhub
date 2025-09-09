@@ -2392,29 +2392,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      // Check for OpenAI configuration from environment or potentially saved settings
-      let openaiClient = openai;
-      let apiKey = process.env.OPENAI_API_KEY;
+      // Get saved OpenAI API key from API settings
+      let apiKey = null;
+      let openaiClient = null;
       
-      // For demo purposes, we'll check if there's a saved OpenAI API key from settings
-      // In production, this would come from a secure database store
-      if (!apiKey) {
+      // Check if we have saved API settings for OpenAI
+      const savedSettings = apiSettings.openai;
+      if (savedSettings && savedSettings.apiKey && savedSettings.apiKey.trim() !== '') {
+        apiKey = savedSettings.apiKey;
+      } else {
+        // Fallback to environment variable
+        apiKey = process.env.OPENAI_API_KEY;
+      }
+      
+      // Validate API key format (OpenAI keys start with 'sk-')
+      if (!apiKey || !apiKey.startsWith('sk-')) {
         return res.status(503).json({ 
-          response: "OpenAI API key is invalid. Please check your configuration.",
+          response: "Please configure a valid OpenAI API key in Admin Panel → API Settings. Valid keys start with 'sk-'.",
           error: "service_unavailable"
         });
       }
       
-      // Create a new client if needed with the current API key
-      if (!openaiClient) {
-        try {
-          openaiClient = new OpenAI({ apiKey });
-        } catch (error) {
-          return res.status(503).json({ 
-            response: "OpenAI API key is invalid. Please check your configuration.",
-            error: "service_unavailable"
-          });
-        }
+      // Create OpenAI client with the validated API key
+      try {
+        openaiClient = new OpenAI({ apiKey });
+      } catch (error) {
+        return res.status(503).json({ 
+          response: "Failed to initialize OpenAI client. Please check your API key configuration.",
+          error: "service_unavailable"
+        });
       }
 
       const { message, context } = req.body;
