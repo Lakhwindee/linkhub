@@ -209,9 +209,11 @@ export default function Admin() {
   // API Settings mutations
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
+      setSavingService(data.service);
       return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
     },
     onSuccess: (data, variables) => {
+      setSavingService(null);
       toast({
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
@@ -219,6 +221,7 @@ export default function Admin() {
       refetchApiSettings();
     },
     onError: (error: any) => {
+      setSavingService(null);
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save API settings.",
@@ -249,6 +252,9 @@ export default function Admin() {
 
   // API Settings form state
   const [apiFormData, setApiFormData] = useState<any>({});
+  
+  // Track which service is currently being saved
+  const [savingService, setSavingService] = useState<string | null>(null);
 
   // Initialize form data with API settings
   useEffect(() => {
@@ -868,9 +874,9 @@ export default function Admin() {
                               settings: apiFormData.stripe || {}
                             });
                           }}
-                          disabled={saveApiSettingsMutation.isPending}
+                          disabled={savingService === 'stripe'}
                         >
-                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Update Keys'}
+                          {savingService === 'stripe' ? 'Saving...' : 'Update Keys'}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -964,9 +970,9 @@ export default function Admin() {
                               settings: apiFormData.paypal || {}
                             });
                           }}
-                          disabled={saveApiSettingsMutation.isPending}
+                          disabled={savingService === 'paypal'}
                         >
-                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save Keys'}
+                          {savingService === 'paypal' ? 'Saving...' : 'Save Keys'}
                         </Button>
                         <Button 
                           variant="outline" 
@@ -1083,13 +1089,10 @@ export default function Admin() {
                             type="password" 
                             placeholder="sk-..." 
                             value={apiFormData.openai?.apiKey || ''}
-                            onChange={(e) => {
-                              console.log('🔑 API Key input changed:', e.target.value.slice(0, 10) + '...');
-                              setApiFormData(prev => ({
-                                ...prev,
-                                openai: { ...prev.openai, apiKey: e.target.value }
-                              }));
-                            }}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              openai: { ...prev.openai, apiKey: e.target.value }
+                            }))}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -1148,9 +1151,6 @@ export default function Admin() {
                         <Button 
                           size="sm"
                           onClick={() => {
-                            console.log('Save button clicked for OpenAI');
-                            console.log('Current form data:', apiFormData.openai);
-                            
                             if (!apiFormData.openai?.apiKey) {
                               toast({
                                 title: "API Key Required",
@@ -1165,9 +1165,9 @@ export default function Admin() {
                               settings: apiFormData.openai || {}
                             });
                           }}
-                          disabled={saveApiSettingsMutation.isPending}
+                          disabled={savingService === 'openai'}
                         >
-                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
+                          {savingService === 'openai' ? 'Saving...' : 'Save Settings'}
                         </Button>
                         <Button 
                           variant="outline" 
