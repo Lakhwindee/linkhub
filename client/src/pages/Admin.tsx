@@ -2646,149 +2646,314 @@ export default function Admin() {
 
             {activeSection === "financial" && (
               <div className="space-y-6">
-                {/* Ad Submissions Review - keeping existing functionality */}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Financial Management</h2>
+                  <div className="flex space-x-2">
+                    <Select defaultValue="30days">
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7days">Last 7 days</SelectItem>
+                        <SelectItem value="30days">Last 30 days</SelectItem>
+                        <SelectItem value="90days">Last 90 days</SelectItem>
+                        <SelectItem value="year">This year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Report
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Revenue Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-600">£45,231.89</div>
+                      <p className="text-xs text-muted-foreground">
+                        +20.1% from last month
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Platform Fees</CardTitle>
+                      <CreditCard className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-blue-600">£4,523.19</div>
+                      <p className="text-xs text-muted-foreground">
+                        10% of total revenue
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Processing Fees</CardTitle>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-orange-600">£1,234.56</div>
+                      <p className="text-xs text-muted-foreground">
+                        2.7% processing cost
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Net Revenue</CardTitle>
+                      <Activity className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-purple-600">£39,474.14</div>
+                      <p className="text-xs text-muted-foreground">
+                        After all fees
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Revenue Breakdown */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Revenue by Service</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Home className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm">Stays Bookings</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£18,450</div>
+                            <div className="text-xs text-muted-foreground">40.8%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-green-600" />
+                            <span className="text-sm">Trip Packages</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£15,780</div>
+                            <div className="text-xs text-muted-foreground">34.9%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Users className="w-4 h-4 text-purple-600" />
+                            <span className="text-sm">Subscriptions</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£8,950</div>
+                            <div className="text-xs text-muted-foreground">19.8%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Eye className="w-4 h-4 text-orange-600" />
+                            <span className="text-sm">Ad Revenue</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£2,051</div>
+                            <div className="text-xs text-muted-foreground">4.5%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Payment Methods</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm">Stripe Payments</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£38,950</div>
+                            <div className="text-xs text-muted-foreground">86.1%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <DollarSign className="w-4 h-4 text-yellow-600" />
+                            <span className="text-sm">PayPal</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£6,281</div>
+                            <div className="text-xs text-muted-foreground">13.9%</div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="w-4 h-4 text-green-600" />
+                            <span className="text-sm">Bank Transfer</span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">£0</div>
+                            <div className="text-xs text-muted-foreground">0%</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Transaction Management */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <DollarSign className="w-5 h-5 text-chart-2" />
-                      <span>Ad Submissions for Review</span>
-                      {pendingSubmissions.length > 0 && (
-                        <Badge variant="destructive">{pendingSubmissions.length}</Badge>
-                      )}
+                      <Activity className="w-5 h-5" />
+                      <span>Recent Transactions</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {submissionsLoading ? (
-                      <div className="space-y-4">
-                        {[...Array(5)].map((_, i) => (
-                          <div key={i} className="animate-pulse space-y-3 p-4 border border-border rounded-lg">
-                            <div className="h-4 bg-muted rounded w-3/4"></div>
-                            <div className="h-3 bg-muted rounded w-1/2"></div>
-                            <div className="h-3 bg-muted rounded w-2/3"></div>
+                    <div className="space-y-4">
+                      {[
+                        { id: "TXN-001", type: "Booking", amount: "£450.00", status: "Completed", user: "Alice Johnson", date: "2025-09-09" },
+                        { id: "TXN-002", type: "Subscription", amount: "£45.00", status: "Completed", user: "Bob Smith", date: "2025-09-09" },
+                        { id: "TXN-003", type: "Trip Package", amount: "£1,200.00", status: "Pending", user: "Carol Brown", date: "2025-09-08" },
+                        { id: "TXN-004", type: "Ad Payment", amount: "£125.00", status: "Completed", user: "David Wilson", date: "2025-09-08" },
+                        { id: "TXN-005", type: "Booking", amount: "£750.00", status: "Refunded", user: "Emma Davis", date: "2025-09-07" }
+                      ].map((transaction) => (
+                        <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="space-y-1">
+                              <div className="text-sm font-medium">{transaction.type} - {transaction.id}</div>
+                              <div className="text-xs text-muted-foreground">{transaction.user} • {transaction.date}</div>
+                            </div>
                           </div>
-                        ))}
+                          <div className="flex items-center space-x-3">
+                            <div className="text-right">
+                              <div className="text-sm font-medium">{transaction.amount}</div>
+                              <Badge 
+                                variant={
+                                  transaction.status === 'Completed' ? 'default' :
+                                  transaction.status === 'Pending' ? 'secondary' :
+                                  'destructive'
+                                }
+                                className="text-xs"
+                              >
+                                {transaction.status}
+                              </Badge>
+                            </div>
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-3 h-3 mr-2" />
+                              View
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 pt-4 border-t">
+                      <div className="flex justify-between items-center">
+                        <Button variant="outline">
+                          <Download className="w-4 h-4 mr-2" />
+                          Export All Transactions
+                        </Button>
+                        <div className="text-sm text-muted-foreground">
+                          Showing 5 of 1,247 transactions
+                        </div>
                       </div>
-                    ) : pendingSubmissions.length > 0 ? (
-                      <div className="space-y-4">
-                        {pendingSubmissions.map((submission: AdSubmission) => (
-                          <Card key={submission.id} className="border-yellow-200 dark:border-yellow-800">
-                            <CardContent className="p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="space-y-2">
-                                  <div className="flex items-center space-x-2">
-                                    <Badge variant="outline">{submission.status}</Badge>
-                                    <span className="text-sm text-muted-foreground">
-                                      Submitted {format(new Date(submission.createdAt!), 'MMM d, yyyy')}
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">
-                                    Submission ID: {submission.id}
-                                  </p>
-                                  {submission.rawFileUrl && (
-                                    <Button variant="outline" size="sm" asChild>
-                                      <a href={submission.rawFileUrl} target="_blank" rel="noopener noreferrer">
-                                        <Eye className="w-3 h-3 mr-2" />
-                                        View Content
-                                      </a>
-                                    </Button>
-                                  )}
-                                </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-                                <div className="flex space-x-2">
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button 
-                                        size="sm" 
-                                        className="bg-green-600 hover:bg-green-700"
-                                        onClick={() => setSelectedSubmission(submission)}
-                                      >
-                                        <CheckCircle className="w-3 h-3 mr-2" />
-                                        Approve
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Approve Submission</DialogTitle>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <p className="text-muted-foreground">
-                                          Are you sure you want to approve this submission? Payment will be added to the creator's wallet.
-                                        </p>
-                                        <Textarea
-                                          placeholder="Add review notes (optional)..."
-                                          value={reviewNotes}
-                                          onChange={(e) => setReviewNotes(e.target.value)}
-                                        />
-                                        <div className="flex space-x-2">
-                                          <Button 
-                                            variant="outline" 
-                                            onClick={() => setSelectedSubmission(null)}
-                                          >
-                                            Cancel
-                                          </Button>
-                                          <Button 
-                                            onClick={() => handleReviewSubmission('approved')}
-                                            disabled={reviewSubmissionMutation.isPending}
-                                            className="bg-green-600 hover:bg-green-700"
-                                          >
-                                            Confirm Approval
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <Button 
-                                        size="sm" 
-                                        variant="destructive"
-                                        onClick={() => setSelectedSubmission(submission)}
-                                      >
-                                        <XCircle className="w-3 h-3 mr-2" />
-                                        Reject
-                                      </Button>
-                                    </DialogTrigger>
-                                    <DialogContent>
-                                      <DialogHeader>
-                                        <DialogTitle>Reject Submission</DialogTitle>
-                                      </DialogHeader>
-                                      <div className="space-y-4">
-                                        <p className="text-muted-foreground">
-                                          Please provide a reason for rejecting this submission.
-                                        </p>
-                                        <Textarea
-                                          placeholder="Reason for rejection..."
-                                          value={reviewNotes}
-                                          onChange={(e) => setReviewNotes(e.target.value)}
-                                          required
-                                        />
-                                        <div className="flex space-x-2">
-                                          <Button 
-                                            variant="outline" 
-                                            onClick={() => setSelectedSubmission(null)}
-                                          >
-                                            Cancel
-                                          </Button>
-                                          <Button 
-                                            onClick={() => handleReviewSubmission('rejected')}
-                                            disabled={reviewSubmissionMutation.isPending || !reviewNotes.trim()}
-                                            variant="destructive"
-                                          >
-                                            Confirm Rejection
-                                          </Button>
-                                        </div>
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                {/* Payouts Management */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Send className="w-5 h-5" />
+                        <span>Creator Payouts</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">£28,450</div>
+                          <div className="text-xs text-muted-foreground">Total Paid Out</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">£4,320</div>
+                          <div className="text-xs text-muted-foreground">Pending Payouts</div>
+                        </div>
                       </div>
-                    ) : (
-                      <Card>
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Next payout date:</span>
+                          <span className="font-medium">September 15, 2025</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Payout frequency:</span>
+                          <span className="font-medium">Weekly</span>
+                        </div>
+                      </div>
+                      <Button className="w-full">
+                        <Send className="w-4 h-4 mr-2" />
+                        Process Pending Payouts
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center space-x-2">
+                        <Percent className="w-5 h-5" />
+                        <span>Fee Configuration</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Platform Fee</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">10%</span>
+                            <Button variant="outline" size="sm">Edit</Button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">Stripe Processing</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">2.9% + 30p</span>
+                            <Button variant="outline" size="sm">View</Button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm">PayPal Processing</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">3.4% + 20p</span>
+                            <Button variant="outline" size="sm">View</Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pt-3 border-t">
+                        <Button variant="outline" className="w-full">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Advanced Fee Settings
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            )}
+
+            {/* End of Financial Section - Continue to Email Management */}
+            {activeSection === "email-management" && (
                         <CardContent className="p-12 text-center">
                           <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
                           <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
