@@ -151,6 +151,13 @@ export default function Admin() {
     retry: false,
   });
 
+  // Fetch API settings
+  const { data: apiSettings, isLoading: apiSettingsLoading, refetch: refetchApiSettings } = useQuery({
+    queryKey: ["/api/admin/api-settings"],
+    enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
+    retry: false,
+  });
+
   const reviewSubmissionMutation = useMutation({
     mutationFn: async (data: { submissionId: string; status: string; notes?: string }) => {
       return await apiRequest("POST", `/api/admin/submissions/${data.submissionId}/review`, {
@@ -198,6 +205,50 @@ export default function Admin() {
       notes: reviewNotes.trim() || undefined
     });
   };
+
+  // API Settings mutations
+  const saveApiSettingsMutation = useMutation({
+    mutationFn: async (data: { service: string; settings: any }) => {
+      return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Settings Saved",
+        description: `${variables.service} API settings saved successfully!`,
+      });
+      refetchApiSettings();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save API settings.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const testApiConnectionMutation = useMutation({
+    mutationFn: async (service: string) => {
+      return await apiRequest("POST", `/api/admin/api-settings/test/${service}`, {});
+    },
+    onSuccess: (data, service) => {
+      const result = typeof data === 'object' && data !== null ? data : {};
+      toast({
+        title: "Test Successful",
+        description: (result as any).message || `${service} API connection successful!`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Test Failed",
+        description: error.message || "API connection test failed.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // API Settings form state
+  const [apiFormData, setApiFormData] = useState<any>({});
 
   if (isLoading) {
     return (
@@ -863,7 +914,12 @@ export default function Admin() {
                           <Bot className="w-5 h-5 mr-2" />
                           OpenAI API Configuration
                         </div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                        <Badge 
+                          variant={apiSettings?.openai?.status === 'active' ? "secondary" : "destructive"}
+                          className={apiSettings?.openai?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {apiSettings?.openai?.status === 'active' ? 'Active' : 'Inactive'}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -873,7 +929,11 @@ export default function Admin() {
                           <Input 
                             type="password" 
                             placeholder="sk-..." 
-                            defaultValue="sk-••••••••••••••••••••••••••••••••••••••••••••••••"
+                            value={apiFormData.openai?.apiKey || ''}
+                            onChange={(e) => setApiFormData(prev => ({
+                              ...prev,
+                              openai: { ...prev.openai, apiKey: e.target.value }
+                            }))}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -882,7 +942,13 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Model Selection</Label>
-                        <Select defaultValue="gpt-3.5-turbo">
+                        <Select 
+                          value={apiFormData.openai?.model || apiSettings?.openai?.model || "gpt-3.5-turbo"}
+                          onValueChange={(value) => setApiFormData(prev => ({
+                            ...prev,
+                            openai: { ...prev.openai, model: value }
+                          }))}
+                        >
                           <SelectTrigger className="mt-1">
                             <SelectValue />
                           </SelectTrigger>
@@ -898,7 +964,11 @@ export default function Admin() {
                         <Label>Max Tokens</Label>
                         <Input 
                           type="number" 
-                          defaultValue="1000"
+                          value={apiFormData.openai?.maxTokens || apiSettings?.openai?.maxTokens || 1000}
+                          onChange={(e) => setApiFormData(prev => ({
+                            ...prev,
+                            openai: { ...prev.openai, maxTokens: parseInt(e.target.value) }
+                          }))}
                           placeholder="1000"
                           className="mt-1"
                         />
@@ -910,27 +980,64 @@ export default function Admin() {
                           step="0.1"
                           min="0"
                           max="2"
-                          defaultValue="0.7"
+                          value={apiFormData.openai?.temperature || apiSettings?.openai?.temperature || 0.7}
+                          onChange={(e) => setApiFormData(prev => ({
+                            ...prev,
+                            openai: { ...prev.openai, temperature: parseFloat(e.target.value) }
+                          }))}
                           className="mt-1"
                         />
                       </div>
                       <div className="flex space-x-2">
-                        <Button size="sm">Save Settings</Button>
-                        <Button variant="outline" size="sm">Test AI Chat</Button>
+                        <Button 
+                          size="sm"
+                          onClick={() => saveApiSettingsMutation.mutate({
+                            service: 'openai',
+                            settings: apiFormData.openai || {}
+                          })}
+                          disabled={saveApiSettingsMutation.isPending}
+                        >
+                          {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => testApiConnectionMutation.mutate('openai')}
+                          disabled={testApiConnectionMutation.isPending}
+                        >
+                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test AI Chat'}
+                        </Button>
                       </div>
                       <div className="mt-4 p-3 bg-muted rounded-lg">
                         <div className="flex items-center justify-between text-sm">
                           <span>API Status:</span>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                          <Badge 
+                            variant={apiSettings?.openai?.status === 'active' ? "secondary" : "destructive"}
+                            className={apiSettings?.openai?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                          >
+                            {apiSettings?.openai?.status === 'active' ? 'Connected' : 'Disconnected'}
+                          </Badge>
                         </div>
                         <div className="flex items-center justify-between text-sm mt-2">
                           <span>Current Model:</span>
-                          <span className="font-mono text-xs">gpt-3.5-turbo</span>
+                          <span className="font-mono text-xs">
+                            {apiSettings?.openai?.model || 'gpt-3.5-turbo'}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-sm mt-2">
                           <span>Monthly Usage:</span>
-                          <span className="font-mono text-xs">12,450 tokens</span>
+                          <span className="font-mono text-xs">
+                            {apiSettings?.openai?.monthlyUsage || 0} tokens
+                          </span>
                         </div>
+                        {apiSettings?.openai?.lastTested && (
+                          <div className="flex items-center justify-between text-sm mt-2">
+                            <span>Last Tested:</span>
+                            <span className="font-mono text-xs">
+                              {format(new Date(apiSettings.openai.lastTested), 'MMM dd, h:mm a')}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
