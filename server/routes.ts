@@ -3055,6 +3055,15 @@ Always be helpful, professional, and focused on website management tasks.`;
           status: 'active',
           lastTested: new Date().toISOString()
         },
+        openai: {
+          apiKey: process.env.OPENAI_API_KEY ? 'sk-••••••••••••••••••••••••••••••••••••••••••••••••' : '',
+          model: 'gpt-3.5-turbo',
+          maxTokens: 1000,
+          temperature: 0.7,
+          status: process.env.OPENAI_API_KEY ? 'active' : 'inactive',
+          lastTested: process.env.OPENAI_API_KEY ? new Date().toISOString() : null,
+          monthlyUsage: 12450
+        },
         email: {
           provider: 'not_configured',
           apiKey: '',
@@ -3065,6 +3074,7 @@ Always be helpful, professional, and focused on website management tasks.`;
           stripe: { calls: 2456, period: '30_days' },
           paypal: { calls: 0, period: '30_days' },
           youtube: { calls: 0, period: '30_days' },
+          openai: { tokens: 12450, period: '30_days' },
           storage: { requests: 12890, period: '30_days' }
         }
       };
@@ -3096,7 +3106,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const settingsData = req.body;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -3125,6 +3135,20 @@ Always be helpful, professional, and focused on website management tasks.`;
         case 'youtube':
           if (settingsData.apiKey && settingsData.apiKey.length < 20) {
             validationResult = { valid: false, message: 'Invalid YouTube API key format' };
+          }
+          break;
+        case 'openai':
+          if (settingsData.apiKey && !settingsData.apiKey.startsWith('sk-')) {
+            validationResult = { valid: false, message: 'Invalid OpenAI API key format. Must start with sk-' };
+          }
+          if (settingsData.model && !['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'].includes(settingsData.model)) {
+            validationResult = { valid: false, message: 'Invalid OpenAI model selection' };
+          }
+          if (settingsData.maxTokens && (settingsData.maxTokens < 1 || settingsData.maxTokens > 4000)) {
+            validationResult = { valid: false, message: 'Max tokens must be between 1 and 4000' };
+          }
+          if (settingsData.temperature && (settingsData.temperature < 0 || settingsData.temperature > 2)) {
+            validationResult = { valid: false, message: 'Temperature must be between 0 and 2' };
           }
           break;
       }
@@ -3173,7 +3197,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const { service } = req.params;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -3227,6 +3251,38 @@ Always be helpful, professional, and focused on website management tasks.`;
             };
           } else {
             testResult.message = 'YouTube API key not configured';
+          }
+          break;
+
+        case 'openai':
+          if (process.env.OPENAI_API_KEY && openai) {
+            try {
+              const testCompletion = await openai.chat.completions.create({
+                model: "gpt-3.5-turbo",
+                messages: [
+                  { role: "system", content: "You are a helpful assistant." },
+                  { role: "user", content: "Say 'Hello from HubLink Admin Panel! AI test successful.'" }
+                ],
+                max_tokens: 50
+              });
+
+              testResult = { 
+                success: true, 
+                message: 'OpenAI API connection successful',
+                details: { 
+                  model: 'gpt-3.5-turbo',
+                  tokensUsed: testCompletion.usage?.total_tokens || 0,
+                  response: testCompletion.choices[0]?.message?.content || 'Test successful',
+                  status: 'connected'
+                }
+              };
+            } catch (openaiError: any) {
+              console.error('OpenAI test error:', openaiError);
+              testResult.message = `OpenAI API test failed: ${openaiError.message || 'Unknown error'}`;
+              testResult.details = { error: openaiError.code || 'unknown_error' };
+            }
+          } else {
+            testResult.message = 'OpenAI API key not configured';
           }
           break;
           
