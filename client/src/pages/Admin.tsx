@@ -209,9 +209,13 @@ export default function Admin() {
   // API Settings mutations
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
-      return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+      console.log('🚀 Sending API settings save request:', data);
+      const response = await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+      console.log('✅ API settings save response:', response);
+      return response;
     },
     onSuccess: (data, variables) => {
+      console.log('✅ Save success callback:', { data, variables });
       toast({
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
@@ -219,6 +223,7 @@ export default function Admin() {
       refetchApiSettings();
     },
     onError: (error: any) => {
+      console.error('❌ Save error callback:', error);
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save API settings.",
@@ -958,10 +963,13 @@ export default function Admin() {
                             type="password" 
                             placeholder="sk-..." 
                             value={apiFormData.openai?.apiKey || ''}
-                            onChange={(e) => setApiFormData(prev => ({
-                              ...prev,
-                              openai: { ...prev.openai, apiKey: e.target.value }
-                            }))}
+                            onChange={(e) => {
+                              console.log('🔑 API Key input changed:', e.target.value.slice(0, 10) + '...');
+                              setApiFormData(prev => ({
+                                ...prev,
+                                openai: { ...prev.openai, apiKey: e.target.value }
+                              }));
+                            }}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -1019,10 +1027,24 @@ export default function Admin() {
                       <div className="flex space-x-2">
                         <Button 
                           size="sm"
-                          onClick={() => saveApiSettingsMutation.mutate({
-                            service: 'openai',
-                            settings: apiFormData.openai || {}
-                          })}
+                          onClick={() => {
+                            console.log('Save button clicked for OpenAI');
+                            console.log('Current form data:', apiFormData.openai);
+                            
+                            if (!apiFormData.openai?.apiKey) {
+                              toast({
+                                title: "API Key Required",
+                                description: "Please enter your OpenAI API key first.",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            
+                            saveApiSettingsMutation.mutate({
+                              service: 'openai',
+                              settings: apiFormData.openai || {}
+                            });
+                          }}
                           disabled={saveApiSettingsMutation.isPending}
                         >
                           {saveApiSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
