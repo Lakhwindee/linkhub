@@ -18,7 +18,7 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin, Plus, Percent, Send
+  Save, MapPin, Plus, Percent, Send, Key
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
@@ -258,6 +258,7 @@ export default function Admin() {
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
     { id: "discount-codes", label: "Coupons & Trials", icon: Percent, description: "Manage discount codes, trial coupons & auto-billing", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
+    { id: "api-settings", label: "API Settings", icon: Key, description: "Configure API keys & integrations", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
     { id: "reports", label: "Reports & Flags", icon: Flag, description: "User reports" },
