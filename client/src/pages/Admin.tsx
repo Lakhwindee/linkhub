@@ -464,6 +464,359 @@ export default function Admin() {
           <div className="space-y-6">
             {activeSection === "dashboard" && renderDashboardSection()}
 
+            {/* API Settings Section */}
+            {activeSection === "api-settings" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">API Settings & Integrations</h2>
+                  <div className="flex space-x-2">
+                    <Button variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Config
+                    </Button>
+                    <Button variant="outline">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Import Config
+                    </Button>
+                  </div>
+                </div>
+
+                {/* API Keys Management Grid */}
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Stripe API Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <CreditCard className="w-5 h-5 mr-2" />
+                          Stripe API Keys
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Publishable Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="pk_live_..." 
+                            defaultValue="pk_live_••••••••••••3456" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Secret Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="sk_live_..." 
+                            defaultValue="sk_live_••••••••••••7890" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Webhook Secret</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="whsec_..." 
+                            defaultValue="whsec_••••••••••••1234" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Update Keys</Button>
+                        <Button variant="outline" size="sm">Test Connection</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* PayPal API Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <DollarSign className="w-5 h-5 mr-2" />
+                          PayPal API Keys
+                        </div>
+                        <Badge variant="destructive">Inactive</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Client ID</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="Enter PayPal Client ID" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Client Secret</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="Enter PayPal Client Secret" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Environment</Label>
+                        <Select defaultValue="sandbox">
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sandbox">Sandbox</SelectItem>
+                            <SelectItem value="live">Live</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Save Keys</Button>
+                        <Button variant="outline" size="sm">Test Connection</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* YouTube API Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Globe className="w-5 h-5 mr-2" />
+                          YouTube API Key
+                        </div>
+                        <Badge variant="destructive">Inactive</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>API Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="Enter YouTube API Key" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Project ID</Label>
+                        <Input 
+                          placeholder="Google Cloud Project ID" 
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Save API Key</Button>
+                        <Button variant="outline" size="sm">Test API</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Database Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Database className="w-5 h-5 mr-2" />
+                          Database Config
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Database URL</Label>
+                        <Input 
+                          type="password" 
+                          defaultValue="postgres://••••••••••••"
+                          disabled
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Connection Pool Size</Label>
+                        <Input 
+                          type="number" 
+                          defaultValue="10"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm">Test Connection</Button>
+                        <Button variant="outline" size="sm">View Logs</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Google Cloud Storage */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Server className="w-5 h-5 mr-2" />
+                          Google Cloud Storage
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Bucket Name</Label>
+                        <Input 
+                          defaultValue="hublink-storage"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Service Account Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            defaultValue="••••••••••••"
+                          />
+                          <Button variant="outline" size="sm">
+                            <Upload className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Update Config</Button>
+                        <Button variant="outline" size="sm">Test Storage</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Email Service Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Mail className="w-5 h-5 mr-2" />
+                          Email Service
+                        </div>
+                        <Badge variant="outline">Not Configured</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Service Provider</Label>
+                        <Select>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Select email service" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="sendgrid">SendGrid</SelectItem>
+                            <SelectItem value="mailgun">Mailgun</SelectItem>
+                            <SelectItem value="ses">Amazon SES</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>API Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="Enter API Key" 
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Save Config</Button>
+                        <Button variant="outline" size="sm">Send Test Email</Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* API Usage Statistics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <BarChart3 className="w-5 h-5 mr-2" />
+                      API Usage Statistics (Last 30 Days)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">2,456</div>
+                        <div className="text-sm text-muted-foreground">Stripe API Calls</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">0</div>
+                        <div className="text-sm text-muted-foreground">PayPal API Calls</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-red-600">0</div>
+                        <div className="text-sm text-muted-foreground">YouTube API Calls</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">12,890</div>
+                        <div className="text-sm text-muted-foreground">Storage Requests</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Security Settings */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Shield className="w-5 h-5 mr-2" />
+                      API Security Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <Label>Rate Limiting</Label>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Input type="number" defaultValue="100" />
+                          <span className="text-sm text-muted-foreground">requests/minute</span>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>API Key Rotation</Label>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Input type="number" defaultValue="90" />
+                          <span className="text-sm text-muted-foreground">days</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button size="sm">Apply Security Settings</Button>
+                      <Button variant="outline" size="sm">Generate New API Key</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
             {/* Payment Accounts Management */}
             {activeSection === "payment-accounts" && (
               <div className="space-y-6">
