@@ -26,6 +26,34 @@ const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 }) : null;
 
+// In-memory store for API settings (in production, use database)
+let storedApiSettings = {
+  stripe: {
+    publishableKey: '',
+    secretKey: '',
+    webhookSecret: ''
+  },
+  paypal: {
+    clientId: '',
+    clientSecret: '',
+    environment: 'sandbox'
+  },
+  youtube: {
+    apiKey: '',
+    projectId: 'hublink-project'
+  },
+  openai: {
+    apiKey: '',
+    model: 'gpt-3.5-turbo',
+    maxTokens: 1000,
+    temperature: 0.7
+  },
+  email: {
+    provider: 'not_configured',
+    apiKey: ''
+  }
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Cookie parser middleware
   app.use(cookieParser());
@@ -2397,7 +2425,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let openaiClient = null;
       
       // Check if we have saved API settings for OpenAI
-      const savedSettings = apiSettings.openai;
+      const savedSettings = storedApiSettings.openai;
       if (savedSettings && savedSettings.apiKey && savedSettings.apiKey.trim() !== '') {
         apiKey = savedSettings.apiKey;
       } else {
@@ -3046,26 +3074,26 @@ Always be helpful, professional, and focused on website management tasks.`;
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      // Return API configuration status
+      // Return API configuration status with stored settings
       const apiSettings = {
         stripe: {
-          publishableKey: process.env.VITE_STRIPE_PUBLIC_KEY ? 'pk_live_••••••••••••3456' : '',
-          secretKey: process.env.STRIPE_SECRET_KEY ? 'sk_live_••••••••••••7890' : '',
-          webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ? 'whsec_••••••••••••1234' : '',
-          status: process.env.STRIPE_SECRET_KEY ? 'active' : 'inactive',
+          publishableKey: storedApiSettings.stripe.publishableKey || (process.env.VITE_STRIPE_PUBLIC_KEY ? 'pk_live_••••••••••••3456' : ''),
+          secretKey: storedApiSettings.stripe.secretKey || (process.env.STRIPE_SECRET_KEY ? 'sk_live_••••••••••••7890' : ''),
+          webhookSecret: storedApiSettings.stripe.webhookSecret || (process.env.STRIPE_WEBHOOK_SECRET ? 'whsec_••••••••••••1234' : ''),
+          status: (storedApiSettings.stripe.secretKey || process.env.STRIPE_SECRET_KEY) ? 'active' : 'inactive',
           lastTested: new Date().toISOString()
         },
         paypal: {
-          clientId: process.env.PAYPAL_CLIENT_ID || '',
-          clientSecret: process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••' : '',
-          environment: 'sandbox',
-          status: process.env.PAYPAL_CLIENT_ID ? 'active' : 'inactive',
+          clientId: storedApiSettings.paypal.clientId || process.env.PAYPAL_CLIENT_ID || '',
+          clientSecret: storedApiSettings.paypal.clientSecret || (process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••' : ''),
+          environment: storedApiSettings.paypal.environment || 'sandbox',
+          status: (storedApiSettings.paypal.clientId || process.env.PAYPAL_CLIENT_ID) ? 'active' : 'inactive',
           lastTested: null
         },
         youtube: {
-          apiKey: process.env.YOUTUBE_API_KEY ? '••••••••••••' : '',
-          projectId: 'hublink-project',
-          status: process.env.YOUTUBE_API_KEY ? 'active' : 'inactive',
+          apiKey: storedApiSettings.youtube.apiKey || (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
+          projectId: storedApiSettings.youtube.projectId || 'hublink-project',
+          status: (storedApiSettings.youtube.apiKey || process.env.YOUTUBE_API_KEY) ? 'active' : 'inactive',
           lastTested: null
         },
         database: {
@@ -3080,18 +3108,18 @@ Always be helpful, professional, and focused on website management tasks.`;
           lastTested: new Date().toISOString()
         },
         openai: {
-          apiKey: process.env.OPENAI_API_KEY ? 'sk-••••••••••••••••••••••••••••••••••••••••••••••••' : '',
-          model: 'gpt-3.5-turbo',
-          maxTokens: 1000,
-          temperature: 0.7,
-          status: process.env.OPENAI_API_KEY ? 'active' : 'inactive',
-          lastTested: process.env.OPENAI_API_KEY ? new Date().toISOString() : null,
+          apiKey: storedApiSettings.openai.apiKey || (process.env.OPENAI_API_KEY ? 'sk-••••••••••••••••••••••••••••••••••••••••••••••••' : ''),
+          model: storedApiSettings.openai.model || 'gpt-3.5-turbo',
+          maxTokens: storedApiSettings.openai.maxTokens || 1000,
+          temperature: storedApiSettings.openai.temperature || 0.7,
+          status: (storedApiSettings.openai.apiKey || process.env.OPENAI_API_KEY) ? 'active' : 'inactive',
+          lastTested: (storedApiSettings.openai.apiKey || process.env.OPENAI_API_KEY) ? new Date().toISOString() : null,
           monthlyUsage: 12450
         },
         email: {
-          provider: 'not_configured',
-          apiKey: '',
-          status: 'inactive',
+          provider: storedApiSettings.email.provider || 'not_configured',
+          apiKey: storedApiSettings.email.apiKey || '',
+          status: storedApiSettings.email.apiKey ? 'active' : 'inactive',
           lastTested: null
         },
         usage: {
@@ -3179,6 +3207,12 @@ Always be helpful, professional, and focused on website management tasks.`;
       
       if (!validationResult.valid) {
         return res.status(400).json({ message: validationResult.message });
+      }
+      
+      // Store the API settings in memory (in production, use secure database storage)
+      if (storedApiSettings[service as keyof typeof storedApiSettings]) {
+        Object.assign(storedApiSettings[service as keyof typeof storedApiSettings], settingsData);
+        console.log(`✅ Saved ${service} settings:`, Object.keys(settingsData));
       }
       
       // Create audit log
