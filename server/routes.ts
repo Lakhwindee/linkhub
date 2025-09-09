@@ -2428,9 +2428,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedSettings = storedApiSettings.openai;
       if (savedSettings && savedSettings.apiKey && savedSettings.apiKey.trim() !== '') {
         apiKey = savedSettings.apiKey;
+        console.log('🔑 Using saved OpenAI API key:', apiKey.slice(0, 10) + '...');
       } else {
-        // Fallback to environment variable
+        // Fallback to environment variable only if no saved key
         apiKey = process.env.OPENAI_API_KEY;
+        console.log('🔑 Using environment OpenAI API key:', apiKey ? apiKey.slice(0, 10) + '...' : 'none');
       }
       
       // Validate API key format (OpenAI keys start with 'sk-')
@@ -3318,8 +3320,10 @@ Always be helpful, professional, and focused on website management tasks.`;
           const savedOpenAISettings = storedApiSettings.openai;
           if (savedOpenAISettings && savedOpenAISettings.apiKey && savedOpenAISettings.apiKey.trim() !== '') {
             openaiApiKey = savedOpenAISettings.apiKey;
+            console.log('🧪 Test using saved OpenAI API key:', openaiApiKey.slice(0, 10) + '...');
           } else {
             openaiApiKey = process.env.OPENAI_API_KEY;
+            console.log('🧪 Test using environment OpenAI API key:', openaiApiKey ? openaiApiKey.slice(0, 10) + '...' : 'none');
           }
 
           if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
