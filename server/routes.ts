@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
+import OpenAI from "openai";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
@@ -18,6 +19,11 @@ import fetch from 'node-fetch';
 // Initialize Stripe (only if keys are available)
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-08-27.basil",
+}) : null;
+
+// Initialize OpenAI (only if API key is available)
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 }) : null;
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -2366,6 +2372,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching admin dashboard:", error);
       res.status(500).json({ message: "Failed to fetch dashboard" });
+    }
+  });
+
+  // AI Assistant Chat API
+  app.post('/api/ai/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Handle demo admin
+      let user;
+      if (userId === 'demo-admin') {
+        user = { role: 'admin' };
+      } else {
+        user = await storage.getUser(userId);
+      }
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!openai) {
+        return res.status(503).json({ 
+          response: "OpenAI API is not configured. Please set the OPENAI_API_KEY environment variable.",
+          error: "service_unavailable"
+        });
+      }
+
+      const { message, context } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ 
+          response: "Please provide a valid message.",
+          error: "invalid_input"
+        });
+      }
+
+      // Create AI assistant prompt for website editing
+      const systemPrompt = `You are HubLink AI Assistant, a helpful AI that helps administrators manage and edit their tourism social platform website through natural language commands.
+
+You can help with:
+1. Website Content: Edit homepage, menu items, page content, titles, descriptions
+2. User Management: Create users, update roles, manage permissions, view user data
+3. System Settings: Update configurations, pricing, features, API settings
+4. Content Moderation: Manage posts, reviews, reports, user-generated content
+5. Financial Management: View revenue, update pricing, manage payments
+6. Marketing: Create campaigns, update promotions, manage advertisements
+
+Current context: ${context || 'admin_panel'}
+
+When users ask you to make changes:
+1. Acknowledge what they want to change
+2. Explain what the change would do
+3. Provide step-by-step instructions
+4. Suggest related improvements if applicable
+5. Be specific and actionable
+
+For example:
+- "Add menu item About Us" → Explain where to add it, what it would contain
+- "Change homepage title" → Explain current title, suggest new options
+- "Create admin user" → Explain user creation process, required fields
+- "Update pricing" → Show current pricing, explain impact of changes
+
+Always be helpful, professional, and focused on website management tasks.`;
+
+      try {
+        const completion = await openai.chat.completions.create({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: message }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7
+        });
+
+        const response = completion.choices[0]?.message?.content || 
+          "I'm sorry, I couldn't generate a response. Please try again.";
+
+        // Create audit log for AI usage
+        await storage.createAuditLog({
+          actorId: userId,
+          action: 'ai_chat_request',
+          targetType: 'ai_assistant',
+          targetId: 'chat_session',
+          metaJson: { 
+            message: message.substring(0, 100), // Log first 100 chars
+            context,
+            tokens_used: completion.usage?.total_tokens || 0
+          }
+        });
+
+        res.json({ 
+          response,
+          tokens_used: completion.usage?.total_tokens || 0,
+          model: "gpt-3.5-turbo"
+        });
+
+      } catch (openaiError: any) {
+        console.error('OpenAI API error:', openaiError);
+        
+        let errorMessage = "I'm experiencing technical difficulties. Please try again later.";
+        
+        if (openaiError.code === 'insufficient_quota') {
+          errorMessage = "OpenAI API quota exceeded. Please check your OpenAI account billing.";
+        } else if (openaiError.code === 'invalid_api_key') {
+          errorMessage = "OpenAI API key is invalid. Please check your configuration.";
+        } else if (openaiError.code === 'rate_limit_exceeded') {
+          errorMessage = "Too many requests. Please wait a moment and try again.";
+        }
+
+        res.json({ 
+          response: errorMessage,
+          error: "openai_error",
+          error_code: openaiError.code
+        });
+      }
+
+    } catch (error) {
+      console.error("AI chat error:", error);
+      res.status(500).json({ 
+        response: "I encountered an unexpected error. Please try again.",
+        error: "server_error"
+      });
     }
   });
 
