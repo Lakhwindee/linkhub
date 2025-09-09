@@ -18,7 +18,7 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin, Plus, Percent, Send, Key
+  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
@@ -70,21 +70,16 @@ export default function Admin() {
     setAiLoading(true);
     
     try {
-      const response = await apiRequest('/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userMessage.content,
-          context: 'admin_panel'
-        })
+      const response = await apiRequest('POST', '/api/ai/chat', {
+        message: userMessage.content,
+        context: 'admin_panel'
       });
       
+      const result = await response.json();
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         role: 'assistant' as const,
-        content: response.response,
+        content: result.response,
         timestamp: new Date()
       };
       
