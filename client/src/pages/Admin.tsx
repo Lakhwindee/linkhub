@@ -855,6 +855,86 @@ export default function Admin() {
                     </CardContent>
                   </Card>
 
+                  {/* OpenAI API Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Bot className="w-5 h-5 mr-2" />
+                          OpenAI API Configuration
+                        </div>
+                        <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>API Key</Label>
+                        <div className="flex space-x-2 mt-1">
+                          <Input 
+                            type="password" 
+                            placeholder="sk-..." 
+                            defaultValue="sk-••••••••••••••••••••••••••••••••••••••••••••••••"
+                          />
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div>
+                        <Label>Model Selection</Label>
+                        <Select defaultValue="gpt-3.5-turbo">
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo (Recommended)</SelectItem>
+                            <SelectItem value="gpt-4">GPT-4 (Premium)</SelectItem>
+                            <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                            <SelectItem value="gpt-4o">GPT-4o</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Max Tokens</Label>
+                        <Input 
+                          type="number" 
+                          defaultValue="1000"
+                          placeholder="1000"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label>Temperature</Label>
+                        <Input 
+                          type="number" 
+                          step="0.1"
+                          min="0"
+                          max="2"
+                          defaultValue="0.7"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button size="sm">Save Settings</Button>
+                        <Button variant="outline" size="sm">Test AI Chat</Button>
+                      </div>
+                      <div className="mt-4 p-3 bg-muted rounded-lg">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>API Status:</span>
+                          <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-2">
+                          <span>Current Model:</span>
+                          <span className="font-mono text-xs">gpt-3.5-turbo</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-2">
+                          <span>Monthly Usage:</span>
+                          <span className="font-mono text-xs">12,450 tokens</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Database Configuration */}
                   <Card>
                     <CardHeader>
