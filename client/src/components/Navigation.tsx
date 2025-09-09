@@ -134,10 +134,10 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               <Link key={item.href} href={item.href}>
                 <Button
                   variant={location === item.href ? "default" : "ghost"}
-                  className="flex items-center space-x-1 text-xs whitespace-nowrap px-1 lg:px-1.5 py-1 h-8 min-w-fit"
+                  className="flex items-center space-x-1 text-sm lg:text-base whitespace-nowrap px-2 lg:px-3 py-2 h-9 lg:h-10 min-w-fit"
                   data-testid={item.testId}
                 >
-                  <item.icon className="w-4 h-4" />
+                  <item.icon className="w-4 h-4 lg:w-5 lg:h-5" />
                   <span>{item.label}</span>
                   {(item as any).restricted && <Lock className="w-3 h-3 ml-1 text-muted-foreground" />}
                 </Button>
