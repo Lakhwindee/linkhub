@@ -115,7 +115,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border">
       <div className="max-w-full px-1 sm:px-2 lg:max-w-7xl lg:mx-auto lg:px-4">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-16 relative">
           {/* Logo */}
           <Link href="/">
             <div className="flex items-center space-x-2">
@@ -128,8 +128,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             </div>
           </Link>
 
-          {/* Centered Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-0.5 lg:space-x-1 flex-1 justify-center max-w-none px-4">
+          {/* Absolutely Centered Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-0.5 lg:space-x-1 absolute left-1/2 transform -translate-x-1/2">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
