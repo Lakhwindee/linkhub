@@ -129,12 +129,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 lg:space-x-3 flex-1 justify-center max-w-3xl overflow-x-auto">
+          <div className="hidden md:flex items-center space-x-1 lg:space-x-3 flex-1 justify-center max-w-4xl flex-wrap">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <Button
                   variant={location === item.href ? "default" : "ghost"}
-                  className="flex items-center space-x-1 text-xs lg:text-sm whitespace-nowrap min-w-fit"
+                  className="flex items-center space-x-1 text-xs lg:text-sm whitespace-nowrap px-2 lg:px-3 py-1.5"
                   data-testid={item.testId}
                 >
                   <item.icon className="w-4 h-4" />
