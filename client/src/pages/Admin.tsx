@@ -254,13 +254,13 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
-    { id: "payment-accounts", label: "Payment Accounts", icon: CreditCard, description: "Manage payment systems", badge: "New" },
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
     { id: "discount-codes", label: "Coupons & Trials", icon: Percent, description: "Manage discount codes, trial coupons & auto-billing", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
     { id: "api-settings", label: "API Settings", icon: Key, description: "Configure API keys & integrations", badge: "New" },
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
-    { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue & payments" },
+    { id: "ad-review", label: "Ad Review", icon: Eye, description: "Review ad submissions", badge: "Updated" },
+    { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue, payments & finances" },
     { id: "reports", label: "Reports & Flags", icon: Flag, description: "User reports" },
     { id: "analytics", label: "Analytics", icon: BarChart3, description: "Platform metrics" },
     { id: "settings", label: "System Settings", icon: Settings, description: "Platform config" },
@@ -817,100 +817,180 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Payment Accounts Management */}
-            {activeSection === "payment-accounts" && (
+            {/* Ad Review Section */}
+            {activeSection === "ad-review" && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">Payment Accounts Management</h2>
-                  <Button className="bg-green-600 hover:bg-green-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Payment Account
-                  </Button>
+                  <h2 className="text-2xl font-bold text-foreground">Ad Submissions Review</h2>
+                  <div className="flex space-x-2">
+                    <Select defaultValue="all">
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Submissions</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Data
+                    </Button>
+                  </div>
                 </div>
 
-                {/* Payment Gateway Settings */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Stripe Account */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <CreditCard className="w-5 h-5 mr-2" />
-                        Stripe Integration
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">Connected</Badge>
-                        <Badge variant="outline">Live Mode</Badge>
-                      </div>
-                      <div>
-                        <Label>Publishable Key</Label>
-                        <Input value="pk_live_••••••••••••3456" disabled className="mt-1" />
-                      </div>
-                      <div>
-                        <Label>Webhook Endpoint</Label>
-                        <Input value="https://api.hublink.com/webhooks/stripe" disabled className="mt-1" />
-                      </div>
-                      <div className="pt-2">
-                        <p className="text-sm text-muted-foreground mb-2">Platform Fee: 10%</p>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">Configure</Button>
-                          <Button variant="outline" size="sm">Test Connection</Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* PayPal Account */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        <DollarSign className="w-5 h-5 mr-2" />
-                        PayPal Integration
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <Badge variant="destructive">Disconnected</Badge>
-                        <Badge variant="outline">Sandbox</Badge>
-                      </div>
-                      <div>
-                        <Label>Client ID</Label>
-                        <Input placeholder="Enter PayPal Client ID" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label>Client Secret</Label>
-                        <Input placeholder="Enter PayPal Client Secret" type="password" className="mt-1" />
-                      </div>
-                      <div className="pt-2">
-                        <Button className="w-full">Connect PayPal</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Financial Overview */}
+                {/* Ad Submissions List */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Financial Overview</CardTitle>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Eye className="w-5 h-5 text-chart-2" />
+                      <span>Ad Submissions for Review</span>
+                      {pendingSubmissions.length > 0 && (
+                        <Badge variant="destructive">{pendingSubmissions.length}</Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {submissionsLoading ? (
+                      <div className="space-y-4">
+                        {[...Array(5)].map((_, i) => (
+                          <div key={i} className="animate-pulse space-y-3 p-4 border border-border rounded-lg">
+                            <div className="h-4 bg-muted rounded w-3/4"></div>
+                            <div className="h-3 bg-muted rounded w-1/2"></div>
+                            <div className="h-3 bg-muted rounded w-2/3"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : pendingSubmissions.length > 0 ? (
+                      <div className="space-y-4">
+                        {pendingSubmissions.map((submission: AdSubmission) => (
+                          <Card key={submission.id} className="border-yellow-200 dark:border-yellow-800">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-2">
+                                  <div className="flex items-center space-x-2">
+                                    <Badge variant="outline">{submission.status}</Badge>
+                                    <span className="text-sm text-muted-foreground">
+                                      Submitted {format(new Date(submission.createdAt!), 'MMM d, yyyy')}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    Submission ID: {submission.id}
+                                  </p>
+                                  {submission.rawFileUrl && (
+                                    <Button variant="outline" size="sm" asChild>
+                                      <a href={submission.rawFileUrl} target="_blank" rel="noopener noreferrer">
+                                        <Eye className="w-3 h-3 mr-2" />
+                                        View File
+                                      </a>
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="flex space-x-2">
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => setSelectedSubmission(submission)}
+                                      >
+                                        <Eye className="w-3 h-3 mr-2" />
+                                        Review
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-2xl">
+                                      <DialogHeader>
+                                        <DialogTitle>Review Ad Submission</DialogTitle>
+                                      </DialogHeader>
+                                      {selectedSubmission && (
+                                        <div className="space-y-4">
+                                          <div>
+                                            <h4 className="font-medium mb-2">Submission Details</h4>
+                                            <div className="space-y-2 text-sm">
+                                              <p><strong>ID:</strong> {selectedSubmission.id}</p>
+                                              <p><strong>Status:</strong> {selectedSubmission.status}</p>
+                                              <p><strong>Submitted:</strong> {format(new Date(selectedSubmission.createdAt!), 'MMM d, yyyy h:mm a')}</p>
+                                            </div>
+                                          </div>
+                                          
+                                          <div>
+                                            <Label htmlFor="review-notes">Review Notes</Label>
+                                            <Textarea 
+                                              id="review-notes"
+                                              placeholder="Add review notes or feedback..."
+                                              value={reviewNotes}
+                                              onChange={(e) => setReviewNotes(e.target.value)}
+                                              className="mt-1"
+                                              rows={3}
+                                            />
+                                          </div>
+                                          
+                                          <div className="flex justify-end space-x-2">
+                                            <Button 
+                                              variant="outline" 
+                                              onClick={() => handleReviewSubmission('rejected')}
+                                              disabled={reviewSubmissionMutation.isPending}
+                                            >
+                                              <XCircle className="w-4 h-4 mr-2" />
+                                              Reject
+                                            </Button>
+                                            <Button 
+                                              onClick={() => handleReviewSubmission('approved')}
+                                              disabled={reviewSubmissionMutation.isPending}
+                                              className="bg-green-600 hover:bg-green-700"
+                                            >
+                                              <CheckCircle className="w-4 h-4 mr-2" />
+                                              Approve & Pay
+                                            </Button>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="border-dashed">
+                        <CardContent className="flex flex-col items-center justify-center py-12">
+                          <CheckCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                          <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
+                          <p className="text-muted-foreground">
+                            No ad submissions pending review at the moment.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Ad Review Statistics */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Ad Review Statistics</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">£12,450</div>
-                        <div className="text-sm text-muted-foreground">Total Revenue</div>
+                        <div className="text-2xl font-bold text-blue-600">{submissions.length}</div>
+                        <div className="text-sm text-muted-foreground">Total Submissions</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">£1,245</div>
-                        <div className="text-sm text-muted-foreground">Platform Fees</div>
+                        <div className="text-2xl font-bold text-yellow-600">{pendingSubmissions.length}</div>
+                        <div className="text-sm text-muted-foreground">Pending Review</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">£234</div>
-                        <div className="text-sm text-muted-foreground">Processing Fees</div>
+                        <div className="text-2xl font-bold text-green-600">{submissions.filter((s: AdSubmission) => s.status === 'approved').length}</div>
+                        <div className="text-sm text-muted-foreground">Approved</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">£10,971</div>
-                        <div className="text-sm text-muted-foreground">Net Revenue</div>
+                        <div className="text-2xl font-bold text-red-600">{submissions.filter((s: AdSubmission) => s.status === 'rejected').length}</div>
+                        <div className="text-sm text-muted-foreground">Rejected</div>
                       </div>
                     </div>
                   </CardContent>
