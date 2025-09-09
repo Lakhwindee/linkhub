@@ -3313,9 +3313,21 @@ Always be helpful, professional, and focused on website management tasks.`;
           break;
 
         case 'openai':
-          if (process.env.OPENAI_API_KEY && openai) {
+          // Check for saved OpenAI API key first, then environment variable
+          let openaiApiKey = null;
+          const savedOpenAISettings = storedApiSettings.openai;
+          if (savedOpenAISettings && savedOpenAISettings.apiKey && savedOpenAISettings.apiKey.trim() !== '') {
+            openaiApiKey = savedOpenAISettings.apiKey;
+          } else {
+            openaiApiKey = process.env.OPENAI_API_KEY;
+          }
+
+          if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
             try {
-              const testCompletion = await openai.chat.completions.create({
+              // Create a fresh OpenAI client with the current API key
+              const testOpenAI = new OpenAI({ apiKey: openaiApiKey });
+              
+              const testCompletion = await testOpenAI.chat.completions.create({
                 model: "gpt-3.5-turbo",
                 messages: [
                   { role: "system", content: "You are a helpful assistant." },
@@ -3336,11 +3348,17 @@ Always be helpful, professional, and focused on website management tasks.`;
               };
             } catch (openaiError: any) {
               console.error('OpenAI test error:', openaiError);
-              testResult.message = `OpenAI API test failed: ${openaiError.message || 'Unknown error'}`;
+              if (openaiError.code === 'invalid_api_key') {
+                testResult.message = 'Invalid OpenAI API key. Please check your configuration.';
+              } else if (openaiError.code === 'insufficient_quota') {
+                testResult.message = 'OpenAI API quota exceeded. Please check your billing.';
+              } else {
+                testResult.message = `OpenAI API test failed: ${openaiError.message || 'Unknown error'}`;
+              }
               testResult.details = { error: openaiError.code || 'unknown_error' };
             }
           } else {
-            testResult.message = 'OpenAI API key not configured';
+            testResult.message = 'Please configure a valid OpenAI API key (must start with sk-)';
           }
           break;
           
