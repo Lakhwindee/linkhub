@@ -186,6 +186,9 @@ export default function PublisherAds() {
     
     console.log('✅ Creating campaign and redirecting to payment...');
     
+    // Calculate budget fresh to ensure it's not 0
+    const currentBudget = calculateBudgetFromInfluencers(selectedTier, numberOfInfluencers);
+    
     // Prepare campaign data with proper structure matching schema
     const campaignData = {
       brand: data.brand,
@@ -195,8 +198,8 @@ export default function PublisherAds() {
       countries: data.countries || [],
       hashtags: data.hashtags || [],
       currency: data.currency || "USD",
-      deadlineAt: data.deadlineAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      totalBudget: calculatedBudget,
+      deadlineAt: data.deadlineAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Send as Date object, not string
+      totalBudget: currentBudget.totalBudget, // Use fresh calculation, not state
       tierLevel: Number(selectedTier),
       numberOfInfluencers: numberOfInfluencers,
     };
