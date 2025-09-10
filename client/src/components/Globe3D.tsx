@@ -733,8 +733,10 @@ export default function Globe3D({
     if (mapInstanceRef.current && !isLoading) {
       const map = mapInstanceRef.current;
       
+      console.log('🗺️ Globe3D country selection effect triggered:', { selectedCountry, selectedState });
       
       if (selectedCountry && selectedCountry !== 'all') {
+        console.log('🎯 Attempting to zoom to country:', selectedCountry);
         // Comprehensive country coordinates
         const countryCoords: Record<string, { lat: number, lng: number, zoom: number }> = {
           'GB': { lat: 54.7753, lng: -2.3508, zoom: 6 },
@@ -1397,9 +1399,15 @@ export default function Globe3D({
         // Priority 2: Zoom to country when country is selected
         const coords = countryCoords[selectedCountry];
         if (coords) {
+          console.log(`✅ Found coordinates for ${selectedCountry}:`, coords);
+          console.log('📍 Panning map to:', { lat: coords.lat, lng: coords.lng });
+          console.log('🔍 Setting zoom to:', coords.zoom);
           map.panTo({ lat: coords.lat, lng: coords.lng });
           map.setZoom(coords.zoom);
           map.setTilt(20); // Slight 3D effect for country view
+        } else {
+          console.log('❌ No coordinates found for country:', selectedCountry);
+          console.log('📋 Available countries:', Object.keys(countryCoords));
         }
       } else {
         // Default: Global satellite view when no country selected
@@ -1437,7 +1445,7 @@ export default function Globe3D({
               <div className="flex items-center space-x-3">
                 <img 
                   src={user.profileImageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'} 
-                  alt={user.displayName}
+                  alt={user.displayName || user.username || 'User'}
                   className="w-12 h-12 rounded-full object-cover"
                 />
                 <div className="flex-1 min-w-0">

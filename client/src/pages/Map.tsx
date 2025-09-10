@@ -180,7 +180,10 @@ export default function Map() {
               {/* Country Filter */}
               <div className="space-y-2">
                 <Label>Country</Label>
-                <Select value={selectedCountry} onValueChange={setSelectedCountry} data-testid="select-country">
+                <Select value={selectedCountry} onValueChange={(value) => {
+                  console.log('🌍 Country selected in Map.tsx:', value);
+                  setSelectedCountry(value);
+                }} data-testid="select-country">
                   <SelectTrigger>
                     <SelectValue placeholder="Select country" />
                   </SelectTrigger>
