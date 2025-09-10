@@ -693,8 +693,13 @@ function AdCampaignCard({ ad }: { ad: any }) {
         {/* Campaign Stats */}
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Usable Budget:</span>
+            <span className="font-semibold text-chart-2">${(ad.totalBudget * 0.9).toFixed(2)}</span>
+          </div>
+          
+          <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Total Budget:</span>
-            <span className="font-semibold text-chart-2">${ad.totalBudget}</span>
+            <span className="font-semibold">${ad.totalBudget}</span>
           </div>
           
           <div className="flex items-center justify-between text-sm">
