@@ -16,20 +16,24 @@ export function usePlanAccess(): PlanAccess {
   const { user } = useAuth();
   
   const plan = user?.plan || 'free';
+  const role = user?.role || 'user';
   
   const isFree = plan === 'free';
   const isStandard = plan === 'standard';
   const isPremium = plan === 'premium';
   
+  // Only creator and free_creator roles can view campaigns
+  const isCreatorRole = role === 'creator' || role === 'free_creator';
+  
   return {
     isFree,
     isStandard,
     isPremium,
-    canViewCampaigns: true, // FREE CREATORS can VIEW campaigns with lock indicators
-    canApplyCampaigns: isPremium,
+    canViewCampaigns: isCreatorRole, // Only creator/free_creator can view campaigns
+    canApplyCampaigns: isCreatorRole && isPremium, // Only premium creators can apply
     canAccessWallet: isPremium,
     canAccessAnalytics: isPremium,
     canAccessPayouts: isPremium,
-    hasEarnAccess: true, // Allow all users to access earn menu
+    hasEarnAccess: isCreatorRole, // Only creators see earn menu
   };
 }

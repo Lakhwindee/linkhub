@@ -99,7 +99,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     ];
   } else {
     // All other roles see full navigation
-    const campaignsLabel = user?.role === 'creator' ? 'Earn' : 'Campaigns';
+    const campaignsLabel = (user?.role === 'creator' || user?.role === 'free_creator') ? 'Earn' : 'Campaigns';
     navItems = [
       { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
       { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
