@@ -53,6 +53,7 @@ export default function PaymentPage() {
         title: "Payment Successful! 🎉",
         description: "Your campaign is now live and available to creators.",
       });
+      // Redirect to success page, which then redirects to active campaigns
       navigate(`/payment/success/${campaignId}`);
     },
     onError: (error: any) => {
@@ -107,7 +108,7 @@ export default function PaymentPage() {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/publisher/ads')}
+            onClick={() => navigate('/publisher-ads')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
