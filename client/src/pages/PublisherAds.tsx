@@ -170,7 +170,38 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
 
       {/* Image Upload */}
       <div className="space-y-4">
-        <Label>Campaign Image *</Label>
+        <Label>Campaign File Upload *</Label>
+        
+        {/* File Upload Instructions */}
+        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-3">
+          <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center">
+            <Upload className="w-4 h-4 mr-2" />
+            📋 Allowed File Types & Restrictions
+          </h4>
+          <div className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-600 dark:text-green-400">✅</span>
+              <span><strong>📹 Video Files:</strong> MP4, AVI, MOV, WMV, FLV, WebM</span>
+            </div>
+            <div className="flex items-center space-x-2 ml-6">
+              <span className="text-orange-600 dark:text-orange-400">⏱️</span>
+              <span className="text-orange-700 dark:text-orange-300"><strong>Maximum Duration: 1 minute (60 seconds)</strong></span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-green-600 dark:text-green-400">✅</span>
+              <span><strong>🖼️ Image Files:</strong> JPG, PNG, GIF, WebP, SVG</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-green-600 dark:text-green-400">✅</span>
+              <span><strong>📄 PDF Documents:</strong> PDF files only</span>
+            </div>
+            <div className="flex items-center space-x-2 mt-2 pt-2 border-t border-blue-200 dark:border-blue-700">
+              <span className="text-red-600 dark:text-red-400">❌</span>
+              <span className="text-red-700 dark:text-red-300"><strong>Not Allowed:</strong> Word, Excel, Audio, ZIP, EXE files</span>
+            </div>
+          </div>
+        </div>
+        
         <div className="space-y-3">
           <ObjectUploader
             maxNumberOfFiles={1}
@@ -183,15 +214,15 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
               if (result.successful && result.successful[0]) {
                 setAdImageUrl(result.successful[0].uploadURL);
                 toast({
-                  title: "Image Uploaded!",
-                  description: "Your campaign image has been uploaded successfully.",
+                  title: "File Uploaded!",
+                  description: "Your campaign file has been uploaded successfully.",
                 });
               }
             }}
             buttonClassName={`w-full ${adImageUrl ? 'bg-green-100 border-green-300' : ''}`}
           >
             <Upload className="w-4 h-4 mr-2" />
-            {adImageUrl ? "✅ Image Uploaded" : "Upload Campaign Image"}
+            {adImageUrl ? "✅ File Uploaded" : "📁 Upload Campaign File"}
           </ObjectUploader>
           
           {adImageUrl && (
