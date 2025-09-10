@@ -283,7 +283,11 @@ export default function Admin() {
         },
         youtube: {
           apiKey: '',
-          projectId: apiSettings.youtube?.projectId || '',
+          projectId: apiSettings.youtube?.projectId || 'hublink-project',
+        },
+        maps: {
+          apiKey: '', // Don't pre-populate sensitive data
+          enableAdvancedFeatures: true
         }
       });
     }
