@@ -30,6 +30,7 @@ export default function Ads() {
     canAccessAnalytics, 
     canAccessPayouts 
   } = usePlanAccess();
+
   const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
   
@@ -187,17 +188,7 @@ export default function Ads() {
 
 
             <TabsContent value="campaigns">
-              {!canViewCampaigns ? (
-                <div className="text-center py-12">
-                  <User className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">Creator Access Required</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Switch to a Creator role to view available campaigns</p>
-                  <Button asChild size="sm">
-                    <Link href="/role-test">Switch Role</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="grid gap-6">
+              <div className="grid gap-6">
                   {campaigns.map((campaign) => (
                       <Card key={campaign.id} className={!canApplyCampaigns ? "relative overflow-hidden" : ""}>
                         {!canApplyCampaigns && (
@@ -269,8 +260,7 @@ export default function Ads() {
                         </CardContent>
                       </Card>
                     ))}
-                  </div>
-              )}
+              </div>
             </TabsContent>
 
             <TabsContent value="mycampaigns">
