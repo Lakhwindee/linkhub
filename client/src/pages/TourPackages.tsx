@@ -665,10 +665,19 @@ export default function TourPackages() {
                   <Plus className="w-5 h-5 mr-2" />
                   List Your Package
                 </Button>
+              ) : user?.role === 'creator' ? (
+                <div className="text-center">
+                  <p className="text-muted-foreground mb-2">
+                    <strong>Creator users can browse and view all packages</strong>
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Contact our team to upgrade to Publisher role for listing packages
+                  </p>
+                </div>
               ) : (
                 <div className="text-center">
                   <p className="text-muted-foreground mb-2">
-                    To create tour packages, you need Tour Package Provider role
+                    To create tour packages, you need Publisher role
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Current role: {permissions.roleDisplayName}

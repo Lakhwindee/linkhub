@@ -1,6 +1,6 @@
 // Role-based permission system
 
-export type UserRole = 'traveler' | 'stays' | 'promotional' | 'tour_package' | 'publisher' | 'admin' | 'superadmin';
+export type UserRole = 'traveler' | 'creator' | 'stays' | 'promotional' | 'tour_package' | 'publisher' | 'admin' | 'superadmin';
 
 export interface User {
   id: string;
@@ -99,6 +99,8 @@ export const permissions = {
     switch (role) {
       case 'traveler':
         return 'General Traveler';
+      case 'creator':
+        return 'Creator (View Only)';
       case 'stays':
         return 'Stays Provider';
       case 'promotional':
@@ -120,6 +122,8 @@ export const permissions = {
     switch (role) {
       case 'traveler':
         return 'Can view and participate in all content but cannot create specialized listings';
+      case 'creator':
+        return 'Can VIEW all content but CANNOT create stays, tours, or business listings';
       case 'stays':
         return 'Legacy role - use Publisher instead';
       case 'promotional':
@@ -138,12 +142,12 @@ export const permissions = {
   },
 
   getAllRoles: (): UserRole[] => {
-    return ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
+    return ['traveler', 'creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
   },
 
   // Role validation
   isValidRole: (role: string): role is UserRole => {
-    return ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'].includes(role as UserRole);
+    return ['traveler', 'creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'].includes(role as UserRole);
   },
 
   // Check if user should see limited navigation (publisher role)

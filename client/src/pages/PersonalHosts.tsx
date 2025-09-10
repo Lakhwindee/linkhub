@@ -198,12 +198,13 @@ export default function PersonalHosts() {
     return matchesSearch && matchesType;
   });
 
-  if (!user || user.role !== 'publisher') {
+  // Allow viewing for all authenticated users, restrict creation to publishers only
+  if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">Access denied. Publisher account required to add listings.</p>
+            <p className="text-muted-foreground">Please login to view personal hosts.</p>
           </CardContent>
         </Card>
       </div>
