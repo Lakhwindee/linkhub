@@ -329,14 +329,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin user
-      if (userId === 'demo-admin') {
-        const demoAdminUser = {
-          id: 'demo-admin',
-          email: 'admin@hublink.com',
-          firstName: 'System',
-          lastName: 'Administrator',
-          displayName: 'System Administrator',
+      // Handle demo users
+      if (userId === 'demo-admin' || userId === 'demo-creator' || userId === 'demo-publisher') {
+        const baseDemoUser = {
+          id: userId,
+          email: userId === 'demo-admin' ? 'admin@hublink.com' : userId === 'demo-creator' ? 'creator@hublink.com' : 'publisher@hublink.com',
+          firstName: userId === 'demo-admin' ? 'System' : 'Demo',
+          lastName: userId === 'demo-admin' ? 'Administrator' : userId === 'demo-creator' ? 'Creator' : 'Publisher',
+          displayName: userId === 'demo-admin' ? 'System Administrator' : userId === 'demo-creator' ? 'Demo Creator' : 'Demo Publisher',
           bio: null,
           country: 'United Kingdom',
           city: 'London',
@@ -354,8 +354,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instagramUrl: null,
           youtubeUrl: null,
           tiktokUrl: null,
-          role: 'admin',
-          plan: 'premium',
+          role: userId === 'demo-admin' ? 'admin' : userId === 'demo-creator' ? 'creator' : 'publisher',
+          plan: userId === 'demo-admin' ? 'premium' : userId === 'demo-creator' ? 'creator' : 'premium',
           stripeCustomerId: null,
           stripeSubscriptionId: null,
           canDmMe: 'all',
@@ -371,11 +371,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: new Date()
         };
         
-        console.log('✅ Returning demo admin user:', demoAdminUser.role);
+        console.log('✅ Returning demo user:', baseDemoUser.role);
         res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
-        return res.json(demoAdminUser);
+        return res.json(baseDemoUser);
       }
       
       // Handle regular users

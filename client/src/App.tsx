@@ -28,6 +28,7 @@ import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
+import RoleTest from "@/pages/RoleTest";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();

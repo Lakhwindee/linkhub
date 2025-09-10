@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { DemoUserSwitcher } from "./DemoUserSwitcher";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { user } = useAuth();
