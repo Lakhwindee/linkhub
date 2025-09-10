@@ -1898,11 +1898,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/ads', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      console.log('🔍 /api/ads called for user:', userId);
       const user = await storage.getUser(userId);
+      console.log('👤 User data:', user ? { id: user.id, plan: user.plan, youtubeVerified: user.youtubeVerified } : 'null');
       
-      // For demo users (demo-user-1 and demo-admin), always show test campaigns
+      // For demo users (demo-user-1 and demo-admin), always show test campaigns - BYPASS ALL CHECKS
       if (userId === 'demo-user-1' || userId === 'demo-admin') {
+        console.log('🎯 Demo user detected:', userId);
         const ads = await storage.getAds();
+        console.log('📊 Retrieved ads count:', ads.length);
+        if (ads.length > 0) {
+          console.log('📋 First ad:', ads[0].title);
+        }
         return res.json(ads);
       }
       
