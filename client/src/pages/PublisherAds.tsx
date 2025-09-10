@@ -158,6 +158,9 @@ export default function PublisherAds() {
     console.log('👥 Number of influencers:', numberOfInfluencers);
     console.log('💰 Calculated budget:', calculatedBudget);
     
+    // Log form errors for debugging
+    console.log('❌ Form errors:', errors);
+    
     // For demo purposes, allow submission without image
     if (!adImageUrl) {
       // Use a placeholder image for demo
@@ -487,6 +490,11 @@ export default function PublisherAds() {
                     type="submit" 
                     disabled={createAdMutation.isPending}
                     className="bg-accent hover:bg-accent/90"
+                    onClick={() => {
+                      console.log('🎯 Submit button clicked!');
+                      console.log('❌ Current form errors:', errors);
+                      console.log('🔍 Form is valid:', Object.keys(errors).length === 0);
+                    }}
                   >
                     {createAdMutation.isPending ? (
                       <div className="animate-spin w-4 h-4 border-2 border-accent-foreground border-t-transparent rounded-full mr-2" />
