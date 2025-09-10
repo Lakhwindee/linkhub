@@ -149,6 +149,12 @@ export default function Dashboard() {
             <Badge variant="secondary" className="bg-yellow-100 text-yellow-800" data-testid="badge-user-plan">
               {user?.plan === 'premium' ? 'Premium Plan' : 'Free Plan'}
             </Badge>
+            <Link href="/switch-user">
+              <Button variant="outline" size="sm" className="text-xs">
+                <UserIcon className="w-3 h-3 mr-1" />
+                Switch User
+              </Button>
+            </Link>
           </div>
         </div>
 
