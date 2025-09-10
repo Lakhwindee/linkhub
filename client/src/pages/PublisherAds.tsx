@@ -57,25 +57,26 @@ export default function PublisherAds() {
     { level: 10, price: 2500, range: "3M+", description: "Mega Influencers" },
   ];
 
-  // Calculate costs with platform fees (10% deducted from entered budget)
-  const calculateCosts = (budget: number, tierLevel: number) => {
+  // Calculate budget from tier and number of influencers
+  const calculateBudgetFromInfluencers = (tierLevel: number, numInfluencers: number) => {
     const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 125;
-    const platformFee = budget * 0.10; // 10% platform fee deducted from total
-    const usableBudget = budget - platformFee; // Actual budget available for influencer payments
-    const maxInfluencers = Math.floor(usableBudget / tierPrice); // Based on usable budget only
+    const campaignCost = tierPrice * numInfluencers; // Cost for all influencers
+    const platformFee = campaignCost * 0.10; // 10% platform fee
+    const totalBudget = campaignCost + platformFee; // Total budget needed
     
     return {
-      totalBudget: budget, // Original budget entered by user
-      platformFee,
-      usableBudget, // Budget available for campaign spending
-      maxInfluencers,
-      tierPrice
+      tierPrice,
+      campaignCost, // Money going to influencers
+      platformFee, // Platform fee
+      totalBudget, // Total budget required
+      numberOfInfluencers: numInfluencers
     };
   };
 
-  // Calculate max influencers based on budget and tier
-  const calculateMaxInfluencers = (budget: number, tierLevel: number) => {
-    return calculateCosts(budget, tierLevel).maxInfluencers;
+  // Update calculated budget when tier changes
+  const updateCalculatedBudget = () => {
+    const budget = calculateBudgetFromInfluencers(selectedTier, numberOfInfluencers);
+    setCalculatedBudget(budget.totalBudget);
   };
 
   // Fetch publisher's ads
@@ -94,9 +95,9 @@ export default function PublisherAds() {
         id: `demo-ad-${Date.now()}`,
         ...data,
         adImageUrl,
-        totalBudget: Number(data.totalBudget),
+        totalBudget: calculatedBudget,
         tierLevel: Number(data.tierLevel),
-        maxInfluencers: calculateMaxInfluencers(Number(data.totalBudget), Number(data.tierLevel)),
+        maxInfluencers: numberOfInfluencers,
         status: 'active',
         createdAt: new Date().toISOString(),
       };
@@ -194,7 +195,7 @@ export default function PublisherAds() {
   }
 
   const currentTier = tiers.find(t => t.level === selectedTier);
-  const costBreakdown = calculateCosts(totalBudget, selectedTier);
+  const costBreakdown = calculateBudgetFromInfluencers(selectedTier, numberOfInfluencers);
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -368,6 +369,8 @@ export default function PublisherAds() {
                             onClick={() => {
                               setSelectedTier(tier.level);
                               setValue("tierLevel", tier.level);
+                              const budget = calculateBudgetFromInfluencers(tier.level, numberOfInfluencers);
+                              setCalculatedBudget(budget.totalBudget);
                             }}
                           >
                             <div className="text-center">
@@ -382,21 +385,28 @@ export default function PublisherAds() {
                       </div>
                     </div>
 
-                    {/* Budget Input */}
+                    {/* Number of Influencers Input */}
                     <div className="space-y-2">
-                      <Label htmlFor="totalBudget">Total Budget (USD)</Label>
+                      <Label htmlFor="numberOfInfluencers">How Many Influencers Do You Need?</Label>
                       <Input
-                        id="totalBudget"
+                        id="numberOfInfluencers"
                         type="number"
-                        min="120"
-                        step="10"
-                        {...register("totalBudget", { 
-                          onChange: (e) => setTotalBudget(Number(e.target.value))
+                        min="1"
+                        max="50"
+                        step="1"
+                        {...register("numberOfInfluencers", { 
+                          onChange: (e) => {
+                            const num = Number(e.target.value) || 1;
+                            setNumberOfInfluencers(num);
+                            const budget = calculateBudgetFromInfluencers(selectedTier, num);
+                            setCalculatedBudget(budget.totalBudget);
+                          }
                         })}
-                        placeholder="1200"
+                        placeholder="5"
+                        value={numberOfInfluencers}
                       />
-                      {errors.totalBudget && (
-                        <p className="text-sm text-destructive">{errors.totalBudget.message}</p>
+                      {errors.numberOfInfluencers && (
+                        <p className="text-sm text-destructive">{errors.numberOfInfluencers.message}</p>
                       )}
                     </div>
 
@@ -410,23 +420,28 @@ export default function PublisherAds() {
                         
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium">Total Budget Entered:</span>
-                            <span className="font-bold">${totalBudget || 0}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-destructive">Platform Fee (10%):</span>
-                            <span className="text-destructive">-${costBreakdown.platformFee.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
-                            <span className="text-chart-2">Usable Campaign Budget:</span>
-                            <span className="text-chart-2">${costBreakdown.usableBudget.toFixed(2)}</span>
+                            <span className="font-medium">Number of Influencers:</span>
+                            <span className="font-bold">{numberOfInfluencers}</span>
                           </div>
                           
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Price per influencer:</span>
                             <span className="text-muted-foreground">${currentTier?.price}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Campaign Cost:</span>
+                            <span className="text-muted-foreground">${costBreakdown.campaignCost.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-destructive">Platform Fee (10%):</span>
+                            <span className="text-destructive">+${costBreakdown.platformFee.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
+                            <span className="text-chart-1">Total Budget Required:</span>
+                            <span className="text-chart-1">${costBreakdown.totalBudget.toFixed(2)}</span>
                           </div>
                         </div>
                         
@@ -442,7 +457,7 @@ export default function PublisherAds() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-2xl font-bold text-primary">{costBreakdown.maxInfluencers}</p>
+                              <p className="text-2xl font-bold text-primary">{numberOfInfluencers}</p>
                               <p className="text-sm text-muted-foreground">influencers</p>
                             </div>
                           </div>
