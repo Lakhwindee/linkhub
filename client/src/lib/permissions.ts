@@ -11,10 +11,10 @@ export interface User {
 
 // Permission checker functions
 export const permissions = {
-  // Stays permissions
+  // Stays permissions - Only Publishers can create, Creators can only view
   canCreateStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['stays', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewStays: (user: User | null): boolean => {
@@ -23,13 +23,13 @@ export const permissions = {
 
   canManageStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['stays', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
-  // Tour Package permissions
+  // Tour Package permissions - Only Publishers can create, Creators can only view
   canCreateTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['tour_package', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewTourPackages: (user: User | null): boolean => {
@@ -38,13 +38,13 @@ export const permissions = {
 
   canManageTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['tour_package', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
-  // Promotional/Ads permissions
+  // Promotional/Ads permissions - Only Publishers can create
   canCreateAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['promotional', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   canViewAds: (user: User | null): boolean => {
@@ -53,7 +53,7 @@ export const permissions = {
 
   canManageAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['promotional', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   // Trip permissions
@@ -121,13 +121,13 @@ export const permissions = {
       case 'traveler':
         return 'Can view and participate in all content but cannot create specialized listings';
       case 'stays':
-        return 'Can create and manage homestays, rooms, and rental spaces';
+        return 'Legacy role - use Publisher instead';
       case 'promotional':
-        return 'Can create and manage advertisements and promotional content';
+        return 'Legacy role - use Publisher instead';
       case 'tour_package':
-        return 'Can create and manage tour packages and travel offerings';
+        return 'Legacy role - use Publisher instead';
       case 'publisher':
-        return 'Can create and manage stays, tour packages, and advertisements';
+        return 'Can create and manage stays, tour packages, personal hosts, and advertisements';
       case 'admin':
         return 'Can manage all content and moderate the platform';
       case 'superadmin':
