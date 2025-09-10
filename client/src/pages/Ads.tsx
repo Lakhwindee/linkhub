@@ -47,8 +47,8 @@ export default function Ads() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-4 py-20">
             <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Sign in to access Earn features</h1>
-            <p className="text-muted-foreground">Connect with brands and monetize your travel content</p>
+            <h1 className="text-2xl font-bold">Sign in to access Campaign features</h1>
+            <p className="text-muted-foreground">Manage your advertising campaigns and brand partnerships</p>
           </div>
         </div>
       </div>
@@ -63,10 +63,10 @@ export default function Ads() {
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <DollarSign className="w-8 h-8 text-green-600" />
-              Earn with Travel Content
+              Campaigns
             </h1>
             <p className="text-muted-foreground mt-2">
-              Connect with brands and monetize your travel experiences
+              Manage your advertising campaigns and brand partnerships
             </p>
           </div>
           

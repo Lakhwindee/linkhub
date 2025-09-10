@@ -89,13 +89,11 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   let navItems = [];
   
   if (user?.role === 'publisher') {
-    // Publisher role only sees these 5 menus
+    // Publisher role only sees these 3 menus
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
       { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
-      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-ads" },
-      { href: "/billing", icon: CreditCard, label: "Billing", testId: "nav-billing" },
     ];
   } else {
     // All other roles see full navigation
@@ -109,7 +107,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/earn", icon: DollarSign, label: "Earn", testId: "nav-earn" },
+      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
     ];
   }
 
