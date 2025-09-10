@@ -48,6 +48,10 @@ let storedApiSettings = {
     maxTokens: 1000,
     temperature: 0.7
   },
+  maps: {
+    apiKey: '',
+    enableAdvancedFeatures: true
+  },
   email: {
     provider: 'not_configured',
     apiKey: ''
@@ -64,8 +68,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Config routes
   app.get('/api/config/maps-key', async (req, res) => {
     try {
-      // Use environment API key if available, otherwise use development fallback
-      const apiKey = process.env.GOOGLE_MAPS_API_KEY || "AIzaSyDdnPsmwNOylJSDrt-K2T6nXqJQ-demo";
+      // Check saved API settings first
+      let apiKey = null;
+      const savedMapsSettings = storedApiSettings.maps;
+      if (savedMapsSettings && savedMapsSettings.apiKey && savedMapsSettings.apiKey.trim() !== '') {
+        apiKey = savedMapsSettings.apiKey;
+        console.log('🗺️ Using saved Google Maps API key');
+      } else {
+        // Fallback to environment variable
+        apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        console.log('🗺️ Using environment Google Maps API key');
+      }
+      
+      // If no valid key found, return error instead of demo key
+      if (!apiKey || apiKey.includes('demo')) {
+        console.warn('⚠️ No valid Google Maps API key configured - Maps functionality will be limited');
+        return res.status(503).json({ 
+          message: "Google Maps API key not configured. Please add a valid API key in Admin Settings.",
+          fallbackMode: true 
+        });
+      }
+      
       res.json({ apiKey });
     } catch (error) {
       console.error("Error fetching Google Maps API key:", error);
@@ -3160,7 +3183,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const settingsData = req.body;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -3203,6 +3226,11 @@ Always be helpful, professional, and focused on website management tasks.`;
           }
           if (settingsData.temperature && (settingsData.temperature < 0 || settingsData.temperature > 2)) {
             validationResult = { valid: false, message: 'Temperature must be between 0 and 2' };
+          }
+          break;
+        case 'maps':
+          if (settingsData.apiKey && (!settingsData.apiKey.startsWith('AIza') || settingsData.apiKey.length < 30)) {
+            validationResult = { valid: false, message: 'Invalid Google Maps API key format. Must start with AIza and be at least 30 characters' };
           }
           break;
       }
@@ -3257,7 +3285,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const { service } = req.params;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -3393,6 +3421,54 @@ Always be helpful, professional, and focused on website management tasks.`;
               objects: 1247
             }
           };
+          break;
+          
+        case 'maps':
+          // Check for saved Maps API key first, then environment variable
+          let mapsApiKey = null;
+          const savedMapsSettings = storedApiSettings.maps;
+          if (savedMapsSettings && savedMapsSettings.apiKey && savedMapsSettings.apiKey.trim() !== '') {
+            mapsApiKey = savedMapsSettings.apiKey;
+            console.log('🧪 Test using saved Google Maps API key:', mapsApiKey.slice(0, 15) + '...');
+          } else {
+            mapsApiKey = process.env.GOOGLE_MAPS_API_KEY;
+            console.log('🧪 Test using environment Google Maps API key:', mapsApiKey ? mapsApiKey.slice(0, 15) + '...' : 'none');
+          }
+          
+          if (mapsApiKey && mapsApiKey.startsWith('AIza') && !mapsApiKey.includes('demo')) {
+            try {
+              // Test Google Maps API by making a simple geocoding request
+              const testUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=London&key=${mapsApiKey}`;
+              const response = await fetch(testUrl);
+              const data = await response.json();
+              
+              if (data.status === 'OK' && data.results && data.results.length > 0) {
+                testResult = { 
+                  success: true, 
+                  message: 'Google Maps API connection successful',
+                  details: { 
+                    status: data.status,
+                    resultsCount: data.results.length,
+                    testLocation: data.results[0]?.formatted_address || 'Test location found',
+                    apiKeyFormat: 'Valid',
+                    services: ['Geocoding', 'Maps JavaScript API', 'Places API']
+                  }
+                };
+              } else if (data.status === 'REQUEST_DENIED') {
+                testResult.message = 'Google Maps API key denied. Check API restrictions and billing.';
+                testResult.details = { error: data.status, errorMessage: data.error_message };
+              } else {
+                testResult.message = `Google Maps API test failed: ${data.status}`;
+                testResult.details = { error: data.status, errorMessage: data.error_message };
+              }
+            } catch (mapsError: any) {
+              console.error('Google Maps test error:', mapsError);
+              testResult.message = `Google Maps API test failed: ${mapsError.message || 'Network error'}`;
+              testResult.details = { error: 'network_error' };
+            }
+          } else {
+            testResult.message = 'Please configure a valid Google Maps API key (must start with AIza)';
+          }
           break;
           
         case 'email':
