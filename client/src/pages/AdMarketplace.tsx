@@ -926,7 +926,8 @@ export default function AdMarketplace() {
     return null;
   }
 
-  if (user.plan === 'free') {
+  // Only creators and free_creators can access AdMarketplace
+  if (user.role !== 'creator' && user.role !== 'free_creator') {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
@@ -934,13 +935,13 @@ export default function AdMarketplace() {
             <CardContent className="p-12 text-center">
               <DollarSign className="w-16 h-16 mx-auto mb-4 text-yellow-600 dark:text-yellow-400" />
               <h2 className="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">
-                Upgrade Required
+                Creator Access Required
               </h2>
               <p className="text-yellow-700 dark:text-yellow-300 mb-6">
-                You need a paid plan to access the Ad Marketplace and start earning from brand collaborations.
+                Switch to a Creator role to access the Ad Marketplace and start earning from brand collaborations.
               </p>
               <Button asChild className="bg-yellow-600 hover:bg-yellow-700 text-white" data-testid="button-upgrade-to-creator">
-                <Link href="/subscribe">Upgrade Plan</Link>
+                <Link href="/role-test">Switch Role</Link>
               </Button>
             </CardContent>
           </Card>
