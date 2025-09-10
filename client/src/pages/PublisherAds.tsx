@@ -30,6 +30,7 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
   const [selectedTier, setSelectedTier] = useState(1);
   const [numberOfInfluencers, setNumberOfInfluencers] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adImageUrl, setAdImageUrl] = useState("");
 
   const { toast } = useToast();
 
@@ -62,6 +63,15 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
       return;
     }
 
+    if (!adImageUrl.trim()) {
+      toast({
+        title: "Image Required",
+        description: "Please upload an ad image for your campaign",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     console.log('🚀 FRESH FORM SUBMITTING...');
 
@@ -70,7 +80,7 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
         brand: brand.trim(),
         title: title.trim(),
         briefMd: description.trim(),
-        adImageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop",
+        adImageUrl: adImageUrl.trim(),
         countries: [],
         hashtags: [],
         currency: "USD",
@@ -158,11 +168,49 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
         </div>
       </div>
 
+      {/* Image Upload */}
+      <div className="space-y-4">
+        <Label>Campaign Image *</Label>
+        <div className="space-y-3">
+          <ObjectUploader
+            maxNumberOfFiles={1}
+            maxFileSize={10485760} // 10MB
+            onGetUploadParameters={async () => ({
+              method: "PUT" as const,
+              url: "demo-upload-url"
+            })}
+            onComplete={(result) => {
+              if (result.successful && result.successful[0]) {
+                setAdImageUrl(result.successful[0].uploadURL);
+                toast({
+                  title: "Image Uploaded!",
+                  description: "Your campaign image has been uploaded successfully.",
+                });
+              }
+            }}
+            buttonClassName={`w-full ${adImageUrl ? 'bg-green-100 border-green-300' : ''}`}
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            {adImageUrl ? "✅ Image Uploaded" : "Upload Campaign Image"}
+          </ObjectUploader>
+          
+          {adImageUrl && (
+            <div className="mt-3">
+              <img 
+                src={adImageUrl} 
+                alt="Campaign preview" 
+                className="w-full h-32 object-cover rounded-lg border"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Tier Selection */}
       <div className="space-y-4">
         <Label>Select Influencer Tier</Label>
         <div className="grid grid-cols-2 gap-3">
-          {tiers.slice(0, 6).map((tier) => (
+          {tiers.map((tier) => (
             <div
               key={tier.level}
               className={`p-3 border rounded-lg cursor-pointer transition-all ${
