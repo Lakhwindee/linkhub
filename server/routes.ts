@@ -1900,8 +1900,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      // For demo user, always show test campaigns
-      if (userId === 'demo-user-1') {
+      // For demo users (demo-user-1 and demo-admin), always show test campaigns
+      if (userId === 'demo-user-1' || userId === 'demo-admin') {
         const ads = await storage.getAds();
         return res.json(ads);
       }
@@ -1938,19 +1938,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUser(userId);
       
       // Auto-fix demo user plan if needed
-      if (userId === 'demo-user-1' && user?.plan !== 'standard') {
+      if ((userId === 'demo-user-1' || userId === 'demo-admin') && user?.plan !== 'standard') {
         console.log('Updating demo user plan to standard');
         user = await storage.updateUserProfile(userId, { plan: 'standard' });
       }
       
-      // For demo user, bypass plan check  
-      if (userId !== 'demo-user-1' && user?.plan !== 'premium' && user?.plan !== 'standard') {
+      // For demo users, bypass plan check  
+      if (userId !== 'demo-user-1' && userId !== 'demo-admin' && user?.plan !== 'premium' && user?.plan !== 'standard') {
         return res.status(403).json({ message: "Creator plan required" });
       }
 
       // SECURITY: Re-verify channel ownership before allowing campaign reservation
-      // For demo user, allow campaign access if channel is connected (bypass verification for testing)
-      if (userId === 'demo-user-1') {
+      // For demo users, allow campaign access if channel is connected (bypass verification for testing)
+      if (userId === 'demo-user-1' || userId === 'demo-admin') {
         // Demo user bypass - only check if channel is connected
         if (!user?.youtubeChannelId) {
           return res.status(403).json({ message: "YouTube channel connection required" });
