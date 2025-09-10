@@ -19,6 +19,11 @@ export default function PaymentPage() {
     enabled: !!campaignId,
   });
 
+  // Fetch publisher payout status
+  const { data: payoutStatus, isLoading: payoutLoading } = useQuery({
+    queryKey: ['/api/publishers/me/payout-status'],
+  });
+
   // Default campaign structure for TypeScript
   const defaultCampaign = {
     title: '',
@@ -152,9 +157,15 @@ export default function PaymentPage() {
 
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status:</span>
-                  <Badge variant="outline" className="text-yellow-600 border-yellow-600">
-                    Pending Payment
-                  </Badge>
+                  {campaignData.status === 'active' ? (
+                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                      ✅ Active
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                      Pending Payment
+                    </Badge>
+                  )}
                 </div>
               </div>
 
@@ -199,30 +210,67 @@ export default function PaymentPage() {
               </div>
 
               <div className="space-y-3">
-                <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    💡 Your campaign will be live immediately after payment and visible to all creators in your target tier.
-                  </p>
-                </div>
+                {!payoutLoading && (
+                  <div className={`p-4 rounded-lg ${payoutStatus?.connected 
+                    ? 'bg-green-50 dark:bg-green-950' 
+                    : 'bg-red-50 dark:bg-red-950'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      {payoutStatus?.connected ? (
+                        <>
+                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <span className="text-sm font-medium text-green-700 dark:text-green-300">Payment Account Connected</span>
+                        </>
+                      ) : (
+                        <>
+                          <AlertCircle className="w-4 h-4 text-red-600" />
+                          <span className="text-sm font-medium text-red-700 dark:text-red-300">Payment Account Required</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {payoutStatus?.connected 
+                        ? "💡 Your campaign will be live immediately after payment and visible to all creators in your target tier."
+                        : "⚠️ Please upgrade to a premium plan to process payments and create campaigns."
+                      }
+                    </p>
+                  </div>
+                )}
 
-                <Button 
-                  onClick={handlePayment}
-                  disabled={isProcessing || paymentMutation.isPending}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
-                  size="lg"
-                >
-                  {isProcessing || paymentMutation.isPending ? (
-                    <>
-                      <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
-                      Processing Payment...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5 mr-2" />
-                      Pay ${Number(campaignData.totalBudget).toFixed(2)} & Launch Campaign
-                    </>
-                  )}
-                </Button>
+                {campaignData.status === 'active' ? (
+                  <Button disabled className="w-full text-lg py-6" size="lg">
+                    <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                    Campaign Already Active
+                  </Button>
+                ) : !payoutStatus?.connected ? (
+                  <Button 
+                    onClick={() => navigate('/billing')}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
+                    size="lg"
+                  >
+                    <CreditCard className="w-5 h-5 mr-2" />
+                    Connect Payment Account
+                  </Button>
+                ) : (
+                  <Button 
+                    onClick={handlePayment}
+                    disabled={isProcessing || paymentMutation.isPending}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+                    size="lg"
+                  >
+                    {isProcessing || paymentMutation.isPending ? (
+                      <>
+                        <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2" />
+                        Processing Payment...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Pay ${Number(campaignData.totalBudget).toFixed(2)} & Launch Campaign
+                      </>
+                    )}
+                  </Button>
+                )}
 
                 <p className="text-xs text-muted-foreground text-center">
                   Secure payment powered by Stripe. Your campaign will activate immediately.

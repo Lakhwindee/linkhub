@@ -709,14 +709,30 @@ function AdCampaignCard({ ad }: { ad: any }) {
 
         {/* Actions */}
         <div className="flex space-x-2">
-          <Button variant="outline" size="sm" className="flex-1">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1"
+            onClick={() => {
+              window.open(`/payment/success/${ad.id}`, '_blank', 'noopener,noreferrer');
+            }}
+          >
             <Eye className="w-3 h-3 mr-1" />
-            View
+            View Details
           </Button>
-          <Button variant="outline" size="sm" className="flex-1">
-            <Edit className="w-3 h-3 mr-1" />
-            Edit
-          </Button>
+          {ad.status === 'pending_payment' && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => {
+                window.open(`/payment/${ad.id}`, '_blank', 'noopener,noreferrer');
+              }}
+            >
+              <Edit className="w-3 h-3 mr-1" />
+              Continue Payment
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

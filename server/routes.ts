@@ -4161,6 +4161,30 @@ Always be helpful, professional, and focused on website management tasks.`;
     }
   });
 
+  // Check publisher payout account status
+  app.get('/api/publishers/me/payout-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check if user has Stripe customer ID (basic account connection indicator)
+      const hasPayoutAccount = !!(user.stripeCustomerId && user.plan && user.plan !== 'free');
+      
+      res.json({
+        connected: hasPayoutAccount,
+        stripeConnected: !!user.stripeCustomerId,
+        plan: user.plan || 'free'
+      });
+    } catch (error) {
+      console.error('❌ Error checking payout status:', error);
+      res.status(500).json({ message: 'Failed to check payout status' });
+    }
+  });
+
   // Process campaign payment
   app.post('/api/campaigns/:campaignId/payment', isAuthenticated, async (req: any, res) => {
     try {
@@ -4191,6 +4215,15 @@ Always be helpful, professional, and focused on website management tasks.`;
       
       if (campaign.publisherId !== userId) {
         return res.status(403).json({ message: 'Access denied' });
+      }
+
+      // Prevent double payment
+      if (campaign.status === 'active') {
+        return res.status(400).json({ message: 'Campaign is already active and paid for' });
+      }
+
+      if (campaign.status !== 'pending_payment') {
+        return res.status(400).json({ message: 'Campaign is not eligible for payment' });
       }
       
       // Update campaign status to active after payment
