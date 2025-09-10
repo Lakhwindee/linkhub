@@ -220,13 +220,7 @@ export default function PublisherAds() {
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button 
-                className="bg-accent hover:bg-accent/90"
-                onClick={() => {
-                  console.log('🎯 Create New Ad button clicked!');
-                  setIsCreateDialogOpen(true);
-                }}
-              >
+              <Button className="bg-accent hover:bg-accent/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Ad
               </Button>
@@ -546,10 +540,7 @@ export default function PublisherAds() {
                     Create your first ad campaign to start reaching influencers
                   </p>
                   <Button 
-                    onClick={() => {
-                      console.log('🎯 Create Your First Campaign button clicked!');
-                      setIsCreateDialogOpen(true);
-                    }} 
+                    onClick={() => setIsCreateDialogOpen(true)} 
                     className="bg-accent hover:bg-accent/90"
                   >
                     <Plus className="w-4 h-4 mr-2" />
