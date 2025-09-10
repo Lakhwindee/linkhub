@@ -75,13 +75,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         apiKey = savedMapsSettings.apiKey;
         console.log('🗺️ Using saved Google Maps API key');
       } else {
-        // Fallback to environment variable
-        apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        // Fallback to environment variable or hardcoded for demo
+        apiKey = process.env.GOOGLE_MAPS_API_KEY || "AIzaSyDdnPsmwNOylJSDrt-K2T6n3gBhBK_RoHs";
         console.log('🗺️ Using environment Google Maps API key');
       }
       
-      // If no valid key found, return error instead of demo key
+      // If no valid key found, try environment variable as final fallback
       if (!apiKey || apiKey.includes('demo')) {
+        const envApiKey = process.env.GOOGLE_MAPS_API_KEY;
+        if (envApiKey && envApiKey.startsWith('AIza') && !envApiKey.includes('demo')) {
+          console.log('🗺️ Using environment Google Maps API key as fallback');
+          return res.json({ apiKey: envApiKey });
+        }
         console.warn('⚠️ No valid Google Maps API key configured - Maps functionality will be limited');
         return res.status(503).json({ 
           message: "Google Maps API key not configured. Please add a valid API key in Admin Settings.",
