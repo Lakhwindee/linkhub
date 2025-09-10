@@ -492,14 +492,18 @@ export default function PublisherAds() {
                   <Button 
                     type="submit" 
                     disabled={createAdMutation.isPending}
-                    className="bg-accent hover:bg-accent/90"
-                    onClick={() => {
+                    className="bg-accent hover:bg-accent/90 relative z-50 pointer-events-auto"
+                    style={{ position: 'relative', zIndex: 50 }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       console.log('🎯 Submit button clicked!');
                       console.log('❌ Current form errors:', errors);
                       console.log('🔍 Form is valid:', Object.keys(errors).length === 0);
                       console.log('📊 All form values:', watch());
                       console.log('🎯 Selected tier:', selectedTier);
                       console.log('👥 Number of influencers:', numberOfInfluencers);
+                      handleSubmit(onSubmit)();
                     }}
                   >
                     {createAdMutation.isPending ? (
