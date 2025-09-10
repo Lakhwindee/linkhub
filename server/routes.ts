@@ -4015,6 +4015,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       
       // Handle demo publisher user
       if (userId === 'demo-publisher') {
+        console.log('📥 Received data for validation:', JSON.stringify(req.body, null, 2));
         const data = insertPublisherAdSchema.parse(req.body);
         
         // Calculate max influencers based on tier and budget
@@ -4070,9 +4071,10 @@ Always be helpful, professional, and focused on website management tasks.`;
       res.json(ad);
     } catch (error) {
       if (error instanceof ZodError) {
+        console.error("❌ Validation failed:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      console.error("Error creating publisher ad:", error);
+      console.error("❌ Error creating publisher ad:", error);
       res.status(500).json({ message: "Failed to create ad" });
     }
   });
