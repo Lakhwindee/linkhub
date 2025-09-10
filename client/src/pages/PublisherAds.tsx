@@ -170,27 +170,38 @@ export default function PublisherAds() {
     console.log('👥 Number of influencers:', numberOfInfluencers);
     console.log('💰 Calculated budget:', calculatedBudget);
     
-    // For demo purposes, allow submission without image
-    if (!adImageUrl) {
-      setAdImageUrl("https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop");
-      console.log('🖼️ Using placeholder image');
+    // Validate required fields
+    if (!data.brand || !data.title || !data.briefMd) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in Brand, Title, and Description",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    // For demo purposes, allow submission without image
+    const finalImageUrl = adImageUrl || "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop";
+    console.log('🖼️ Using image URL:', finalImageUrl);
     
     console.log('✅ Creating campaign and redirecting to payment...');
     
-    // Prepare campaign data with payment status
+    // Prepare campaign data with proper structure matching schema
     const campaignData = {
-      ...data,
-      adImageUrl,
+      brand: data.brand,
+      title: data.title,
+      briefMd: data.briefMd,
+      adImageUrl: finalImageUrl,
+      countries: data.countries || [],
+      hashtags: data.hashtags || [],
+      currency: data.currency || "USD",
+      deadlineAt: data.deadlineAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       totalBudget: calculatedBudget,
-      tierLevel: Number(data.tierLevel),
-      numberOfInfluencers,
-      status: 'pending_payment',
-      maxInfluencers: numberOfInfluencers,
-      reservedInfluencers: 0,
-      completedInfluencers: 0,
+      tierLevel: Number(selectedTier),
+      numberOfInfluencers: numberOfInfluencers,
     };
     
+    console.log('📋 Final campaign data being sent:', campaignData);
     createAdMutation.mutate(campaignData);
   };
 
@@ -519,15 +530,28 @@ export default function PublisherAds() {
                       e.preventDefault();
                       e.stopPropagation();
                       console.log('🚀 SUBMIT BUTTON CLICKED! Event:', e);
-                      console.log('📋 Current form state:', watch());
+                      
+                      // Get current form values
+                      const formValues = watch();
+                      console.log('📋 Raw form values:', formValues);
+                      
+                      // Ensure required fields are populated from state
+                      const submissionData = {
+                        ...formValues,
+                        tierLevel: selectedTier,
+                        numberOfInfluencers: numberOfInfluencers,
+                        totalBudget: calculatedBudget,
+                        currency: formValues.currency || "USD",
+                        countries: formValues.countries || [],
+                        hashtags: formValues.hashtags || [],
+                        deadlineAt: formValues.deadlineAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                      };
+                      
+                      console.log('📊 Enhanced submission data:', submissionData);
                       console.log('🔥 Attempting form submission...');
                       
-                      // Call the form submit directly
-                      const formData = watch();
-                      console.log('📊 Form values:', formData);
-                      
                       try {
-                        onSubmit(formData);
+                        onSubmit(submissionData);
                       } catch (error) {
                         console.error('❌ Submit error:', error);
                       }
