@@ -257,10 +257,90 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
   const getTierInfo = (tier: number) => {
     switch (tier) {
-      case 1: return { name: 'Emerging Creator', range: '10k-40k', color: 'bg-blue-500' };
-      case 2: return { name: 'Growing Creator', range: '40k-70k', color: 'bg-purple-500' };
-      case 3: return { name: 'Established Creator', range: '70k+', color: 'bg-gold-500' };
+      // Comprehensive 10-Tier System replacing old 3-tier structure
+      case 1: return { name: 'Bronze Creator', range: '1k-5k', color: 'bg-orange-600' };
+      case 2: return { name: 'Silver Creator', range: '5k-10k', color: 'bg-gray-400' };
+      case 3: return { name: 'Gold Creator', range: '10k-25k', color: 'bg-yellow-500' };
+      case 4: return { name: 'Platinum Creator', range: '25k-50k', color: 'bg-blue-500' };
+      case 5: return { name: 'Diamond Creator', range: '50k-100k', color: 'bg-purple-500' };
+      case 6: return { name: 'Elite Creator', range: '100k-250k', color: 'bg-indigo-600' };
+      case 7: return { name: 'Master Creator', range: '250k-500k', color: 'bg-pink-600' };
+      case 8: return { name: 'Legend Creator', range: '500k-1M', color: 'bg-red-600' };
+      case 9: return { name: 'Champion Creator', range: '1M-5M', color: 'bg-green-600' };
+      case 10: return { name: 'Ultimate Creator', range: '5M+', color: 'bg-black' };
       default: return { name: 'Not Connected', range: '', color: 'bg-gray-500' };
+    }
+  };
+
+  const getRoleInfo = (role: string, plan: string) => {
+    switch (role) {
+      case 'free_creator':
+        return {
+          name: 'Free Creator',
+          description: 'Can view campaigns with visual locks on premium features',
+          permissions: [
+            '✅ View "Earn" menu and campaigns',
+            '❌ Premium Required: Reserve/Apply to campaigns',
+            '❌ Premium Required: Analytics Dashboard',
+            '❌ Premium Required: Payout Management',
+            '❌ Premium Required: Earnings Tracking'
+          ],
+          upgradeMessage: 'Upgrade to Premium to unlock earning features',
+          color: 'bg-amber-500'
+        };
+      case 'creator':
+        return {
+          name: `${plan === 'premium' ? 'Premium' : 'Standard'} Creator`,
+          description: plan === 'premium' 
+            ? 'Full access to all earning features and campaign management'
+            : 'Limited creator access - upgrade to Premium for full features',
+          permissions: plan === 'premium' 
+            ? [
+                '✅ View "Earn" menu and campaigns',
+                '✅ Reserve and apply to campaigns',
+                '✅ Full Analytics Dashboard',
+                '✅ Payout Management',
+                '✅ Earnings Tracking',
+                '✅ YouTube Integration & Verification'
+              ]
+            : [
+                '✅ View "Earn" menu and campaigns',
+                '❌ Premium Required: Reserve/Apply to campaigns',
+                '❌ Premium Required: Analytics Dashboard',
+                '❌ Premium Required: Payout Management',
+                '❌ Premium Required: Earnings Tracking'
+              ],
+          upgradeMessage: plan === 'premium' ? null : 'Upgrade to Premium for full creator features',
+          color: plan === 'premium' ? 'bg-green-500' : 'bg-blue-500'
+        };
+      case 'publisher':
+        return {
+          name: 'Brand Publisher',
+          description: 'Create and manage advertising campaigns for brands',
+          permissions: [
+            '✅ View "Campaigns" menu (not "Earn")',
+            '✅ Create brand advertising campaigns',
+            '✅ Manage campaign budgets and targeting',
+            '✅ Track campaign performance',
+            '✅ Publisher Dashboard access'
+          ],
+          upgradeMessage: null,
+          color: 'bg-purple-500'
+        };
+      case 'user':
+      default:
+        return {
+          name: 'Standard User',
+          description: 'Basic platform access for browsing and social features',
+          permissions: [
+            '✅ Browse platform and discover content',
+            '✅ Social features (follow, message, feed)',
+            '❌ No "Earn" or "Campaigns" menu access',
+            '❌ Switch to Creator or Publisher role for earning'
+          ],
+          upgradeMessage: 'Switch to Creator role to start earning from campaigns',
+          color: 'bg-gray-500'
+        };
     }
   };
 
@@ -271,10 +351,116 @@ function YouTubeCreatorSection({ user }: { user: any }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Youtube className="w-5 h-5 text-red-500" />
-          YouTube Creator Dashboard
+          Creator Dashboard & Role Management
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">
+          Your current role, permissions, and platform tier information
+        </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Universal Role & Platform Documentation - Visible to ALL Users */}
+        {(() => {
+          const roleInfo = getRoleInfo(userData.role || 'user', userData.plan || 'free');
+          return (
+            <div className="space-y-4 mb-6">
+              {/* Role Status */}
+              <div className="p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-full ${roleInfo.color} flex items-center justify-center`}>
+                      <Shield className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-slate-800">{roleInfo.name}</p>
+                      <p className="text-sm text-slate-600">{roleInfo.description}</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="text-sm px-3 py-1">
+                    {userData.role?.toUpperCase() || 'USER'}
+                  </Badge>
+                </div>
+                
+                {/* Permission List */}
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-slate-700 mb-2">Current Permissions:</p>
+                  {roleInfo.permissions.map((permission, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <span className={permission.startsWith('✅') ? 'text-green-600' : 'text-amber-600'}>
+                        {permission}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Upgrade Message */}
+                {roleInfo.upgradeMessage && (
+                  <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-md">
+                    <p className="text-sm text-amber-800 font-medium">💡 {roleInfo.upgradeMessage}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Platform Tiers Overview - Always Visible to ALL Users */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-bold text-blue-800 mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-5 h-5" />
+                  Platform Tiers & Roles Overview
+                </h3>
+                
+                <div className="grid gap-3 text-sm">
+                  {/* STANDARD USER Tier */}
+                  <div className={`p-3 rounded-lg border-2 ${userData.role === 'user' || !userData.role ? 'border-gray-400 bg-gray-50' : 'border-slate-200 bg-white'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 rounded-full bg-gray-500"></div>
+                      <span className="font-semibold text-gray-800">STANDARD USER</span>
+                      {(userData.role === 'user' || !userData.role) && <Badge variant="default" className="text-xs">YOU ARE HERE</Badge>}
+                    </div>
+                    <p className="text-slate-600 text-xs">Basic platform access, social features • Free Plan</p>
+                  </div>
+
+                  {/* FREE_CREATOR Tier */}
+                  <div className={`p-3 rounded-lg border-2 ${userData.role === 'free_creator' ? 'border-amber-400 bg-amber-50' : 'border-slate-200 bg-white'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 rounded-full bg-amber-500"></div>
+                      <span className="font-semibold text-amber-800">FREE_CREATOR</span>
+                      {userData.role === 'free_creator' && <Badge variant="default" className="text-xs">YOU ARE HERE</Badge>}
+                    </div>
+                    <p className="text-slate-600 text-xs">View campaigns with premium locks • Free Plan</p>
+                  </div>
+                  
+                  {/* CREATOR Tier */}
+                  <div className={`p-3 rounded-lg border-2 ${userData.role === 'creator' ? 'border-green-400 bg-green-50' : 'border-slate-200 bg-white'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-4 h-4 rounded-full ${userData.plan === 'premium' ? 'bg-green-500' : 'bg-blue-500'}`}></div>
+                      <span className={`font-semibold ${userData.plan === 'premium' ? 'text-green-800' : 'text-blue-800'}`}>CREATOR</span>
+                      {userData.role === 'creator' && <Badge variant="default" className="text-xs">YOU ARE HERE</Badge>}
+                    </div>
+                    <p className="text-slate-600 text-xs">{userData.plan === 'premium' ? 'Full earning access' : 'Limited access'} • Standard/Premium Plans</p>
+                  </div>
+                  
+                  {/* PUBLISHER Tier */}
+                  <div className={`p-3 rounded-lg border-2 ${userData.role === 'publisher' ? 'border-purple-400 bg-purple-50' : 'border-slate-200 bg-white'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+                      <span className="font-semibold text-purple-800">PUBLISHER</span>
+                      {userData.role === 'publisher' && <Badge variant="default" className="text-xs">YOU ARE HERE</Badge>}
+                    </div>
+                    <p className="text-slate-600 text-xs">Create brand campaigns • All Plans</p>
+                  </div>
+                </div>
+                
+                <div className="mt-3 p-3 bg-blue-100 border border-blue-300 rounded-md">
+                  <p className="text-xs text-blue-800">
+                    <strong>Note:</strong> Each role has different menu names and permissions. 
+                    Creators see "Earn" menu, Publishers see "Campaigns" menu. YouTube connection required for earning features.
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* YouTube Connection Status Section */}
         {isYouTubeConnected ? (
           <>
             {isYouTubeVerified ? (
@@ -298,7 +484,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                 </div>
 
-                {/* Enhanced Tier Display */}
+                {/* Enhanced YouTube Tier Display */}
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -315,6 +501,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                     </Badge>
                   </div>
                 </div>
+
 
 
                 {/* Disconnect Option */}

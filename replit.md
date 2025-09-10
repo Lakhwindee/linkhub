@@ -1,6 +1,6 @@
 # Overview
 
-HubLink is a tourism-social platform that connects travelers and creators globally. The application enables users to discover each other, follow profiles, send connect requests, chat, post to a global feed, plan events, and earn money through brand advertising campaigns. The platform operates on a freemium model with three tiers: Free (browse-only), Traveler (£25/mo), and Creator/Earner (£45/mo), supporting both UK (£) and India (₹) markets.
+HubLink is a tourism-social platform that connects travelers and creators globally. The application enables users to discover each other, follow profiles, send connect requests, chat, post to a global feed, plan events, and earn money through brand advertising campaigns. The platform operates on a comprehensive multi-tier role system with 10+ tiers including: STANDARD USER (Free), FREE_CREATOR (Free with campaign viewing), CREATOR (Standard/Premium plans £25-£45/mo), PUBLISHER (Brand campaign management), and 10 YouTube subscriber-based creator tiers (Bronze to Ultimate), supporting both UK (£) and India (₹) markets.
 
 # User Preferences
 
