@@ -1418,6 +1418,14 @@ export default function Globe3D({
     }
   }, [selectedCountry, selectedState, isLoading]);
 
+  console.log('🔧 Globe3D Debug Info:', {
+    selectedCountry,
+    selectedState,
+    isLoading,
+    hasMap: !!mapInstanceRef.current,
+    usersCount: users.length
+  });
+
 
   if (error) {
     return (
