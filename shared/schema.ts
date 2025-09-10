@@ -229,13 +229,17 @@ export const ads = pgTable("ads", {
   deadlineAt: timestamp("deadline_at").notNull(),
   quota: integer("quota").default(1),
   currentReservations: integer("current_reservations").default(0),
-  status: varchar("status").default("active"), // active, paused, completed
+  status: varchar("status").default("active"), // active, paused, completed, pending_payment
   // Publisher-specific fields for tier system
   totalBudget: decimal("total_budget", { precision: 10, scale: 2 }),
   tierLevel: integer("tier_level"), // 10 tiers: $125 to $2500 based on follower ranges
   maxInfluencers: integer("max_influencers"),
+  reservedInfluencers: integer("reserved_influencers").default(0), // Track reserved count
+  completedInfluencers: integer("completed_influencers").default(0), // Track completed count
+  numberOfInfluencers: integer("number_of_influencers"), // Target number from form
   adImageUrl: varchar("ad_image_url"), // uploaded ad creative
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Ad reservations

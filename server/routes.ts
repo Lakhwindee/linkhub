@@ -4031,10 +4031,12 @@ Always be helpful, professional, and focused on website management tasks.`;
           payoutAmount: tierPrice.toString(),
           quota: maxInfluencers,
           maxInfluencers,
-          currency: "USD"
+          currency: "USD",
+          status: "pending_payment"
         };
         
         const ad = await storage.createAd(adData);
+        console.log('✅ Demo campaign created:', ad);
         return res.json(ad);
       }
       
@@ -4059,7 +4061,8 @@ Always be helpful, professional, and focused on website management tasks.`;
         payoutAmount: tierPrice.toString(),
         quota: maxInfluencers,
         maxInfluencers,
-        currency: "USD"
+        currency: "USD",
+        status: "pending_payment"
       };
       
       const ad = await storage.createAd(adData);
@@ -4095,6 +4098,110 @@ Always be helpful, professional, and focused on website management tasks.`;
     } catch (error) {
       console.error("Error fetching publisher ads:", error);
       res.status(500).json({ message: "Failed to fetch ads" });
+    }
+  });
+
+  // Get single campaign details
+  app.get('/api/campaigns/:campaignId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { campaignId } = req.params;
+      const userId = req.user.claims.sub;
+      
+      console.log('🔍 Fetching campaign:', campaignId, 'for user:', userId);
+      
+      // Handle demo campaigns
+      if (campaignId.startsWith('campaign-')) {
+        // Return mock campaign data for demo
+        const mockCampaign = {
+          id: campaignId,
+          publisherId: userId,
+          brand: 'Demo Brand',
+          title: 'Test Campaign',
+          briefMd: 'This is a demo campaign for testing the payment flow.',
+          adImageUrl: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop',
+          totalBudget: 500,
+          tierLevel: 2,
+          numberOfInfluencers: 2,
+          maxInfluencers: 2,
+          reservedInfluencers: 0,
+          completedInfluencers: 0,
+          currentReservations: 0,
+          status: 'pending_payment',
+          payoutAmount: 450,
+          currency: 'USD',
+          deadlineAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          countries: [],
+          hashtags: [],
+          quota: 2,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        console.log('📊 Returning mock campaign:', mockCampaign);
+        return res.json(mockCampaign);
+      }
+      
+      // Real implementation
+      const campaign = await storage.getAd(campaignId);
+      if (!campaign) {
+        return res.status(404).json({ message: 'Campaign not found' });
+      }
+      
+      // Check if user owns this campaign
+      if (campaign.publisherId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      res.json(campaign);
+    } catch (error) {
+      console.error('❌ Error fetching campaign:', error);
+      res.status(500).json({ message: 'Failed to fetch campaign' });
+    }
+  });
+
+  // Process campaign payment
+  app.post('/api/campaigns/:campaignId/payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const { campaignId } = req.params;
+      const userId = req.user.claims.sub;
+      
+      console.log('💳 Processing payment for campaign:', campaignId, 'user:', userId);
+      
+      // Handle demo campaigns
+      if (campaignId.startsWith('campaign-')) {
+        // Simulate payment processing delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        console.log('✅ Demo payment processed successfully');
+        return res.json({ 
+          success: true, 
+          message: 'Payment processed successfully',
+          campaignId,
+          status: 'active'
+        });
+      }
+      
+      // Real implementation - would integrate with Stripe here
+      const campaign = await storage.getAd(campaignId);
+      if (!campaign) {
+        return res.status(404).json({ message: 'Campaign not found' });
+      }
+      
+      if (campaign.publisherId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      // Update campaign status to active after payment
+      const updatedCampaign = await storage.updateAd(campaignId, { status: 'active' });
+      
+      res.json({ 
+        success: true, 
+        message: 'Payment processed successfully',
+        campaign: updatedCampaign
+      });
+    } catch (error) {
+      console.error('❌ Error processing payment:', error);
+      res.status(500).json({ message: 'Payment processing failed' });
     }
   });
 
