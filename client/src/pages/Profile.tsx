@@ -316,9 +316,11 @@ export default function Profile() {
             <p className="text-muted-foreground mt-1" data-testid="text-profile-subtitle">
               Manage your personal information and privacy settings
             </p>
-            <div className="mt-3">
-              <FollowStats userId={user.id} />
-            </div>
+            {user?.role !== 'publisher' && (
+              <div className="mt-3">
+                <FollowStats userId={user.id} />
+              </div>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             {user.role !== 'publisher' && (
