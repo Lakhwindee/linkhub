@@ -25,7 +25,7 @@ export function usePlanAccess(): PlanAccess {
     isFree,
     isStandard,
     isPremium,
-    canViewCampaigns: isStandard || isPremium,
+    canViewCampaigns: true, // FREE CREATORS can VIEW campaigns with lock indicators
     canApplyCampaigns: isPremium,
     canAccessWallet: isPremium,
     canAccessAnalytics: isPremium,
