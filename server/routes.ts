@@ -4011,7 +4011,34 @@ Always be helpful, professional, and focused on website management tasks.`;
   // Publisher ad creation
   app.post('/api/publisher/ads', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const userId = req.user.claims.sub;
+      
+      // Handle demo publisher user
+      if (userId === 'demo-publisher') {
+        const data = insertPublisherAdSchema.parse(req.body);
+        
+        // Calculate max influencers based on tier and budget
+        const tierPrices = { 
+          1: 125, 2: 250, 3: 440, 4: 625, 5: 875, 
+          6: 1125, 7: 1500, 8: 1875, 9: 2250, 10: 2500 
+        };
+        const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
+        const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
+        
+        const adData = {
+          ...data,
+          publisherId: userId,
+          payoutAmount: tierPrice.toString(),
+          quota: maxInfluencers,
+          maxInfluencers,
+          currency: "USD"
+        };
+        
+        const ad = await storage.createAd(adData);
+        return res.json(ad);
+      }
+      
+      const user = await storage.getUser(userId);
       if (user?.role !== 'publisher') {
         return res.status(403).json({ message: "Publisher role required" });
       }
@@ -4050,7 +4077,15 @@ Always be helpful, professional, and focused on website management tasks.`;
   // Get publisher's ads
   app.get('/api/publisher/ads', isAuthenticated, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.user.claims.sub);
+      const userId = req.user.claims.sub;
+      
+      // Handle demo publisher user
+      if (userId === 'demo-publisher') {
+        const ads = await storage.getPublisherAds(userId);
+        return res.json(ads);
+      }
+      
+      const user = await storage.getUser(userId);
       if (user?.role !== 'publisher') {
         return res.status(403).json({ message: "Publisher role required" });
       }
