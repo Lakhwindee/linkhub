@@ -38,13 +38,13 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
     { level: 1, description: "Micro-Influencers", range: "30K-70K", price: 125 },
     { level: 2, description: "Small Influencers", range: "70K-150K", price: 200 },
     { level: 3, description: "Mid-Tier Influencers", range: "150K-300K", price: 250 },
-    { level: 4, description: "Growing Influencers", range: "300K-500K", price: 300 },
-    { level: 5, description: "Established Influencers", range: "500K-800K", price: 350 },
-    { level: 6, description: "Major Influencers", range: "800K-1.2M", price: 400 },
-    { level: 7, description: "Top Influencers", range: "1.2M-1.6M", price: 450 },
-    { level: 8, description: "Premium Influencers", range: "1.6M-2M", price: 500 },
-    { level: 9, description: "Celebrity Influencers", range: "2M-3M", price: 550 },
-    { level: 10, description: "Mega Influencers", range: "3M+", price: 600 },
+    { level: 4, description: "Growing Influencers", range: "300K-500K", price: 350 },
+    { level: 5, description: "Established Influencers", range: "500K-800K", price: 450 },
+    { level: 6, description: "Major Influencers", range: "800K-1.2M", price: 550 },
+    { level: 7, description: "Top Influencers", range: "1.2M-1.6M", price: 650 },
+    { level: 8, description: "Premium Influencers", range: "1.6M-2M", price: 750 },
+    { level: 9, description: "Celebrity Influencers", range: "2M-3M", price: 850 },
+    { level: 10, description: "Mega Influencers", range: "3M+", price: 950 },
   ];
 
   const currentTier = tiers.find(t => t.level === selectedTier);
@@ -301,13 +301,13 @@ export default function PublisherAds() {
     { level: 1, price: 125, range: "30K-70K", description: "Micro-Influencers" },
     { level: 2, price: 200, range: "70K-150K", description: "Small Influencers" },
     { level: 3, price: 250, range: "150K-300K", description: "Mid-Tier Influencers" },
-    { level: 4, price: 300, range: "300K-500K", description: "Growing Influencers" },
-    { level: 5, price: 350, range: "500K-800K", description: "Established Influencers" },
-    { level: 6, price: 400, range: "800K-1.2M", description: "Major Influencers" },
-    { level: 7, price: 450, range: "1.2M-1.6M", description: "Top Influencers" },
-    { level: 8, price: 500, range: "1.6M-2M", description: "Premium Influencers" },
-    { level: 9, price: 550, range: "2M-3M", description: "Celebrity Influencers" },
-    { level: 10, price: 600, range: "3M+", description: "Mega Influencers" },
+    { level: 4, price: 350, range: "300K-500K", description: "Growing Influencers" },
+    { level: 5, price: 450, range: "500K-800K", description: "Established Influencers" },
+    { level: 6, price: 550, range: "800K-1.2M", description: "Major Influencers" },
+    { level: 7, price: 650, range: "1.2M-1.6M", description: "Top Influencers" },
+    { level: 8, price: 750, range: "1.6M-2M", description: "Premium Influencers" },
+    { level: 9, price: 850, range: "2M-3M", description: "Celebrity Influencers" },
+    { level: 10, price: 950, range: "3M+", description: "Mega Influencers" },
   ];
 
   // Calculate budget from tier and number of influencers
