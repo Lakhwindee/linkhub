@@ -515,9 +515,22 @@ export default function PublisherAds() {
                     type="button"
                     size="lg"
                     className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-                    onClick={() => {
-                      console.log('🚀 SUBMIT CLICKED!');
-                      handleSubmit(onSubmit)();
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      console.log('🚀 SUBMIT BUTTON CLICKED! Event:', e);
+                      console.log('📋 Current form state:', watch());
+                      console.log('🔥 Attempting form submission...');
+                      
+                      // Call the form submit directly
+                      const formData = watch();
+                      console.log('📊 Form values:', formData);
+                      
+                      try {
+                        onSubmit(formData);
+                      } catch (error) {
+                        console.error('❌ Submit error:', error);
+                      }
                     }}
                   >
                     <Plus className="w-4 h-4 mr-2" />
