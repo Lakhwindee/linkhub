@@ -22,6 +22,211 @@ import { z } from "zod";
 
 type PublisherAdFormData = z.infer<typeof insertPublisherAdSchema>;
 
+// FRESH FORM COMPONENT - Clean, Working Implementation
+function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
+  const [brand, setBrand] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectedTier, setSelectedTier] = useState(1);
+  const [numberOfInfluencers, setNumberOfInfluencers] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { toast } = useToast();
+
+  const tiers = [
+    { level: 1, description: "Micro-Influencers", range: "30K-70K", price: 125 },
+    { level: 2, description: "Small Influencers", range: "70K-150K", price: 250 },
+    { level: 3, description: "Mid-Tier Influencers", range: "150K-300K", price: 375 },
+    { level: 4, description: "Growing Influencers", range: "300K-500K", price: 550 },
+    { level: 5, description: "Established Influencers", range: "500K-800K", price: 750 },
+    { level: 6, description: "Major Influencers", range: "800K-1.2M", price: 1000 },
+    { level: 7, description: "Top Influencers", range: "1.2M-1.6M", price: 1350 },
+    { level: 8, description: "Premium Influencers", range: "1.6M-2M", price: 1750 },
+    { level: 9, description: "Celebrity Influencers", range: "2M-3M", price: 2200 },
+    { level: 10, description: "Mega Influencers", range: "3M+", price: 2500 },
+  ];
+
+  const currentTier = tiers.find(t => t.level === selectedTier);
+  const campaignCost = (currentTier?.price || 125) * numberOfInfluencers;
+  const platformFee = campaignCost * 0.10;
+  const totalBudget = campaignCost + platformFee;
+
+  const handleSubmit = async () => {
+    // Validate required fields
+    if (!brand.trim() || !title.trim() || !description.trim()) {
+      toast({
+        title: "Missing Required Fields",
+        description: "Please fill in Brand, Title, and Description",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    console.log('🚀 FRESH FORM SUBMITTING...');
+
+    try {
+      const campaignData = {
+        brand: brand.trim(),
+        title: title.trim(),
+        briefMd: description.trim(),
+        adImageUrl: "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop",
+        countries: [],
+        hashtags: [],
+        currency: "USD",
+        deadlineAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        totalBudget: totalBudget,
+        tierLevel: selectedTier,
+        numberOfInfluencers: numberOfInfluencers,
+      };
+
+      console.log('📋 Fresh campaign data:', campaignData);
+
+      const response = await fetch('/api/publisher/ads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(campaignData),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`API Error: ${response.status} - ${error}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Campaign created successfully:', result);
+
+      toast({
+        title: "Campaign Created!",
+        description: "Redirecting to payment...",
+      });
+
+      // Redirect to payment page
+      window.location.href = `/payment/${result.id}`;
+      onSuccess();
+
+    } catch (error) {
+      console.error('❌ Campaign creation failed:', error);
+      toast({
+        title: "Campaign Creation Failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="brand">Brand Name *</Label>
+          <Input
+            id="brand"
+            value={brand}
+            onChange={(e) => setBrand(e.target.value)}
+            placeholder="Your brand or company name"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="title">Campaign Title *</Label>
+          <Input
+            id="title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Summer Travel Campaign"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Campaign Description *</Label>
+          <Textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Describe your campaign, requirements, and what influencers should create..."
+            rows={4}
+            required
+          />
+        </div>
+      </div>
+
+      {/* Tier Selection */}
+      <div className="space-y-4">
+        <Label>Select Influencer Tier</Label>
+        <div className="grid grid-cols-2 gap-3">
+          {tiers.slice(0, 6).map((tier) => (
+            <div
+              key={tier.level}
+              className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                selectedTier === tier.level 
+                  ? 'border-accent bg-accent/10' 
+                  : 'border-muted hover:border-accent/50'
+              }`}
+              onClick={() => setSelectedTier(tier.level)}
+            >
+              <div className="text-center">
+                <h3 className="font-semibold text-sm">{tier.description}</h3>
+                <p className="text-xs text-muted-foreground">{tier.range}</p>
+                <div className="text-lg font-bold text-chart-2">${tier.price}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Number of Influencers */}
+      <div className="space-y-2">
+        <Label htmlFor="influencers">Number of Influencers</Label>
+        <Input
+          id="influencers"
+          type="number"
+          min="1"
+          value={numberOfInfluencers}
+          onChange={(e) => setNumberOfInfluencers(Math.max(1, parseInt(e.target.value) || 1))}
+        />
+      </div>
+
+      {/* Cost Breakdown */}
+      <Card className="p-4 bg-muted/50">
+        <div className="space-y-2">
+          <div className="flex justify-between">
+            <span>Campaign Cost:</span>
+            <span>${campaignCost.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-muted-foreground">
+            <span>Platform Fee (10%):</span>
+            <span>+${platformFee.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-lg border-t pt-2">
+            <span>Total Budget:</span>
+            <span className="text-chart-1">${totalBudget.toFixed(2)}</span>
+          </div>
+        </div>
+      </Card>
+
+      {/* Submit Button */}
+      <div className="flex justify-end space-x-3">
+        <Button variant="outline" onClick={onSuccess}>Cancel</Button>
+        <Button 
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          {isSubmitting ? "Creating..." : "Create Campaign & Pay"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function PublisherAds() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -264,307 +469,13 @@ export default function PublisherAds() {
                 Create New Ad
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle className="text-2xl">Create Ad Campaign</DialogTitle>
-                <p className="text-muted-foreground">Set up your ad campaign with tier-based pricing</p>
+                <DialogTitle className="text-2xl">🚀 Create Fresh Ad Campaign</DialogTitle>
+                <p className="text-muted-foreground">Simple campaign creation with tier-based pricing</p>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit(onSubmit, (errors) => {
-                console.log('❌ Form validation failed!');
-                console.log('🚨 Validation errors:', errors);
-              })} className="space-y-6">
-                {/* Basic Information */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="brand">Brand Name</Label>
-                      <Input
-                        id="brand"
-                        {...register("brand", { required: "Brand name is required" })}
-                        placeholder="Your brand or company name"
-                      />
-                      {errors.brand && (
-                        <p className="text-sm text-destructive">{errors.brand.message}</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="title">Campaign Title</Label>
-                      <Input
-                        id="title"
-                        {...register("title")}
-                        placeholder="Summer Travel Campaign"
-                      />
-                      {errors.title && (
-                        <p className="text-sm text-destructive">{errors.title.message}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="briefMd">Campaign Description</Label>
-                    <Textarea
-                      id="briefMd"
-                      {...register("briefMd")}
-                      placeholder="Describe your campaign, requirements, and what influencers should create..."
-                      rows={6}
-                      className="resize-none"
-                    />
-                    {errors.briefMd && (
-                      <p className="text-sm text-destructive">{errors.briefMd.message}</p>
-                    )}
-                  </div>
-
-                </div>
-
-                {/* Ad Creative Upload */}
-                <Card className="p-6 bg-gradient-to-br from-background to-muted/30 border-2 border-muted-foreground/10 shadow-lg">
-                  <div className="space-y-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-accent to-chart-2 rounded-xl flex items-center justify-center shadow-md">
-                          <Upload className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-foreground mb-1">Campaign Creative</h3>
-                          <p className="text-sm text-muted-foreground max-w-md">
-                            Upload high-resolution creative assets to maximize campaign effectiveness
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {!adImageUrl ? (
-                      <div className="space-y-4">
-                        <ObjectUploader
-                          maxNumberOfFiles={1}
-                          maxFileSize={10 * 1024 * 1024} // 10MB
-                          onGetUploadParameters={handleImageUpload}
-                          onComplete={handleImageComplete}
-                          buttonClassName="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 shadow-md hover:shadow-lg"
-                        >
-                          <div className="flex items-center justify-center space-x-3">
-                            <Upload className="w-5 h-5" />
-                            <span>Upload Campaign Creative</span>
-                          </div>
-                        </ObjectUploader>
-                        
-                        <div className="text-center text-sm text-muted-foreground">
-                          <p>JPG, PNG, GIF • Max 10MB • High Resolution Recommended</p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-5">
-                        {/* Preview uploaded image */}
-                        <div className="relative rounded-2xl overflow-hidden border-2 border-green-200 dark:border-green-700 shadow-xl">
-                          <img 
-                            src={adImageUrl} 
-                            alt="Campaign creative preview" 
-                            className="w-full h-56 object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                          <div className="absolute top-4 right-4">
-                            <Badge className="bg-green-500/90 backdrop-blur-sm text-white shadow-lg">
-                              <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse" />
-                              Creative Ready
-                            </Badge>
-                          </div>
-                          <div className="absolute bottom-4 left-4">
-                            <div className="bg-black/60 backdrop-blur-sm rounded-lg px-3 py-1">
-                              <p className="text-white text-sm font-medium">Campaign Creative Preview</p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Change image button */}
-                        <ObjectUploader
-                          maxNumberOfFiles={1}
-                          maxFileSize={10 * 1024 * 1024} // 10MB
-                          onGetUploadParameters={handleImageUpload}
-                          onComplete={handleImageComplete}
-                          buttonClassName="w-full bg-card hover:bg-accent/5 text-foreground border border-border hover:border-primary/40 transition-all duration-300 py-3 px-4 rounded-lg"
-                        >
-                          <div className="flex items-center justify-center space-x-2">
-                            <Upload className="w-4 h-4" />
-                            <span className="font-medium">Change Creative</span>
-                          </div>
-                        </ObjectUploader>
-                      </div>
-                    )}
-                  </div>
-                </Card>
-
-                {/* Tier & Budget System */}
-                <Card className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="w-5 h-5 text-chart-2" />
-                      <Label className="text-base font-semibold">Pricing & Budget</Label>
-                    </div>
-                    
-                    {/* Tier Selection */}
-                    <div className="space-y-3">
-                      <Label>Select Influencer Tier</Label>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        {tiers.map((tier) => (
-                          <div
-                            key={tier.level}
-                            className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                              selectedTier === tier.level 
-                                ? 'border-accent bg-accent/10' 
-                                : 'border-muted hover:border-accent/50'
-                            }`}
-                            onClick={() => {
-                              setSelectedTier(tier.level);
-                              setValue("tierLevel", tier.level);
-                              const budget = calculateBudgetFromInfluencers(tier.level, numberOfInfluencers);
-                              setCalculatedBudget(budget.totalBudget);
-                            }}
-                          >
-                            <div className="text-center">
-                              <h3 className="font-semibold">{tier.description}</h3>
-                              <p className="text-sm text-muted-foreground">{tier.range} subscribers</p>
-                              <div className="text-lg font-bold text-chart-2 mt-2">
-                                ${tier.price} each
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Number of Influencers Input */}
-                    <div className="space-y-2">
-                      <Label htmlFor="numberOfInfluencers">How Many Influencers Do You Need?</Label>
-                      <Input
-                        id="numberOfInfluencers"
-                        type="number"
-                        min="1"
-                        step="1"
-                        {...register("numberOfInfluencers", { 
-                          onChange: (e) => {
-                            const num = Number(e.target.value) || 1;
-                            setNumberOfInfluencers(num);
-                            const budget = calculateBudgetFromInfluencers(selectedTier, num);
-                            setCalculatedBudget(budget.totalBudget);
-                          }
-                        })}
-                        placeholder="5"
-                        value={numberOfInfluencers}
-                      />
-                      {errors.numberOfInfluencers && (
-                        <p className="text-sm text-destructive">{errors.numberOfInfluencers.message}</p>
-                      )}
-                    </div>
-
-                    {/* Budget Calculator */}
-                    <Card className="p-6 bg-gradient-to-br from-muted/20 to-muted/40 border-2 border-muted-foreground/10">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between pb-2 border-b border-muted-foreground/20">
-                          <span className="font-semibold text-lg">Cost Breakdown</span>
-                          <Badge variant="secondary" className="bg-chart-2/20 text-chart-2">{currentTier?.description}</Badge>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">Number of Influencers:</span>
-                            <span className="font-bold">{numberOfInfluencers}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Price per influencer:</span>
-                            <span className="text-muted-foreground">${currentTier?.price}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Campaign Cost:</span>
-                            <span className="text-muted-foreground">${costBreakdown.campaignCost.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-destructive">Platform Fee (10%):</span>
-                            <span className="text-destructive">+${costBreakdown.platformFee.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
-                            <span className="text-chart-1">Total Budget Required:</span>
-                            <span className="text-chart-1">${costBreakdown.totalBudget.toFixed(2)}</span>
-                          </div>
-                        </div>
-                        
-                        <div className="bg-primary/10 rounded-lg p-4 mt-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
-                                <Users className="w-5 h-5 text-primary" />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-foreground">Campaign Reach</p>
-                                <p className="text-sm text-muted-foreground">Maximum influencers you can work with</p>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-primary">{numberOfInfluencers}</p>
-                              <p className="text-sm text-muted-foreground">influencers</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </Card>
-                </div>
-                </Card>
-
-
-                {/* Submit Button */}
-                <div className="flex justify-end space-x-3">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setIsCreateDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="button"
-                    size="lg"
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('🚀 SUBMIT BUTTON CLICKED! Event:', e);
-                      
-                      // Get current form values
-                      const formValues = watch();
-                      console.log('📋 Raw form values:', formValues);
-                      
-                      // Ensure required fields are populated from state
-                      const submissionData = {
-                        ...formValues,
-                        tierLevel: selectedTier,
-                        numberOfInfluencers: numberOfInfluencers,
-                        totalBudget: calculatedBudget,
-                        currency: formValues.currency || "USD",
-                        countries: formValues.countries || [],
-                        hashtags: formValues.hashtags || [],
-                        deadlineAt: formValues.deadlineAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                      };
-                      
-                      console.log('📊 Enhanced submission data:', submissionData);
-                      console.log('🔥 Attempting form submission...');
-                      
-                      try {
-                        onSubmit(submissionData);
-                      } catch (error) {
-                        console.error('❌ Submit error:', error);
-                      }
-                    }}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Campaign & Pay
-                  </Button>
-                </div>
-              </form>
+              <NewFreshForm onSuccess={() => setIsCreateDialogOpen(false)} />
             </DialogContent>
           </Dialog>
         </div>
