@@ -666,7 +666,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
 export default function AdMarketplace() {
   const { user, isAuthenticated, isLoading } = useAuth();
-  const { isFree, isStandard, isPremium } = usePlanAccess();
+  const { isFree, isStandard, isPremium, canApplyCampaigns, canAccessAnalytics, canAccessPayouts } = usePlanAccess();
+  
+  // Show visual locks for non-premium users (including FREE_CREATOR)
+  const shouldShowLocks = !isPremium;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -1038,8 +1041,8 @@ export default function AdMarketplace() {
             </TabsList>
 
             {/* YouTube Creator Dashboard */}
-            <TabsContent value="youtube-dashboard" className={isStandard ? "relative group" : ""}>
-              {isStandard && (
+            <TabsContent value="youtube-dashboard" className={!canAccessAnalytics ? "relative group" : ""}>
+              {!canAccessAnalytics && (
                 <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                   <div className="bg-red-500 text-white p-6 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
                     <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1076,8 +1079,8 @@ export default function AdMarketplace() {
                       className={`travel-card ${isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
                       data-testid={`card-ad-${ad.id}`}
                     >
-                      {/* Hover X Indicator for Standard Users */}
-                      {isStandard && (
+                      {/* Hover X Indicator for Non-Premium Users (including FREE_CREATOR) */}
+                      {shouldShowLocks && (
                         <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                           <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
                             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1164,14 +1167,14 @@ export default function AdMarketplace() {
                           <DialogTrigger asChild>
                             <Button 
                               size="sm" 
-                              className={`w-full ${isStandard ? 'bg-gray-400 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'}`}
-                              disabled={isStandard || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                              className={`w-full ${!canApplyCampaigns ? 'bg-gray-400 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'}`}
+                              disabled={!canApplyCampaigns || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
                               data-testid={`button-reserve-ad-${ad.id}`}
                             >
                               {reserveAdMutation.isPending ? (
                                 <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
-                              ) : isStandard ? (
-                                "Upgrade to Premium to Reserve"
+                              ) : !canApplyCampaigns ? (
+                                "Premium Required to Reserve"
                               ) : (
                                 "Reserve Campaign"
                               )}
@@ -1453,8 +1456,8 @@ export default function AdMarketplace() {
             </TabsContent>
 
             {/* Earnings Tab */}
-            <TabsContent value="earnings" className={`space-y-6 ${isStandard ? 'relative group' : ''}`}>
-              {isStandard && (
+            <TabsContent value="earnings" className={`space-y-6 ${!canAccessAnalytics ? 'relative group' : ''}`}>
+              {!canAccessAnalytics && (
                 <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                   <div className="bg-red-500 text-white p-6 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
                     <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1575,8 +1578,8 @@ export default function AdMarketplace() {
             </TabsContent>
 
             {/* Payment History Tab */}
-            <TabsContent value="payout-history" className={`space-y-6 ${isStandard ? 'relative group' : ''}`}>
-              {isStandard && (
+            <TabsContent value="payout-history" className={`space-y-6 ${!canAccessPayouts ? 'relative group' : ''}`}>
+              {!canAccessPayouts && (
                 <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                   <div className="bg-red-500 text-white p-6 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
                     <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
