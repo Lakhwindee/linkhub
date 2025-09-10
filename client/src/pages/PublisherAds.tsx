@@ -88,19 +88,30 @@ export default function PublisherAds() {
   // Create ad mutation
   const createAdMutation = useMutation({
     mutationFn: async (data: PublisherAdFormData) => {
-      // Demo mode - simulate successful ad creation
-      await new Promise(resolve => setTimeout(resolve, 1500)); // 1.5 second delay
+      console.log('🚀 ACTUAL API CALL STARTING...');
       
-      return {
-        id: `demo-ad-${Date.now()}`,
-        ...data,
-        adImageUrl,
-        totalBudget: calculatedBudget,
-        tierLevel: Number(data.tierLevel),
-        maxInfluencers: numberOfInfluencers,
-        status: 'active',
-        createdAt: new Date().toISOString(),
-      };
+      const response = await fetch('/api/publisher/ads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          adImageUrl,
+          totalBudget: calculatedBudget,
+          tierLevel: Number(data.tierLevel),
+          numberOfInfluencers,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`API Error: ${response.status} - ${error}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ API RESPONSE:', result);
+      return result;
     },
     onSuccess: () => {
       toast({
