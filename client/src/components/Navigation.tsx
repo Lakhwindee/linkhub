@@ -99,6 +99,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     ];
   } else {
     // All other roles see full navigation
+    const campaignsLabel = user?.role === 'creator' ? 'Earn' : 'Campaigns';
     navItems = [
       { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
       { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
@@ -109,7 +110,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
-      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
+      { href: "/ads", icon: DollarSign, label: campaignsLabel, testId: "nav-campaigns" },
     ];
   }
 
