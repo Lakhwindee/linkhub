@@ -632,6 +632,7 @@ export default function PublisherAds() {
 
 // Ad Campaign Card Component
 function AdCampaignCard({ ad }: { ad: any }) {
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const tiers = [
     { level: 1, description: "Micro-Influencers", range: "30K-70K" },
     { level: 2, description: "Small Influencers", range: "70K-150K" },
@@ -709,17 +710,102 @@ function AdCampaignCard({ ad }: { ad: any }) {
 
         {/* Actions */}
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={() => {
-              window.open(`/payment/success/${ad.id}`, '_blank', 'noopener,noreferrer');
-            }}
-          >
-            <Eye className="w-3 h-3 mr-1" />
-            View Details
-          </Button>
+          <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" className="flex-1">
+                <Eye className="w-3 h-3 mr-1" />
+                View Details
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-blue-500" />
+                  Campaign Details - {ad.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Campaign Summary */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg">{ad.title}</h3>
+                    <p className="text-muted-foreground">{ad.description || ad.briefMd}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-green-50 dark:bg-green-950 rounded-lg">
+                      <Users className="w-5 h-5 mx-auto mb-1 text-green-600" />
+                      <div className="text-sm font-medium">{ad.numberOfInfluencers || ad.maxInfluencers}</div>
+                      <div className="text-xs text-muted-foreground">Target Influencers</div>
+                    </div>
+                    
+                    <div className="text-center p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                      <DollarSign className="w-5 h-5 mx-auto mb-1 text-blue-600" />
+                      <div className="text-sm font-medium">${Number(ad.totalBudget).toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">Total Budget</div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Brand:</span>
+                      <span className="font-medium">{ad.brand}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Tier Level:</span>
+                      <Badge variant="secondary">Tier {ad.tierLevel}</Badge>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Status:</span>
+                      {ad.status === 'active' ? (
+                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
+                          ✅ Live & Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+                          Pending Payment
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Reservations:</span>
+                      <Badge variant="outline" className="text-blue-600 border-blue-600">
+                        {ad.reservedInfluencers || ad.currentReservations || 0}/{ad.numberOfInfluencers || ad.maxInfluencers}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Campaign Image */}
+                <div className="space-y-4">
+                  {ad.adImageUrl && (
+                    <div>
+                      <h4 className="font-medium mb-2">Campaign Creative</h4>
+                      <img 
+                        src={ad.adImageUrl} 
+                        alt="Campaign creative"
+                        className="w-full h-64 object-cover rounded-lg"
+                      />
+                    </div>
+                  )}
+
+                  {ad.status === 'active' && (
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950 border border-blue-200 dark:border-blue-800 p-4 rounded-lg">
+                      <h4 className="font-semibold mb-2">🚀 Campaign is Live!</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Your campaign is now visible to {ad.numberOfInfluencers || ad.maxInfluencers} target creators. 
+                        You'll receive notifications as creators reserve and complete your campaign.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
           {ad.status === 'pending_payment' && (
             <Button 
               variant="outline" 
