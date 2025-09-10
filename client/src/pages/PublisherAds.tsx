@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { DollarSign, Plus, Upload, Calendar, MapPin, Tag, Users, Eye, Edit, Trash2 } from "lucide-react";
+import { DollarSign, Plus, Upload, Calendar, MapPin, Tag, Users, Eye, Edit, Trash2, Target } from "lucide-react";
 import { worldCountries } from "@/data/locationData";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
