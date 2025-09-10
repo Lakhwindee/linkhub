@@ -99,7 +99,7 @@ export default function Ads() {
         {/* Tabs with consistent capability-based gating */}
         <Tabs defaultValue="campaigns" className="space-y-6">
           <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto md:overflow-x-visible gap-1 scrollbar-hide">
-            {/* Campaigns Tab - All users can view, but with different capabilities */}
+            {/* Campaigns Tab - Only creators/free_creators can view */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <TabsTrigger value="campaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
@@ -111,12 +111,12 @@ export default function Ads() {
               </TooltipTrigger>
               {!canViewCampaigns && (
                 <TooltipContent>
-                  <p>Upgrade to Standard or Premium to view campaigns</p>
+                  <p>Switch to Creator role to view campaigns</p>
                 </TooltipContent>
               )}
             </Tooltip>
 
-            {/* My Campaigns Tab - Standard+ can view */}
+            {/* My Campaigns Tab - Only creators/free_creators can view */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <TabsTrigger value="mycampaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
@@ -128,7 +128,7 @@ export default function Ads() {
               </TooltipTrigger>
               {!canViewCampaigns && (
                 <TooltipContent>
-                  <p>Upgrade to Standard or Premium to track your campaigns</p>
+                  <p>Switch to Creator role to track your campaigns</p>
                 </TooltipContent>
               )}
             </Tooltip>
@@ -189,87 +189,87 @@ export default function Ads() {
             <TabsContent value="campaigns">
               {!canViewCampaigns ? (
                 <div className="text-center py-12">
-                  <Lock className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">Campaigns Locked</h3>
-                  <p className="text-muted-foreground mb-4">Upgrade to Standard or Premium to view available campaigns</p>
+                  <User className="w-12 h-12 mx-auto mb-4 text-red-500" />
+                  <h3 className="text-lg font-semibold mb-2">Creator Access Required</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Switch to a Creator role to view available campaigns</p>
                   <Button asChild size="sm">
-                    <Link href="/subscribe">Upgrade Now</Link>
+                    <Link href="/role-test">Switch Role</Link>
                   </Button>
                 </div>
               ) : (
                 <div className="grid gap-6">
                   {campaigns.map((campaign) => (
-                    <Card key={campaign.id} className={!canApplyCampaigns ? "relative overflow-hidden" : ""}>
-                      {!canApplyCampaigns && (
-                        <div className="absolute top-4 right-4 z-20">
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <div className="bg-amber-500 text-white rounded-full p-1">
-                                <Lock className="w-4 h-4" />
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Upgrade to Premium to apply for campaigns</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </div>
-                      )}
-                      <CardHeader>
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                              {campaign.title}
-                            </CardTitle>
-                            <p className="text-sm text-muted-foreground">{campaign.brand}</p>
-                            <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
-                            <div className="text-sm text-muted-foreground">per post</div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground mb-4">{campaign.description}</p>
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Clock className="w-4 h-4" />
-                            <span>Closes {campaign.deadline}</span>
-                          </div>
-                          {canApplyCampaigns ? (
-                            <Button>
-                              Apply Now
-                            </Button>
-                          ) : (
+                      <Card key={campaign.id} className={!canApplyCampaigns ? "relative overflow-hidden" : ""}>
+                        {!canApplyCampaigns && (
+                          <div className="absolute top-4 right-4 z-20">
                             <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  onClick={() => setShowUpgradeDialog(true)}
-                                  className="relative cursor-pointer bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-                                  variant="outline"
-                                >
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Premium Required
-                                </Button>
+                              <TooltipTrigger>
+                                <div className="bg-amber-500 text-white rounded-full p-1">
+                                  <Lock className="w-4 h-4" />
+                                </div>
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Click to upgrade to Premium and apply for campaigns</p>
+                                <p>Upgrade to Premium to apply for campaigns</p>
                               </TooltipContent>
                             </Tooltip>
-                          )}
-                        </div>
-                        {!canApplyCampaigns && (
-                          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                            <p className="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                              <Lock className="w-4 h-4" />
-                              {isStandard ? 'Upgrade to Premium to apply for campaigns' : 'Upgrade to Premium to apply for campaigns'}
-                            </p>
                           </div>
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                        <CardHeader>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle className="text-lg flex items-center gap-2">
+                                {campaign.title}
+                              </CardTitle>
+                              <p className="text-sm text-muted-foreground">{campaign.brand}</p>
+                              <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
+                              <div className="text-sm text-muted-foreground">per post</div>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground mb-4">{campaign.description}</p>
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Clock className="w-4 h-4" />
+                              <span>Closes {campaign.deadline}</span>
+                            </div>
+                            {canApplyCampaigns ? (
+                              <Button>
+                                Apply Now
+                              </Button>
+                            ) : (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button 
+                                    onClick={() => setShowUpgradeDialog(true)}
+                                    className="relative cursor-pointer bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                                    variant="outline"
+                                  >
+                                    <Lock className="w-4 h-4 mr-2" />
+                                    Premium Required
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Click to upgrade to Premium and apply for campaigns</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                          {!canApplyCampaigns && (
+                            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                              <p className="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                                <Lock className="w-4 h-4" />
+                                Upgrade to Premium to apply for campaigns
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
               )}
             </TabsContent>
 
