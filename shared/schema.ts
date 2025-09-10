@@ -739,7 +739,7 @@ export const insertPublisherAdSchema = createInsertSchema(ads).pick({
 }).extend({
   countries: z.array(z.string()).optional(),
   hashtags: z.array(z.string()).optional(),
-  numberOfInfluencers: z.coerce.number().min(1, "Must select at least 1 influencer").max(50, "Maximum 50 influencers"),
+  numberOfInfluencers: z.coerce.number().min(1, "Must select at least 1 influencer"),
   totalBudget: z.coerce.number().min(120, "Minimum budget is $120"),
   tierLevel: z.number().min(1).max(10),
 });

@@ -405,7 +405,6 @@ export default function PublisherAds() {
                         id="numberOfInfluencers"
                         type="number"
                         min="1"
-                        max="50"
                         step="1"
                         {...register("numberOfInfluencers", { 
                           onChange: (e) => {
