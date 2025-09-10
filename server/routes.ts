@@ -4005,7 +4005,10 @@ Always be helpful, professional, and focused on website management tasks.`;
       const data = insertPublisherAdSchema.parse(req.body);
       
       // Calculate max influencers based on tier and budget
-      const tierPrices = { 1: 120, 2: 240, 3: 360 };
+      const tierPrices = { 
+        1: 10000, 2: 20000, 3: 35000, 4: 50000, 5: 70000, 
+        6: 90000, 7: 120000, 8: 150000, 9: 180000, 10: 200000 
+      };
       const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
       const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
       
@@ -4015,7 +4018,7 @@ Always be helpful, professional, and focused on website management tasks.`;
         payoutAmount: tierPrice.toString(),
         quota: maxInfluencers,
         maxInfluencers,
-        currency: "USD"
+        currency: "INR"
       };
       
       const ad = await storage.createAd(adData);

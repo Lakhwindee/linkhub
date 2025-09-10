@@ -28,15 +28,15 @@ export default function PublisherAds() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number>(1);
-  const [totalBudget, setTotalBudget] = useState<number>(120);
+  const [totalBudget, setTotalBudget] = useState<number>(10000);
   const [adImageUrl, setAdImageUrl] = useState<string>("");
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<PublisherAdFormData>({
     resolver: zodResolver(insertPublisherAdSchema),
     defaultValues: {
-      currency: "USD",
+      currency: "INR", 
       tierLevel: 1,
-      totalBudget: 120,
+      totalBudget: 10000,
     }
   });
 
@@ -44,14 +44,21 @@ export default function PublisherAds() {
 
   // Tier pricing configuration
   const tiers = [
-    { level: 1, price: 120, range: "10K-40K", description: "Micro-Influencers" },
-    { level: 2, price: 240, range: "40K-70K", description: "Mid-Tier Influencers" },
-    { level: 3, price: 360, range: "70K+", description: "Macro-Influencers" },
+    { level: 1, price: 10000, range: "30K-70K", description: "Micro-Influencers" },
+    { level: 2, price: 20000, range: "70K-150K", description: "Small Influencers" },
+    { level: 3, price: 35000, range: "150K-300K", description: "Mid-Tier Influencers" },
+    { level: 4, price: 50000, range: "300K-500K", description: "Growing Influencers" },
+    { level: 5, price: 70000, range: "500K-800K", description: "Established Influencers" },
+    { level: 6, price: 90000, range: "800K-1.2M", description: "Major Influencers" },
+    { level: 7, price: 120000, range: "1.2M-1.6M", description: "Top Influencers" },
+    { level: 8, price: 150000, range: "1.6M-2M", description: "Premium Influencers" },
+    { level: 9, price: 180000, range: "2M-3M", description: "Celebrity Influencers" },
+    { level: 10, price: 200000, range: "3M+", description: "Mega Influencers" },
   ];
 
   // Calculate costs with platform fees
   const calculateCosts = (budget: number, tierLevel: number) => {
-    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 120;
+    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 10000;
     const platformFee = budget * 0.10; // 10% platform fee
     const totalCost = budget + platformFee;
     const maxInfluencers = Math.floor(budget / tierPrice);
@@ -639,9 +646,16 @@ export default function PublisherAds() {
 // Ad Campaign Card Component
 function AdCampaignCard({ ad }: { ad: any }) {
   const tiers = [
-    { level: 1, description: "Micro-Influencers", range: "10K-40K" },
-    { level: 2, description: "Mid-Tier Influencers", range: "40K-70K" },
-    { level: 3, description: "Macro-Influencers", range: "70K+" },
+    { level: 1, description: "Micro-Influencers", range: "30K-70K" },
+    { level: 2, description: "Small Influencers", range: "70K-150K" },
+    { level: 3, description: "Mid-Tier Influencers", range: "150K-300K" },
+    { level: 4, description: "Growing Influencers", range: "300K-500K" },
+    { level: 5, description: "Established Influencers", range: "500K-800K" },
+    { level: 6, description: "Major Influencers", range: "800K-1.2M" },
+    { level: 7, description: "Top Influencers", range: "1.2M-1.6M" },
+    { level: 8, description: "Premium Influencers", range: "1.6M-2M" },
+    { level: 9, description: "Celebrity Influencers", range: "2M-3M" },
+    { level: 10, description: "Mega Influencers", range: "3M+" },
   ];
 
   const currentTier = tiers.find(t => t.level === ad.tierLevel);
