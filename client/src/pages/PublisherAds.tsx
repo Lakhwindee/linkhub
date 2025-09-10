@@ -28,37 +28,37 @@ export default function PublisherAds() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number>(1);
-  const [totalBudget, setTotalBudget] = useState<number>(10000);
+  const [totalBudget, setTotalBudget] = useState<number>(125);
   const [adImageUrl, setAdImageUrl] = useState<string>("");
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<PublisherAdFormData>({
     resolver: zodResolver(insertPublisherAdSchema),
     defaultValues: {
-      currency: "INR", 
+      currency: "USD", 
       tierLevel: 1,
-      totalBudget: 10000,
+      totalBudget: 125,
     }
   });
 
   const watchedValues = watch();
 
-  // Tier pricing configuration
+  // Tier pricing configuration (USD)
   const tiers = [
-    { level: 1, price: 10000, range: "30K-70K", description: "Micro-Influencers" },
-    { level: 2, price: 20000, range: "70K-150K", description: "Small Influencers" },
-    { level: 3, price: 35000, range: "150K-300K", description: "Mid-Tier Influencers" },
-    { level: 4, price: 50000, range: "300K-500K", description: "Growing Influencers" },
-    { level: 5, price: 70000, range: "500K-800K", description: "Established Influencers" },
-    { level: 6, price: 90000, range: "800K-1.2M", description: "Major Influencers" },
-    { level: 7, price: 120000, range: "1.2M-1.6M", description: "Top Influencers" },
-    { level: 8, price: 150000, range: "1.6M-2M", description: "Premium Influencers" },
-    { level: 9, price: 180000, range: "2M-3M", description: "Celebrity Influencers" },
-    { level: 10, price: 200000, range: "3M+", description: "Mega Influencers" },
+    { level: 1, price: 125, range: "30K-70K", description: "Micro-Influencers" },
+    { level: 2, price: 250, range: "70K-150K", description: "Small Influencers" },
+    { level: 3, price: 440, range: "150K-300K", description: "Mid-Tier Influencers" },
+    { level: 4, price: 625, range: "300K-500K", description: "Growing Influencers" },
+    { level: 5, price: 875, range: "500K-800K", description: "Established Influencers" },
+    { level: 6, price: 1125, range: "800K-1.2M", description: "Major Influencers" },
+    { level: 7, price: 1500, range: "1.2M-1.6M", description: "Top Influencers" },
+    { level: 8, price: 1875, range: "1.6M-2M", description: "Premium Influencers" },
+    { level: 9, price: 2250, range: "2M-3M", description: "Celebrity Influencers" },
+    { level: 10, price: 2500, range: "3M+", description: "Mega Influencers" },
   ];
 
   // Calculate costs with platform fees
   const calculateCosts = (budget: number, tierLevel: number) => {
-    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 10000;
+    const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 125;
     const platformFee = budget * 0.10; // 10% platform fee
     const totalCost = budget + platformFee;
     const maxInfluencers = Math.floor(budget / tierPrice);

@@ -4020,8 +4020,8 @@ Always be helpful, professional, and focused on website management tasks.`;
       
       // Calculate max influencers based on tier and budget
       const tierPrices = { 
-        1: 10000, 2: 20000, 3: 35000, 4: 50000, 5: 70000, 
-        6: 90000, 7: 120000, 8: 150000, 9: 180000, 10: 200000 
+        1: 125, 2: 250, 3: 440, 4: 625, 5: 875, 
+        6: 1125, 7: 1500, 8: 1875, 9: 2250, 10: 2500 
       };
       const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
       const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
@@ -4032,7 +4032,7 @@ Always be helpful, professional, and focused on website management tasks.`;
         payoutAmount: tierPrice.toString(),
         quota: maxInfluencers,
         maxInfluencers,
-        currency: "INR"
+        currency: "USD"
       };
       
       const ad = await storage.createAd(adData);

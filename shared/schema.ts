@@ -232,7 +232,7 @@ export const ads = pgTable("ads", {
   status: varchar("status").default("active"), // active, paused, completed
   // Publisher-specific fields for tier system
   totalBudget: decimal("total_budget", { precision: 10, scale: 2 }),
-  tierLevel: integer("tier_level"), // 10 tiers: ₹10k to ₹200k based on follower ranges
+  tierLevel: integer("tier_level"), // 10 tiers: $125 to $2500 based on follower ranges
   maxInfluencers: integer("max_influencers"),
   adImageUrl: varchar("ad_image_url"), // uploaded ad creative
   createdAt: timestamp("created_at").defaultNow(),
