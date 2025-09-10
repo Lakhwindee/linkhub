@@ -409,23 +409,23 @@ export default function PublisherAds() {
                         
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium">Campaign Budget:</span>
+                            <span className="font-medium">Total Budget Entered:</span>
                             <span className="font-bold">${totalBudget || 0}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-destructive">Platform Fee (10%):</span>
+                            <span className="text-destructive">-${costBreakdown.platformFee.toFixed(2)}</span>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
+                            <span className="text-chart-2">Usable Campaign Budget:</span>
+                            <span className="text-chart-2">${costBreakdown.usableBudget.toFixed(2)}</span>
                           </div>
                           
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-muted-foreground">Price per influencer:</span>
                             <span className="text-muted-foreground">${currentTier?.price}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">Platform Fee (10%):</span>
-                            <span className="text-muted-foreground">+${costBreakdown.platformFee.toFixed(2)}</span>
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-lg font-bold border-t border-muted-foreground/20 pt-3">
-                            <span className="text-foreground">Total Cost:</span>
-                            <span className="text-chart-1">${costBreakdown.totalCost.toFixed(2)}</span>
                           </div>
                         </div>
                         
