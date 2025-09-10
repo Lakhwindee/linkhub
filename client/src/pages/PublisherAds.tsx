@@ -489,20 +489,18 @@ export default function PublisherAds() {
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="submit" 
+                  <button 
+                    type="button"
                     disabled={createAdMutation.isPending}
-                    className="bg-accent hover:bg-accent/90 relative z-50 pointer-events-auto"
-                    style={{ position: 'relative', zIndex: 50 }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      console.log('🎯 Submit button clicked!');
-                      console.log('❌ Current form errors:', errors);
-                      console.log('🔍 Form is valid:', Object.keys(errors).length === 0);
-                      console.log('📊 All form values:', watch());
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-accent text-accent-foreground shadow hover:bg-accent/90 h-9 px-4 py-2"
+                    onClick={() => {
+                      console.log('🎯 WORKING SUBMIT BUTTON CLICKED!');
+                      console.log('❌ Form errors:', errors);
+                      console.log('📊 Form values:', watch());
                       console.log('🎯 Selected tier:', selectedTier);
                       console.log('👥 Number of influencers:', numberOfInfluencers);
+                      
+                      // Direct form submission
                       handleSubmit(onSubmit)();
                     }}
                   >
@@ -511,8 +509,8 @@ export default function PublisherAds() {
                     ) : (
                       <Plus className="w-4 h-4 mr-2" />
                     )}
-                    Create Campaign
-                  </Button>
+                    Submit Campaign
+                  </button>
                 </div>
               </form>
             </DialogContent>
