@@ -113,15 +113,16 @@ export default function PublisherAds() {
       console.log('✅ API RESPONSE:', result);
       return result;
     },
-    onSuccess: () => {
+    onSuccess: (campaign: any) => {
+      console.log('🎉 Campaign created, redirecting to payment...', campaign);
       toast({
-        title: "Ad Created Successfully",
-        description: "Your ad campaign has been created and is now live.",
+        title: "Campaign Created",
+        description: "Redirecting to payment...",
       });
       setIsCreateDialogOpen(false);
-      reset();
-      setAdImageUrl("");
-      queryClient.invalidateQueries({ queryKey: ["/api/publisher/ads"] });
+      
+      // Redirect to payment page with campaign ID
+      window.location.href = `/payment/${campaign.id}`;
     },
     onError: (error) => {
       toast({
@@ -169,18 +170,28 @@ export default function PublisherAds() {
     console.log('👥 Number of influencers:', numberOfInfluencers);
     console.log('💰 Calculated budget:', calculatedBudget);
     
-    // Log form errors for debugging
-    console.log('❌ Form errors:', errors);
-    
     // For demo purposes, allow submission without image
     if (!adImageUrl) {
-      // Use a placeholder image for demo
       setAdImageUrl("https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop");
       console.log('🖼️ Using placeholder image');
     }
     
-    console.log('✅ Starting mutation...');
-    createAdMutation.mutate(data);
+    console.log('✅ Creating campaign and redirecting to payment...');
+    
+    // Prepare campaign data with payment status
+    const campaignData = {
+      ...data,
+      adImageUrl,
+      totalBudget: calculatedBudget,
+      tierLevel: Number(data.tierLevel),
+      numberOfInfluencers,
+      status: 'pending_payment',
+      maxInfluencers: numberOfInfluencers,
+      reservedInfluencers: 0,
+      completedInfluencers: 0,
+    };
+    
+    createAdMutation.mutate(campaignData);
   };
 
   if (isLoading) {
@@ -500,22 +511,18 @@ export default function PublisherAds() {
                   >
                     Cancel
                   </Button>
-                  <div 
-                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-green-600 text-white shadow hover:bg-green-700 h-9 px-4 py-2 cursor-pointer"
+                  <Button 
+                    type="button"
+                    size="lg"
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold"
                     onClick={() => {
-                      console.log('🚀 GREEN SUBMIT BUTTON CLICKED!');
-                      console.log('❌ Form errors:', errors);
-                      console.log('📊 Form values:', watch());
-                      console.log('🎯 Selected tier:', selectedTier);
-                      console.log('👥 Number of influencers:', numberOfInfluencers);
-                      
-                      // Direct form submission
+                      console.log('🚀 SUBMIT CLICKED!');
                       handleSubmit(onSubmit)();
                     }}
                   >
                     <Plus className="w-4 h-4 mr-2" />
-                    SUBMIT CAMPAIGN
-                  </div>
+                    Create Campaign & Pay
+                  </Button>
                 </div>
               </form>
             </DialogContent>
