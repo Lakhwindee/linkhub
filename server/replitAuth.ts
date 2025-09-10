@@ -182,6 +182,12 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
         first_name: 'Demo',
         last_name: 'Creator'
       },
+      'demo-free-creator': {
+        sub: 'demo-free-creator',
+        email: 'free-creator@hublink.com',
+        first_name: 'Free',
+        last_name: 'Creator'
+      },
       'demo-publisher': {
         sub: 'demo-publisher',
         email: 'publisher@hublink.com',
@@ -196,10 +202,10 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
       return res.status(401).json({ message: 'Invalid demo user' });
     }
     
-    req.user = {
+    (req as any).user = {
       claims: demoUser
-    } as any;
-    console.log('Demo user authenticated:', req.user.claims.sub);
+    };
+    console.log('Demo user authenticated:', ((req as any).user?.claims as any)?.sub);
     return next();
   }
 

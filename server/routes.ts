@@ -330,13 +330,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       // Handle demo users
-      if (userId === 'demo-admin' || userId === 'demo-creator' || userId === 'demo-publisher') {
+      if (userId === 'demo-admin' || userId === 'demo-creator' || userId === 'demo-free-creator' || userId === 'demo-publisher') {
         const baseDemoUser = {
           id: userId,
-          email: userId === 'demo-admin' ? 'admin@hublink.com' : userId === 'demo-creator' ? 'creator@hublink.com' : 'publisher@hublink.com',
-          firstName: userId === 'demo-admin' ? 'System' : 'Demo',
-          lastName: userId === 'demo-admin' ? 'Administrator' : userId === 'demo-creator' ? 'Creator' : 'Publisher',
-          displayName: userId === 'demo-admin' ? 'System Administrator' : userId === 'demo-creator' ? 'Demo Creator' : 'Demo Publisher',
+          email: userId === 'demo-admin' ? 'admin@hublink.com' : 
+                userId === 'demo-creator' ? 'creator@hublink.com' : 
+                userId === 'demo-free-creator' ? 'free-creator@hublink.com' : 
+                'publisher@hublink.com',
+          firstName: userId === 'demo-admin' ? 'System' : 
+                    userId === 'demo-free-creator' ? 'Free' : 
+                    'Demo',
+          lastName: userId === 'demo-admin' ? 'Administrator' : 
+                   userId === 'demo-creator' ? 'Creator' : 
+                   userId === 'demo-free-creator' ? 'Creator' : 
+                   'Publisher',
+          displayName: userId === 'demo-admin' ? 'System Administrator' : 
+                      userId === 'demo-creator' ? 'Demo Creator' : 
+                      userId === 'demo-free-creator' ? 'Free Creator' : 
+                      'Demo Publisher',
           bio: null,
           country: 'United Kingdom',
           city: 'London',
@@ -354,8 +365,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instagramUrl: null,
           youtubeUrl: null,
           tiktokUrl: null,
-          role: userId === 'demo-admin' ? 'admin' : userId === 'demo-creator' ? 'creator' : 'publisher',
-          plan: userId === 'demo-admin' ? 'premium' : userId === 'demo-creator' ? 'creator' : 'premium',
+          role: userId === 'demo-admin' ? 'admin' : 
+                userId === 'demo-creator' ? 'creator' : 
+                userId === 'demo-free-creator' ? 'free_creator' : 
+                'publisher',
+          plan: userId === 'demo-admin' ? 'premium' : 
+                userId === 'demo-creator' ? 'premium' : 
+                userId === 'demo-free-creator' ? 'free' : 
+                'premium',
           stripeCustomerId: null,
           stripeSubscriptionId: null,
           canDmMe: 'all',
@@ -1932,8 +1949,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(ads);
       }
       
-      if (user?.plan !== 'premium') {
+      // Check for paid creator access (premium plan OR creator role)
+      if (user?.plan !== 'premium' && user?.plan !== 'standard') {
         return res.status(403).json({ message: "Creator plan required" });
+      }
+      
+      // Specifically block free_creator role from monetization features
+      if (user?.role === 'free_creator') {
+        return res.status(403).json({ message: "Upgrade to premium creator plan required for campaign participation" });
       }
       
       // Check if user has verified YouTube channel
@@ -1972,6 +1995,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For demo users, bypass plan check  
       if (userId !== 'demo-user-1' && userId !== 'demo-admin' && user?.plan !== 'premium' && user?.plan !== 'standard') {
         return res.status(403).json({ message: "Creator plan required" });
+      }
+      
+      // Block free_creator role from campaign reservation (monetization feature)
+      if (user?.role === 'free_creator') {
+        return res.status(403).json({ message: "Upgrade to premium creator plan required for campaign reservation" });
       }
 
       // SECURITY: Re-verify channel ownership before allowing campaign reservation
@@ -4240,16 +4268,23 @@ Always be helpful, professional, and focused on website management tasks.`;
     }
   });
 
-  // Quick role update endpoint for demo purposes
+  // SECURITY: Role update endpoint - DEVELOPMENT ONLY (PRIVILEGE ESCALATION RISK)
   app.post('/api/user/role', isAuthenticated, async (req: any, res) => {
+    // CRITICAL SECURITY: Only allow role changes in development environment
+    // This endpoint allows privilege escalation and should NEVER be available in production
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    
     try {
       const { role } = req.body;
-      const validRoles = ['traveler', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
+      const validRoles = ['traveler', 'creator', 'free_creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
       
       if (!validRoles.includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
       
+      console.log(`🚨 DEV ONLY: Role change from ${req.user.claims.sub} to ${role}`);
       const updatedUser = await storage.updateUserProfile(req.user.claims.sub, { role });
       res.json({ message: "Role updated successfully", user: updatedUser });
     } catch (error) {
@@ -4258,8 +4293,13 @@ Always be helpful, professional, and focused on website management tasks.`;
     }
   });
 
-  // Demo login with ID and Password
+  // Demo login with ID and Password - DEVELOPMENT ONLY
   app.post("/api/demo-login", async (req, res) => {
+    // SECURITY: Only allow demo login in development environment
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    
     console.log('🔄 Demo login endpoint hit!');
     console.log('🔍 Request body:', req.body);
     
@@ -4276,6 +4316,27 @@ Always be helpful, professional, and focused on website management tasks.`;
         role: 'admin',
         plan: 'premium',
         name: 'System Administrator'
+      },
+      'CREATOR_001': {
+        password: 'creator123',
+        userId: 'demo-creator',
+        role: 'creator',
+        plan: 'premium',
+        name: 'Premium Creator'
+      },
+      'FREE_CREATOR_001': {
+        password: 'freecreator123',
+        userId: 'demo-free-creator',
+        role: 'free_creator',
+        plan: 'free',
+        name: 'Free Creator'
+      },
+      'PUBLISHER_001': {
+        password: 'publisher123',
+        userId: 'demo-publisher',
+        role: 'publisher',
+        plan: 'premium',
+        name: 'Content Publisher'
       },
     };
     

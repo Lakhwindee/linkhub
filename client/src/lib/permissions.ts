@@ -1,6 +1,6 @@
 // Role-based permission system
 
-export type UserRole = 'traveler' | 'creator' | 'stays' | 'promotional' | 'tour_package' | 'publisher' | 'admin' | 'superadmin';
+export type UserRole = 'traveler' | 'creator' | 'free_creator' | 'stays' | 'promotional' | 'tour_package' | 'publisher' | 'admin' | 'superadmin';
 
 export interface User {
   id: string;
@@ -100,7 +100,9 @@ export const permissions = {
       case 'traveler':
         return 'General Traveler';
       case 'creator':
-        return 'Creator (View Only)';
+        return 'Creator (Premium)';
+      case 'free_creator':
+        return 'Creator (Free)';
       case 'stays':
         return 'Stays Provider';
       case 'promotional':
@@ -123,7 +125,9 @@ export const permissions = {
       case 'traveler':
         return 'Can view and participate in all content but cannot create specialized listings';
       case 'creator':
-        return 'Can VIEW all content but CANNOT create stays, tours, or business listings';
+        return 'Premium creator with full access to campaigns and monetization features';
+      case 'free_creator':
+        return 'Free creator with limited access - can view campaigns but cannot participate in monetization';
       case 'stays':
         return 'Legacy role - use Publisher instead';
       case 'promotional':
@@ -142,17 +146,56 @@ export const permissions = {
   },
 
   getAllRoles: (): UserRole[] => {
-    return ['traveler', 'creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
+    return ['traveler', 'creator', 'free_creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'];
   },
 
   // Role validation
   isValidRole: (role: string): role is UserRole => {
-    return ['traveler', 'creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'].includes(role as UserRole);
+    return ['traveler', 'creator', 'free_creator', 'stays', 'promotional', 'tour_package', 'publisher', 'admin', 'superadmin'].includes(role as UserRole);
   },
 
   // Check if user should see limited navigation (publisher role)
   shouldShowLimitedNavigation: (user: User | null): boolean => {
     return user?.role === 'publisher';
+  },
+
+  // Campaign and monetization permissions
+  canParticipateInCampaigns: (user: User | null): boolean => {
+    if (!user?.role) return false;
+    return ['creator', 'admin', 'superadmin'].includes(user.role as string);
+  },
+
+  canReserveCampaigns: (user: User | null): boolean => {
+    if (!user?.role) return false;
+    return ['creator', 'admin', 'superadmin'].includes(user.role as string);
+  },
+
+  canViewCampaigns: (user: User | null): boolean => {
+    if (!user?.role) return false;
+    return ['creator', 'free_creator', 'admin', 'superadmin'].includes(user.role as string);
+  },
+
+  canAccessMonetization: (user: User | null): boolean => {
+    if (!user?.role) return false;
+    return ['creator', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+  },
+
+  // Helper functions for role comparison
+  isCreator: (user: User | null): boolean => {
+    return user?.role === 'creator';
+  },
+
+  isFreeCreator: (user: User | null): boolean => {
+    return user?.role === 'free_creator';
+  },
+
+  isAnyCreator: (user: User | null): boolean => {
+    if (!user?.role) return false;
+    return ['creator', 'free_creator'].includes(user.role as string);
+  },
+
+  isPaidCreator: (user: User | null): boolean => {
+    return user?.role === 'creator';
   }
 };
 
@@ -177,6 +220,18 @@ export const usePermissions = (user: User | null) => {
     
     canAccessAdmin: permissions.canAccessAdmin(user),
     canModerateContent: permissions.canModerateContent(user),
+    
+    // New campaign and monetization permissions
+    canParticipateInCampaigns: permissions.canParticipateInCampaigns(user),
+    canReserveCampaigns: permissions.canReserveCampaigns(user),
+    canViewCampaigns: permissions.canViewCampaigns(user),
+    canAccessMonetization: permissions.canAccessMonetization(user),
+    
+    // Role helpers
+    isCreator: permissions.isCreator(user),
+    isFreeCreator: permissions.isFreeCreator(user),
+    isAnyCreator: permissions.isAnyCreator(user),
+    isPaidCreator: permissions.isPaidCreator(user),
     
     userRole: user?.role || 'traveler',
     roleDisplayName: permissions.getRoleDisplayName((user?.role as UserRole) || 'traveler'),
