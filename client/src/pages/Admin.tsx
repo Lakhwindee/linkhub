@@ -251,7 +251,12 @@ export default function Admin() {
   });
 
   // API Settings form state
-  const [apiFormData, setApiFormData] = useState<any>({});
+  const [apiFormData, setApiFormData] = useState<any>({
+    maps: {
+      apiKey: '',
+      enableAdvancedFeatures: true
+    }
+  });
   
   // Track which service is currently being saved
   const [savingService, setSavingService] = useState<string | null>(null);
@@ -1205,6 +1210,122 @@ export default function Admin() {
                             <span>Last Tested:</span>
                             <span className="font-mono text-xs">
                               {format(new Date(apiSettings.openai.lastTested), 'MMM dd, h:mm a')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Google Maps Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <MapPin className="w-5 h-5 mr-2" />
+                          Google Maps API
+                        </div>
+                        <Badge 
+                          variant={apiSettings?.maps?.status === 'active' ? "secondary" : "destructive"}
+                          className={apiSettings?.maps?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                        >
+                          {apiSettings?.maps?.status === 'active' ? 'Connected' : 'Disconnected'}
+                        </Badge>
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Configure Google Maps API for location services, geocoding, and map visualization
+                      </p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label htmlFor="maps-api-key">API Key *</Label>
+                        <Input
+                          id="maps-api-key"
+                          name="apiKey"
+                          type="password"
+                          placeholder="AIzaSy..."
+                          value={apiFormData.maps?.apiKey || ''}
+                          onChange={(e) => setApiFormData(prev => ({
+                            ...prev,
+                            maps: { ...prev.maps, apiKey: e.target.value }
+                          }))}
+                          className="mt-1"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Your Google Maps JavaScript API key
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id="maps-advanced-features"
+                          checked={apiFormData.maps?.enableAdvancedFeatures || false}
+                          onCheckedChange={(checked) => setApiFormData(prev => ({
+                            ...prev,
+                            maps: { ...prev.maps, enableAdvancedFeatures: checked }
+                          }))}
+                        />
+                        <Label htmlFor="maps-advanced-features" className="text-sm">
+                          Enable Advanced Features (3D, Street View)
+                        </Label>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (!apiFormData.maps?.apiKey) {
+                              toast({
+                                title: "API Key Required",
+                                description: "Please enter your Google Maps API key first.",
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+                            saveApiSettingsMutation.mutate({
+                              service: 'maps',
+                              settings: apiFormData.maps || {}
+                            });
+                          }}
+                          disabled={savingService === 'maps'}
+                        >
+                          {savingService === 'maps' ? 'Saving...' : 'Save Configuration'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => testApiConnectionMutation.mutate('maps')}
+                          disabled={testApiConnectionMutation.isPending}
+                        >
+                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
+                        </Button>
+                      </div>
+                      <div className="mt-4 p-3 bg-muted rounded-lg">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>API Status:</span>
+                          <Badge 
+                            variant={apiSettings?.maps?.status === 'active' ? "secondary" : "destructive"}
+                            className={apiSettings?.maps?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                          >
+                            {apiSettings?.maps?.status === 'active' ? 'Connected' : 'Disconnected'}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-2">
+                          <span>Services Available:</span>
+                          <span className="font-mono text-xs">
+                            Maps, Geocoding, Places
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm mt-2">
+                          <span>Monthly Requests:</span>
+                          <span className="font-mono text-xs">
+                            {apiSettings?.maps?.monthlyRequests || 0} / 25,000
+                          </span>
+                        </div>
+                        {apiSettings?.maps?.lastTested && (
+                          <div className="flex items-center justify-between text-sm mt-2">
+                            <span>Last Tested:</span>
+                            <span className="font-mono text-xs">
+                              {format(new Date(apiSettings.maps.lastTested), 'MMM dd, h:mm a')}
                             </span>
                           </div>
                         )}
