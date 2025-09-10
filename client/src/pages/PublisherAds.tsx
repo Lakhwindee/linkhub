@@ -28,7 +28,8 @@ export default function PublisherAds() {
   const queryClient = useQueryClient();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number>(1);
-  const [totalBudget, setTotalBudget] = useState<number>(125);
+  const [numberOfInfluencers, setNumberOfInfluencers] = useState<number>(1);
+  const [calculatedBudget, setCalculatedBudget] = useState<number>(0);
   const [adImageUrl, setAdImageUrl] = useState<string>("");
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<PublisherAdFormData>({
@@ -36,7 +37,7 @@ export default function PublisherAds() {
     defaultValues: {
       currency: "USD", 
       tierLevel: 1,
-      totalBudget: 125,
+      numberOfInfluencers: 1,
     }
   });
 
