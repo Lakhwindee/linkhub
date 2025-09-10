@@ -4370,26 +4370,85 @@ Always be helpful, professional, and focused on website management tasks.`;
       console.log('🔍 Database lookup result:', user ? 'Found user' : 'User not found');
       console.log('🔍 Credential role:', credential.role);
       
-      // If user not found in database, create demo user object (especially for admin)
-      if (!user && credential.role === 'admin') {
-        user = {
-          id: credential.userId,
-          email: 'admin@hublink.com',
-          firstName: 'System',
-          lastName: 'Administrator',
-          displayName: credential.name,
-          username: 'admin',
-          profileImageUrl: null,
-          role: credential.role,
-          plan: credential.plan,
-          preferences: {},
-          socialMedia: {},
-          youtubeSubscribers: 0,
-          youtubeTier: 0,
-          youtubeChannelId: null,
-          youtubeVerified: false
-        };
-        console.log('Created demo admin user object:', user);
+      // If user not found in database, create demo user object for various roles
+      if (!user) {
+        if (credential.role === 'admin') {
+          user = {
+            id: credential.userId,
+            email: 'admin@hublink.com',
+            firstName: 'System',
+            lastName: 'Administrator',
+            displayName: credential.name,
+            username: 'admin',
+            profileImageUrl: null,
+            role: credential.role,
+            plan: credential.plan,
+            preferences: {},
+            socialMedia: {},
+            youtubeSubscribers: 0,
+            youtubeTier: 0,
+            youtubeChannelId: null,
+            youtubeVerified: false
+          };
+          console.log('Created demo admin user object:', user);
+        } else if (credential.role === 'free_creator') {
+          user = {
+            id: credential.userId,
+            email: 'free-creator@hublink.com',
+            firstName: 'Free',
+            lastName: 'Creator',
+            displayName: credential.name,
+            username: 'free_creator',
+            profileImageUrl: null,
+            role: credential.role,
+            plan: credential.plan,
+            preferences: {},
+            socialMedia: {},
+            youtubeSubscribers: 0,
+            youtubeTier: 0,
+            youtubeChannelId: null,
+            youtubeVerified: false
+          };
+          console.log('Created demo free creator user object:', user);
+        } else if (credential.role === 'creator') {
+          user = {
+            id: credential.userId,
+            email: 'creator@hublink.com',
+            firstName: 'Demo',
+            lastName: 'Creator',
+            displayName: credential.name,
+            username: 'demo_creator',
+            profileImageUrl: null,
+            role: credential.role,
+            plan: credential.plan,
+            preferences: {},
+            socialMedia: {},
+            youtubeSubscribers: 50000,
+            youtubeTier: 2,
+            youtubeChannelId: 'UC123456789',
+            youtubeVerified: true
+          };
+          console.log('Created demo creator user object:', user);
+        } else if (credential.role === 'publisher') {
+          user = {
+            id: credential.userId,
+            email: 'publisher@hublink.com',
+            firstName: 'Demo',
+            lastName: 'Publisher',
+            displayName: credential.name,
+            username: 'demo_publisher',
+            profileImageUrl: null,
+            role: credential.role,
+            plan: credential.plan,
+            preferences: {},
+            socialMedia: {},
+            youtubeSubscribers: 0,
+            youtubeTier: 0,
+            youtubeChannelId: null,
+            youtubeVerified: false
+          };
+          console.log('Created demo publisher user object:', user);
+        }
       }
       
       if (user) {
@@ -4474,6 +4533,19 @@ Always be helpful, professional, and focused on website management tasks.`;
           profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
           country: 'Spain',
           city: 'Barcelona'
+        },
+        'demo-free-creator': {
+          id: 'demo-free-creator',
+          email: 'free-creator@hublink.com',
+          firstName: 'Free',
+          lastName: 'Creator',
+          displayName: 'Free Creator',
+          username: 'free_creator',
+          plan: 'free',
+          role: 'free_creator',
+          profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+          country: 'India',
+          city: 'Mumbai'
         },
         'demo-publisher': {
           id: 'demo-publisher',
