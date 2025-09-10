@@ -152,13 +152,20 @@ export default function PublisherAds() {
   };
 
   const onSubmit = (data: PublisherAdFormData) => {
+    console.log('🚀 Form submission started!');
+    console.log('📊 Form data:', data);
+    console.log('🎯 Selected tier:', selectedTier);
+    console.log('👥 Number of influencers:', numberOfInfluencers);
+    console.log('💰 Calculated budget:', calculatedBudget);
+    
     // For demo purposes, allow submission without image
     if (!adImageUrl) {
       // Use a placeholder image for demo
       setAdImageUrl("https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop");
+      console.log('🖼️ Using placeholder image');
     }
     
-    console.log('Form submitted:', data);
+    console.log('✅ Starting mutation...');
     createAdMutation.mutate(data);
   };
 
@@ -213,7 +220,13 @@ export default function PublisherAds() {
           </div>
           <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-accent hover:bg-accent/90">
+              <Button 
+                className="bg-accent hover:bg-accent/90"
+                onClick={() => {
+                  console.log('🎯 Create New Ad button clicked!');
+                  setIsCreateDialogOpen(true);
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Ad
               </Button>
@@ -533,7 +546,13 @@ export default function PublisherAds() {
                   <p className="text-muted-foreground mb-6">
                     Create your first ad campaign to start reaching influencers
                   </p>
-                  <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-accent hover:bg-accent/90">
+                  <Button 
+                    onClick={() => {
+                      console.log('🎯 Create Your First Campaign button clicked!');
+                      setIsCreateDialogOpen(true);
+                    }} 
+                    className="bg-accent hover:bg-accent/90"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your First Campaign
                   </Button>
