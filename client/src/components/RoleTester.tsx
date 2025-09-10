@@ -17,12 +17,21 @@ const demoUsers = [
   },
   {
     id: 'demo-creator',
-    name: 'Creator',
+    name: 'Creator (Premium)',
     role: 'creator',
-    plan: 'creator',
-    description: 'Can only VIEW content, cannot ADD listings',
+    plan: 'premium',
+    description: 'Premium creator with monetization access',
     icon: User,
-    permissions: ['View Stays', 'View Tours', 'View Hosts', '❌ No CREATE buttons']
+    permissions: ['View Campaigns', 'Reserve Campaigns', 'Monetization', 'Full Creator Features']
+  },
+  {
+    id: 'demo-free-creator',
+    name: 'Creator (Free)',
+    role: 'free_creator',
+    plan: 'free',
+    description: 'Free creator - can view but cannot monetize',
+    icon: User,
+    permissions: ['View Campaigns', '❌ No Reservation', '❌ No Monetization', '❌ Upgrade Required']
   },
   {
     id: 'demo-publisher',
