@@ -104,6 +104,7 @@ export interface IStorage {
   
   // Ads
   createAd(data: any): Promise<Ad>;
+  updateAd(id: string, data: Partial<Ad>): Promise<Ad>;
   getAds(filters?: any): Promise<Ad[]>;
   getAd(id: string): Promise<Ad | undefined>;
   getPublisherAds(publisherId: string): Promise<Ad[]>;
@@ -1533,6 +1534,15 @@ export class DatabaseStorage implements IStorage {
       .values(data)
       .returning();
     return ad;
+  }
+
+  async updateAd(id: string, data: Partial<Ad>): Promise<Ad> {
+    const [updatedAd] = await db
+      .update(ads)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(ads.id, id))
+      .returning();
+    return updatedAd;
   }
 
   async getAds(filters?: any): Promise<Ad[]> {
