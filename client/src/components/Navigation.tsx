@@ -89,11 +89,12 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   let navItems = [];
   
   if (user?.role === 'publisher') {
-    // Publisher role only sees these 3 menus
+    // Publisher role sees business management menus
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
       { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
+      { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
     ];
   } else {
     // All other roles see full navigation
