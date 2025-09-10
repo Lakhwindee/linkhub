@@ -728,24 +728,25 @@ export const insertAdSchema = createInsertSchema(ads).pick({
   hashtags: z.array(z.string()).optional(),
 });
 
-// Publisher ad creation schema
-export const insertPublisherAdSchema = createInsertSchema(ads).pick({
-  brand: true,
-  title: true,
-  briefMd: true,
-  countries: true,
-  hashtags: true,
-  currency: true,
-  deadlineAt: true,
-  totalBudget: true,
-  tierLevel: true,
-  adImageUrl: true,
-}).extend({
-  countries: z.array(z.string()).optional(),
-  hashtags: z.array(z.string()).optional(),
-  numberOfInfluencers: z.coerce.number().min(1, "Must select at least 1 influencer"),
-  totalBudget: z.coerce.number().min(120, "Minimum budget is $120"),
+// Publisher ad creation schema - FRESH VERSION
+export const insertPublisherAdSchema = z.object({
+  brand: z.string().min(1, "Brand name is required"),
+  title: z.string().min(1, "Campaign title is required"),
+  briefMd: z.string().min(1, "Campaign description is required"),
+  countries: z.array(z.string()).optional().default([]),
+  hashtags: z.array(z.string()).optional().default([]),
+  currency: z.string().default("USD"),
+  deadlineAt: z.string().or(z.date()).transform((val) => {
+    // Handle both string and Date inputs, convert to Date
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }),
+  totalBudget: z.number().min(120, "Minimum budget is $120"),
   tierLevel: z.number().min(1).max(10),
+  numberOfInfluencers: z.number().min(1, "Must select at least 1 influencer"),
+  adImageUrl: z.string().url("Must be a valid image URL"),
 });
 
 export const insertReportSchema = createInsertSchema(reports).pick({
