@@ -848,17 +848,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Determine tier based on subscriber count
       let tier = 1; // Default tier
-      if (subscriberCount >= 70000) {
-        tier = 3; // £360 tier
-      } else if (subscriberCount >= 40000) {
-        tier = 2; // £240 tier  
-      } else if (subscriberCount >= 10000) {
-        tier = 1; // £120 tier
+      if (subscriberCount >= 3000000) {
+        tier = 10; // ₹200k tier
+      } else if (subscriberCount >= 2000000) {
+        tier = 9; // ₹180k tier
+      } else if (subscriberCount >= 1600000) {
+        tier = 8; // ₹150k tier
+      } else if (subscriberCount >= 1200000) {
+        tier = 7; // ₹120k tier
+      } else if (subscriberCount >= 800000) {
+        tier = 6; // ₹90k tier
+      } else if (subscriberCount >= 500000) {
+        tier = 5; // ₹70k tier
+      } else if (subscriberCount >= 300000) {
+        tier = 4; // ₹50k tier
+      } else if (subscriberCount >= 150000) {
+        tier = 3; // ₹35k tier
+      } else if (subscriberCount >= 70000) {
+        tier = 2; // ₹20k tier
+      } else if (subscriberCount >= 30000) {
+        tier = 1; // ₹10k tier
       } else {
         return res.status(400).json({ 
-          message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 10,000 subscribers required to participate in campaigns.`,
+          message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 30,000 subscribers required to participate in campaigns.`,
           subscriberCount,
-          minimumRequired: 10000
+          minimumRequired: 30000
         });
       }
 
