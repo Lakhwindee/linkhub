@@ -234,7 +234,10 @@ export default function PublisherAds() {
                 <p className="text-muted-foreground">Set up your ad campaign with tier-based pricing</p>
               </DialogHeader>
               
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit, (errors) => {
+                console.log('❌ Form validation failed!');
+                console.log('🚨 Validation errors:', errors);
+              })} className="space-y-6">
                 {/* Basic Information */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -242,7 +245,7 @@ export default function PublisherAds() {
                       <Label htmlFor="brand">Brand Name</Label>
                       <Input
                         id="brand"
-                        {...register("brand")}
+                        {...register("brand", { required: "Brand name is required" })}
                         placeholder="Your brand or company name"
                       />
                       {errors.brand && (
@@ -494,6 +497,9 @@ export default function PublisherAds() {
                       console.log('🎯 Submit button clicked!');
                       console.log('❌ Current form errors:', errors);
                       console.log('🔍 Form is valid:', Object.keys(errors).length === 0);
+                      console.log('📊 All form values:', watch());
+                      console.log('🎯 Selected tier:', selectedTier);
+                      console.log('👥 Number of influencers:', numberOfInfluencers);
                     }}
                   >
                     {createAdMutation.isPending ? (
