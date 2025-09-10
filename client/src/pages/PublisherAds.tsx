@@ -56,17 +56,17 @@ export default function PublisherAds() {
     { level: 10, price: 2500, range: "3M+", description: "Mega Influencers" },
   ];
 
-  // Calculate costs with platform fees
+  // Calculate costs with platform fees (10% deducted from entered budget)
   const calculateCosts = (budget: number, tierLevel: number) => {
     const tierPrice = tiers.find(t => t.level === tierLevel)?.price || 125;
-    const platformFee = budget * 0.10; // 10% platform fee
-    const totalCost = budget + platformFee;
-    const maxInfluencers = Math.floor(budget / tierPrice);
+    const platformFee = budget * 0.10; // 10% platform fee deducted from total
+    const usableBudget = budget - platformFee; // Actual budget available for influencer payments
+    const maxInfluencers = Math.floor(usableBudget / tierPrice); // Based on usable budget only
     
     return {
-      baseAmount: budget,
+      totalBudget: budget, // Original budget entered by user
       platformFee,
-      totalCost,
+      usableBudget, // Budget available for campaign spending
       maxInfluencers,
       tierPrice
     };
