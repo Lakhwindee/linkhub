@@ -95,6 +95,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
       { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
       { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
+      { href: "/billing", icon: CreditCard, label: "Finance", testId: "nav-finance" },
     ];
   } else {
     // All other roles see full navigation
