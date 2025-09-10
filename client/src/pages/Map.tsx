@@ -49,11 +49,56 @@ export default function Map() {
     setSelectedStay(stay);
   };
 
+  // Country name to code mapping for Google Maps zoom functionality
+  const countryNameToCode: Record<string, string> = {
+    'United Kingdom': 'GB',
+    'United States': 'US', 
+    'India': 'IN',
+    'France': 'FR',
+    'Germany': 'DE',
+    'Italy': 'IT',
+    'Spain': 'ES',
+    'China': 'CN',
+    'Japan': 'JP',
+    'Brazil': 'BR',
+    'Canada': 'CA',
+    'Australia': 'AU',
+    'Russia': 'RU',
+    'Mexico': 'MX',
+    'Argentina': 'AR',
+    'South Africa': 'ZA',
+    'Egypt': 'EG',
+    'Thailand': 'TH',
+    'Turkey': 'TR',
+    'South Korea': 'KR',
+    'Singapore': 'SG',
+    'Malaysia': 'MY',
+    'Indonesia': 'ID',
+    'Philippines': 'PH',
+    'Vietnam': 'VN',
+    'Netherlands': 'NL',
+    'Switzerland': 'CH',
+    'Austria': 'AT',
+    'Belgium': 'BE',
+    'Sweden': 'SE',
+    'Norway': 'NO',
+    'Denmark': 'DK',
+    'Finland': 'FI',
+    'Poland': 'PL',
+    'Czech Republic': 'CZ',
+    'Portugal': 'PT',
+    'Greece': 'GR',
+    'United Arab Emirates': 'AE',
+    'Saudi Arabia': 'SA',
+    'Israel': 'IL',
+    'Pakistan': 'PK'
+  };
+
   // Real-world countries data (250+ countries with flags)
   const countries = [
     { value: "all", label: "All Countries" },
-    ...worldCountries.map((country, index) => ({
-      value: `country-${index}`,
+    ...worldCountries.map((country) => ({
+      value: countryNameToCode[country.name] || country.name.toLowerCase().replace(/\s+/g, '-'),
       label: `${country.flag || ''} ${country.name}`.trim()
     }))
   ];
