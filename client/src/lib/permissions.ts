@@ -177,7 +177,7 @@ export const permissions = {
 
   canAccessMonetization: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['creator', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return ['creator', 'free_creator', 'publisher', 'admin', 'superadmin'].includes(user.role as string);
   },
 
   // Helper functions for role comparison
