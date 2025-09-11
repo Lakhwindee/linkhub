@@ -43,7 +43,3 @@ expertMode = true
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 46601
-externalPort = 3000
