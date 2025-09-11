@@ -19,7 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPublisherAdSchema } from "@shared/schema";
 import { z } from "zod";
-import { TIERS } from "@shared/tierConfig";
+// Removed shared tier import - using original publisher tiers
 
 type PublisherAdFormData = z.infer<typeof insertPublisherAdSchema>;
 
@@ -35,7 +35,12 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
 
   const { toast } = useToast();
 
-  const tiers = TIERS;
+  // Original publisher tier system (restored)
+  const tiers = [
+    { level: 1, description: "Micro-Influencers", range: "10k-40k", price: 150, minSubscribers: 10000, maxSubscribers: 40000 },
+    { level: 2, description: "Mid-Tier Influencers", range: "40k-70k", price: 300, minSubscribers: 40000, maxSubscribers: 70000 },
+    { level: 3, description: "Major Influencers", range: "70k+", price: 450, minSubscribers: 70000, maxSubscribers: null },
+  ];
 
   const currentTier = tiers.find(t => t.level === selectedTier);
   const campaignCost = (currentTier?.price || 125) * numberOfInfluencers;
