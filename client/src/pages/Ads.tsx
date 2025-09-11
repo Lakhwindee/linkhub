@@ -73,7 +73,6 @@ export default function Ads() {
     }
   };
 
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
@@ -195,27 +194,11 @@ export default function Ads() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Access tier-based campaigns</span>
+                    <span>Display channel information</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Unlock creator benefits</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">Creator Tiers Available:</p>
-                  <div className="grid grid-cols-2 gap-1 text-xs">
-                    <Badge className="bg-orange-600 text-white text-[10px] px-1 py-0">Bronze (1k-5k)</Badge>
-                    <Badge className="bg-gray-400 text-white text-[10px] px-1 py-0">Silver (5k-10k)</Badge>
-                    <Badge className="bg-yellow-500 text-white text-[10px] px-1 py-0">Gold (10k-25k)</Badge>
-                    <Badge className="bg-blue-500 text-white text-[10px] px-1 py-0">Platinum (25k-50k)</Badge>
-                    <Badge className="bg-purple-500 text-white text-[10px] px-1 py-0">Diamond (50k-100k)</Badge>
-                    <Badge className="bg-indigo-600 text-white text-[10px] px-1 py-0">Elite (100k-250k)</Badge>
-                    <Badge className="bg-pink-600 text-white text-[10px] px-1 py-0">Master (250k-500k)</Badge>
-                    <Badge className="bg-red-600 text-white text-[10px] px-1 py-0">Legend (500k-1M)</Badge>
-                    <Badge className="bg-green-600 text-white text-[10px] px-1 py-0">Champion (1M-5M)</Badge>
-                    <Badge className="bg-black text-white text-[10px] px-1 py-0">Ultimate (5M+)</Badge>
+                    <span>Connect with platform</span>
                   </div>
                 </div>
 

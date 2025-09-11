@@ -122,6 +122,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id, password } = req.body;
       
+      console.log('🔍 Demo login attempt:', { id, password, requestBody: req.body });
+      
       // Validate demo credentials
       const demoUsers = {
         'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
@@ -131,7 +133,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
       };
       
-      if (!demoUsers[id as keyof typeof demoUsers] || demoUsers[id as keyof typeof demoUsers].password !== password) {
+      const foundUser = demoUsers[id as keyof typeof demoUsers];
+      console.log('🔍 User lookup result:', { foundUser, expectedPassword: foundUser?.password });
+      
+      if (!foundUser || foundUser.password !== password) {
+        console.log('❌ Credential validation failed:', { 
+          userExists: !!foundUser, 
+          passwordMatch: foundUser?.password === password 
+        });
         return res.status(401).json({ message: 'Invalid credentials' });
       }
       
