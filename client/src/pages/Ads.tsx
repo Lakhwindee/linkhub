@@ -97,7 +97,7 @@ export default function Ads() {
             Connect Your YouTube Channel
           </h1>
           <p className="text-muted-foreground">
-            Verify your channel to access creator features and campaigns
+            Connect your YouTube channel for verification
           </p>
         </div>
 
@@ -184,8 +184,7 @@ export default function Ads() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-sm">
-                  Connect your YouTube channel to verify your creator status and access 
-                  advertising campaigns and monetization features.
+                  Connect your YouTube channel to verify channel ownership.
                 </p>
                 
                 <div className="space-y-2">
@@ -195,11 +194,11 @@ export default function Ads() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Access subscriber count</span>
+                    <span>Display channel information</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Enable creator campaigns</span>
+                    <span>Connect with platform</span>
                   </div>
                 </div>
 

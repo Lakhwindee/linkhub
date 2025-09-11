@@ -805,7 +805,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: user.displayName, // Use displayName as channel title
             subscribers: user.youtubeSubscribers || 0,
             verified: user.youtubeVerified,
-            tier: user.youtubeTier || 1,
             lastUpdated: user.youtubeLastUpdated,
             thumbnail: user.avatarUrl // Use avatar as thumbnail
           }
@@ -867,7 +866,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateUser(userId, {
         youtubeChannelId: mockChannelData.channelId,
         youtubeSubscribers: mockChannelData.subscribers,
-        youtubeTier: mockChannelData.subscribers >= 10000 ? 2 : 1,
         youtubeVerified: true,
         youtubeLastUpdated: new Date()
       });
