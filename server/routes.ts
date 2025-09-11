@@ -2041,14 +2041,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(ads);
       }
       
-      // Check for paid creator access (premium plan OR creator role)
-      if (user?.plan !== 'premium' && user?.plan !== 'standard') {
-        return res.status(403).json({ message: "Creator plan required" });
+      // Check for creator role first
+      if (user?.role !== 'creator' && user?.role !== 'free_creator') {
+        return res.status(403).json({ message: "Creator role required" });
       }
       
       // Specifically block free_creator role from monetization features
       if (user?.role === 'free_creator') {
         return res.status(403).json({ message: "Upgrade to premium creator plan required for campaign participation" });
+      }
+      
+      // For creator role, require premium plan
+      if (user?.role === 'creator' && user?.plan !== 'premium') {
+        return res.status(403).json({ message: "Premium plan required for campaign access" });
       }
       
       // Check if user has verified YouTube channel
@@ -2085,13 +2090,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // For demo users, bypass plan check  
-      if (userId !== 'demo-user-1' && userId !== 'demo-admin' && user?.plan !== 'premium' && user?.plan !== 'standard') {
-        return res.status(403).json({ message: "Creator plan required" });
-      }
-      
-      // Block free_creator role from campaign reservation (monetization feature)
-      if (user?.role === 'free_creator') {
-        return res.status(403).json({ message: "Upgrade to premium creator plan required for campaign reservation" });
+      if (userId !== 'demo-user-1' && userId !== 'demo-admin') {
+        // Check for creator role first
+        if (user?.role !== 'creator' && user?.role !== 'free_creator') {
+          return res.status(403).json({ message: "Creator role required" });
+        }
+        
+        // Block free_creator role from campaign reservation (monetization feature)
+        if (user?.role === 'free_creator') {
+          return res.status(403).json({ message: "Upgrade to premium creator plan required for campaign reservation" });
+        }
+        
+        // For creator role, require premium plan
+        if (user?.role === 'creator' && user?.plan !== 'premium') {
+          return res.status(403).json({ message: "Premium plan required for campaign reservation" });
+        }
       }
 
       // SECURITY: Re-verify channel ownership before allowing campaign reservation
