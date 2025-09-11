@@ -1,39 +1,29 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
-  DollarSign, TrendingUp, Eye, Clock, Briefcase, Crown, 
-  Lock, Zap, Target, BarChart3, CreditCard, CheckCircle,
-  Plus, MapPin, Users, Calendar, Building, User, Youtube,
-  Play, Link as LinkIcon, Copy, Check, Loader2, AlertTriangle, X
+  DollarSign, Eye, Clock, Briefcase, 
+  Target, BarChart3, CheckCircle, Youtube, Star
 } from "lucide-react";
-import { Link } from "wouter";
-import { usePlanAccess } from "@/hooks/usePlanAccess";
-import { SubscriptionUpgrade } from "@/components/SubscriptionUpgrade";
 
 export default function Ads() {
   const { user, isAuthenticated } = useAuth();
-  const { 
-    isFree, 
-    isStandard, 
-    isPremium, 
-    canViewCampaigns, 
-    canApplyCampaigns, 
-    canAccessAnalytics, 
-    canAccessPayouts 
-  } = usePlanAccess();
 
-  const [selectedCampaign, setSelectedCampaign] = useState<string | null>(null);
-  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  
+  // All Creator Tiers - Simple Display
+  const creatorTiers = [
+    { tier: 1, name: 'Bronze Creator', range: '1k-5k', color: 'bg-orange-600', textColor: 'text-white' },
+    { tier: 2, name: 'Silver Creator', range: '5k-10k', color: 'bg-gray-400', textColor: 'text-white' },
+    { tier: 3, name: 'Gold Creator', range: '10k-25k', color: 'bg-yellow-500', textColor: 'text-white' },
+    { tier: 4, name: 'Platinum Creator', range: '25k-50k', color: 'bg-blue-500', textColor: 'text-white' },
+    { tier: 5, name: 'Diamond Creator', range: '50k-100k', color: 'bg-purple-500', textColor: 'text-white' },
+    { tier: 6, name: 'Elite Creator', range: '100k-250k', color: 'bg-indigo-600', textColor: 'text-white' },
+    { tier: 7, name: 'Master Creator', range: '250k-500k', color: 'bg-pink-600', textColor: 'text-white' },
+    { tier: 8, name: 'Legend Creator', range: '500k-1M', color: 'bg-red-600', textColor: 'text-white' },
+    { tier: 9, name: 'Champion Creator', range: '1M-5M', color: 'bg-green-600', textColor: 'text-white' },
+    { tier: 10, name: 'Ultimate Creator', range: '5M+', color: 'bg-black', textColor: 'text-white' }
+  ];
 
   // Demo campaigns data
   const campaigns = [
@@ -48,8 +38,20 @@ export default function Ads() {
       deadline: "Jan 31, 2025",
       budget: "$2,500",
       spots: "15 spots available",
-      tags: ["travel", "photography", "canon"],
-      restricted: false
+      tags: ["travel", "photography", "canon"]
+    },
+    {
+      id: "ad-2",
+      title: "Tech Review Campaign",
+      brand: "Samsung",
+      category: "Technology",
+      payPerPost: "$200-400",
+      description: "Review latest Samsung devices and accessories",
+      requirements: "25k+ followers, tech content focus",
+      deadline: "Feb 15, 2025",
+      budget: "$5,000",
+      spots: "10 spots available",
+      tags: ["tech", "reviews", "samsung"]
     }
   ];
 
@@ -58,9 +60,9 @@ export default function Ads() {
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto">
           <div className="text-center space-y-4 py-20">
-            <Lock className="w-16 h-16 mx-auto text-muted-foreground" />
-            <h1 className="text-2xl font-bold">Sign in to access Campaign features</h1>
-            <p className="text-muted-foreground">Manage your advertising campaigns and brand partnerships</p>
+            <DollarSign className="w-16 h-16 mx-auto text-muted-foreground" />
+            <h1 className="text-2xl font-bold">Sign in to access Creator Dashboard</h1>
+            <p className="text-muted-foreground">View all creator tiers and campaigns</p>
           </div>
         </div>
       </div>
@@ -68,306 +70,198 @@ export default function Ads() {
   }
 
   return (
-    <TooltipProvider>
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-background p-4">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
           <div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
               <DollarSign className="w-8 h-8 text-green-600" />
-              Campaigns
+              Creator Dashboard
             </h1>
             <p className="text-muted-foreground mt-2">
-              Manage your advertising campaigns and brand partnerships
+              View all creator tiers and manage campaigns
             </p>
           </div>
           
-          {/* Plan Status Badge */}
+          {/* Current User Status */}
           <div className="flex items-center gap-3">
-            <Badge variant={isPremium ? "default" : isStandard ? "secondary" : "outline"} className="text-sm">
-              {isPremium && <Crown className="w-4 h-4 mr-1" />}
-              {user?.plan === 'free' ? 'Free Plan' : user?.plan === 'standard' ? 'Standard Plan' : 'Premium Plan'}
+            <Badge variant="default" className="text-sm">
+              <Youtube className="w-4 h-4 mr-1" />
+              {user?.role || 'Creator'}
             </Badge>
-            {!isPremium && (
-              <Button asChild size="sm">
-                <Link href="/subscribe">Upgrade to Premium</Link>
-              </Button>
-            )}
           </div>
         </div>
 
-        {/* Tabs with consistent capability-based gating */}
-        <Tabs defaultValue="campaigns" className="space-y-6">
-          <TabsList className="w-full flex md:grid md:grid-cols-5 overflow-x-auto md:overflow-x-visible gap-1 scrollbar-hide">
-            {/* Campaigns Tab - Only creators/free_creators can view */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabsTrigger value="campaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
-                  <span className="flex items-center gap-2">
-                    Available Campaigns
-                    {!canViewCampaigns && <Lock className="w-3 h-3 text-red-500" />}
-                  </span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              {!canViewCampaigns && (
-                <TooltipContent>
-                  <p>Switch to Creator role to view campaigns</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* My Campaigns Tab - Only creators/free_creators can view */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabsTrigger value="mycampaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
-                  <span className="flex items-center gap-2">
-                    My Campaigns
-                    {!canViewCampaigns && <Lock className="w-3 h-3 text-red-500" />}
-                  </span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              {!canViewCampaigns && (
-                <TooltipContent>
-                  <p>Switch to Creator role to track your campaigns</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* Earnings Tab - Premium only */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabsTrigger value="earnings" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
-                  <span className="flex items-center gap-2">
-                    Earnings
-                    {!isPremium && <Lock className="w-3 h-3 text-red-500" />}
-                  </span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              {!isPremium && (
-                <TooltipContent>
-                  <p>Upgrade to Premium to track your earnings</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* Analytics Tab - Premium only */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabsTrigger value="analytics" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
-                  <span className="flex items-center gap-2">
-                    Analytics
-                    {!canAccessAnalytics && <Lock className="w-3 h-3 text-red-500" />}
-                  </span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              {!canAccessAnalytics && (
-                <TooltipContent>
-                  <p>Upgrade to Premium to access performance insights</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
-
-            {/* Payouts Tab - Premium only */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <TabsTrigger value="payouts" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
-                  <span className="flex items-center gap-2">
-                    Payouts
-                    {!canAccessPayouts && <Lock className="w-3 h-3 text-red-500" />}
-                  </span>
-                </TabsTrigger>
-              </TooltipTrigger>
-              {!canAccessPayouts && (
-                <TooltipContent>
-                  <p>Upgrade to Premium to manage your payouts</p>
-                </TooltipContent>
-              )}
-            </Tooltip>
+        {/* Simple Tabs - All Features Available */}
+        <Tabs defaultValue="tiers" className="space-y-6">
+          <TabsList className="w-full flex md:grid md:grid-cols-4 overflow-x-auto md:overflow-x-visible gap-1">
+            <TabsTrigger value="tiers" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
+              <Star className="w-4 h-4 mr-2" />
+              All Creator Tiers
+            </TabsTrigger>
+            <TabsTrigger value="campaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
+              <Target className="w-4 h-4 mr-2" />
+              Available Campaigns
+            </TabsTrigger>
+            <TabsTrigger value="mycampaigns" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
+              <Briefcase className="w-4 h-4 mr-2" />
+              My Campaigns
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs md:text-sm whitespace-nowrap min-w-fit">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
+          {/* All Creator Tiers Tab */}
+          <TabsContent value="tiers">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {creatorTiers.map((tier) => (
+                <Card key={tier.tier} className="relative overflow-hidden">
+                  <CardHeader className={`${tier.color} ${tier.textColor}`}>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg font-bold">
+                        Tier {tier.tier}
+                      </CardTitle>
+                      <Youtube className="w-6 h-6" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">{tier.name}</h3>
+                    <p className="text-muted-foreground mb-4">
+                      {tier.range} subscribers
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">Campaign Access</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">Analytics Dashboard</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">Payout Management</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
-            <TabsContent value="campaigns">
-              <div className="grid gap-6">
-                  {campaigns.map((campaign) => (
-                      <Card key={campaign.id} className={!canApplyCampaigns ? "relative overflow-hidden" : ""}>
-                        {!canApplyCampaigns && (
-                          <div className="absolute top-4 right-4 z-20">
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <div className="bg-amber-500 text-white rounded-full p-1">
-                                  <Lock className="w-4 h-4" />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>Upgrade to Premium to apply for campaigns</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                        )}
-                        <CardHeader>
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <CardTitle className="text-lg flex items-center gap-2">
-                                {campaign.title}
-                              </CardTitle>
-                              <p className="text-sm text-muted-foreground">{campaign.brand}</p>
-                              <Badge variant="outline" className="mt-2">{campaign.category}</Badge>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-green-600">{campaign.payPerPost}</div>
-                              <div className="text-sm text-muted-foreground">per post</div>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground mb-4">{campaign.description}</p>
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Clock className="w-4 h-4" />
-                              <span>Closes {campaign.deadline}</span>
-                            </div>
-                            {canApplyCampaigns ? (
-                              <Button>
-                                Apply Now
-                              </Button>
-                            ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button 
-                                    onClick={() => setShowUpgradeDialog(true)}
-                                    className="relative cursor-pointer bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-                                    variant="outline"
-                                  >
-                                    <Lock className="w-4 h-4 mr-2" />
-                                    Premium Required
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Click to upgrade to Premium and apply for campaigns</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
-                          </div>
-                          {!canApplyCampaigns && (
-                            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                              <p className="text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
-                                <Lock className="w-4 h-4" />
-                                Upgrade to Premium to apply for campaigns
-                              </p>
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-              </div>
-            </TabsContent>
+          {/* Available Campaigns Tab */}
+          <TabsContent value="campaigns">
+            <div className="grid gap-6">
+              {campaigns.map((campaign) => (
+                <Card key={campaign.id}>
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {campaign.title}
+                          <Badge variant="secondary">{campaign.category}</Badge>
+                        </CardTitle>
+                        <p className="text-muted-foreground mt-2">{campaign.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-semibold text-green-600">{campaign.payPerPost}</div>
+                        <div className="text-sm text-muted-foreground">{campaign.spots}</div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap items-center gap-4 mb-4">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Deadline: {campaign.deadline}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm">Budget: {campaign.budget}</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Requirements: {campaign.requirements}
+                    </p>
+                    <div className="flex justify-between items-center">
+                      <div className="flex gap-2">
+                        {campaign.tags.map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            #{tag}
+                          </Badge>
+                        ))}
+                      </div>
+                      <Button>
+                        Apply Now
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
 
-            <TabsContent value="mycampaigns">
-              {!canViewCampaigns ? (
-                <div className="text-center py-12">
-                  <Lock className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">My Campaigns Locked</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Upgrade to Standard or Premium to track your campaigns</p>
-                  <Button asChild size="sm">
-                    <Link href="/subscribe">Upgrade Now</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No Reserved Campaigns</h3>
-                  <p className="text-muted-foreground">
-                    {canApplyCampaigns ? 'Apply to campaigns to see them here' : 'Upgrade to Premium to apply for campaigns'}
+          {/* My Campaigns Tab */}
+          <TabsContent value="mycampaigns">
+            <div className="text-center py-12">
+              <Briefcase className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No Active Campaigns</h3>
+              <p className="text-muted-foreground">
+                Apply to campaigns to see them here
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">1,234,567</div>
+                  <p className="text-xs text-muted-foreground">
+                    +12.3% from last month
                   </p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="earnings">
-              {!isPremium ? (
-                <div className="text-center py-12">
-                  <Lock className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">Earnings Dashboard Locked</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Upgrade to Premium to track your earnings</p>
-                  <Button asChild size="sm">
-                    <Link href="/subscribe">Upgrade to Premium</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <DollarSign className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No Earnings Yet</h3>
-                  <p className="text-muted-foreground">Complete campaigns to start earning</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="analytics">
-              {!canAccessAnalytics ? (
-                <div className="text-center py-12">
-                  <Lock className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">Analytics Locked</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Upgrade to Premium to access performance insights</p>
-                  <Button asChild size="sm">
-                    <Link href="/subscribe">Upgrade to Premium</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <BarChart3 className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">Analytics Coming Soon</h3>
-                  <p className="text-muted-foreground">Track your campaign performance</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="payouts">
-              {!canAccessPayouts ? (
-                <div className="text-center py-12">
-                  <Lock className="w-12 h-12 mx-auto mb-4 text-red-500" />
-                  <h3 className="text-lg font-semibold mb-2">Payouts Locked</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Upgrade to Premium to manage your payouts</p>
-                  <Button asChild size="sm">
-                    <Link href="/subscribe">Upgrade to Premium</Link>
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold mb-2">No Payouts Available</h3>
-                  <p className="text-muted-foreground">Complete campaigns to receive payouts</p>
-                </div>
-              )}
-            </TabsContent>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Campaigns Applied</CardTitle>
+                  <Target className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">23</div>
+                  <p className="text-xs text-muted-foreground">
+                    +5 this month
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">$5,432</div>
+                  <p className="text-xs text-muted-foreground">
+                    +18.2% from last month
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
         </Tabs>
         
-        {/* Upgrade Dialog */}
-        <Dialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Upgrade Required</DialogTitle>
-              <DialogDescription>
-                You need a Premium plan to apply for campaigns and access all monetization features.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-semibold">Premium Plan</h3>
-                  <p className="text-sm text-muted-foreground">Full access to campaigns, analytics, and payouts</p>
-                </div>
-                <Button asChild>
-                  <Link href="/subscribe">Upgrade Now</Link>
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-        
       </div>
     </div>
-    </TooltipProvider>
   );
 }
