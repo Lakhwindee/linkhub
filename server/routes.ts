@@ -406,10 +406,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: userId.includes('admin') ? 'Administrator' : 
                    userId.includes('free_001') ? 'Creator' :
                    userId.includes('creator') ? 'Creator' : 
+                   userId.includes('user_001') ? 'User' :
                    'Publisher',
           displayName: userId.includes('admin') ? 'System Administrator' : 
                       userId.includes('free_001') ? 'Free Creator' : 
                       userId.includes('creator') ? 'Demo Creator' : 
+                      userId.includes('user_001') ? 'Demo User' :
                       'Demo Publisher',
           bio: null,
           country: 'United Kingdom',
@@ -431,6 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: userId.includes('admin') ? 'admin' : 
                 userId.includes('free_001') ? 'free_creator' :
                 userId.includes('creator') ? 'creator' : 
+                userId.includes('user_001') ? 'user' :
                 'publisher',
           plan: userId.includes('admin') ? 'premium' : 
                 userId.includes('free_001') ? 'free' :
