@@ -404,10 +404,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     userId.includes('free') ? 'Free' : 
                     'Demo',
           lastName: userId.includes('admin') ? 'Administrator' : 
+                   userId.includes('free_001') ? 'Creator' :
                    userId.includes('creator') ? 'Creator' : 
                    'Publisher',
           displayName: userId.includes('admin') ? 'System Administrator' : 
-                      userId.includes('creator') && userId.includes('free') ? 'Free Creator' : 
+                      userId.includes('free_001') ? 'Free Creator' : 
                       userId.includes('creator') ? 'Demo Creator' : 
                       'Demo Publisher',
           bio: null,
@@ -428,11 +429,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           youtubeUrl: null,
           tiktokUrl: null,
           role: userId.includes('admin') ? 'admin' : 
-                userId.includes('creator') && userId.includes('free') ? 'free_creator' :
+                userId.includes('free_001') ? 'free_creator' :
                 userId.includes('creator') ? 'creator' : 
                 'publisher',
           plan: userId.includes('admin') ? 'premium' : 
-                userId.includes('creator') && userId.includes('free') ? 'free' :
+                userId.includes('free_001') ? 'free' :
                 userId.includes('creator') ? 'premium' : 
                 'premium',
           stripeCustomerId: null,
