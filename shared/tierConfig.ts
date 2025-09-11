@@ -25,7 +25,7 @@ export const TIERS: Tier[] = [
  */
 export function subscribersToTier(subscribers: number): number {
   for (const tier of TIERS) {
-    if (subscribers >= tier.minSubscribers && (tier.maxSubscribers === null || subscribers <= tier.maxSubscribers)) {
+    if (subscribers >= tier.minSubscribers && (tier.maxSubscribers === null || subscribers < tier.maxSubscribers)) {
       return tier.level;
     }
   }

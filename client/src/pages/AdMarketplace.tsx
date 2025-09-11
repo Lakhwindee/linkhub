@@ -697,9 +697,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   You need at least 30,000 subscribers to participate.
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 30k-70k subscribers: $125 per campaign</li>
-                  <li>• 40k-70k subscribers: $300 per campaign</li>  
-                  <li>• 70k+ subscribers: $450 per campaign</li>
+                  {TIERS.map((tier) => (
+                    <li key={tier.level}>• {tier.range} subscribers: ${tier.price} per campaign</li>
+                  ))}
                 </ul>
               </div>
 
