@@ -2042,8 +2042,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Admin role has unrestricted access
-      if (user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator') {
-        // No restrictions for admin panel users
+      if (user?.role === 'admin') {
+        // No restrictions for admin users
       } else {
         // Check for creator role first
         if (user?.role !== 'creator' && user?.role !== 'free_creator') {
@@ -2097,8 +2097,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // For demo users, bypass plan check  
       if (userId !== 'demo-user-1' && userId !== 'demo-admin') {
         // Admin role has unrestricted access
-        if (user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator') {
-          // No restrictions for admin panel users
+        if (user?.role === 'admin') {
+          // No restrictions for admin users
         } else {
           // Check for creator role first
           if (user?.role !== 'creator' && user?.role !== 'free_creator') {
