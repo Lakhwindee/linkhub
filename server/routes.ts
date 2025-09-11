@@ -786,6 +786,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // YouTube integration routes
+  // Get YouTube connection status
+  app.get('/api/youtube/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return current YouTube connection status
+      if (user.youtubeChannelId && user.youtubeVerified) {
+        res.json({
+          connected: true,
+          channel: {
+            channelId: user.youtubeChannelId,
+            title: user.displayName, // Use displayName as channel title
+            subscribers: user.youtubeSubscribers || 0,
+            verified: user.youtubeVerified,
+            tier: user.youtubeTier || 1,
+            lastUpdated: user.youtubeLastUpdated,
+            thumbnail: user.avatarUrl // Use avatar as thumbnail
+          }
+        });
+      } else {
+        res.json({
+          connected: false,
+          channel: null
+        });
+      }
+    } catch (error) {
+      console.error("Failed to get YouTube status:", error);
+      res.status(500).json({ message: "Failed to get YouTube status" });
+    }
+  });
+
+  // Get YouTube OAuth authorization URL
+  app.get('/api/youtube/auth-url', isAuthenticated, async (req: any, res) => {
+    try {
+      // For demo purposes, we'll create a mock OAuth URL
+      // In production, you would use Google OAuth2 client
+      const authUrl = `https://accounts.google.com/oauth/authorize?` +
+        `client_id=demo-client-id&` +
+        `redirect_uri=${encodeURIComponent('http://localhost:5000/api/youtube/callback')}&` +
+        `scope=${encodeURIComponent('https://www.googleapis.com/auth/youtube.readonly')}&` +
+        `response_type=code&` +
+        `access_type=offline&` +
+        `state=${req.user.claims.sub}`;
+
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Failed to generate auth URL:", error);
+      res.status(500).json({ message: "Failed to generate authorization URL" });
+    }
+  });
+
+  // Handle YouTube OAuth callback (demo implementation)
+  app.get('/api/youtube/callback', async (req, res) => {
+    try {
+      const { code, state } = req.query;
+      
+      if (!code || !state) {
+        return res.redirect('/?error=oauth_failed');
+      }
+
+      // For demo purposes, we'll simulate a successful OAuth flow
+      // In production, you would exchange the code for tokens and fetch channel info
+      const userId = state as string;
+      
+      // Simulate fetching channel info
+      const mockChannelData = {
+        channelId: 'UC_demo_channel_123',
+        title: 'Demo Creator Channel',
+        subscribers: 15000,
+        thumbnailUrl: 'https://via.placeholder.com/88x88.png?text=YT'
+      };
+
+      // Update user with YouTube data
+      await storage.updateUser(userId, {
+        youtubeChannelId: mockChannelData.channelId,
+        youtubeSubscribers: mockChannelData.subscribers,
+        youtubeTier: mockChannelData.subscribers >= 10000 ? 2 : 1,
+        youtubeVerified: true,
+        youtubeLastUpdated: new Date()
+      });
+
+      // Redirect to success page
+      res.redirect('/?youtube_connected=true');
+    } catch (error) {
+      console.error("OAuth callback error:", error);
+      res.redirect('/?error=oauth_callback_failed');
+    }
+  });
+
   app.post('/api/youtube/sync', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
