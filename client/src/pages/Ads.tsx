@@ -73,6 +73,37 @@ export default function Ads() {
     }
   };
 
+  const getTierInfo = (tier: number) => {
+    switch (tier) {
+      // Comprehensive 10-Tier System replacing old 3-tier structure
+      case 1: return { name: 'Bronze Creator', range: '1k-5k', color: 'bg-orange-600' };
+      case 2: return { name: 'Silver Creator', range: '5k-10k', color: 'bg-gray-400' };
+      case 3: return { name: 'Gold Creator', range: '10k-25k', color: 'bg-yellow-500' };
+      case 4: return { name: 'Platinum Creator', range: '25k-50k', color: 'bg-blue-500' };
+      case 5: return { name: 'Diamond Creator', range: '50k-100k', color: 'bg-purple-500' };
+      case 6: return { name: 'Elite Creator', range: '100k-250k', color: 'bg-indigo-600' };
+      case 7: return { name: 'Master Creator', range: '250k-500k', color: 'bg-pink-600' };
+      case 8: return { name: 'Legend Creator', range: '500k-1M', color: 'bg-red-600' };
+      case 9: return { name: 'Champion Creator', range: '1M-5M', color: 'bg-green-600' };
+      case 10: return { name: 'Ultimate Creator', range: '5M+', color: 'bg-black' };
+      default: return { name: 'Not Connected', range: '', color: 'bg-gray-500' };
+    }
+  };
+
+  const getYoutubeTier = (subscriberCount: number) => {
+    if (subscriberCount >= 5000000) return 10; // Ultimate Creator
+    if (subscriberCount >= 1000000) return 9;  // Champion Creator  
+    if (subscriberCount >= 500000) return 8;   // Legend Creator
+    if (subscriberCount >= 250000) return 7;   // Master Creator
+    if (subscriberCount >= 100000) return 6;   // Elite Creator
+    if (subscriberCount >= 50000) return 5;    // Diamond Creator
+    if (subscriberCount >= 25000) return 4;    // Platinum Creator
+    if (subscriberCount >= 10000) return 3;    // Gold Creator
+    if (subscriberCount >= 5000) return 2;     // Silver Creator
+    if (subscriberCount >= 1000) return 1;     // Bronze Creator
+    return 0; // Not qualified
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
@@ -148,6 +179,23 @@ export default function Ads() {
                   </div>
                 )}
 
+                {youtubeChannel.subscriberCount && (
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const subscriberCount = parseInt(youtubeChannel.subscriberCount);
+                      const tier = getYoutubeTier(subscriberCount);
+                      const tierInfo = getTierInfo(tier);
+                      
+                      return (
+                        <Badge className={`${tierInfo.color} text-white`}>
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          {tierInfo.name}
+                        </Badge>
+                      );
+                    })()}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
                     <CheckCircle className="w-3 h-3 mr-1" />
@@ -194,11 +242,27 @@ export default function Ads() {
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Display channel information</span>
+                    <span>Access tier-based campaigns</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CheckCircle className="w-4 h-4 text-green-500" />
-                    <span>Connect with platform</span>
+                    <span>Unlock creator benefits</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground">Creator Tiers Available:</p>
+                  <div className="grid grid-cols-2 gap-1 text-xs">
+                    <Badge className="bg-orange-600 text-white text-[10px] px-1 py-0">Bronze (1k-5k)</Badge>
+                    <Badge className="bg-gray-400 text-white text-[10px] px-1 py-0">Silver (5k-10k)</Badge>
+                    <Badge className="bg-yellow-500 text-white text-[10px] px-1 py-0">Gold (10k-25k)</Badge>
+                    <Badge className="bg-blue-500 text-white text-[10px] px-1 py-0">Platinum (25k-50k)</Badge>
+                    <Badge className="bg-purple-500 text-white text-[10px] px-1 py-0">Diamond (50k-100k)</Badge>
+                    <Badge className="bg-indigo-600 text-white text-[10px] px-1 py-0">Elite (100k-250k)</Badge>
+                    <Badge className="bg-pink-600 text-white text-[10px] px-1 py-0">Master (250k-500k)</Badge>
+                    <Badge className="bg-red-600 text-white text-[10px] px-1 py-0">Legend (500k-1M)</Badge>
+                    <Badge className="bg-green-600 text-white text-[10px] px-1 py-0">Champion (1M-5M)</Badge>
+                    <Badge className="bg-black text-white text-[10px] px-1 py-0">Ultimate (5M+)</Badge>
                   </div>
                 </div>
 
