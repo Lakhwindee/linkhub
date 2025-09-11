@@ -7,21 +7,17 @@ export interface Tier {
   maxSubscribers: number | null;
 }
 
-// Creator-only tier system (separate from publisher tiers)
-export const CREATOR_TIERS: Tier[] = [
+export const TIERS: Tier[] = [
   { level: 1, description: "Emerging Creator", range: "30K-40K", price: 125, minSubscribers: 30000, maxSubscribers: 40000 },
   { level: 2, description: "Growing Creator", range: "40K-70K", price: 300, minSubscribers: 40000, maxSubscribers: 70000 },
   { level: 3, description: "Established Creator", range: "70K+", price: 450, minSubscribers: 70000, maxSubscribers: null },
 ];
 
-// Legacy TIERS export for backward compatibility - points to creator tiers
-export const TIERS = CREATOR_TIERS;
-
 /**
  * Get the tier level based on subscriber count
  */
 export function subscribersToTier(subscribers: number): number {
-  for (const tier of CREATOR_TIERS) {
+  for (const tier of TIERS) {
     if (subscribers >= tier.minSubscribers && (tier.maxSubscribers === null || subscribers <= tier.maxSubscribers)) {
       return tier.level;
     }
@@ -34,7 +30,7 @@ export function subscribersToTier(subscribers: number): number {
  * Get tier information by level
  */
 export function getTierByLevel(level: number): Tier | undefined {
-  return CREATOR_TIERS.find(tier => tier.level === level);
+  return TIERS.find(tier => tier.level === level);
 }
 
 /**
