@@ -98,7 +98,6 @@ function Router() {
               <Route path="/professional-signup" component={ProfessionalSignup} />
               <Route path="/signup-completion" component={SignupCompletion} />
               <Route path="/verify-otp" component={OTPVerification} />
-              <Route path="/switch-user" component={UserSwitcherPage} />
             </>
           )}
           <Route component={NotFound} />
