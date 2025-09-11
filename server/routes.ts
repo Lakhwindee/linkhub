@@ -391,24 +391,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo users
-      if (userId === 'demo-admin' || userId === 'demo-creator' || userId === 'demo-free-creator' || userId === 'demo-publisher') {
+      // Handle demo users - check if userId starts with 'demo-'
+      if (userId && userId.startsWith('demo-')) {
         const baseDemoUser = {
           id: userId,
-          email: userId === 'demo-admin' ? 'admin@hublink.com' : 
-                userId === 'demo-creator' ? 'creator@hublink.com' : 
-                userId === 'demo-free-creator' ? 'free-creator@hublink.com' : 
+          email: userId.includes('admin') ? 'admin@hublink.com' : 
+                userId.includes('creator') && userId.includes('free') ? 'free-creator@hublink.com' : 
+                userId.includes('creator') ? 'creator@hublink.com' : 
                 'publisher@hublink.com',
-          firstName: userId === 'demo-admin' ? 'System' : 
-                    userId === 'demo-free-creator' ? 'Free' : 
+          firstName: userId.includes('admin') ? 'System' : 
+                    userId.includes('free') ? 'Free' : 
                     'Demo',
-          lastName: userId === 'demo-admin' ? 'Administrator' : 
-                   userId === 'demo-creator' ? 'Creator' : 
-                   userId === 'demo-free-creator' ? 'Creator' : 
+          lastName: userId.includes('admin') ? 'Administrator' : 
+                   userId.includes('creator') ? 'Creator' : 
                    'Publisher',
-          displayName: userId === 'demo-admin' ? 'System Administrator' : 
-                      userId === 'demo-creator' ? 'Demo Creator' : 
-                      userId === 'demo-free-creator' ? 'Free Creator' : 
+          displayName: userId.includes('admin') ? 'System Administrator' : 
+                      userId.includes('creator') && userId.includes('free') ? 'Free Creator' : 
+                      userId.includes('creator') ? 'Demo Creator' : 
                       'Demo Publisher',
           bio: null,
           country: 'United Kingdom',
@@ -427,13 +426,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           instagramUrl: null,
           youtubeUrl: null,
           tiktokUrl: null,
-          role: userId === 'demo-admin' ? 'admin' : 
-                userId === 'demo-creator' ? 'creator' : 
-                userId === 'demo-free-creator' ? 'free_creator' : 
+          role: userId.includes('admin') ? 'admin' : 
+                userId.includes('creator') && userId.includes('free') ? 'free_creator' :
+                userId.includes('creator') ? 'creator' : 
                 'publisher',
-          plan: userId === 'demo-admin' ? 'premium' : 
-                userId === 'demo-creator' ? 'premium' : 
-                userId === 'demo-free-creator' ? 'free' : 
+          plan: userId.includes('admin') ? 'premium' : 
+                userId.includes('creator') && userId.includes('free') ? 'free' :
+                userId.includes('creator') ? 'premium' : 
                 'premium',
           stripeCustomerId: null,
           stripeSubscriptionId: null,
