@@ -2091,8 +2091,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       console.log('👤 User data:', user ? { id: user.id, plan: user.plan, youtubeVerified: user.youtubeVerified } : 'null');
       
-      // For demo users (demo-user-1 and demo-admin), always show test campaigns - BYPASS ALL CHECKS
-      if (userId === 'demo-user-1' || userId === 'demo-admin') {
+      // For demo users, always show test campaigns - BYPASS ALL CHECKS
+      if (userId && userId.startsWith('demo-')) {
         console.log('🎯 Demo user detected:', userId);
         const ads = await storage.getAds();
         console.log('📊 Retrieved ads count:', ads.length);
