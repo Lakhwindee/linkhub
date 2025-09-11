@@ -258,6 +258,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
 
   // Helper function to get tier info using shared tier configuration
   const getTierInfo = (tier: number) => {
+    if (tier === 0) {
+      return { name: 'Ineligible', range: '<30K subscribers', color: 'bg-red-500' };
+    }
+    
     const tierConfig = getTierByLevel(tier);
     if (tierConfig) {
       // Map tier levels to colors

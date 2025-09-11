@@ -29,8 +29,8 @@ export function subscribersToTier(subscribers: number): number {
       return tier.level;
     }
   }
-  // If no tier matches (below minimum), return tier 1
-  return 1;
+  // If no tier matches (below minimum), return tier 0 (ineligible)
+  return 0;
 }
 
 /**
@@ -43,9 +43,10 @@ export function getTierByLevel(level: number): Tier | undefined {
 /**
  * Get tier information by subscriber count
  */
-export function getTierBySubscribers(subscribers: number): Tier {
+export function getTierBySubscribers(subscribers: number): Tier | null {
   const level = subscribersToTier(subscribers);
-  return getTierByLevel(level) || TIERS[0];
+  if (level === 0) return null; // Ineligible
+  return getTierByLevel(level) || null;
 }
 
 /**
