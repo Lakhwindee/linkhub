@@ -266,16 +266,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     if (tierConfig) {
       // Map tier levels to colors
       const tierColors = {
-        1: 'bg-orange-600',   // Micro-Influencers
-        2: 'bg-gray-400',     // Small Influencers  
-        3: 'bg-yellow-500',   // Mid-Tier Influencers
-        4: 'bg-blue-500',     // Growing Influencers
-        5: 'bg-purple-500',   // Established Influencers
-        6: 'bg-indigo-600',   // Major Influencers
-        7: 'bg-pink-600',     // Top Influencers
-        8: 'bg-red-600',      // Premium Influencers
-        9: 'bg-green-600',    // Celebrity Influencers
-        10: 'bg-black'        // Mega Influencers
+        1: 'bg-orange-600',   // Emerging Creator (30K-40K)
+        2: 'bg-blue-500',     // Growing Creator (40K-70K)
+        3: 'bg-green-600',    // Established Creator (70K+)
       };
       return {
         name: tierConfig.description,
