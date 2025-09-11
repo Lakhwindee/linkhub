@@ -690,9 +690,9 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   You need at least 30,000 subscribers to participate.
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 30k-40k subscribers: $125 per campaign</li>
-                  <li>• 40k-70k subscribers: $300 per campaign</li>  
-                  <li>• 70k+ subscribers: $450 per campaign</li>
+                  <li>• <strong>30k-40k subscribers</strong>: $125 per campaign</li>
+                  <li>• <strong>40k-70k subscribers</strong>: $300 per campaign</li>  
+                  <li>• <strong>70k+ subscribers</strong>: $450 per campaign</li>
                 </ul>
               </div>
 
