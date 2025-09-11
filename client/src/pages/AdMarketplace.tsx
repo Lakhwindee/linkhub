@@ -20,6 +20,7 @@ import { Link } from "wouter";
 import type { Ad, AdReservation } from "@shared/schema";
 import { worldCountries } from "@/data/locationData";
 import { EligibilityModal } from "@/components/EligibilityModal";
+import { TIERS, getTierByLevel } from "@shared/tierConfig";
 
 // YouTube Creator Component
 function YouTubeCreatorSection({ user }: { user: any }) {
@@ -56,7 +57,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
-  const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 10000 });
+  const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 30000 });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const { toast } = useToast();
@@ -109,7 +110,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         const match = error.message.match(/only ([\d,]+) subsc/);
         const currentSubs = match ? parseInt(match[1].replace(/,/g, '')) : 0;
         
-        setEligibilityData({ currentSubs, requiredSubs: 10000 });
+        setEligibilityData({ currentSubs, requiredSubs: 30000 });
         setShowEligibilityModal(true);
       }
       // No popup for other errors - show error in VFX instead
@@ -255,21 +256,30 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     });
   };
 
+  // Helper function to get tier info using shared tier configuration
   const getTierInfo = (tier: number) => {
-    switch (tier) {
-      // Comprehensive 10-Tier System replacing old 3-tier structure
-      case 1: return { name: 'Bronze Creator', range: '1k-5k', color: 'bg-orange-600' };
-      case 2: return { name: 'Silver Creator', range: '5k-10k', color: 'bg-gray-400' };
-      case 3: return { name: 'Gold Creator', range: '10k-25k', color: 'bg-yellow-500' };
-      case 4: return { name: 'Platinum Creator', range: '25k-50k', color: 'bg-blue-500' };
-      case 5: return { name: 'Diamond Creator', range: '50k-100k', color: 'bg-purple-500' };
-      case 6: return { name: 'Elite Creator', range: '100k-250k', color: 'bg-indigo-600' };
-      case 7: return { name: 'Master Creator', range: '250k-500k', color: 'bg-pink-600' };
-      case 8: return { name: 'Legend Creator', range: '500k-1M', color: 'bg-red-600' };
-      case 9: return { name: 'Champion Creator', range: '1M-5M', color: 'bg-green-600' };
-      case 10: return { name: 'Ultimate Creator', range: '5M+', color: 'bg-black' };
-      default: return { name: 'Not Connected', range: '', color: 'bg-gray-500' };
+    const tierConfig = getTierByLevel(tier);
+    if (tierConfig) {
+      // Map tier levels to colors
+      const tierColors = {
+        1: 'bg-orange-600',   // Micro-Influencers
+        2: 'bg-gray-400',     // Small Influencers  
+        3: 'bg-yellow-500',   // Mid-Tier Influencers
+        4: 'bg-blue-500',     // Growing Influencers
+        5: 'bg-purple-500',   // Established Influencers
+        6: 'bg-indigo-600',   // Major Influencers
+        7: 'bg-pink-600',     // Top Influencers
+        8: 'bg-red-600',      // Premium Influencers
+        9: 'bg-green-600',    // Celebrity Influencers
+        10: 'bg-black'        // Mega Influencers
+      };
+      return {
+        name: tierConfig.description,
+        range: tierConfig.range,
+        color: tierColors[tier as keyof typeof tierColors] || 'bg-gray-500'
+      };
     }
+    return { name: 'Not Connected', range: '', color: 'bg-gray-500' };
   };
 
   const getRoleInfo = (role: string, plan: string) => {
@@ -680,10 +690,10 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                 <h3 className="font-semibold mb-2">Connect Your YouTube Channel</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Link your YouTube channel to access brand campaigns and earn money. 
-                  You need at least 10,000 subscribers to participate.
+                  You need at least 30,000 subscribers to participate.
                 </p>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• 10k-40k subscribers: $150 per campaign</li>
+                  <li>• 30k-70k subscribers: $125 per campaign</li>
                   <li>• 40k-70k subscribers: $300 per campaign</li>  
                   <li>• 70k+ subscribers: $450 per campaign</li>
                 </ul>
@@ -1047,7 +1057,11 @@ export default function AdMarketplace() {
     const matchesCountry = !countryFilter || 
       ad.countries?.includes(countryFilter);
 
-    return matchesSearch && matchesCountry;
+    // Tier-based filtering for creators
+    const userTier = user?.youtubeTier || 0;
+    const matchesTier = !ad.tierLevel || userTier === ad.tierLevel || userTier === 0; // Allow viewing all tiers if not connected to YouTube
+    
+    return matchesSearch && matchesCountry && matchesTier;
   });
 
   return (

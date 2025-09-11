@@ -4,3 +4,8 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Security - ignore cookie files
+*.txt
+cookies.txt
+*_cookies.txt

@@ -21,7 +21,9 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      
+      // Only log response body in development to avoid security risks
+      if (capturedJsonResponse && app.get("env") === "development") {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
@@ -44,7 +46,12 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    
+    // Log the error but don't crash the process
+    log(`Error: ${message} (${status})`, "error");
+    if (app.get("env") === "development") {
+      console.error(err.stack);
+    }
   });
 
   // importantly only setup vite in development and after

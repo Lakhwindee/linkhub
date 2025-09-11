@@ -15,6 +15,33 @@ import { ZodError } from "zod";
 import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 import FormData from 'form-data';
 import fetch from 'node-fetch';
+import { computeTierFromSubscribers } from "@shared/tierConfig";
+
+// YouTube API response interfaces
+interface YTChannelsResponse {
+  items?: Array<{
+    id?: string;
+    statistics?: {
+      subscriberCount?: string;
+    };
+    snippet?: {
+      description?: string;
+    };
+  }>;
+}
+
+interface YTSearchResponse {
+  items?: Array<{
+    id?: {
+      channelId?: string;
+    };
+  }>;
+}
+
+// Helper for safe auth claims access
+function getAuthSub(req: any): string | undefined {
+  return req.user?.claims?.sub ?? req.session?.userId;
+}
 
 // Initialize Stripe (only if keys are available)
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, {
@@ -933,14 +960,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const mockChannelData = {
         channelId: 'UC_demo_channel_123',
         title: 'Demo Creator Channel',
-        subscribers: 15000,
+        subscribers: 45000, // Updated to meet minimum threshold and be in tier 1
         thumbnailUrl: 'https://via.placeholder.com/88x88.png?text=YT'
       };
 
+      // Calculate tier from subscriber count
+      const tier = computeTierFromSubscribers(mockChannelData.subscribers);
+
       // Update user with YouTube data
-      await storage.updateUser(userId, {
+      await storage.updateUserProfile(userId, {
         youtubeChannelId: mockChannelData.channelId,
         youtubeSubscribers: mockChannelData.subscribers,
+        youtubeTier: tier,
         youtubeVerified: true,
         youtubeLastUpdated: new Date()
       });
@@ -1004,12 +1035,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           return res.status(400).json({ message: "Invalid YouTube channel" });
         }
         
-        const searchData = await searchResponse.json();
+        const searchData = await searchResponse.json() as YTSearchResponse;
         if (!searchData.items || searchData.items.length === 0) {
           return res.status(400).json({ message: "YouTube channel not found" });
         }
         
-        channelId = searchData.items[0].snippet.channelId;
+        channelId = searchData.items[0]?.id?.channelId || '';
       } else {
         return res.status(400).json({ message: "Invalid YouTube URL format" });
       }
@@ -1022,37 +1053,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Failed to fetch YouTube data" });
       }
 
-      const data = await response.json();
+      const data = await response.json() as YTChannelsResponse;
       
       if (!data.items || data.items.length === 0) {
         return res.status(400).json({ message: "YouTube channel not found" });
       }
 
-      const subscriberCount = parseInt(data.items[0].statistics.subscriberCount) || 0;
+      const subscriberCount = parseInt(data.items?.[0]?.statistics?.subscriberCount || '0') || 0;
       
-      // Determine tier based on subscriber count
-      let tier = 1; // Default tier
-      if (subscriberCount >= 3000000) {
-        tier = 10; // ₹200k tier
-      } else if (subscriberCount >= 2000000) {
-        tier = 9; // ₹180k tier
-      } else if (subscriberCount >= 1600000) {
-        tier = 8; // ₹150k tier
-      } else if (subscriberCount >= 1200000) {
-        tier = 7; // ₹120k tier
-      } else if (subscriberCount >= 800000) {
-        tier = 6; // ₹90k tier
-      } else if (subscriberCount >= 500000) {
-        tier = 5; // ₹70k tier
-      } else if (subscriberCount >= 300000) {
-        tier = 4; // ₹50k tier
-      } else if (subscriberCount >= 150000) {
-        tier = 3; // ₹35k tier
-      } else if (subscriberCount >= 70000) {
-        tier = 2; // ₹20k tier
-      } else if (subscriberCount >= 30000) {
-        tier = 1; // ₹10k tier
-      } else {
+      // Use shared tier configuration to determine tier
+      const tier = computeTierFromSubscribers(subscriberCount);
+      
+      // Check minimum subscriber requirement
+      if (subscriberCount < 30000) {
         return res.status(400).json({ 
           message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 30,000 subscribers required to participate in campaigns.`,
           subscriberCount,
@@ -1073,7 +1086,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: userId === 'demo-user-1' ? 'Demo' : 'Unknown',
           lastName: userId === 'demo-user-1' ? 'User' : 'User',
           profileImageUrl: userId === 'demo-user-1' ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' : '',
-          username: userId === 'demo-user-1' ? 'demo_user' : `user_${userId.slice(0, 8)}`,
           displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
           country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
           city: userId === 'demo-user-1' ? 'London' : undefined,
@@ -1132,12 +1144,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Failed to fetch channel data" });
       }
 
-      const data = await response.json();
+      const data = await response.json() as YTChannelsResponse;
       if (!data.items || data.items.length === 0) {
         return res.status(400).json({ message: "Channel not found" });
       }
 
-      const channelDescription = data.items[0].snippet.description || '';
+      const channelDescription = data.items[0]?.snippet?.description || '';
       
       // Check if verification code exists in channel description
       if (channelDescription.includes(user.youtubeVerificationCode)) {

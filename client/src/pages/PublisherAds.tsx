@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertPublisherAdSchema } from "@shared/schema";
 import { z } from "zod";
+import { TIERS } from "@shared/tierConfig";
 
 type PublisherAdFormData = z.infer<typeof insertPublisherAdSchema>;
 
@@ -34,18 +35,7 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
 
   const { toast } = useToast();
 
-  const tiers = [
-    { level: 1, description: "Micro-Influencers", range: "30K-70K", price: 125 },
-    { level: 2, description: "Small Influencers", range: "70K-150K", price: 200 },
-    { level: 3, description: "Mid-Tier Influencers", range: "150K-300K", price: 250 },
-    { level: 4, description: "Growing Influencers", range: "300K-500K", price: 350 },
-    { level: 5, description: "Established Influencers", range: "500K-800K", price: 450 },
-    { level: 6, description: "Major Influencers", range: "800K-1.2M", price: 550 },
-    { level: 7, description: "Top Influencers", range: "1.2M-1.6M", price: 650 },
-    { level: 8, description: "Premium Influencers", range: "1.6M-2M", price: 750 },
-    { level: 9, description: "Celebrity Influencers", range: "2M-3M", price: 850 },
-    { level: 10, description: "Mega Influencers", range: "3M+", price: 950 },
-  ];
+  const tiers = TIERS;
 
   const currentTier = tiers.find(t => t.level === selectedTier);
   const campaignCost = (currentTier?.price || 125) * numberOfInfluencers;
