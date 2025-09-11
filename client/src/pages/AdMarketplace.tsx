@@ -1067,7 +1067,7 @@ export default function AdMarketplace() {
             </div>
             <div className="flex items-center space-x-2">
               <Badge variant="secondary" data-testid="badge-creator-status">
-                Premium Member
+                {user?.plan === 'premium' ? 'Premium Member' : 'Free Member'}
               </Badge>
               <Badge variant="outline" data-testid="badge-active-reservations">
                 {(reservations as AdReservation[]).length} Active Reservations
