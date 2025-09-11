@@ -27,20 +27,20 @@ const demoUsers = [
     name: 'Demo Creator',
     email: 'creator@hublink.com',
     role: 'creator',
-    plan: 'creator',
-    description: 'Can VIEW stays/tours/hosts but cannot ADD/LIST them',
+    plan: 'premium',
+    description: 'Creator with premium plan - can access campaigns',
     icon: User,
     color: 'bg-blue-500'
   },
   {
-    id: 'demo-publisher',
-    name: 'Demo Publisher',
-    email: 'publisher@hublink.com',
-    role: 'publisher',
-    plan: 'premium',
-    description: 'Can ADD/LIST stays, tours, hosts, and ads',
-    icon: Briefcase,
-    color: 'bg-green-500'
+    id: 'demo-free-creator',
+    name: 'Free Creator',
+    email: 'free-creator@hublink.com',
+    role: 'free_creator',
+    plan: 'free',
+    description: 'Free creator - cannot access monetization features',
+    icon: User,
+    color: 'bg-gray-500'
   }
 ];
 
