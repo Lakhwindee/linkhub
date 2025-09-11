@@ -117,6 +117,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Demo login endpoint for testing
+  app.post('/api/demo-login', async (req: any, res) => {
+    try {
+      const { id, password } = req.body;
+      
+      // Validate demo credentials
+      const demoUsers = {
+        'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
+        'CREATOR_001': { password: 'creator123', role: 'creator', plan: 'premium' },
+        'FREE_001': { password: 'free123', role: 'free_creator', plan: 'free' },
+        'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
+      };
+      
+      if (!demoUsers[id as keyof typeof demoUsers] || demoUsers[id as keyof typeof demoUsers].password !== password) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+      
+      const userInfo = demoUsers[id as keyof typeof demoUsers];
+      
+      // Create demo user object
+      const demoUser = {
+        id: `demo-${id.toLowerCase()}`,
+        email: `${id.toLowerCase()}@hublink.com`,
+        firstName: userInfo.role === 'admin' ? 'System' : userInfo.role === 'free_creator' ? 'Free' : 'Demo',
+        lastName: userInfo.role === 'admin' ? 'Administrator' : userInfo.role === 'creator' ? 'Creator' : userInfo.role === 'free_creator' ? 'Creator' : 'Publisher',
+        displayName: userInfo.role === 'admin' ? 'System Administrator' : userInfo.role === 'creator' ? 'Demo Creator' : userInfo.role === 'free_creator' ? 'Free Creator' : 'Demo Publisher',
+        role: userInfo.role,
+        plan: userInfo.plan,
+        bio: null,
+        country: 'United Kingdom',
+        city: 'London',
+        verificationStatus: 'verified',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // Set session for demo user
+      req.session.userId = demoUser.id;
+      req.session.user = demoUser;
+      
+      // Create mock user object for passport
+      req.user = {
+        claims: {
+          sub: demoUser.id,
+          email: demoUser.email,
+          first_name: demoUser.firstName,
+          last_name: demoUser.lastName
+        }
+      };
+      
+      console.log('✅ Demo login successful for:', demoUser.id);
+      
+      res.json({ 
+        message: 'Login successful',
+        user: demoUser
+      });
+    } catch (error) {
+      console.error('Demo login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
   // OTP Generation and Verification Endpoints
   const otpStore = new Map(); // Simple in-memory store for demo
 

@@ -128,38 +128,26 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Check authenticated session only - no demo bypass
+  // Check for demo session first
+  const sessionUser = (req.session as any)?.user;
+  if (sessionUser && sessionUser.id?.startsWith('demo-')) {
+    // Mock the user object for demo users
+    req.user = {
+      claims: {
+        sub: sessionUser.id,
+        email: sessionUser.email,
+        first_name: sessionUser.firstName,
+        last_name: sessionUser.lastName
+      }
+    };
+    console.log('✅ Demo user authenticated:', sessionUser.id);
+    return next();
+  }
+  
+  // Check standard authenticated session
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   
   return res.status(401).json({ message: 'Not authenticated' });
-
-  // Real authentication handling
-  const user = req.user as any;
-
-  if (!req.isAuthenticated() || !user.expires_at) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  const now = Math.floor(Date.now() / 1000);
-  if (now <= user.expires_at) {
-    return next();
-  }
-
-  const refreshToken = user.refresh_token;
-  if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
-
-  try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
-    updateUserSession(user, tokenResponse);
-    return next();
-  } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
-  }
 };
