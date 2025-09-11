@@ -128,87 +128,14 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Demo mode for now until OIDC is configured
-  if (process.env.NODE_ENV === 'development') {
-    // Check which demo user is authenticated
-    const sessionId = req.cookies?.session_id;
-    let demoUserId = null;
-    
-    console.log('🍪 Checking cookies:', req.cookies);
-    console.log('🔍 Session ID from cookie:', sessionId);
-    
-    if (sessionId?.startsWith('demo-session-')) {
-      demoUserId = sessionId.replace('demo-session-', '');
-      console.log('✅ Extracted demo user ID:', demoUserId);
-    }
-    
-    // PRIMARY: Check for demo session header (localStorage fallback)
-    if (!demoUserId) {
-      const demoSessionHeader = req.headers['x-demo-session'];
-      console.log('🔍 Demo session header:', demoSessionHeader);
-      
-      if (demoSessionHeader && typeof demoSessionHeader === 'string' && demoSessionHeader.startsWith('demo-session-')) {
-        demoUserId = demoSessionHeader.replace('demo-session-', '');
-        console.log('✅ Extracted demo user ID from header:', demoUserId);
-      }
-    }
-    
-    // SECONDARY: Check Authorization header
-    if (!demoUserId) {
-      const authHeader = req.headers['authorization'];
-      if (authHeader && authHeader.startsWith('Bearer demo-session-')) {
-        demoUserId = authHeader.replace('Bearer demo-session-', '');
-        console.log('✅ Extracted demo user ID from Authorization header:', demoUserId);
-      }
-    }
-    
-    // No valid session found
-    if (!demoUserId) {
-      console.log('❌ No valid demo session found in cookies or headers');
-      return res.status(401).json({ message: 'Not authenticated' });
-    }
-    
-    // Demo user mapping
-    const demoUserMap = {
-      'demo-admin': {
-        sub: 'demo-admin',
-        email: 'admin@hublink.com',
-        first_name: 'System',
-        last_name: 'Administrator'
-      },
-      'demo-creator': {
-        sub: 'demo-creator',
-        email: 'creator@hublink.com',
-        first_name: 'Demo',
-        last_name: 'Creator'
-      },
-      'demo-free-creator': {
-        sub: 'demo-free-creator',
-        email: 'free-creator@hublink.com',
-        first_name: 'Free',
-        last_name: 'Creator'
-      },
-      'demo-publisher': {
-        sub: 'demo-publisher',
-        email: 'publisher@hublink.com',
-        first_name: 'Demo',
-        last_name: 'Publisher'
-      },
-    };
-    
-    const demoUser = demoUserMap[demoUserId as keyof typeof demoUserMap];
-    
-    if (!demoUser) {
-      return res.status(401).json({ message: 'Invalid demo user' });
-    }
-    
-    (req as any).user = {
-      claims: demoUser
-    };
-    console.log('Demo user authenticated:', ((req as any).user?.claims as any)?.sub);
+  // Check authenticated session only - no demo bypass
+  if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
+  
+  return res.status(401).json({ message: 'Not authenticated' });
 
+  // Real authentication handling
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {

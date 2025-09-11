@@ -30,8 +30,6 @@ import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
-import RoleTest from "@/pages/RoleTest";
-import { UserSwitcherPage } from "@/pages/UserSwitcherPage";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
