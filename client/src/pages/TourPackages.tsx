@@ -31,6 +31,19 @@ export default function TourPackages() {
   const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [bookingPackage, setBookingPackage] = useState<TourPackage | null>(null);
+  const [bookingFormOpen, setBookingFormOpen] = useState(false);
+  const [currentBookingPackage, setCurrentBookingPackage] = useState<TourPackage | null>(null);
+  const [bookingDetails, setBookingDetails] = useState({
+    travelers: 1,
+    departureDate: '',
+    specialRequests: '',
+    contactInfo: {
+      name: '',
+      email: '',
+      phone: '',
+      emergencyContact: ''
+    }
+  });
   const [searchFilters, setSearchFilters] = useState({
     destination: "",
     duration: "",
@@ -74,18 +87,18 @@ export default function TourPackages() {
 
   // Book package mutation
   const bookPackageMutation = useMutation({
-    mutationFn: async ({ packageId, travelers }: { packageId: string; travelers: number }) => {
-      const response = await fetch(`/api/tour-packages/${packageId}/book`, {
+    mutationFn: async (bookingData: any) => {
+      const response = await fetch(`/api/tour-packages/${bookingData.packageId}/book`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-demo-user": "true"
+        },
         credentials: "include",
-        body: JSON.stringify({ travelers, message: "Booking through platform" }),
+        body: JSON.stringify(bookingData),
       });
       if (!response.ok) throw new Error("Failed to book package");
       return response.json();
-    },
-    onSuccess: () => {
-      setIsBookingModalOpen(true);
     },
   });
 
@@ -119,8 +132,41 @@ export default function TourPackages() {
   };
 
   const handleBookNow = (pkg: TourPackage) => {
-    setBookingPackage(pkg);
-    bookPackageMutation.mutate({ packageId: pkg.id, travelers: 1 });
+    setCurrentBookingPackage(pkg);
+    setBookingDetails(prev => ({
+      ...prev,
+      contactInfo: {
+        name: user?.displayName || `${user?.firstName} ${user?.lastName}` || '',
+        email: user?.email || '',
+        phone: '',
+        emergencyContact: ''
+      }
+    }));
+    setBookingFormOpen(true);
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentBookingPackage) return;
+
+    const bookingData = {
+      packageId: currentBookingPackage.id,
+      travelers: bookingDetails.travelers,
+      departureDate: bookingDetails.departureDate,
+      specialRequests: bookingDetails.specialRequests,
+      contactInfo: bookingDetails.contactInfo,
+      message: `Booking for ${bookingDetails.travelers} travelers. Contact: ${bookingDetails.contactInfo.name} (${bookingDetails.contactInfo.email})`
+    };
+
+    try {
+      await bookPackageMutation.mutateAsync(bookingData);
+      setBookingPackage(currentBookingPackage);
+      setBookingFormOpen(false);
+      setIsBookingModalOpen(true);
+    } catch (error) {
+      console.error('Booking failed:', error);
+      alert('Booking failed. Please try again.');
+    }
   };
 
   const getPackageTypeIcon = (type: string) => {
@@ -1075,6 +1121,175 @@ export default function TourPackages() {
               </Button>
               <Button type="submit" disabled={createPackageMutation.isPending}>
                 {createPackageMutation.isPending ? "Creating..." : "Create Package"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Professional Booking Form Modal */}
+      <Dialog open={bookingFormOpen} onOpenChange={setBookingFormOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl flex items-center gap-2">
+              <Package className="w-6 h-6 text-primary" />
+              Book Your Tour Package
+            </DialogTitle>
+            {currentBookingPackage && (
+              <div className="text-muted-foreground">
+                <p className="font-medium">{currentBookingPackage.title}</p>
+                <p className="text-sm">{currentBookingPackage.destination} • {currentBookingPackage.duration} days</p>
+              </div>
+            )}
+          </DialogHeader>
+
+          <form onSubmit={handleBookingSubmit} className="space-y-6">
+            {/* Package Summary with Platform Fee */}
+            {currentBookingPackage && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" />
+                  Booking Summary
+                </h3>
+                <PlatformFeeBreakdown
+                  basePrice={currentBookingPackage.price * bookingDetails.travelers}
+                  currency={currentBookingPackage.currency}
+                  serviceType="trip"
+                />
+              </div>
+            )}
+
+            {/* Travelers & Date Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="travelers">Number of Travelers *</Label>
+                <Select 
+                  value={bookingDetails.travelers.toString()} 
+                  onValueChange={(value) => setBookingDetails(prev => ({...prev, travelers: parseInt(value)}))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({length: currentBookingPackage?.maxGroupSize || 10}, (_, i) => (
+                      <SelectItem key={i+1} value={(i+1).toString()}>
+                        {i+1} {i === 0 ? 'Traveler' : 'Travelers'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="departureDate">Preferred Departure Date *</Label>
+                <Input
+                  type="date"
+                  value={bookingDetails.departureDate}
+                  onChange={(e) => setBookingDetails(prev => ({...prev, departureDate: e.target.value}))}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="space-y-4">
+              <h3 className="font-semibold">Contact Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="contactName">Full Name *</Label>
+                  <Input
+                    value={bookingDetails.contactInfo.name}
+                    onChange={(e) => setBookingDetails(prev => ({
+                      ...prev,
+                      contactInfo: {...prev.contactInfo, name: e.target.value}
+                    }))}
+                    placeholder="Your full name"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contactEmail">Email Address *</Label>
+                  <Input
+                    type="email"
+                    value={bookingDetails.contactInfo.email}
+                    onChange={(e) => setBookingDetails(prev => ({
+                      ...prev,
+                      contactInfo: {...prev.contactInfo, email: e.target.value}
+                    }))}
+                    placeholder="your.email@example.com"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="contactPhone">Phone Number *</Label>
+                  <Input
+                    type="tel"
+                    value={bookingDetails.contactInfo.phone}
+                    onChange={(e) => setBookingDetails(prev => ({
+                      ...prev,
+                      contactInfo: {...prev.contactInfo, phone: e.target.value}
+                    }))}
+                    placeholder="+44 123 456 7890"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                  <Input
+                    value={bookingDetails.contactInfo.emergencyContact}
+                    onChange={(e) => setBookingDetails(prev => ({
+                      ...prev,
+                      contactInfo: {...prev.contactInfo, emergencyContact: e.target.value}
+                    }))}
+                    placeholder="Emergency contact number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Special Requests */}
+            <div>
+              <Label htmlFor="specialRequests">Special Requests or Dietary Requirements</Label>
+              <Textarea
+                value={bookingDetails.specialRequests}
+                onChange={(e) => setBookingDetails(prev => ({...prev, specialRequests: e.target.value}))}
+                placeholder="Any special dietary requirements, accessibility needs, or other requests..."
+                rows={3}
+              />
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="bg-muted/30 p-4 rounded-lg">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
+                <div className="text-sm text-muted-foreground">
+                  <p>By proceeding with this booking, you agree to our terms and conditions. A 10% platform fee will be added to the total cost.</p>
+                  <p className="mt-1 font-medium">Cancellation Policy: Free cancellation up to 48 hours before departure.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Buttons */}
+            <div className="flex gap-3 justify-end pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setBookingFormOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={bookPackageMutation.isPending || !bookingDetails.departureDate}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {bookPackageMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Confirm Booking
+                  </>
+                )}
               </Button>
             </div>
           </form>
