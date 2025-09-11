@@ -125,6 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate demo credentials
       const demoUsers = {
         'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
+        'USER_001': { password: 'user123', role: 'user', plan: 'premium' },
         'CREATOR_001': { password: 'creator123', role: 'creator', plan: 'premium' },
         'FREE_001': { password: 'free123', role: 'free_creator', plan: 'free' },
         'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
