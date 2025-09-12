@@ -354,19 +354,75 @@ export const stays = pgTable("stays", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Stay bookings
+// Stay bookings - Enhanced for payment processing
 export const stayBookings = pgTable("stay_bookings", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   stayId: varchar("stay_id").references(() => stays.id, { onDelete: "cascade" }),
   guestId: varchar("guest_id").references(() => users.id, { onDelete: "cascade" }),
+  hostId: varchar("host_id").references(() => users.id, { onDelete: "cascade" }),
   checkInDate: timestamp("check_in_date").notNull(),
   checkOutDate: timestamp("check_out_date").notNull(),
+  nights: integer("nights").notNull(),
   guests: integer("guests").default(1),
+  // Pricing breakdown
+  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }), // price per night
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }),
+  fees: decimal("fees", { precision: 10, scale: 2 }).default("0"), // platform fees
+  tax: decimal("tax", { precision: 10, scale: 2 }).default("0"),
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency").default("GBP"),
+  // Enhanced status management
+  status: varchar("status").default("HOLD"), // HOLD, REQUIRES_PAYMENT, PROCESSING, CONFIRMED, CANCELLED, REFUNDED, EXPIRED
+  paymentIntentId: varchar("payment_intent_id"), // Stripe PaymentIntent ID
+  // Contact information
+  contactInfo: jsonb("contact_info"), // {name, email, phone, emergencyContact}
+  specialRequests: text("special_requests"),
   message: text("message"), // guest message to host
-  status: varchar("status").default("pending"), // pending, confirmed, cancelled, completed
-  paymentStatus: varchar("payment_status").default("pending"), // pending, paid, refunded
+  // Cancellation policy
+  cancellationPolicy: varchar("cancellation_policy").default("moderate"), // free, moderate, strict
+  // Timestamps
+  expiresAt: timestamp("expires_at"), // when booking hold expires
+  confirmedAt: timestamp("confirmed_at"),
+  cancelledAt: timestamp("cancelled_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Booking nights - for availability management and preventing double bookings
+export const bookingNights = pgTable("booking_nights", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingId: varchar("booking_id").references(() => stayBookings.id, { onDelete: "cascade" }),
+  stayId: varchar("stay_id").references(() => stays.id, { onDelete: "cascade" }),
+  date: timestamp("date").notNull(), // the specific night being booked
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Ensure no double booking for the same stay on the same night
+  index("unique_stay_date").on(table.stayId, table.date),
+]);
+
+// Payments table for Stripe transactions
+export const payments = pgTable("payments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  bookingId: varchar("booking_id").references(() => stayBookings.id, { onDelete: "cascade" }),
+  provider: varchar("provider").default("stripe"), // stripe, paypal, etc
+  intentId: varchar("intent_id").notNull(), // Stripe PaymentIntent ID
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  currency: varchar("currency").notNull(),
+  status: varchar("status").notNull(), // requires_payment_method, requires_confirmation, requires_action, processing, requires_capture, canceled, succeeded
+  clientSecret: varchar("client_secret"), // for frontend payment confirmation
+  metadata: jsonb("metadata"), // additional payment metadata
+  rawData: jsonb("raw_data"), // full Stripe response for debugging
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Webhook events for idempotency
+export const webhookEvents = pgTable("webhook_events", {
+  id: varchar("id").primaryKey(), // Stripe event ID for idempotency
+  provider: varchar("provider").default("stripe"),
+  eventType: varchar("event_type").notNull(),
+  processed: boolean("processed").default(false),
+  data: jsonb("data").notNull(), // full webhook payload
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -621,7 +677,19 @@ export const staysRelations = relations(stays, ({ one, many }) => ({
 export const stayBookingsRelations = relations(stayBookings, ({ one, many }) => ({
   stay: one(stays, { fields: [stayBookings.stayId], references: [stays.id] }),
   guest: one(users, { fields: [stayBookings.guestId], references: [users.id] }),
+  host: one(users, { fields: [stayBookings.hostId], references: [users.id] }),
   reviews: many(stayReviews),
+  bookingNights: many(bookingNights),
+  payments: many(payments),
+}));
+
+export const bookingNightsRelations = relations(bookingNights, ({ one }) => ({
+  booking: one(stayBookings, { fields: [bookingNights.bookingId], references: [stayBookings.id] }),
+  stay: one(stays, { fields: [bookingNights.stayId], references: [stays.id] }),
+}));
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  booking: one(stayBookings, { fields: [payments.bookingId], references: [stayBookings.id] }),
 }));
 
 export const stayReviewsRelations = relations(stayReviews, ({ one }) => ({
@@ -971,6 +1039,9 @@ export type Invoice = typeof invoices.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type Stay = typeof stays.$inferSelect;
 export type StayBooking = typeof stayBookings.$inferSelect;
+export type BookingNight = typeof bookingNights.$inferSelect;
+export type Payment = typeof payments.$inferSelect;
+export type WebhookEvent = typeof webhookEvents.$inferSelect;
 export type StayReview = typeof stayReviews.$inferSelect;
 export type Trip = typeof trips.$inferSelect;
 export type TripParticipant = typeof tripParticipants.$inferSelect;
