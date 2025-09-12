@@ -20,7 +20,7 @@ import {
 
 // Use simplified tour package interface
 import { SimpleTourPackage } from '@/types/simpleTourPackage';
-import { worldCountries } from '@/data/locationData';
+import { worldCountries, countryCodes } from '@/data/locationData';
 import { PlatformFeeBreakdown } from '@/components/PlatformFeeBreakdown';
 import { BookingConfirmation } from '@/components/BookingConfirmation';
 
@@ -40,6 +40,7 @@ export default function TourPackages() {
     contactInfo: {
       name: '',
       email: '',
+      countryCode: '+44', // Default to UK
       phone: '',
       emergencyContact: ''
     }
@@ -138,6 +139,7 @@ export default function TourPackages() {
       contactInfo: {
         name: user?.displayName || `${user?.firstName} ${user?.lastName}` || '',
         email: user?.email || '',
+        countryCode: prev.contactInfo.countryCode || '+44', // Preserve existing or default
         phone: '',
         emergencyContact: ''
       }
@@ -149,23 +151,63 @@ export default function TourPackages() {
     e.preventDefault();
     if (!currentBookingPackage) return;
 
-    const bookingData = {
-      packageId: currentBookingPackage.id,
-      travelers: bookingDetails.travelers,
-      departureDate: bookingDetails.departureDate,
-      specialRequests: bookingDetails.specialRequests,
-      contactInfo: bookingDetails.contactInfo,
-      message: `Booking for ${bookingDetails.travelers} travelers. Contact: ${bookingDetails.contactInfo.name} (${bookingDetails.contactInfo.email})`
+    // Validate and normalize phone number to E.164 format
+    const validatePhoneNumber = (countryCode: string, phone: string) => {
+      if (!countryCode || !phone) {
+        throw new Error('Phone number and country code are required');
+      }
+      
+      // Remove all non-digits except + from country code
+      const cleanCountryCode = countryCode.replace(/[^\d+]/g, '');
+      // Remove all non-digits from phone number
+      const cleanPhone = phone.replace(/\D/g, '');
+      
+      if (!cleanPhone) {
+        throw new Error('Please enter a valid phone number');
+      }
+      
+      // Compose E.164 format: countryCode + phone
+      const e164Phone = cleanCountryCode + cleanPhone;
+      
+      // Validate E.164 length (8-15 digits after +)
+      const digitsOnly = e164Phone.replace(/\D/g, '');
+      if (digitsOnly.length < 8 || digitsOnly.length > 15) {
+        throw new Error('Phone number must be between 8-15 digits');
+      }
+      
+      return e164Phone;
     };
 
     try {
+      // Validate phone number
+      const phoneE164 = validatePhoneNumber(
+        bookingDetails.contactInfo.countryCode, 
+        bookingDetails.contactInfo.phone
+      );
+
+      const bookingData = {
+        packageId: currentBookingPackage.id,
+        travelers: bookingDetails.travelers,
+        departureDate: bookingDetails.departureDate,
+        specialRequests: bookingDetails.specialRequests,
+        contactInfo: {
+          ...bookingDetails.contactInfo,
+          phoneE164, // Include normalized phone number
+        },
+        message: `Booking for ${bookingDetails.travelers} travelers. Contact: ${bookingDetails.contactInfo.name} (${bookingDetails.contactInfo.email}), Phone: ${phoneE164}`
+      };
+
       await bookPackageMutation.mutateAsync(bookingData);
       setBookingPackage(currentBookingPackage);
       setBookingFormOpen(false);
       setIsBookingModalOpen(true);
     } catch (error) {
       console.error('Booking failed:', error);
-      alert('Booking failed. Please try again.');
+      if (error instanceof Error) {
+        alert(`Booking failed: ${error.message}`);
+      } else {
+        alert('Booking failed. Please try again.');
+      }
     }
   };
 
@@ -1222,16 +1264,62 @@ export default function TourPackages() {
                 </div>
                 <div>
                   <Label htmlFor="contactPhone">Phone Number *</Label>
-                  <Input
-                    type="tel"
-                    value={bookingDetails.contactInfo.phone}
-                    onChange={(e) => setBookingDetails(prev => ({
-                      ...prev,
-                      contactInfo: {...prev.contactInfo, phone: e.target.value}
-                    }))}
-                    placeholder="+44 123 456 7890"
-                    required
-                  />
+                  <div className="flex gap-2">
+                    <div className="w-40">
+                      <Label htmlFor="countryCode" className="sr-only">Country Code</Label>
+                      <Select 
+                        value={bookingDetails.contactInfo.countryCode} 
+                        onValueChange={(value) => setBookingDetails(prev => ({
+                          ...prev,
+                          contactInfo: {...prev.contactInfo, countryCode: value}
+                        }))}
+                      >
+                        <SelectTrigger id="countryCode" className="w-full">
+                          <SelectValue>
+                            {bookingDetails.contactInfo.countryCode && (
+                              <div className="flex items-center gap-2">
+                                <span>{countryCodes.find(c => c.code === bookingDetails.contactInfo.countryCode)?.flag}</span>
+                                <span className="text-sm">{bookingDetails.contactInfo.countryCode}</span>
+                              </div>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {countryCodes
+                            .filter(country => !country.code.includes(',')) // Remove invalid multi-codes
+                            .sort((a, b) => a.country.localeCompare(b.country))
+                            .map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              <div className="flex items-center gap-2">
+                                <span className="text-lg">{country.flag}</span>
+                                <span className="text-sm min-w-0 truncate">{country.country}</span>
+                                <span className="text-xs text-muted-foreground">({country.code})</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Input
+                      id="contactPhone"
+                      type="tel"
+                      value={bookingDetails.contactInfo.phone}
+                      onChange={(e) => {
+                        // Remove non-digits for validation
+                        const digitsOnly = e.target.value.replace(/\D/g, '');
+                        setBookingDetails(prev => ({
+                          ...prev,
+                          contactInfo: {...prev.contactInfo, phone: e.target.value}
+                        }));
+                      }}
+                      placeholder="123 456 7890"
+                      className="flex-1"
+                      required
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select your country code and enter your phone number (digits only)
+                  </p>
                 </div>
                 <div>
                   <Label htmlFor="emergencyContact">Emergency Contact</Label>
