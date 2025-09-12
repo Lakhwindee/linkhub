@@ -1822,6 +1822,456 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Professional Booking System APIs
+  
+  // Get booking quote with pricing breakdown
+  app.post('/api/stays/:id/quote', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { checkInDate, checkOutDate, guests } = req.body;
+      
+      if (!checkInDate || !checkOutDate || !guests) {
+        return res.status(400).json({ message: "Missing required fields: checkInDate, checkOutDate, guests" });
+      }
+      
+      const stay = await storage.getStayById(id);
+      if (!stay) {
+        return res.status(404).json({ message: "Stay not found" });
+      }
+      
+      if (stay.status !== 'active') {
+        return res.status(400).json({ message: "Stay is not available for booking" });
+      }
+      
+      const checkIn = new Date(checkInDate);
+      const checkOut = new Date(checkOutDate);
+      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (nights <= 0) {
+        return res.status(400).json({ message: "Check-out date must be after check-in date" });
+      }
+      
+      if (guests > stay.maxGuests) {
+        return res.status(400).json({ message: `Maximum ${stay.maxGuests} guests allowed` });
+      }
+      
+      // Check minimum stay requirement
+      if (nights < stay.minimumStay) {
+        return res.status(400).json({ message: `Minimum stay is ${stay.minimumStay} night(s)` });
+      }
+      
+      // Check maximum stay requirement
+      if (stay.maximumStay && nights > stay.maximumStay) {
+        return res.status(400).json({ message: `Maximum stay is ${stay.maximumStay} night(s)` });
+      }
+      
+      const unitPrice = parseFloat(stay.pricePerNight || '0');
+      const subtotal = unitPrice * nights;
+      const platformFee = subtotal * 0.10; // 10% platform fee
+      const tax = subtotal * 0.05; // 5% tax
+      const totalPrice = subtotal + platformFee + tax;
+      
+      const quote = {
+        stayId: id,
+        checkInDate,
+        checkOutDate,
+        nights,
+        guests,
+        pricing: {
+          unitPrice,
+          subtotal: Number(subtotal.toFixed(2)),
+          platformFee: Number(platformFee.toFixed(2)),
+          tax: Number(tax.toFixed(2)),
+          totalPrice: Number(totalPrice.toFixed(2)),
+          currency: stay.currency || 'GBP'
+        },
+        stay: {
+          title: stay.title,
+          checkInTime: stay.checkInTime,
+          checkOutTime: stay.checkOutTime,
+          cancellationPolicy: 'moderate'
+        }
+      };
+      
+      res.json(quote);
+    } catch (error) {
+      console.error("Error calculating booking quote:", error);
+      res.status(500).json({ message: "Failed to calculate booking quote" });
+    }
+  });
+
+  // Check availability for specific dates
+  app.post('/api/stays/:id/availability', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { checkInDate, checkOutDate } = req.body;
+      
+      if (!checkInDate || !checkOutDate) {
+        return res.status(400).json({ message: "Missing required fields: checkInDate, checkOutDate" });
+      }
+      
+      const stay = await storage.getStayById(id);
+      if (!stay) {
+        return res.status(404).json({ message: "Stay not found" });
+      }
+      
+      // Check if dates are within available period
+      const checkIn = new Date(checkInDate);
+      const checkOut = new Date(checkOutDate);
+      
+      if (stay.availableFrom && checkIn < new Date(stay.availableFrom)) {
+        return res.json({ available: false, reason: "Check-in date is before availability period" });
+      }
+      
+      if (stay.availableTo && checkOut > new Date(stay.availableTo)) {
+        return res.json({ available: false, reason: "Check-out date is after availability period" });
+      }
+      
+      // TODO: Check booking_nights table for conflicts when schema is ready
+      // For now, assume available if stay is active
+      const available = stay.status === 'active';
+      
+      res.json({ 
+        available,
+        reason: available ? null : "Stay is not currently active"
+      });
+    } catch (error) {
+      console.error("Error checking availability:", error);
+      res.status(500).json({ message: "Failed to check availability" });
+    }
+  });
+
+  // Create enhanced booking with payment intent
+  app.post('/api/stays/:id/book-enhanced', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id: stayId } = req.params;
+      const { checkInDate, checkOutDate, guests, contactInfo, specialRequests } = req.body;
+      
+      if (!checkInDate || !checkOutDate || !guests) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      const stay = await storage.getStayById(stayId);
+      if (!stay) {
+        return res.status(404).json({ message: "Stay not found" });
+      }
+      
+      if (stay.status !== 'active') {
+        return res.status(400).json({ message: "Stay is not available for booking" });
+      }
+      
+      const checkIn = new Date(checkInDate);
+      const checkOut = new Date(checkOutDate);
+      const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Calculate pricing
+      const unitPrice = parseFloat(stay.pricePerNight || '0');
+      const subtotal = unitPrice * nights;
+      const platformFee = subtotal * 0.10;
+      const tax = subtotal * 0.05;
+      const totalPrice = subtotal + platformFee + tax;
+      
+      // Create booking record with HOLD status
+      const booking = await storage.createStayBooking({
+        stayId,
+        guestId: userId,
+        hostId: stay.hostId,
+        checkInDate,
+        checkOutDate,
+        nights,
+        guests,
+        unitPrice: unitPrice.toString(),
+        subtotal: subtotal.toFixed(2),
+        fees: platformFee.toFixed(2),
+        tax: tax.toFixed(2),
+        totalPrice: totalPrice.toFixed(2),
+        currency: stay.currency || 'GBP',
+        status: 'HOLD',
+        contactInfo,
+        specialRequests,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 minutes hold
+      });
+      
+      let paymentIntent = null;
+      let clientSecret = null;
+      
+      // Create Stripe Payment Intent if Stripe is available
+      if (stripe && totalPrice > 0) {
+        try {
+          paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(totalPrice * 100), // Stripe expects cents
+            currency: (stay.currency || 'GBP').toLowerCase(),
+            metadata: {
+              bookingId: booking.id,
+              stayId,
+              guestId: userId,
+              nights: nights.toString()
+            },
+            description: `Booking for ${stay.title}`
+          });
+          
+          clientSecret = paymentIntent.client_secret;
+          
+          // Save payment record
+          await storage.createPayment({
+            bookingId: booking.id,
+            provider: 'stripe',
+            intentId: paymentIntent.id,
+            amount: totalPrice.toFixed(2),
+            currency: stay.currency || 'GBP',
+            status: paymentIntent.status,
+            clientSecret,
+            metadata: { nights, stayTitle: stay.title },
+            rawData: paymentIntent
+          });
+          
+          // Update booking with payment intent ID
+          await storage.updateStayBooking(booking.id, {
+            paymentIntentId: paymentIntent.id,
+            status: 'REQUIRES_PAYMENT'
+          });
+          
+        } catch (stripeError) {
+          console.error("Stripe payment intent creation failed:", stripeError);
+          // Continue without payment intent - can be handled manually
+        }
+      }
+      
+      // Log booking creation
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "enhanced_booking_created",
+        targetType: "stay_booking",
+        targetId: booking.id,
+        metaJson: { 
+          stayId, 
+          nights, 
+          totalPrice: totalPrice.toFixed(2), 
+          paymentIntentId: paymentIntent?.id 
+        },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({
+        booking: {
+          ...booking,
+          status: paymentIntent ? 'REQUIRES_PAYMENT' : 'HOLD'
+        },
+        payment: {
+          clientSecret,
+          publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
+          requiresPayment: totalPrice > 0
+        },
+        stay: {
+          title: stay.title,
+          hostId: stay.hostId
+        }
+      });
+      
+    } catch (error) {
+      console.error("Error creating enhanced booking:", error);
+      res.status(500).json({ message: "Failed to create booking" });
+    }
+  });
+
+  // Confirm booking payment
+  app.post('/api/bookings/:id/confirm-payment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id: bookingId } = req.params;
+      const { paymentIntentId } = req.body;
+      
+      const booking = await storage.getStayBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      if (booking.guestId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      if (stripe && paymentIntentId) {
+        // Retrieve payment intent from Stripe to confirm status
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        
+        if (paymentIntent.status === 'succeeded') {
+          // Update booking and payment records
+          await storage.updateStayBooking(bookingId, {
+            status: 'CONFIRMED',
+            confirmedAt: new Date()
+          });
+          
+          await storage.updatePaymentByIntentId(paymentIntentId, {
+            status: 'succeeded'
+          });
+          
+          await storage.createAuditLog({
+            actorId: userId,
+            action: "booking_payment_confirmed",
+            targetType: "stay_booking",
+            targetId: bookingId,
+            metaJson: { paymentIntentId, amount: paymentIntent.amount },
+            ipAddress: req.ip,
+            userAgent: req.get("User-Agent"),
+          });
+          
+          res.json({ 
+            success: true, 
+            booking: { ...booking, status: 'CONFIRMED' }
+          });
+        } else {
+          res.status(400).json({ 
+            message: "Payment not completed", 
+            paymentStatus: paymentIntent.status 
+          });
+        }
+      } else {
+        res.status(400).json({ message: "Payment processing not available" });
+      }
+      
+    } catch (error) {
+      console.error("Error confirming booking payment:", error);
+      res.status(500).json({ message: "Failed to confirm payment" });
+    }
+  });
+
+  // Cancel booking
+  app.post('/api/bookings/:id/cancel', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id: bookingId } = req.params;
+      const { reason } = req.body;
+      
+      const booking = await storage.getStayBookingById(bookingId);
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      if (booking.guestId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      if (booking.status === 'CANCELLED') {
+        return res.status(400).json({ message: "Booking already cancelled" });
+      }
+      
+      // Cancel Stripe payment intent if exists
+      if (stripe && booking.paymentIntentId) {
+        try {
+          await stripe.paymentIntents.cancel(booking.paymentIntentId);
+        } catch (stripeError) {
+          console.error("Failed to cancel Stripe payment intent:", stripeError);
+        }
+      }
+      
+      // Update booking status
+      await storage.updateStayBooking(bookingId, {
+        status: 'CANCELLED',
+        cancelledAt: new Date()
+      });
+      
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "booking_cancelled",
+        targetType: "stay_booking",
+        targetId: bookingId,
+        metaJson: { reason, originalStatus: booking.status },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ 
+        success: true, 
+        booking: { ...booking, status: 'CANCELLED' }
+      });
+      
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      res.status(500).json({ message: "Failed to cancel booking" });
+    }
+  });
+
+  // Webhook endpoint for Stripe events
+  app.post('/api/webhooks/stripe', async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!stripe || !webhookSecret) {
+      return res.status(400).json({ message: "Stripe not configured" });
+    }
+    
+    let event;
+    
+    try {
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      return res.status(400).json({ message: "Webhook verification failed" });
+    }
+    
+    // Check for duplicate events
+    const existingEvent = await storage.getWebhookEvent(event.id);
+    if (existingEvent) {
+      return res.json({ received: true, duplicate: true });
+    }
+    
+    // Store webhook event
+    await storage.createWebhookEvent({
+      id: event.id,
+      provider: 'stripe',
+      eventType: event.type,
+      processed: false,
+      data: event
+    });
+    
+    // Process different event types
+    try {
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          const bookingId = paymentIntent.metadata.bookingId;
+          
+          if (bookingId) {
+            await storage.updateStayBooking(bookingId, {
+              status: 'CONFIRMED',
+              confirmedAt: new Date()
+            });
+            
+            await storage.updatePaymentByIntentId(paymentIntent.id, {
+              status: 'succeeded'
+            });
+          }
+          break;
+          
+        case 'payment_intent.payment_failed':
+          const failedPayment = event.data.object;
+          const failedBookingId = failedPayment.metadata.bookingId;
+          
+          if (failedBookingId) {
+            await storage.updateStayBooking(failedBookingId, {
+              status: 'CANCELLED',
+              cancelledAt: new Date()
+            });
+            
+            await storage.updatePaymentByIntentId(failedPayment.id, {
+              status: 'failed'
+            });
+          }
+          break;
+      }
+      
+      // Mark webhook as processed
+      await storage.updateWebhookEvent(event.id, { processed: true });
+      
+    } catch (processingError) {
+      console.error('Webhook processing error:', processingError);
+    }
+    
+    res.json({ received: true });
+  });
+
   app.post('/api/stays/:id/review', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

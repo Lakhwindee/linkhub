@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddStayDialog } from "@/components/AddStayDialog";
+import { BookingModal } from "@/components/BookingModal";
 import type { Stay } from "@shared/schema";
 import { worldCountries } from "@/data/locationData";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -193,6 +194,8 @@ export default function Stays() {
   const [priceRange, setPriceRange] = useState("all");
   const [guests, setGuests] = useState("1");
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedStay, setSelectedStay] = useState<Stay | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   // Publisher sees only their own stays, others see all stays
   const apiEndpoint = user?.role === 'publisher' ? "/api/my-stays" : "/api/stays";
@@ -286,10 +289,20 @@ export default function Stays() {
   };
 
   const handleBookStay = (stayId: string) => {
+    const stay = stays.find(s => s.id === stayId);
+    if (stay) {
+      setSelectedStay(stay);
+      setIsBookingOpen(true);
+    }
+  };
+
+  const handleBookingSuccess = (bookingId: string) => {
     toast({
-      title: "Booking",
-      description: "Booking flow will start here",
+      title: "Booking Confirmed!",
+      description: "Your stay has been booked successfully.",
     });
+    // Refresh bookings data
+    window.location.reload();
   };
 
   if (isLoading) {
@@ -678,6 +691,13 @@ export default function Stays() {
       <AddStayDialog 
         open={showAddDialog} 
         onOpenChange={setShowAddDialog} 
+      />
+      
+      <BookingModal 
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        stay={selectedStay}
+        onSuccess={handleBookingSuccess}
       />
     </div>
   );

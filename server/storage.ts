@@ -22,6 +22,9 @@ import {
   stays,
   stayBookings,
   stayReviews,
+  bookingNights,
+  payments,
+  webhookEvents,
   personalHosts,
   hostBookings,
   tourPackageBookings,
@@ -48,6 +51,9 @@ import {
   type Stay,
   type StayBooking,
   type StayReview,
+  type BookingNight,
+  type Payment,
+  type WebhookEvent,
   type PersonalHost,
   type HostBooking,
   type TourPackageBooking,
@@ -172,10 +178,21 @@ export interface IStorage {
   
   // Stay bookings
   createStayBooking(data: any): Promise<StayBooking>;
+  getStayBookingById(id: string): Promise<StayBooking | undefined>;
   getStayBookings(stayId: string): Promise<StayBooking[]>;
   getUserBookings(userId: string): Promise<StayBooking[]>;
   getHostBookings(hostId: string): Promise<StayBooking[]>;
+  updateStayBooking(id: string, data: Partial<StayBooking>): Promise<StayBooking>;
   updateStayBookingStatus(id: string, status: string): Promise<StayBooking>;
+  
+  // Payment operations
+  createPayment(data: any): Promise<Payment>;
+  updatePaymentByIntentId(intentId: string, data: Partial<Payment>): Promise<Payment>;
+  
+  // Webhook operations
+  createWebhookEvent(data: any): Promise<WebhookEvent>;
+  getWebhookEvent(id: string): Promise<WebhookEvent | undefined>;
+  updateWebhookEvent(id: string, data: Partial<WebhookEvent>): Promise<WebhookEvent>;
   
   // Stay reviews
   createStayReview(data: any): Promise<StayReview>;
@@ -2003,6 +2020,11 @@ export class DatabaseStorage implements IStorage {
     return booking;
   }
   
+  async getStayBookingById(id: string): Promise<StayBooking | undefined> {
+    const [booking] = await db.select().from(stayBookings).where(eq(stayBookings.id, id));
+    return booking;
+  }
+  
   async getStayBookings(stayId: string): Promise<StayBooking[]> {
     return await db.select().from(stayBookings).where(eq(stayBookings.stayId, stayId));
   }
@@ -2021,9 +2043,41 @@ export class DatabaseStorage implements IStorage {
     return result.map(r => r.booking);
   }
   
+  async updateStayBooking(id: string, data: Partial<StayBooking>): Promise<StayBooking> {
+    const [booking] = await db.update(stayBookings).set(data).where(eq(stayBookings.id, id)).returning();
+    return booking;
+  }
+  
   async updateStayBookingStatus(id: string, status: string): Promise<StayBooking> {
     const [booking] = await db.update(stayBookings).set({ status }).where(eq(stayBookings.id, id)).returning();
     return booking;
+  }
+  
+  // Payment operations implementation
+  async createPayment(data: any): Promise<Payment> {
+    const [payment] = await db.insert(payments).values(data).returning();
+    return payment;
+  }
+  
+  async updatePaymentByIntentId(intentId: string, data: Partial<Payment>): Promise<Payment> {
+    const [payment] = await db.update(payments).set(data).where(eq(payments.intentId, intentId)).returning();
+    return payment;
+  }
+  
+  // Webhook operations implementation
+  async createWebhookEvent(data: any): Promise<WebhookEvent> {
+    const [webhook] = await db.insert(webhookEvents).values(data).returning();
+    return webhook;
+  }
+  
+  async getWebhookEvent(id: string): Promise<WebhookEvent | undefined> {
+    const [webhook] = await db.select().from(webhookEvents).where(eq(webhookEvents.id, id));
+    return webhook;
+  }
+  
+  async updateWebhookEvent(id: string, data: Partial<WebhookEvent>): Promise<WebhookEvent> {
+    const [webhook] = await db.update(webhookEvents).set(data).where(eq(webhookEvents.id, id)).returning();
+    return webhook;
   }
   
   // Tour Package Bookings implementation
