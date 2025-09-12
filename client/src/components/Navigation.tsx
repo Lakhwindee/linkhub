@@ -105,7 +105,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/my-bookings", icon: History, label: "My Bookings", testId: "nav-my-bookings" },
       { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
