@@ -15,7 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Calendar, MapPin, Users, Clock, Star, Plus, Search, Filter, Heart, 
   Eye, CheckCircle2, Plane, Camera, Utensils, Bed, Car, Shield, Award,
-  Package, Building2, Globe, X, DollarSign
+  Package, Building2, Globe, X, DollarSign, History, Mail, Phone, User
 } from "lucide-react";
 
 // Use simplified tour package interface
@@ -23,6 +23,7 @@ import { SimpleTourPackage } from '@/types/simpleTourPackage';
 import { worldCountries, countryCodes } from '@/data/locationData';
 import { PlatformFeeBreakdown } from '@/components/PlatformFeeBreakdown';
 import { BookingConfirmation } from '@/components/BookingConfirmation';
+import { format, parseISO } from "date-fns";
 
 type TourPackage = SimpleTourPackage;
 
@@ -62,6 +63,39 @@ export default function TourPackages() {
   const { data: packages = [], isLoading } = useQuery<TourPackage[]>({
     queryKey: [apiEndpoint, searchFilters],
     retry: false,
+  });
+
+  // Tour package bookings query
+  const { data: tourBookings = [], isLoading: bookingsLoading } = useQuery({
+    queryKey: ['my-bookings', 'tour-packages', user?.id],
+    queryFn: async () => {
+      // Check if demo user is authenticated via localStorage system
+      const demoUser = localStorage.getItem('demo_user');
+      const isDemoUser = !!demoUser;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add demo session header for authentication if demo user
+      if (isDemoUser) {
+        const demoSession = localStorage.getItem('demo_session');
+        if (demoSession) {
+          headers['x-demo-session'] = demoSession;
+        }
+      }
+      
+      const response = await fetch('/api/my-bookings/tour-packages', {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch tour package bookings');
+      }
+      return response.json();
+    },
+    enabled: !!user?.id
   });
 
   // Create package mutation
@@ -456,187 +490,29 @@ export default function TourPackages() {
             </TabsContent>
 
             <TabsContent value="budget" className="space-y-6">
-              {pkg.budget && (
-                <div className="space-y-6">
-                  {/* Pricing Tiers */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                        Pricing Tiers
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50 dark:bg-green-950">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-green-600 mb-2">Budget</div>
-                            <div className="text-2xl font-bold">{pkg.currency} {pkg.budget.pricingTiers.budget.price.toLocaleString()}</div>
-                            <div className="text-sm text-muted-foreground mb-3">{pkg.budget.pricingTiers.budget.description}</div>
-                            <div className="space-y-1 text-sm">
-                              {pkg.budget.pricingTiers.budget.features.map((feature, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-3 h-3 text-green-600" />
-                                  <span>{feature}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50 dark:bg-blue-950">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-blue-600 mb-2">Standard</div>
-                            <div className="text-2xl font-bold">{pkg.currency} {pkg.budget.pricingTiers.standard.price.toLocaleString()}</div>
-                            <div className="text-sm text-muted-foreground mb-3">{pkg.budget.pricingTiers.standard.description}</div>
-                            <div className="space-y-1 text-sm">
-                              {pkg.budget.pricingTiers.standard.features.map((feature, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-3 h-3 text-blue-600" />
-                                  <span>{feature}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="border-2 border-purple-200 rounded-lg p-4 bg-purple-50 dark:bg-purple-950">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-purple-600 mb-2">Premium</div>
-                            <div className="text-2xl font-bold">{pkg.currency} {pkg.budget.pricingTiers.premium.price.toLocaleString()}</div>
-                            <div className="text-sm text-muted-foreground mb-3">{pkg.budget.pricingTiers.premium.description}</div>
-                            <div className="space-y-1 text-sm">
-                              {pkg.budget.pricingTiers.premium.features.map((feature, index) => (
-                                <div key={index} className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-3 h-3 text-purple-600" />
-                                  <span>{feature}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Price Breakdown */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <Calculator className="w-5 h-5 text-blue-600" />
-                        Price Breakdown
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="text-center p-3 border rounded-lg">
-                          <Bed className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Accommodation</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.accommodation.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Utensils className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Meals</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.meals.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Car className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Transport</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.transportation.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Camera className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Activities</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.activities.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Users className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Guide</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.guide.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Shield className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Insurance</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.insurance.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Calculator className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Taxes</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.taxes.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center p-3 border rounded-lg">
-                          <Package className="w-6 h-6 mx-auto mb-2 text-primary" />
-                          <div className="font-semibold">Other</div>
-                          <div className="text-lg">{pkg.currency} {pkg.budget.priceBreakdown.other.toLocaleString()}</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Payment Terms */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <CreditCard className="w-5 h-5 text-green-600" />
-                        Payment Terms
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-4 border rounded-lg">
-                          <div className="font-semibold mb-2">Deposit Required</div>
-                          <div className="text-2xl font-bold text-green-600">{pkg.budget.paymentTerms.deposit}%</div>
-                          <div className="text-sm text-muted-foreground">of total package price</div>
-                        </div>
-                        <div className="p-4 border rounded-lg">
-                          <div className="font-semibold mb-2">Final Payment</div>
-                          <div className="text-lg">{pkg.budget.paymentTerms.finalPayment}</div>
-                        </div>
-                      </div>
-                      <div className="p-4 border rounded-lg bg-muted/50">
-                        <div className="font-semibold mb-2">Cancellation Policy</div>
-                        <div className="text-sm">{pkg.budget.paymentTerms.cancellationPolicy}</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Discounts */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-xl flex items-center gap-2">
-                        <Star className="w-5 h-5 text-yellow-500" />
-                        Available Discounts
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="p-4 border rounded-lg text-center">
-                          <div className="font-semibold text-orange-600 mb-2">Early Bird</div>
-                          <div className="text-2xl font-bold">{pkg.budget.discounts.earlyBird.percentage}% OFF</div>
-                          <div className="text-sm text-muted-foreground">Book before {pkg.budget.discounts.earlyBird.deadline}</div>
-                        </div>
-                        <div className="p-4 border rounded-lg text-center">
-                          <div className="font-semibold text-blue-600 mb-2">Group Discount</div>
-                          <div className="text-2xl font-bold">{pkg.budget.discounts.groupDiscount.percentage}% OFF</div>
-                          <div className="text-sm text-muted-foreground">{pkg.budget.discounts.groupDiscount.minPeople}+ people</div>
-                        </div>
-                        <div className="p-4 border rounded-lg text-center">
-                          <div className="font-semibold text-green-600 mb-2">Seasonal</div>
-                          <div className="text-2xl font-bold">{pkg.budget.discounts.seasonalDiscount.percentage}% OFF</div>
-                          <div className="text-sm text-muted-foreground">Valid season dates</div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold">Package Pricing</h3>
+                <div className="bg-primary/10 rounded-lg p-6">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold text-primary">{pkg.currency} {pkg.price.toLocaleString()}</div>
+                    <div className="text-muted-foreground">per person</div>
+                  </div>
                 </div>
-              )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="itinerary" className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold">Tour Itinerary</h3>
+                <p className="text-muted-foreground">Detailed itinerary will be provided upon booking confirmation.</p>
+              </div>
             </TabsContent>
 
             <TabsContent value="inclusions" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg text-green-600">✅ What's Included</CardTitle>
+                    <CardTitle className="text-lg text-green-600">✓ What's Included</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {pkg.inclusions?.map((inclusion, index) => (
@@ -650,7 +526,7 @@ export default function TourPackages() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg text-red-600">❌ What's Not Included</CardTitle>
+                    <CardTitle className="text-lg text-red-600">✗ What's Not Included</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2">
                     {pkg.exclusions?.map((exclusion, index) => (
@@ -667,67 +543,25 @@ export default function TourPackages() {
             <TabsContent value="booking" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-2xl">Book This Package</CardTitle>
+                  <CardTitle className="text-xl">Ready to Book?</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="bg-primary/10 p-6 rounded-lg space-y-4">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-primary mb-2">
-                        {pkg.currency} {pkg.budget?.basePrice.toLocaleString() || pkg.price.toLocaleString()}
-                      </div>
-                      <div className="text-muted-foreground">per person (Standard Package)</div>
-                    </div>
-                    
-                    {pkg.budget?.pricingTiers && (
-                      <div className="border-t pt-4">
-                        <div className="text-sm font-medium mb-3">Choose Your Package:</div>
-                        <div className="grid grid-cols-3 gap-2 text-sm">
-                          <div className="p-2 border rounded text-center hover:bg-green-50 cursor-pointer">
-                            <div className="font-medium text-green-600">Budget</div>
-                            <div>{pkg.currency} {pkg.budget.pricingTiers.budget.price.toLocaleString()}</div>
-                          </div>
-                          <div className="p-2 border-2 border-primary rounded text-center bg-primary/10">
-                            <div className="font-medium text-primary">Standard</div>
-                            <div>{pkg.currency} {pkg.budget.pricingTiers.standard.price.toLocaleString()}</div>
-                          </div>
-                          <div className="p-2 border rounded text-center hover:bg-purple-50 cursor-pointer">
-                            <div className="font-medium text-purple-600">Premium</div>
-                            <div>{pkg.currency} {pkg.budget.pricingTiers.premium.price.toLocaleString()}</div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Departure Date</Label>
-                      <Input type="date" defaultValue={pkg.departureDate} />
-                    </div>
-                    <div>
-                      <Label>Number of Travelers</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select travelers" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: pkg.maxGroupSize }, (_, i) => (
-                            <SelectItem key={i + 1} value={String(i + 1)}>
-                              {i + 1} {i === 0 ? 'traveler' : 'travelers'}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                <CardContent className="space-y-4">
+                  <div className="bg-primary/10 rounded-lg p-4">
+                    <div className="text-center space-y-2">
+                      <div className="text-2xl font-bold">{pkg.currency} {pkg.price.toLocaleString()}</div>
+                      <div className="text-muted-foreground">per person</div>
                     </div>
                   </div>
-
-                  <div className="space-y-2">
-                    <Label>Special Requirements</Label>
-                    <Textarea placeholder="Any dietary restrictions, accessibility needs, or special requests..." />
-                  </div>
-
-                  <Button size="lg" className="w-full">
-                    <Shield className="w-5 h-5 mr-2" />
+                  
+                  <Button 
+                    size="lg" 
+                    className="w-full"
+                    onClick={() => {
+                      setSelectedPackage(null);
+                      handleBookNow(pkg);
+                    }}
+                  >
+                    <Shield className="w-4 h-4 mr-2" />
                     Secure Booking - Reserve Now
                   </Button>
 
@@ -737,6 +571,16 @@ export default function TourPackages() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="reviews" className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold">Customer Reviews</h3>
+                <div className="text-center py-8 text-muted-foreground">
+                  <Star className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>Reviews will be displayed here once customers start booking this package.</p>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
@@ -750,134 +594,260 @@ export default function TourPackages() {
       <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-b">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">Professional Tour Packages</h1>
+            <h1 className="text-4xl font-bold tracking-tight">Tour Packages</h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Discover amazing travel experiences from verified tour operators worldwide
+              Discover amazing travel experiences and manage your bookings
             </p>
-            <div className="flex justify-center">
-              {permissions.canCreateTourPackages ? (
-                <Button 
-                  size="lg" 
-                  onClick={() => setIsCreateModalOpen(true)}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  List Your Package
-                </Button>
-              ) : user?.role === 'creator' ? (
-                <div className="text-center">
-                  <p className="text-muted-foreground mb-2">
-                    <strong>Creator users can browse and view all packages</strong>
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Contact our team to upgrade to Publisher role for listing packages
-                  </p>
+            
+            {/* Properly Structured Tabs */}
+            <Tabs defaultValue="browse" className="w-full max-w-4xl mx-auto">
+              <TabsList className="grid w-full grid-cols-2 mb-8">
+                <TabsTrigger value="browse" className="flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  Browse Tour Packages
+                </TabsTrigger>
+                <TabsTrigger value="bookings" className="flex items-center gap-2">
+                  <History className="w-4 h-4" />
+                  My Bookings
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Browse Tab Content */}
+              <TabsContent value="browse" className="space-y-6">
+                <div className="flex justify-center">
+                  {permissions.canCreateTourPackages ? (
+                    <Button 
+                      size="lg" 
+                      onClick={() => setIsCreateModalOpen(true)}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      List Your Package
+                    </Button>
+                  ) : user?.role === 'creator' ? (
+                    <div className="text-center">
+                      <p className="text-muted-foreground mb-2">
+                        <strong>Creator users can browse and view all packages</strong>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Contact our team to upgrade to Publisher role for listing packages
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-muted-foreground mb-2">
+                        To create tour packages, you need Publisher role
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Current role: {permissions.roleDisplayName}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="text-center">
-                  <p className="text-muted-foreground mb-2">
-                    To create tour packages, you need Publisher role
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Current role: {permissions.roleDisplayName}
-                  </p>
+
+                <div className="container mx-auto px-4 py-8 space-y-8">
+                  {/* Search & Filters */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Search className="w-5 h-5" />
+                        Find Your Perfect Package
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                        <Input
+                          placeholder="Search packages..."
+                          value={searchFilters.search}
+                          onChange={(e) => setSearchFilters(prev => ({ ...prev, search: e.target.value }))}
+                        />
+                        <Input
+                          placeholder="Destination"
+                          value={searchFilters.destination}
+                          onChange={(e) => setSearchFilters(prev => ({ ...prev, destination: e.target.value }))}
+                        />
+                        <Select value={searchFilters.duration} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, duration: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Duration" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Durations</SelectItem>
+                            <SelectItem value="1-3">1-3 days</SelectItem>
+                            <SelectItem value="4-7">4-7 days</SelectItem>
+                            <SelectItem value="8-14">1-2 weeks</SelectItem>
+                            <SelectItem value="15+">2+ weeks</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={searchFilters.priceRange} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, priceRange: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Price Range" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Prices</SelectItem>
+                            <SelectItem value="0-500">£0 - £500</SelectItem>
+                            <SelectItem value="500-1000">£500 - £1,000</SelectItem>
+                            <SelectItem value="1000-2000">£1,000 - £2,000</SelectItem>
+                            <SelectItem value="2000+">£2,000+</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={searchFilters.packageType} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, packageType: value }))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Package Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="adventure">Adventure</SelectItem>
+                            <SelectItem value="cultural">Cultural</SelectItem>
+                            <SelectItem value="luxury">Luxury</SelectItem>
+                            <SelectItem value="backpacker">Backpacker</SelectItem>
+                            <SelectItem value="family">Family</SelectItem>
+                            <SelectItem value="business">Business</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Packages Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {packages.map((pkg) => (
+                      <PackageCard key={pkg.id} package={pkg} />
+                    ))}
+                  </div>
+
+                  {packages.length === 0 && (
+                    <div className="text-center py-12">
+                      <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-xl font-semibold mb-2">No packages found</h3>
+                      <p className="text-muted-foreground mb-4">
+                        {permissions.canCreateTourPackages 
+                          ? "Be the first to create an amazing tour package!" 
+                          : "No tour packages available yet. Tour providers will add packages soon!"
+                        }
+                      </p>
+                      {permissions.canCreateTourPackages && (
+                        <Button onClick={() => setIsCreateModalOpen(true)}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create First Package
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </TabsContent>
+
+              {/* Bookings Tab Content */}
+              <TabsContent value="bookings" className="space-y-6">
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading your bookings...</p>
+                  </div>
+                ) : tourBookings.length === 0 ? (
+                  <Card className="max-w-md mx-auto">
+                    <CardContent className="pt-6 text-center">
+                      <History className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No Tour Package Bookings Yet</h3>
+                      <p className="text-gray-600 mb-4">You haven't made any tour package bookings yet.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="container mx-auto px-4 py-8">
+                    <div className="grid gap-6">
+                      {tourBookings.map((booking: any) => (
+                        <Card key={booking.id} className="overflow-hidden">
+                          <div className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <div>
+                                <h3 className="text-lg font-semibold">{booking.package?.title || 'Tour Package'}</h3>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                  <MapPin className="w-4 h-4" />
+                                  <span>{booking.package?.destination || 'Tour Destination'}</span>
+                                </div>
+                              </div>
+                              <Badge className={`${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                {booking.status}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                              <div className="flex items-center gap-2 text-sm">
+                                <Calendar className="h-4 w-4 text-blue-600" />
+                                <div>
+                                  <span className="font-medium">Departure:</span>
+                                  <span className="ml-1">{format(parseISO(booking.departureDate), 'MMM dd, yyyy')}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2 text-sm">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium">Travelers:</span>
+                                <span>{booking.travelers} {booking.travelers === 1 ? 'person' : 'people'}</span>
+                              </div>
+                              
+                              <div className="flex items-center gap-2 text-sm">
+                                <Clock className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium">Duration:</span>
+                                <span>{booking.package?.duration || 'N/A'} days</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 text-sm mb-4">
+                              <DollarSign className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium">Total Price:</span>
+                              <span className="font-semibold">{booking.currency} {booking.totalPrice}</span>
+                            </div>
+
+                            {/* Contact Information */}
+                            {booking.contactInfo && (
+                              <div className="border-t pt-4 mt-4">
+                                <h4 className="font-semibold text-gray-900 mb-2">Contact Information</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <User className="h-4 w-4 text-gray-400" />
+                                    <span>{booking.contactInfo.name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Mail className="h-4 w-4 text-gray-400" />
+                                    <span>{booking.contactInfo.email}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Phone className="h-4 w-4 text-gray-400" />
+                                    <span>{booking.contactInfo.phone}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {booking.specialRequests && (
+                              <div className="border-t pt-4 mt-4">
+                                <h4 className="font-semibold text-gray-900 mb-2">Special Requests</h4>
+                                <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                                  {booking.specialRequests}
+                                </p>
+                              </div>
+                            )}
+
+                            <div className="border-t pt-4 mt-4">
+                              <div className="flex justify-between items-center text-xs text-gray-500">
+                                <span>Booking ID: {booking.id}</span>
+                                <span>Booked on {format(parseISO(booking.createdAt), 'MMM dd, yyyy')}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 space-y-8">
-        {/* Search & Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="w-5 h-5" />
-              Find Your Perfect Package
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <Input
-                placeholder="Search packages..."
-                value={searchFilters.search}
-                onChange={(e) => setSearchFilters(prev => ({ ...prev, search: e.target.value }))}
-              />
-              <Input
-                placeholder="Destination"
-                value={searchFilters.destination}
-                onChange={(e) => setSearchFilters(prev => ({ ...prev, destination: e.target.value }))}
-              />
-              <Select value={searchFilters.duration} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, duration: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Duration" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Durations</SelectItem>
-                  <SelectItem value="1-3">1-3 days</SelectItem>
-                  <SelectItem value="4-7">4-7 days</SelectItem>
-                  <SelectItem value="8-14">8-14 days</SelectItem>
-                  <SelectItem value="15+">15+ days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={searchFilters.priceRange} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, priceRange: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Price Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Prices</SelectItem>
-                  <SelectItem value="0-500">£0 - £500</SelectItem>
-                  <SelectItem value="500-1000">£500 - £1,000</SelectItem>
-                  <SelectItem value="1000-2000">£1,000 - £2,000</SelectItem>
-                  <SelectItem value="2000+">£2,000+</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select value={searchFilters.packageType} onValueChange={(value) => setSearchFilters(prev => ({ ...prev, packageType: value }))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Package Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="adventure">Adventure</SelectItem>
-                  <SelectItem value="cultural">Cultural</SelectItem>
-                  <SelectItem value="luxury">Luxury</SelectItem>
-                  <SelectItem value="backpacker">Backpacker</SelectItem>
-                  <SelectItem value="family">Family</SelectItem>
-                  <SelectItem value="business">Business</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Packages Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <PackageCard key={pkg.id} package={pkg} />
-          ))}
-        </div>
-
-        {packages.length === 0 && (
-          <div className="text-center py-12">
-            <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No packages found</h3>
-            <p className="text-muted-foreground mb-4">
-              {permissions.canCreateTourPackages 
-                ? "Be the first to create an amazing tour package!" 
-                : "No tour packages available yet. Tour providers will add packages soon!"
-              }
-            </p>
-            {permissions.canCreateTourPackages && (
-              <Button onClick={() => setIsCreateModalOpen(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create First Package
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
+      {/* All Dialog components as siblings outside Tabs */}
+      
       {/* Package Details Modal */}
       {selectedPackage && <PackageDetailsModal package={selectedPackage} />}
 
@@ -988,186 +958,6 @@ export default function TourPackages() {
               <Input id="tags" name="tags" placeholder="photography, culture, adventure, food" />
             </div>
 
-            {/* Budget Planning Section */}
-            <div className="space-y-6 border-t pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="w-6 h-6 text-green-600" />
-                <h3 className="text-xl font-semibold">Budget & Pricing</h3>
-              </div>
-
-              {/* Pricing Tiers */}
-              <div className="space-y-4">
-                <Label className="text-lg font-medium">Pricing Tiers</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border-2 border-green-200 rounded-lg p-4 bg-green-50 dark:bg-green-950">
-                    <Label className="text-base font-medium text-green-600 mb-3 block">Budget Package</Label>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="budgetPrice" className="text-sm">Price (£)</Label>
-                        <Input id="budgetPrice" name="budgetPrice" type="number" placeholder="599" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="budgetDescription" className="text-sm">Description</Label>
-                        <Input id="budgetDescription" name="budgetDescription" placeholder="Essential experience" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="budgetFeatures" className="text-sm">Features (one per line)</Label>
-                        <Textarea id="budgetFeatures" name="budgetFeatures" placeholder="Basic accommodation&#10;Group transport&#10;Essential activities" rows={3} className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50 dark:bg-blue-950">
-                    <Label className="text-base font-medium text-blue-600 mb-3 block">Standard Package</Label>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="standardPrice" className="text-sm">Price (£)</Label>
-                        <Input id="standardPrice" name="standardPrice" type="number" placeholder="899" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="standardDescription" className="text-sm">Description</Label>
-                        <Input id="standardDescription" name="standardDescription" placeholder="Complete experience" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="standardFeatures" className="text-sm">Features (one per line)</Label>
-                        <Textarea id="standardFeatures" name="standardFeatures" placeholder="Comfortable accommodation&#10;Private transport&#10;All activities included&#10;Professional guide" rows={3} className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-2 border-purple-200 rounded-lg p-4 bg-purple-50 dark:bg-purple-950">
-                    <Label className="text-base font-medium text-purple-600 mb-3 block">Premium Package</Label>
-                    <div className="space-y-3">
-                      <div>
-                        <Label htmlFor="premiumPrice" className="text-sm">Price (£)</Label>
-                        <Input id="premiumPrice" name="premiumPrice" type="number" placeholder="1299" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="premiumDescription" className="text-sm">Description</Label>
-                        <Input id="premiumDescription" name="premiumDescription" placeholder="Luxury experience" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="premiumFeatures" className="text-sm">Features (one per line)</Label>
-                        <Textarea id="premiumFeatures" name="premiumFeatures" placeholder="Luxury accommodation&#10;Premium transport&#10;Exclusive activities&#10;Personal guide&#10;Fine dining" rows={3} className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Price Breakdown */}
-              <div className="space-y-4">
-                <Label className="text-lg font-medium">Price Breakdown (Standard Package)</Label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="accommodationCost" className="text-sm">Accommodation (£)</Label>
-                    <Input id="accommodationCost" name="accommodationCost" type="number" placeholder="300" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="mealsCost" className="text-sm">Meals (£)</Label>
-                    <Input id="mealsCost" name="mealsCost" type="number" placeholder="200" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="transportCost" className="text-sm">Transport (£)</Label>
-                    <Input id="transportCost" name="transportCost" type="number" placeholder="150" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="activitiesCost" className="text-sm">Activities (£)</Label>
-                    <Input id="activitiesCost" name="activitiesCost" type="number" placeholder="180" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="guideCost" className="text-sm">Guide (£)</Label>
-                    <Input id="guideCost" name="guideCost" type="number" placeholder="100" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="insuranceCost" className="text-sm">Insurance (£)</Label>
-                    <Input id="insuranceCost" name="insuranceCost" type="number" placeholder="50" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="taxesCost" className="text-sm">Taxes (£)</Label>
-                    <Input id="taxesCost" name="taxesCost" type="number" placeholder="80" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="otherCost" className="text-sm">Other (£)</Label>
-                    <Input id="otherCost" name="otherCost" type="number" placeholder="40" className="mt-1" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Terms */}
-              <div className="space-y-4">
-                <Label className="text-lg font-medium">Payment Terms</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="depositPercentage" className="text-sm">Deposit Required (%)</Label>
-                    <Input id="depositPercentage" name="depositPercentage" type="number" placeholder="25" min="0" max="100" className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="finalPaymentDue" className="text-sm">Final Payment Due</Label>
-                    <Input id="finalPaymentDue" name="finalPaymentDue" placeholder="30 days before departure" className="mt-1" />
-                  </div>
-                  <div className="md:col-span-1">
-                    <Label htmlFor="cancellationPolicy" className="text-sm">Cancellation Policy</Label>
-                    <Textarea id="cancellationPolicy" name="cancellationPolicy" placeholder="Free cancellation up to 48 hours before departure..." rows={2} className="mt-1" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Discounts */}
-              <div className="space-y-4">
-                <Label className="text-lg font-medium">Available Discounts</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-base font-medium text-orange-600 block mb-2">Early Bird Discount</Label>
-                    <div className="space-y-2">
-                      <div>
-                        <Label htmlFor="earlyBirdPercentage" className="text-sm">Discount (%)</Label>
-                        <Input id="earlyBirdPercentage" name="earlyBirdPercentage" type="number" placeholder="15" min="0" max="50" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="earlyBirdDeadline" className="text-sm">Booking Deadline</Label>
-                        <Input id="earlyBirdDeadline" name="earlyBirdDeadline" placeholder="60 days before departure" className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-base font-medium text-blue-600 block mb-2">Group Discount</Label>
-                    <div className="space-y-2">
-                      <div>
-                        <Label htmlFor="groupDiscountPercentage" className="text-sm">Discount (%)</Label>
-                        <Input id="groupDiscountPercentage" name="groupDiscountPercentage" type="number" placeholder="10" min="0" max="30" className="mt-1" />
-                      </div>
-                      <div>
-                        <Label htmlFor="groupMinPeople" className="text-sm">Minimum People</Label>
-                        <Input id="groupMinPeople" name="groupMinPeople" type="number" placeholder="6" min="2" className="mt-1" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <Label className="text-base font-medium text-green-600 block mb-2">Seasonal Discount</Label>
-                    <div className="space-y-2">
-                      <div>
-                        <Label htmlFor="seasonalPercentage" className="text-sm">Discount (%)</Label>
-                        <Input id="seasonalPercentage" name="seasonalPercentage" type="number" placeholder="20" min="0" max="40" className="mt-1" />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label htmlFor="seasonalStart" className="text-xs">Valid From</Label>
-                          <Input id="seasonalStart" name="seasonalStart" type="date" className="mt-1" />
-                        </div>
-                        <div>
-                          <Label htmlFor="seasonalEnd" className="text-xs">Valid To</Label>
-                          <Input id="seasonalEnd" name="seasonalEnd" type="date" className="mt-1" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div className="flex justify-end gap-4 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                 Cancel
@@ -1251,144 +1041,81 @@ export default function TourPackages() {
                 <div>
                   <Label htmlFor="contactName">Full Name *</Label>
                   <Input
+                    id="contactName"
                     value={bookingDetails.contactInfo.name}
-                    onChange={(e) => setBookingDetails(prev => ({
-                      ...prev,
-                      contactInfo: {...prev.contactInfo, name: e.target.value}
-                    }))}
-                    placeholder="Your full name"
+                    onChange={(e) => setBookingDetails(prev => ({...prev, contactInfo: {...prev.contactInfo, name: e.target.value}}))}
                     required
                   />
                 </div>
                 <div>
                   <Label htmlFor="contactEmail">Email Address *</Label>
                   <Input
+                    id="contactEmail"
                     type="email"
                     value={bookingDetails.contactInfo.email}
-                    onChange={(e) => setBookingDetails(prev => ({
-                      ...prev,
-                      contactInfo: {...prev.contactInfo, email: e.target.value}
-                    }))}
-                    placeholder="your.email@example.com"
+                    onChange={(e) => setBookingDetails(prev => ({...prev, contactInfo: {...prev.contactInfo, email: e.target.value}}))}
                     required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="contactPhone">Phone Number *</Label>
-                  <div className="flex gap-2">
-                    <div className="w-40">
-                      <Label htmlFor="countryCode" className="sr-only">Country Code</Label>
-                      <Select 
-                        value={bookingDetails.contactInfo.countryCode} 
-                        onValueChange={(value) => setBookingDetails(prev => ({
-                          ...prev,
-                          contactInfo: {...prev.contactInfo, countryCode: value}
-                        }))}
-                      >
-                        <SelectTrigger id="countryCode" className="w-full">
-                          <SelectValue>
-                            {bookingDetails.contactInfo.countryCode && (
-                              <div className="flex items-center gap-2">
-                                <span>{countryCodes.find(c => c.code === bookingDetails.contactInfo.countryCode)?.flag}</span>
-                                <span className="text-sm">{bookingDetails.contactInfo.countryCode}</span>
-                              </div>
-                            )}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent className="max-h-60">
-                          {countryCodes
-                            .filter(country => !country.code.includes(',')) // Remove invalid multi-codes
-                            .sort((a, b) => a.country.localeCompare(b.country))
-                            .map((country, index) => (
-                            <SelectItem key={`${country.code}-${country.country}-${index}`} value={country.code}>
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">{country.flag}</span>
-                                <span className="text-sm min-w-0 truncate">{country.country}</span>
-                                <span className="text-xs text-muted-foreground">({country.code})</span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Input
-                      id="contactPhone"
-                      type="tel"
-                      value={bookingDetails.contactInfo.phone}
-                      onChange={(e) => {
-                        // Remove non-digits for validation
-                        const digitsOnly = e.target.value.replace(/\D/g, '');
-                        setBookingDetails(prev => ({
-                          ...prev,
-                          contactInfo: {...prev.contactInfo, phone: e.target.value}
-                        }));
-                      }}
-                      placeholder="123 456 7890"
-                      className="flex-1"
-                      required
-                    />
+              </div>
+              <div>
+                <Label htmlFor="contactPhone">Phone Number *</Label>
+                <div className="flex gap-2">
+                  <div className="w-40">
+                    <Select 
+                      value={bookingDetails.contactInfo.countryCode} 
+                      onValueChange={(value) => setBookingDetails(prev => ({...prev, contactInfo: {...prev.contactInfo, countryCode: value}}))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-48">
+                        {countryCodes.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.flag} {country.code}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Select your country code and enter your phone number (digits only)
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="emergencyContact">Emergency Contact</Label>
                   <Input
-                    value={bookingDetails.contactInfo.emergencyContact}
-                    onChange={(e) => setBookingDetails(prev => ({
-                      ...prev,
-                      contactInfo: {...prev.contactInfo, emergencyContact: e.target.value}
-                    }))}
-                    placeholder="Emergency contact number"
+                    className="flex-1"
+                    placeholder="Phone number"
+                    value={bookingDetails.contactInfo.phone}
+                    onChange={(e) => setBookingDetails(prev => ({...prev, contactInfo: {...prev.contactInfo, phone: e.target.value}}))}
+                    required
                   />
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="emergencyContact">Emergency Contact</Label>
+                <Input
+                  id="emergencyContact"
+                  placeholder="Emergency contact name and phone"
+                  value={bookingDetails.contactInfo.emergencyContact}
+                  onChange={(e) => setBookingDetails(prev => ({...prev, contactInfo: {...prev.contactInfo, emergencyContact: e.target.value}}))}
+                />
               </div>
             </div>
 
             {/* Special Requests */}
             <div>
-              <Label htmlFor="specialRequests">Special Requests or Dietary Requirements</Label>
+              <Label htmlFor="specialRequests">Special Requests (Optional)</Label>
               <Textarea
+                id="specialRequests"
+                placeholder="Any dietary restrictions, accessibility needs, or other special requests..."
                 value={bookingDetails.specialRequests}
                 onChange={(e) => setBookingDetails(prev => ({...prev, specialRequests: e.target.value}))}
-                placeholder="Any special dietary requirements, accessibility needs, or other requests..."
                 rows={3}
               />
             </div>
 
-            {/* Terms and Conditions */}
-            <div className="bg-muted/30 p-4 rounded-lg">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5" />
-                <div className="text-sm text-muted-foreground">
-                  <p>By proceeding with this booking, you agree to our terms and conditions. A 10% platform fee will be added to the total cost.</p>
-                  <p className="mt-1 font-medium">Cancellation Policy: Free cancellation up to 48 hours before departure.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Submit Buttons */}
-            <div className="flex gap-3 justify-end pt-4 border-t">
+            <div className="flex justify-end gap-4 pt-4 border-t">
               <Button type="button" variant="outline" onClick={() => setBookingFormOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={bookPackageMutation.isPending || !bookingDetails.departureDate}
-                className="bg-primary hover:bg-primary/90"
-              >
-                {bookPackageMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Confirm Booking
-                  </>
-                )}
+              <Button type="submit" disabled={bookPackageMutation.isPending}>
+                {bookPackageMutation.isPending ? "Processing..." : "Confirm Booking"}
               </Button>
             </div>
           </form>
@@ -1396,21 +1123,21 @@ export default function TourPackages() {
       </Dialog>
 
       {/* Booking Confirmation Modal */}
-      {bookingPackage && (
-        <BookingConfirmation
+      {isBookingModalOpen && bookingPackage && (
+        <BookingConfirmation 
           isOpen={isBookingModalOpen}
-          onClose={() => {
-            setIsBookingModalOpen(false);
-            setBookingPackage(null);
-          }}
-          bookingType="trip"
-          bookingData={{
-            itemName: bookingPackage.title,
-            basePrice: bookingPackage.price,
+          onOpenChange={setIsBookingModalOpen}
+          serviceType="tour-package"
+          booking={{
+            id: 'booking-' + Date.now(),
+            packageTitle: bookingPackage.title,
+            destination: bookingPackage.destination,
+            duration: bookingPackage.duration,
+            travelers: bookingDetails.travelers,
+            departureDate: bookingDetails.departureDate,
+            price: bookingPackage.price,
             currency: bookingPackage.currency,
-            dates: `${bookingPackage.departureDate} - ${bookingPackage.returnDate || 'TBD'}`,
-            location: bookingPackage.destination,
-            duration: `${bookingPackage.duration} days`
+            contactInfo: bookingDetails.contactInfo
           }}
         />
       )}

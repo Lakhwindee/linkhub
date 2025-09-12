@@ -22,12 +22,22 @@ import {
   Car,
   Coffee,
   Waves,
-  Heart
+  Heart,
+  History,
+  Calendar,
+  DollarSign,
+  Clock,
+  Package,
+  Phone,
+  Mail,
+  User
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AddStayDialog } from "@/components/AddStayDialog";
 import type { Stay } from "@shared/schema";
 import { worldCountries } from "@/data/locationData";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, parseISO } from "date-fns";
 
 // Mock data for demo
 const mockStays: Stay[] = [
@@ -238,6 +248,39 @@ export default function Stays() {
     staleTime: Infinity,
   });
 
+  // Stays bookings query
+  const { data: stayBookings = [], isLoading: bookingsLoading } = useQuery({
+    queryKey: ['my-bookings', 'stays', user?.id],
+    queryFn: async () => {
+      // Check if demo user is authenticated via localStorage system
+      const demoUser = localStorage.getItem('demo_user');
+      const isDemoUser = !!demoUser;
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      // Add demo session header for authentication if demo user
+      if (isDemoUser) {
+        const demoSession = localStorage.getItem('demo_session');
+        if (demoSession) {
+          headers['x-demo-session'] = demoSession;
+        }
+      }
+      
+      const response = await fetch('/api/my-bookings/stays', {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch stay bookings');
+      }
+      return response.json();
+    },
+    enabled: !!user?.id
+  });
+
   const handleAddListing = () => {
     setShowAddDialog(true);
   };
@@ -267,13 +310,27 @@ export default function Stays() {
           
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Find Your Perfect Stay</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-4">Stays</h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Discover unique homestays and rooms from locals around the world
+              Discover unique homestays and manage your bookings
             </p>
           </div>
 
-          {/* Search and Filters */}
+          {/* Tabs */}
+          <Tabs defaultValue="browse" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="browse" className="flex items-center gap-2">
+                <Home className="w-4 h-4" />
+                Browse Stays
+              </TabsTrigger>
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                My Bookings
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="browse" className="space-y-6">
+              {/* Search and Filters */}
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
@@ -528,6 +585,92 @@ export default function Stays() {
               <p className="text-muted-foreground">Try adjusting your filters or search terms</p>
             </div>
           )}
+            </TabsContent>
+
+            <TabsContent value="bookings" className="space-y-6">
+              {bookingsLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-muted-foreground">Loading your bookings...</p>
+                </div>
+              ) : stayBookings.length === 0 ? (
+                <Card className="max-w-md mx-auto">
+                  <CardContent className="pt-6 text-center">
+                    <History className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Stay Bookings Yet</h3>
+                    <p className="text-gray-600 mb-4">You haven't made any stay bookings yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {stayBookings.map((booking: any) => (
+                    <Card key={booking.id} className="overflow-hidden">
+                      <div className="p-6">
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{booking.stay?.title || 'Stay Booking'}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <MapPin className="w-4 h-4" />
+                              <span>{booking.stay?.city}, {booking.stay?.country}</span>
+                            </div>
+                          </div>
+                          <Badge className={`${booking.status === 'confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {booking.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                            <div>
+                              <span className="font-medium">Check-in:</span>
+                              <span className="ml-1">{format(parseISO(booking.checkInDate), 'MMM dd, yyyy')}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-4 w-4 text-blue-600" />
+                            <div>
+                              <span className="font-medium">Check-out:</span>
+                              <span className="ml-1">{format(parseISO(booking.checkOutDate), 'MMM dd, yyyy')}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 text-sm">
+                            <Users className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium">Guests:</span>
+                            <span>{booking.guests} {booking.guests === 1 ? 'guest' : 'guests'}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm mb-4">
+                          <DollarSign className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium">Total Price:</span>
+                          <span className="font-semibold">{booking.currency} {booking.totalPrice}</span>
+                        </div>
+
+                        {booking.message && (
+                          <div className="border-t pt-4 mt-4">
+                            <h4 className="font-semibold text-gray-900 mb-2">Message to Host</h4>
+                            <p className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+                              {booking.message}
+                            </p>
+                          </div>
+                        )}
+
+                        <div className="border-t pt-4 mt-4">
+                          <div className="flex justify-between items-center text-xs text-gray-500">
+                            <span>Booking ID: {booking.id}</span>
+                            <span>Booked on {format(parseISO(booking.createdAt), 'MMM dd, yyyy')}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
 
         </div>
       </div>

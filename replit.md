@@ -8,6 +8,16 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**September 2025 - Booking System Restructuring**
+- **Removed Main "My Bookings" Menu**: Eliminated the standalone "My Bookings" navigation item from the main menu across all user interfaces
+- **Integrated Bookings Within Service Pages**: Added dedicated "My Bookings" tabs within both Stays and Tour Packages pages
+- **Tab-Based Navigation**: Implemented shadcn/ui tabs component with:
+  - Stays page: "Browse Stays" and "My Bookings" tabs for accommodation bookings
+  - Tour Packages page: "Browse Tour Packages" and "My Bookings" tabs for trip bookings
+- **Enhanced User Experience**: Users now access their bookings directly within the context of each service type
+- **API Integration**: Proper connection to existing booking endpoints (`/api/my-bookings/stays` and `/api/my-bookings/tour-packages`)
+- **Responsive Design**: Fully responsive tabs interface with loading states and empty state handling for users with no bookings
+
 **September 2025 - Admin Panel Restructure & Financial Enhancement**
 - **Removed Redundant Payment Accounts Menu**: Eliminated duplicate payment configuration section that overlapped with API Settings functionality
 - **Enhanced Financial Management Section**: Completely rebuilt financial dashboard with comprehensive finance features:
