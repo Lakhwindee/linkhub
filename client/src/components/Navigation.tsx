@@ -5,7 +5,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck } from "lucide-react";
+import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck, History } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -105,6 +105,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
       { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
       { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
+      { href: "/my-bookings", icon: History, label: "My Bookings", testId: "nav-my-bookings" },
       { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },

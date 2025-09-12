@@ -21,6 +21,7 @@ import Billing from "@/pages/Billing";
 import Stays from "@/pages/Stays";
 import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
+import MyBookings from "@/pages/MyBookings";
 import PersonalHosts from "@/pages/PersonalHosts";
 import UserProfile from "@/pages/UserProfile";
 import Map from "@/pages/Map";
@@ -81,6 +82,7 @@ function Router() {
               <Route path="/stays" component={Stays} />
               <Route path="/trips" component={Trips} />
               <Route path="/tour-packages" component={TourPackages} />
+              <Route path="/my-bookings" component={MyBookings} />
               <Route path="/personal-hosts" component={PersonalHosts} />
               <Route path="/profile/:userId" component={UserProfile} />
               <Route path="/map" component={Map} />
