@@ -89,12 +89,23 @@ export default function TourPackages() {
   // Book package mutation
   const bookPackageMutation = useMutation({
     mutationFn: async (bookingData: any) => {
+      // Get demo session for authentication
+      const demoSession = localStorage.getItem('demo_session');
+      
+      const headers: Record<string, string> = { 
+        "Content-Type": "application/json"
+      };
+      
+      // Add demo session header if available
+      if (demoSession) {
+        headers["x-demo-session"] = demoSession;
+      } else {
+        headers["x-demo-user"] = "true"; // Fallback
+      }
+      
       const response = await fetch(`/api/tour-packages/${bookingData.packageId}/book`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "x-demo-user": "true"
-        },
+        headers,
         credentials: "include",
         body: JSON.stringify(bookingData),
       });
@@ -1288,8 +1299,8 @@ export default function TourPackages() {
                           {countryCodes
                             .filter(country => !country.code.includes(',')) // Remove invalid multi-codes
                             .sort((a, b) => a.country.localeCompare(b.country))
-                            .map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
+                            .map((country, index) => (
+                            <SelectItem key={`${country.code}-${country.country}-${index}`} value={country.code}>
                               <div className="flex items-center gap-2">
                                 <span className="text-lg">{country.flag}</span>
                                 <span className="text-sm min-w-0 truncate">{country.country}</span>
