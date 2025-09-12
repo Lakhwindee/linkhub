@@ -24,6 +24,7 @@ import {
   stayReviews,
   personalHosts,
   hostBookings,
+  tourPackageBookings,
   type User,
   type UpsertUser,
   type ConnectRequest,
@@ -49,6 +50,7 @@ import {
   type StayReview,
   type PersonalHost,
   type HostBooking,
+  type TourPackageBooking,
   insertStaySchema,
   insertStayBookingSchema,
   insertStayReviewSchema,
@@ -2021,6 +2023,21 @@ export class DatabaseStorage implements IStorage {
   
   async updateStayBookingStatus(id: string, status: string): Promise<StayBooking> {
     const [booking] = await db.update(stayBookings).set({ status }).where(eq(stayBookings.id, id)).returning();
+    return booking;
+  }
+  
+  // Tour Package Bookings implementation
+  async createTourPackageBooking(data: any): Promise<TourPackageBooking> {
+    const [booking] = await db.insert(tourPackageBookings).values(data).returning();
+    return booking;
+  }
+  
+  async getUserTourPackageBookings(userId: string): Promise<TourPackageBooking[]> {
+    return await db.select().from(tourPackageBookings).where(eq(tourPackageBookings.guestId, userId)).orderBy(desc(tourPackageBookings.createdAt));
+  }
+  
+  async updateTourPackageBookingStatus(id: string, status: string): Promise<TourPackageBooking> {
+    const [booking] = await db.update(tourPackageBookings).set({ status }).where(eq(tourPackageBookings.id, id)).returning();
     return booking;
   }
   

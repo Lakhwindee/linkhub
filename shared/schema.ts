@@ -873,6 +873,23 @@ export const hostBookings = pgTable("host_bookings", {
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
+// Tour Package Bookings
+export const tourPackageBookings = pgTable("tour_package_bookings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  packageId: varchar("package_id").notNull(), // Reference to tour package ID
+  guestId: varchar("guest_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  departureDate: timestamp("departure_date").notNull(),
+  travelers: integer("travelers").default(1),
+  totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
+  platformFee: decimal("platform_fee", { precision: 10, scale: 2 }).default('0'),
+  currency: varchar("currency").default("USD"),
+  status: varchar("status").default("confirmed"), // pending, confirmed, cancelled, completed
+  specialRequests: text("special_requests"),
+  contactInfo: jsonb("contact_info"), // phone, email, name for coordination
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
+});
+
 // Relations for Personal Hosts
 export const personalHostsRelations = relations(personalHosts, ({ one, many }) => ({
   host: one(users, {
@@ -889,6 +906,13 @@ export const hostBookingsRelations = relations(hostBookings, ({ one }) => ({
   }),
   guest: one(users, {
     fields: [hostBookings.guestId],
+    references: [users.id],
+  }),
+}));
+
+export const tourPackageBookingsRelations = relations(tourPackageBookings, ({ one }) => ({
+  guest: one(users, {
+    fields: [tourPackageBookings.guestId],
     references: [users.id],
   }),
 }));
@@ -953,6 +977,7 @@ export type TripParticipant = typeof tripParticipants.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type PersonalHost = typeof personalHosts.$inferSelect;
 export type HostBooking = typeof hostBookings.$inferSelect;
+export type TourPackageBooking = typeof tourPackageBookings.$inferSelect;
 export type DiscountCode = typeof discountCodes.$inferSelect;
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type DiscountCodeUsage = typeof discountCodeUsage.$inferSelect;
