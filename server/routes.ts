@@ -4866,22 +4866,24 @@ Always be helpful, professional, and focused on website management tasks.`;
         bookedAt: new Date().toISOString()
       };
       
-      // Log booking with platform fee details
-      await storage.createAuditLog({
-        actorId: userId,
-        action: "tour_package_booked",
-        targetType: "tour_booking",
-        targetId: booking.id,
-        metaJson: { 
-          packageId, 
-          travelers: travelers.toString(),
-          basePrice: basePrice.toString(), 
-          platformFee: platformFee.toString(), 
-          totalPrice: totalPrice.toString() 
-        },
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent"),
-      });
+      // Log booking with platform fee details (skip for demo users)
+      if (!userId.startsWith('demo-')) {
+        await storage.createAuditLog({
+          actorId: userId,
+          action: "tour_package_booked",
+          targetType: "tour_booking",
+          targetId: booking.id,
+          metaJson: { 
+            packageId, 
+            travelers: travelers.toString(),
+            basePrice: basePrice.toString(), 
+            platformFee: platformFee.toString(), 
+            totalPrice: totalPrice.toString() 
+          },
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent"),
+        });
+      }
       
       res.json(booking);
     } catch (error) {
