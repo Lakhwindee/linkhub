@@ -4845,26 +4845,40 @@ Always be helpful, professional, and focused on website management tasks.`;
   app.post('/api/tour-packages/:id/book', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { travelers, message } = req.body;
+      const { travelers, message, guestName, guestEmail, guestPhone, departureDate } = req.body;
       const packageId = req.params.id;
       
-      // For demo - In real app, fetch from database
-      const basePrice = 899; // This would be fetched from the actual package
-      const platformFee = basePrice * 0.10; // 10% platform fee
-      const totalPrice = basePrice + platformFee;
+      // Validate required fields
+      const travelersCount = Math.max(1, parseInt(travelers) || 1);
+      if (!departureDate) {
+        return res.status(400).json({ message: 'Departure date is required' });
+      }
       
-      const booking = {
-        id: `booking-${Date.now()}`,
+      // For demo - In real app, fetch from database and verify package exists
+      const basePrice = 899; // This would be fetched from the actual package
+      const subtotal = basePrice * travelersCount; // Per traveler pricing
+      const platformFee = subtotal * 0.10; // 10% platform fee on subtotal
+      const totalPrice = subtotal + platformFee;
+      
+      // Create booking in database
+      const bookingData = {
         packageId,
-        userId,
-        travelers: travelers || 1,
-        message: message || '',
+        guestId: userId,
+        departureDate: new Date(departureDate),
+        travelers: travelersCount,
+        totalPrice: totalPrice.toString(),
+        platformFee: platformFee.toString(),
+        currency: 'USD',
         status: 'confirmed',
-        basePrice,
-        platformFee,
-        totalPrice,
-        bookedAt: new Date().toISOString()
+        specialRequests: message || null,
+        contactInfo: {
+          name: guestName || 'Guest User',
+          email: guestEmail || 'guest@example.com',
+          phone: guestPhone || '+44 20 7946 0958'
+        },
       };
+      
+      const booking = await storage.createTourPackageBooking(bookingData);
       
       // Log booking with platform fee details (skip for demo users)
       if (!userId.startsWith('demo-')) {
@@ -4875,10 +4889,12 @@ Always be helpful, professional, and focused on website management tasks.`;
           targetId: booking.id,
           metaJson: { 
             packageId, 
-            travelers: travelers.toString(),
-            basePrice: basePrice.toString(), 
+            travelers: travelersCount.toString(),
+            basePrice: basePrice.toString(),
+            subtotal: subtotal.toString(),
             platformFee: platformFee.toString(), 
-            totalPrice: totalPrice.toString() 
+            totalPrice: totalPrice.toString(),
+            departureDate: departureDate 
           },
           ipAddress: req.ip,
           userAgent: req.get("User-Agent"),
@@ -4889,6 +4905,18 @@ Always be helpful, professional, and focused on website management tasks.`;
     } catch (error) {
       console.error('Error booking tour package:', error);
       res.status(500).json({ message: 'Failed to book tour package' });
+    }
+  });
+
+  // Get user's tour package bookings
+  app.get('/api/my-bookings/tour-packages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookings = await storage.getUserTourPackageBookings(userId);
+      res.json(bookings);
+    } catch (error) {
+      console.error('Error fetching user tour package bookings:', error);
+      res.status(500).json({ message: 'Failed to fetch bookings' });
     }
   });
 
