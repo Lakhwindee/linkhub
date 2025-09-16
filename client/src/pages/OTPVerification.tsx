@@ -30,6 +30,7 @@ export default function OTPVerification() {
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'failed'>('pending');
+  const [developmentOTP, setDevelopmentOTP] = useState<string | null>(null);
 
   useEffect(() => {
     // Get verification data from URL params or localStorage
@@ -68,12 +69,23 @@ export default function OTPVerification() {
       const data = await response.json();
       
       if (response.ok) {
-        console.log('🎯 OTP sent successfully:', data.debug);
-        toast({
-          title: "Verification Code Sent!",
-          description: `Check your ${type === 'both' ? 'email and phone' : type} for the verification code.`,
-          duration: 5000,
-        });
+        console.log('🎯 OTP sent successfully:', data);
+        
+        // Check if we're in development mode and show OTP code
+        if (data.developmentMode && data.otpCode) {
+          setDevelopmentOTP(data.otpCode);
+          toast({
+            title: "⚠️ Development Mode",
+            description: `Email failed! OTP Code: ${data.otpCode}`,
+            duration: 0, // Keep visible until dismissed
+          });
+        } else {
+          toast({
+            title: "Verification Code Sent!",
+            description: `Check your ${type === 'both' ? 'email and phone' : type} for the verification code.`,
+            duration: 5000,
+          });
+        }
       }
     } catch (error) {
       console.error('Error sending initial OTP:', error);
@@ -277,6 +289,23 @@ export default function OTPVerification() {
               <p>We've sent verification codes to your email and phone number</p>
             )}
           </div>
+
+          {/* Development Mode OTP Display */}
+          {developmentOTP && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600" />
+                <span className="text-sm font-medium text-yellow-800">Development Mode</span>
+              </div>
+              <p className="text-xs text-yellow-700 mb-3">Email sending failed. Your OTP code is:</p>
+              <div className="bg-white border-2 border-yellow-300 rounded-lg py-3 px-4">
+                <span className="text-2xl font-mono font-bold text-gray-900 tracking-widest">
+                  {developmentOTP}
+                </span>
+              </div>
+              <p className="text-xs text-yellow-600 mt-2">Copy this code into the verification field below</p>
+            </div>
+          )}
 
           {/* Email OTP Input */}
           {(verificationType === 'email' || verificationType === 'both') && (

@@ -630,11 +630,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let emailSent = false;
       let smsSent = false;
+      let emailResult = null;
 
       // Send Email OTP using existing email system
       if (type === 'email' || type === 'both') {
         otpStore.set(`email:${email}`, { otp: emailOTP, expiresAt });
-        const emailResult = await sendOTPEmail(email, emailOTP);
+        emailResult = await sendOTPEmail(email, emailOTP);
         emailSent = emailResult.success;
       }
       
@@ -645,20 +646,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         smsSent = true; // Simulate SMS sent
       }
 
-      // Create audit log for OTP sending
-      const auditUserId = req.user?.claims?.sub || 'anonymous';
-      await storage.createAuditLog({
-        actorId: auditUserId,
-        action: 'send_otp',
-        targetType: 'otp_verification',
-        targetId: email || phone,
-        metaJson: { type, email: !!email, phone: !!phone }
-      });
+      // Create audit log for OTP sending (skip if anonymous to avoid foreign key error)
+      try {
+        const auditUserId = req.user?.claims?.sub;
+        if (auditUserId) {
+          await storage.createAuditLog({
+            actorId: auditUserId,
+            action: 'send_otp',
+            targetType: 'otp_verification',
+            targetId: email || phone,
+            metaJson: { type, email: !!email, phone: !!phone }
+          });
+        } else {
+          console.log('🔍 Skipping audit log for anonymous OTP request');
+        }
+      } catch (auditError) {
+        console.warn('⚠️ Failed to create audit log for OTP:', auditError.message);
+        // Continue processing - audit log failure shouldn't block OTP
+      }
+      
+      // Check if we're in development mode and email failed
+      const isDevelopment = process.env.NODE_ENV === 'development';
       
       res.json({ 
         message: 'OTP sent successfully',
         emailSent,
-        smsSent
+        smsSent,
+        // Show OTP in development mode when email sending failed
+        ...(isDevelopment && emailResult?.simulated && { 
+          developmentMode: true,
+          otpCode: emailOTP,
+          note: 'Development Mode: Email authentication failed, showing OTP code here for testing'
+        })
       });
       
     } catch (error) {
