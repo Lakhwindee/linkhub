@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { PostCard } from "@/components/PostCard";
+import { AdCard } from "@/components/AdCard";
 import { UserSearch } from "@/components/UserSearch";
 import { Globe, Users, MapPin, Image, Video, Send, Filter, Search } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -63,6 +64,44 @@ export default function Feed() {
     queryKey: ["/api/feed", { tab: activeTab, country: countryFilter }],
     retry: false,
   });
+
+  // Fetch ads for feed
+  const { data: feedAds = [], isLoading: adsLoading } = useQuery({
+    queryKey: ["/api/feed/ads", { country: countryFilter }],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/feed/ads?country=${countryFilter || ''}`);
+      return response.json();
+    },
+    retry: false,
+    staleTime: 5 * 60 * 1000, // Cache ads for 5 minutes
+  });
+
+  // Mix posts and ads for display
+  const mixPostsWithAds = (posts: Post[], ads: any[]) => {
+    if (!ads.length) return posts.map(post => ({ type: 'post', data: post }));
+    
+    const mixed: Array<{ type: 'post' | 'ad', data: any }> = [];
+    const postItems = posts.map(post => ({ type: 'post' as const, data: post }));
+    const adItems = ads.map(ad => ({ type: 'ad' as const, data: ad }));
+    
+    // Insert ads every 3-4 posts
+    for (let i = 0; i < postItems.length; i++) {
+      mixed.push(postItems[i]);
+      
+      // Insert an ad every 3 posts, but not after the last post
+      if ((i + 1) % 3 === 0 && i < postItems.length - 1 && adItems.length > 0) {
+        const adIndex = Math.floor((i + 1) / 3 - 1) % adItems.length;
+        mixed.push(adItems[adIndex]);
+      }
+    }
+    
+    // If we have very few posts, add at least one ad at the beginning
+    if (postItems.length <= 2 && adItems.length > 0) {
+      mixed.unshift(adItems[0]);
+    }
+    
+    return mixed;
+  };
 
   // Handle unauthorized error
   useEffect(() => {
@@ -376,8 +415,14 @@ export default function Feed() {
                 </div>
               ) : (posts as Post[]).length > 0 ? (
                 <div className="space-y-6">
-                  {(posts as Post[]).map((post: Post) => (
-                    <PostCard key={post.id} post={post} />
+                  {mixPostsWithAds(posts as Post[], feedAds).map((item, index) => (
+                    <div key={item.type === 'post' ? `post-${item.data.id}` : `ad-${item.data.id}-${index}`}>
+                      {item.type === 'post' ? (
+                        <PostCard post={item.data} />
+                      ) : (
+                        <AdCard ad={item.data} />
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -419,8 +464,14 @@ export default function Feed() {
                 </div>
               ) : (posts as Post[]).length > 0 ? (
                 <div className="space-y-6">
-                  {(posts as Post[]).map((post: Post) => (
-                    <PostCard key={post.id} post={post} />
+                  {mixPostsWithAds(posts as Post[], feedAds).map((item, index) => (
+                    <div key={item.type === 'post' ? `following-post-${item.data.id}` : `following-ad-${item.data.id}-${index}`}>
+                      {item.type === 'post' ? (
+                        <PostCard post={item.data} />
+                      ) : (
+                        <AdCard ad={item.data} />
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (

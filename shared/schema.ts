@@ -273,6 +273,43 @@ export const adSubmissions = pgTable("ad_submissions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Boosted posts (user promoting their own posts)
+export const boostedPosts = pgTable("boosted_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").references(() => posts.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  targetCountries: text("target_countries").array(), // targeted countries
+  targetCities: text("target_cities").array(), // targeted cities
+  dailyBudget: decimal("daily_budget", { precision: 10, scale: 2 }).notNull(),
+  totalBudget: decimal("total_budget", { precision: 10, scale: 2 }).notNull(),
+  costPerClick: decimal("cost_per_click", { precision: 10, scale: 2 }).default("0.10"),
+  impressions: integer("impressions").default(0),
+  clicks: integer("clicks").default(0),
+  spend: decimal("spend", { precision: 10, scale: 2 }).default("0.00"),
+  status: varchar("status").default("active"), // active, paused, completed, expired
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Feed ad impressions for tracking and analytics 
+export const feedAdImpressions = pgTable("feed_ad_impressions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  adId: varchar("ad_id"), // can be regular ad or boosted post
+  adType: varchar("ad_type").notNull(), // 'campaign' or 'boosted_post'
+  boostedPostId: varchar("boosted_post_id").references(() => boostedPosts.id),
+  campaignAdId: varchar("campaign_ad_id").references(() => ads.id),
+  userId: varchar("user_id"), // viewer, can be null for anonymous
+  ipAddress: varchar("ip_address").notNull(),
+  userAgent: varchar("user_agent"),
+  country: varchar("country"), // detected from IP
+  city: varchar("city"), // detected from IP
+  clicked: boolean("clicked").default(false),
+  viewDuration: integer("view_duration"), // seconds viewed
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Wallets
 export const wallets = pgTable("wallets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -817,6 +854,35 @@ export const insertPublisherAdSchema = z.object({
   adImageUrl: z.string().url("Must be a valid image URL"),
 });
 
+export const insertBoostedPostSchema = createInsertSchema(boostedPosts).pick({
+  postId: true,
+  targetCountries: true,
+  targetCities: true,
+  dailyBudget: true,
+  totalBudget: true,
+  startDate: true,
+  endDate: true,
+}).extend({
+  targetCountries: z.array(z.string()).optional(),
+  targetCities: z.array(z.string()).optional(),
+  dailyBudget: z.number().min(1, "Daily budget must be at least $1"),
+  totalBudget: z.number().min(5, "Total budget must be at least $5"),
+});
+
+export const insertFeedAdImpressionSchema = createInsertSchema(feedAdImpressions).pick({
+  adId: true,
+  adType: true,
+  boostedPostId: true,
+  campaignAdId: true,
+  userId: true,
+  ipAddress: true,
+  userAgent: true,
+  country: true,
+  city: true,
+  clicked: true,
+  viewDuration: true,
+});
+
 export const insertReportSchema = createInsertSchema(reports).pick({
   targetType: true,
   targetId: true,
@@ -1032,6 +1098,8 @@ export type EventRsvp = typeof eventRsvps.$inferSelect;
 export type Ad = typeof ads.$inferSelect;
 export type AdReservation = typeof adReservations.$inferSelect;
 export type AdSubmission = typeof adSubmissions.$inferSelect;
+export type BoostedPost = typeof boostedPosts.$inferSelect;
+export type FeedAdImpression = typeof feedAdImpressions.$inferSelect;
 export type Wallet = typeof wallets.$inferSelect;
 export type Payout = typeof payouts.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;

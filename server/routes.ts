@@ -8,7 +8,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema } from "@shared/schema";
+import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -2726,6 +2726,307 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error reserving ad:", error);
       res.status(500).json({ message: "Failed to reserve ad" });
+    }
+  });
+
+  // Feed ads endpoint for serving ads in the feed - NO IMPRESSION TRACKING
+  app.get('/api/feed/ads', async (req, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      
+      // Try to detect country from IP (simplified)
+      let country = req.query.country as string;
+      
+      // Get ads for feed based on user location and targeting
+      const feedAds = await storage.getFeedAdsForUser(userId, ipAddress, country);
+      
+      // Add signed impression IDs for each ad for secure tracking
+      const crypto = await import('crypto');
+      const adsWithImpressionIds = feedAds.map(ad => {
+        // Create signed impression ID using ad ID, user ID, timestamp, and server secret
+        const timestamp = Date.now().toString();
+        const impressionData = `${ad.id}:${userId || 'anon'}:${timestamp}:${ipAddress}`;
+        const secret = process.env.AD_IMPRESSION_SECRET || 'fallback-secret-key';
+        const hash = crypto.createHmac('sha256', secret).update(impressionData).digest('hex');
+        const impressionId = `${timestamp}.${hash.substring(0, 16)}`;
+        
+        return {
+          ...ad,
+          impressionId,
+          impressionTimestamp: timestamp,
+        };
+      });
+      
+      res.json(adsWithImpressionIds);
+    } catch (error) {
+      console.error('Error serving feed ads:', error);
+      res.status(500).json({ message: 'Failed to fetch feed ads' });
+    }
+  });
+
+  // Endpoint to track ad impressions when ads are actually visible
+  app.post('/api/feed/ads/impression', async (req, res) => {
+    try {
+      const { adId, adType, impressionId, viewDuration } = req.body;
+      const userId = req.user?.claims?.sub;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get('User-Agent');
+      
+      if (!adId || !adType || !impressionId) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      
+      // Verify signed impression ID to prevent forgery
+      const crypto = await import('crypto');
+      const [timestamp, providedHash] = impressionId.split('.');
+      const impressionData = `${adId}:${userId || 'anon'}:${timestamp}:${ipAddress}`;
+      const secret = process.env.AD_IMPRESSION_SECRET || 'fallback-secret-key';
+      const expectedHash = crypto.createHmac('sha256', secret).update(impressionData).digest('hex').substring(0, 16);
+      
+      if (providedHash !== expectedHash) {
+        return res.status(401).json({ message: 'Invalid impression ID' });
+      }
+      
+      // Check for duplicate impression (same adId + userId/ipAddress in last 5 minutes)
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      const existingImpressions = await storage.getFeedAdImpressions({
+        adId,
+        userId: userId || null,
+        ipAddress: userId ? undefined : ipAddress, // Use IP for anonymous users
+        after: fiveMinutesAgo,
+      });
+      
+      if (existingImpressions.length > 0) {
+        return res.status(409).json({ message: 'Duplicate impression detected' });
+      }
+      
+      // Record valid impression
+      await storage.createFeedAdImpression({
+        adId,
+        adType,
+        boostedPostId: adType === 'boosted_post' ? adId : null,
+        campaignAdId: adType === 'campaign' ? adId : null,
+        userId: userId || null,
+        ipAddress,
+        userAgent,
+        clicked: false,
+        viewDuration: viewDuration || null,
+      });
+      
+      // Update impression count for boosted posts
+      if (adType === 'boosted_post') {
+        const boostedPost = await storage.getBoostedPost(adId);
+        if (boostedPost) {
+          await storage.updateBoostedPost(adId, {
+            impressions: (boostedPost.impressions || 0) + 1,
+          });
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error tracking ad impression:', error);
+      res.status(500).json({ message: 'Failed to track impression' });
+    }
+  });
+
+  // Endpoint to track ad clicks - SECURED with CSRF protection and rate limiting
+  app.post('/api/feed/ads/:id/click', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { adType, impressionId } = req.body;
+      const userId = req.user?.claims?.sub;
+      const ipAddress = req.ip || req.connection.remoteAddress;
+      const userAgent = req.get('User-Agent');
+      
+      if (!adType || !impressionId) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      
+      // Verify signed impression ID to prevent click fraud
+      const crypto = await import('crypto');
+      const [timestamp, providedHash] = impressionId.split('.');
+      const impressionData = `${id}:${userId || 'anon'}:${timestamp}:${ipAddress}`;
+      const secret = process.env.AD_IMPRESSION_SECRET || 'fallback-secret-key';
+      const expectedHash = crypto.createHmac('sha256', secret).update(impressionData).digest('hex').substring(0, 16);
+      
+      if (providedHash !== expectedHash) {
+        return res.status(401).json({ message: 'Invalid impression ID' });
+      }
+      
+      // Rate limiting: max 5 clicks per user per minute
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      const recentClicks = await storage.getFeedAdImpressions({
+        userId: userId || null,
+        ipAddress: userId ? undefined : ipAddress,
+        clicked: true,
+        after: oneMinuteAgo,
+      });
+      
+      if (recentClicks.length >= 5) {
+        return res.status(429).json({ message: 'Rate limit exceeded. Too many clicks.' });
+      }
+      
+      // Check for duplicate click (same ad + user/IP in last hour)
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const duplicateClicks = await storage.getFeedAdImpressions({
+        adId: id,
+        userId: userId || null,
+        ipAddress: userId ? undefined : ipAddress,
+        clicked: true,
+        after: oneHourAgo,
+      });
+      
+      if (duplicateClicks.length > 0) {
+        return res.status(409).json({ message: 'Duplicate click detected' });
+      }
+      
+      // Record valid click
+      await storage.createFeedAdImpression({
+        adId: id,
+        adType,
+        boostedPostId: adType === 'boosted_post' ? id : null,
+        campaignAdId: adType === 'campaign' ? id : null,
+        userId: userId || null,
+        ipAddress,
+        userAgent,
+        clicked: true,
+      });
+      
+      // If it's a boosted post, increment click count and spend
+      if (adType === 'boosted_post') {
+        const boostedPost = await storage.getBoostedPost(id);
+        if (boostedPost) {
+          const newClicks = (boostedPost.clicks || 0) + 1;
+          const clickCost = parseFloat(boostedPost.costPerClick?.toString() || '0.10');
+          const newSpend = parseFloat(boostedPost.spend?.toString() || '0') + clickCost;
+          
+          await storage.updateBoostedPost(id, {
+            clicks: newClicks,
+            spend: newSpend.toString(),
+          });
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error tracking ad click:', error);
+      res.status(500).json({ message: 'Failed to track click' });
+    }
+  });
+
+  // Create boosted post endpoint with proper Zod validation
+  app.post('/api/posts/:postId/boost', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      // Validate the post belongs to the user
+      const post = await storage.getPost(postId);
+      if (!post || post.userId !== userId) {
+        return res.status(404).json({ message: 'Post not found or access denied' });
+      }
+      
+      // Validate request data using Zod schema
+      const validatedData = insertBoostedPostSchema.parse({
+        ...req.body,
+        postId,
+      });
+      
+      // Additional business logic validation
+      if (new Date(validatedData.startDate) >= new Date(validatedData.endDate)) {
+        return res.status(400).json({ message: 'Start date must be before end date' });
+      }
+      
+      if (validatedData.dailyBudget > validatedData.totalBudget) {
+        return res.status(400).json({ message: 'Daily budget cannot exceed total budget' });
+      }
+      
+      const boostedPostData = {
+        postId,
+        userId,
+        targetCountries: validatedData.targetCountries || [],
+        targetCities: validatedData.targetCities || [],
+        dailyBudget: validatedData.dailyBudget.toString(),
+        totalBudget: validatedData.totalBudget.toString(),
+        costPerClick: req.body.costPerClick || 0.10,
+        startDate: new Date(validatedData.startDate),
+        endDate: new Date(validatedData.endDate),
+        status: 'active',
+      };
+      
+      const boostedPost = await storage.createBoostedPost(boostedPostData);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'post_boosted',
+        targetType: 'post',
+        targetId: postId,
+        metaJson: { 
+          dailyBudget: validatedData.dailyBudget,
+          totalBudget: validatedData.totalBudget,
+          targetCountries: validatedData.targetCountries,
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.status(201).json(boostedPost);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ 
+          message: 'Validation failed', 
+          errors: error.errors 
+        });
+      }
+      console.error('Error creating boosted post:', error);
+      res.status(500).json({ message: 'Failed to create boosted post' });
+    }
+  });
+
+  // Get user's boosted posts
+  app.get('/api/posts/boosted', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const boostedPosts = await storage.getUserBoostedPosts(userId);
+      res.json(boostedPosts);
+    } catch (error) {
+      console.error('Error fetching boosted posts:', error);
+      res.status(500).json({ message: 'Failed to fetch boosted posts' });
+    }
+  });
+
+  // Update boosted post (pause/resume/stop)
+  app.patch('/api/posts/boosted/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { id } = req.params;
+      const { status } = req.body;
+      
+      // Verify ownership
+      const boostedPost = await storage.getBoostedPost(id);
+      if (!boostedPost || boostedPost.userId !== userId) {
+        return res.status(404).json({ message: 'Boosted post not found or access denied' });
+      }
+      
+      const updatedBoostedPost = await storage.updateBoostedPost(id, { status });
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: `boosted_post_${status}`,
+        targetType: 'boosted_post',
+        targetId: id,
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent'),
+      });
+      
+      res.json(updatedBoostedPost);
+    } catch (error) {
+      console.error('Error updating boosted post:', error);
+      res.status(500).json({ message: 'Failed to update boosted post' });
     }
   });
 

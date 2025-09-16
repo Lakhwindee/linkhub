@@ -12,6 +12,8 @@ import {
   ads,
   adReservations,
   adSubmissions,
+  boostedPosts,
+  feedAdImpressions,
   wallets,
   payouts,
   subscriptions,
@@ -42,6 +44,8 @@ import {
   type Ad,
   type AdReservation,
   type AdSubmission,
+  type BoostedPost,
+  type FeedAdImpression,
   type Wallet,
   type Payout,
   type Subscription,
@@ -62,6 +66,8 @@ import {
   insertStayReviewSchema,
   insertPersonalHostSchema,
   insertHostBookingSchema,
+  insertBoostedPostSchema,
+  insertFeedAdImpressionSchema,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, sql, count, like, ilike, gt } from "drizzle-orm";
@@ -99,6 +105,7 @@ export interface IStorage {
   
   // Posts and Feed
   createPost(data: { userId: string; body?: string; mediaType?: string; mediaUrls?: string[]; country?: string; city?: string; visibility?: string }): Promise<Post>;
+  getPost(id: string): Promise<Post | undefined>;
   getFeedPosts(tab: 'global' | 'country' | 'following', userId?: string, country?: string, limit?: number): Promise<Post[]>;
   getUserPosts(userId: string, limit?: number): Promise<Post[]>;
   
@@ -133,6 +140,18 @@ export interface IStorage {
   }): Promise<AdSubmission>;
   getAdSubmissions(filters?: any): Promise<AdSubmission[]>;
   updateAdSubmissionStatus(id: string, status: string, reviewedBy: string, reviewNotes?: string): Promise<AdSubmission>;
+  
+  // Boosted Posts for Feed Ads
+  createBoostedPost(data: any): Promise<BoostedPost>;
+  getBoostedPosts(filters?: any): Promise<BoostedPost[]>;
+  getUserBoostedPosts(userId: string): Promise<BoostedPost[]>;
+  updateBoostedPost(id: string, data: Partial<BoostedPost>): Promise<BoostedPost>;
+  getBoostedPost(id: string): Promise<BoostedPost | undefined>;
+  
+  // Feed Ad Impressions & Analytics
+  createFeedAdImpression(data: any): Promise<FeedAdImpression>;
+  getFeedAdImpressions(filters?: any): Promise<FeedAdImpression[]>;
+  getFeedAdsForUser(userId?: string, ipAddress?: string, country?: string): Promise<any[]>;
   
   // Wallet and Payouts
   createWallet(userId: string): Promise<Wallet>;
@@ -1420,6 +1439,11 @@ export class DatabaseStorage implements IStorage {
     return post;
   }
 
+  async getPost(id: string): Promise<Post | undefined> {
+    const [post] = await db.select().from(posts).where(eq(posts.id, id));
+    return post;
+  }
+
   async getFeedPosts(tab: 'global' | 'country' | 'following', userId?: string, country?: string, limit = 20): Promise<Post[]> {
     if (tab === 'following' && userId) {
       // Get posts from users that the current user follows
@@ -1737,6 +1761,196 @@ export class DatabaseStorage implements IStorage {
       .where(eq(adSubmissions.id, id))
       .returning();
     return submission;
+  }
+
+  // Boosted Posts for Feed Ads
+  async createBoostedPost(data: any): Promise<BoostedPost> {
+    const [boostedPost] = await db
+      .insert(boostedPosts)
+      .values(data)
+      .returning();
+    return boostedPost;
+  }
+
+  async getBoostedPosts(filters?: any): Promise<BoostedPost[]> {
+    let query = db.select().from(boostedPosts);
+    
+    if (filters?.status) {
+      query = query.where(eq(boostedPosts.status, filters.status));
+    }
+    
+    return await query
+      .orderBy(desc(boostedPosts.createdAt))
+      .limit(filters?.limit || 20);
+  }
+
+  async getUserBoostedPosts(userId: string): Promise<BoostedPost[]> {
+    return await db
+      .select()
+      .from(boostedPosts)
+      .where(eq(boostedPosts.userId, userId))
+      .orderBy(desc(boostedPosts.createdAt));
+  }
+
+  async updateBoostedPost(id: string, data: Partial<BoostedPost>): Promise<BoostedPost> {
+    const [boostedPost] = await db
+      .update(boostedPosts)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(boostedPosts.id, id))
+      .returning();
+    return boostedPost;
+  }
+
+  async getBoostedPost(id: string): Promise<BoostedPost | undefined> {
+    const [boostedPost] = await db
+      .select()
+      .from(boostedPosts)
+      .where(eq(boostedPosts.id, id));
+    return boostedPost;
+  }
+
+  // Feed Ad Impressions & Analytics
+  async createFeedAdImpression(data: any): Promise<FeedAdImpression> {
+    const [impression] = await db
+      .insert(feedAdImpressions)
+      .values(data)
+      .returning();
+    return impression;
+  }
+
+  async getFeedAdImpressions(filters?: any): Promise<FeedAdImpression[]> {
+    let query = db.select().from(feedAdImpressions);
+    let conditions = [];
+    
+    if (filters?.adType) {
+      conditions.push(eq(feedAdImpressions.adType, filters.adType));
+    }
+    
+    if (filters?.adId) {
+      conditions.push(eq(feedAdImpressions.adId, filters.adId));
+    }
+    
+    if (filters?.userId !== undefined) {
+      if (filters.userId === null) {
+        conditions.push(sql`${feedAdImpressions.userId} IS NULL`);
+      } else {
+        conditions.push(eq(feedAdImpressions.userId, filters.userId));
+      }
+    }
+    
+    if (filters?.ipAddress) {
+      conditions.push(eq(feedAdImpressions.ipAddress, filters.ipAddress));
+    }
+    
+    if (filters?.clicked !== undefined) {
+      conditions.push(eq(feedAdImpressions.clicked, filters.clicked));
+    }
+    
+    if (filters?.after) {
+      conditions.push(gt(feedAdImpressions.createdAt, filters.after));
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query
+      .orderBy(desc(feedAdImpressions.createdAt))
+      .limit(filters?.limit || 100);
+  }
+
+  async getFeedAdsForUser(userId?: string, ipAddress?: string, country?: string): Promise<any[]> {
+    // Get active boosted posts with post data
+    const boostedPostsQuery = db
+      .select({
+        id: boostedPosts.id,
+        adType: sql<string>`'boosted_post'`,
+        postId: boostedPosts.postId,
+        userId: boostedPosts.userId,
+        targetCountries: boostedPosts.targetCountries,
+        targetCities: boostedPosts.targetCities,
+        costPerClick: boostedPosts.costPerClick,
+        createdAt: boostedPosts.createdAt,
+        // Join with posts table to get post content
+        postBody: posts.body,
+        postMediaType: posts.mediaType,
+        postMediaUrls: posts.mediaUrls,
+        postCountry: posts.country,
+        postCity: posts.city,
+        // Join with users table to get user info
+        userDisplayName: users.displayName,
+        userUsername: users.username,
+        userProfileImageUrl: users.profileImageUrl,
+      })
+      .from(boostedPosts)
+      .innerJoin(posts, eq(boostedPosts.postId, posts.id))
+      .innerJoin(users, eq(boostedPosts.userId, users.id))
+      .where(
+        and(
+          eq(boostedPosts.status, 'active'),
+          // Check if current time is within the campaign period
+          sql`${boostedPosts.startDate} <= NOW()`,
+          sql`${boostedPosts.endDate} >= NOW()`
+        )
+      )
+      .orderBy(desc(boostedPosts.createdAt))
+      .limit(5);
+
+    // Get active campaign ads that might be shown in feed
+    const campaignAdsQuery = db
+      .select({
+        id: ads.id,
+        adType: sql<string>`'campaign'`,
+        brand: ads.brand,
+        title: ads.title,
+        briefMd: ads.briefMd,
+        countries: ads.countries,
+        adImageUrl: ads.adImageUrl,
+        payoutAmount: ads.payoutAmount,
+        createdAt: ads.createdAt,
+      })
+      .from(ads)
+      .where(
+        and(
+          eq(ads.status, 'active'),
+          // Check if campaign is still active
+          sql`${ads.deadlineAt} >= NOW()`
+        )
+      )
+      .orderBy(desc(ads.createdAt))
+      .limit(3);
+
+    // Execute both queries
+    const [boostedPostsData, campaignAdsData] = await Promise.all([
+      boostedPostsQuery,
+      campaignAdsQuery
+    ]);
+
+    // Combine and filter by targeting
+    const allAds = [
+      ...boostedPostsData.map(bp => ({
+        ...bp,
+        adType: 'boosted_post',
+        // Filter by target countries if specified
+        isTargeted: !bp.targetCountries?.length || 
+                   (country && bp.targetCountries?.includes(country))
+      })),
+      ...campaignAdsData.map(ca => ({
+        ...ca,
+        adType: 'campaign', 
+        // Filter by target countries if specified
+        isTargeted: !ca.countries?.length ||
+                   (country && ca.countries?.includes(country))
+      }))
+    ];
+
+    // Filter to only show targeted ads and randomize order
+    const targetedAds = allAds
+      .filter(ad => ad.isTargeted)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3); // Max 3 ads in feed
+
+    return targetedAds;
   }
 
   // Wallet and Payouts
