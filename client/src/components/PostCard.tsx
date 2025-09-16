@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { FollowButton } from "@/components/FollowButton";
+import { BoostPostModal } from "@/components/BoostPostModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,7 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users, ThumbsDown, Send, Instagram, Twitter, Facebook, Copy } from "lucide-react";
+import { MapPin, MoreHorizontal, Flag, Heart, MessageCircle, Share, Eye, EyeOff, Users, ThumbsDown, Send, Instagram, Twitter, Facebook, Copy, TrendingUp } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
 import type { Post } from "@shared/schema";
@@ -19,11 +21,13 @@ interface PostCardProps {
 }
 
 export function PostCard({ post, compact = false }: PostCardProps) {
+  const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 50) + 5);
   const [dislikeCount, setDislikeCount] = useState(Math.floor(Math.random() * 5));
   const [commentCount, setCommentCount] = useState(Math.floor(Math.random() * 20) + 2);
+  const [showBoostModal, setShowBoostModal] = useState(false);
   const [comments, setComments] = useState<{id: string, author: string, text: string, time: Date}[]>([
     {
       id: '1',
@@ -38,6 +42,9 @@ export function PostCard({ post, compact = false }: PostCardProps) {
       time: new Date(Date.now() - 5 * 60 * 60 * 1000)
     }
   ]);
+
+  // Check if current user owns this post
+  const isOwnPost = user?.id === post.userId;
   const [newComment, setNewComment] = useState('');
   const [showComments, setShowComments] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -362,6 +369,19 @@ export function PostCard({ post, compact = false }: PostCardProps) {
                   </div>
                 </DialogContent>
               </Dialog>
+
+              {/* Boost Post Button - Only for post owner */}
+              {isOwnPost && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowBoostModal(true)}
+                  className="flex items-center space-x-1 p-1 hover:bg-transparent text-muted-foreground hover:text-orange-500" 
+                  data-testid={`button-boost-post-${post.id}`}
+                >
+                  <TrendingUp className="w-5 h-5" />
+                </Button>
+              )}
             </div>
           </div>
 
@@ -440,5 +460,12 @@ export function PostCard({ post, compact = false }: PostCardProps) {
         </div>
       </CardContent>
     </Card>
+    
+    {/* Boost Post Modal */}
+    <BoostPostModal 
+      post={post}
+      open={showBoostModal}
+      onOpenChange={setShowBoostModal}
+    />
   );
 }
