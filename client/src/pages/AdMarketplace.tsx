@@ -378,22 +378,41 @@ function YouTubeCreatorSection({ user }: { user: any }) {
             {isYouTubeVerified ? (
               <>
                 {/* Verified Status */}
-                <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-white" />
+                <div className="p-4 bg-green-50 rounded-lg border border-green-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                        <CheckCircle className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-green-800">Channel Verified ✓</p>
+                        <p className="text-sm text-green-600">Earning campaigns available</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-green-800">Channel Verified ✓</p>
-                      <p className="text-sm text-green-600">Earning campaigns available</p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-800">
+                        {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
+                      </p>
+                      <p className="text-sm text-green-600">subscribers</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-green-800">
-                      {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
-                    </p>
-                    <p className="text-sm text-green-600">subscribers</p>
-                  </div>
+                  
+                  {/* Channel Link */}
+                  {(userData.youtubeUrl || youtubeUrl) && (
+                    <div className="pt-2 border-t border-green-200">
+                      <a 
+                        href={userData.youtubeUrl || youtubeUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-green-700 hover:text-green-800 hover:underline transition-colors"
+                      >
+                        <Youtube className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {userData.youtubeTitle || pendingChannel?.title || 'View YouTube Channel'}
+                        </span>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Enhanced YouTube Tier Display */}
@@ -431,22 +450,41 @@ function YouTubeCreatorSection({ user }: { user: any }) {
             ) : (
               <>
                 {/* Connected but Not Verified */}
-                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <AlertCircle className="w-6 h-6 text-white" />
+                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
+                        <AlertCircle className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-yellow-800">Channel Not Verified</p>
+                        <p className="text-sm text-yellow-600">Verification required to earn money</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-yellow-800">Channel Not Verified</p>
-                      <p className="text-sm text-yellow-600">Verification required to earn money</p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-yellow-800">
+                        {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
+                      </p>
+                      <p className="text-sm text-yellow-600">subscribers</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-yellow-800">
-                      {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
-                    </p>
-                    <p className="text-sm text-yellow-600">subscribers</p>
-                  </div>
+                  
+                  {/* Channel Link */}
+                  {(userData.youtubeUrl || youtubeUrl) && (
+                    <div className="pt-2 border-t border-yellow-200">
+                      <a 
+                        href={userData.youtubeUrl || youtubeUrl}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-yellow-700 hover:text-yellow-800 hover:underline transition-colors"
+                      >
+                        <Youtube className="w-4 h-4" />
+                        <span className="text-sm font-medium">
+                          {userData.youtubeTitle || pendingChannel?.title || 'View YouTube Channel'}
+                        </span>
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* Enhanced Tier Display for Non-Verified */}
