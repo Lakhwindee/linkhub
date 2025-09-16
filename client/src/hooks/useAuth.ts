@@ -23,87 +23,35 @@ export function useAuth() {
   const checkAuth = async () => {
     console.log('🔍 useAuth checking authentication state...');
     
-    // Only clear old localStorage data that's actually corrupted or invalid
-    const currentUser = localStorage.getItem('demo_user');
+    // Clear any old demo data that might be lingering
+    localStorage.removeItem('demo_user');
+    localStorage.removeItem('demo_session');
     
-    // Only clear if data is corrupted, don't clear valid demo sessions
-    if (currentUser) {
-      try {
-        const userData = JSON.parse(currentUser);
-        // Only clear if the data is malformed or corrupted, not just because it's not admin
-        if (!userData.id || !userData.email) {
-          console.log('🧹 Clearing corrupted demo user data');
-          localStorage.removeItem('demo_user');
-          localStorage.removeItem('demo_session');
-          document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        }
-      } catch (e) {
-        console.log('🧹 Clearing corrupted demo user data');
-        localStorage.removeItem('demo_user');
-        localStorage.removeItem('demo_session');
-        document.cookie = 'session_id=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-      }
-    }
-    
-    // Check for real authentication via session
     try {
-      // Prepare headers for authentication
-      const sessionId = localStorage.getItem('demo_session');
-      const headers: HeadersInit = {};
-      
-      if (sessionId) {
-        headers['X-Demo-Session'] = sessionId;
-        headers['Authorization'] = `Bearer ${sessionId}`;
-      }
-      
+      // Check for Replit authentication via session
       const response = await fetch('/api/auth/user', {
-        credentials: 'include',
-        headers
-      }).catch((error) => {
-        console.log('Network error during auth check:', error);
-        return null;
+        credentials: 'include'
       });
       
-      if (response && response.ok) {
-        try {
-          const userData = await response.json();
-          console.log('✅ Found authenticated user:', userData);
-          setUser(userData);
-          setIsAuthenticated(true);
-          setIsLoading(false);
-          return;
-        } catch (jsonError) {
-          console.log('Failed to parse response JSON:', jsonError);
-        }
-      }
-    } catch (error) {
-      console.log('No authenticated session found:', error);
-    }
-    
-    // Fallback: Check localStorage for demo session
-    try {
-      const demoUser = localStorage.getItem('demo_user');
-      if (demoUser) {
-        const userData = JSON.parse(demoUser);
-        console.log('✅ Found demo user in localStorage:', userData);
+      if (response.ok) {
+        const userData = await response.json();
+        console.log('✅ Found authenticated user:', userData);
         setUser(userData);
         setIsAuthenticated(true);
         setIsLoading(false);
         return;
+      } else {
+        console.log('No authenticated session found:', response.status);
       }
     } catch (error) {
-      console.log('Failed to parse demo user from localStorage:', error);
-      localStorage.removeItem('demo_user');
-      localStorage.removeItem('demo_session');
+      console.log('Auth check failed:', error);
     }
     
-    // No authentication found - show demo login instructions
+    // No authentication found
     console.log('No authentication - setting unauthenticated');
-    console.log('💡 Demo Login Available - Use ID: ADMIN_001, Password: admin123');
     setUser(null);
     setIsAuthenticated(false);
     setIsLoading(false);
-    
   };
 
   useEffect(() => {

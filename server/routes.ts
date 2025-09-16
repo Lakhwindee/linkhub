@@ -9,7 +9,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
-import { isCountryTargeted, getDemoUserCountry, logGeoTargeting } from "@shared/countryUtils";
+import { isCountryTargeted, logGeoTargeting } from "@shared/countryUtils";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -134,8 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Auth routes
   app.post('/api/auth/logout', async (req: any, res) => {
-    // Clear demo session cookie
-    res.clearCookie('session_id', { path: '/' });
+    // Clear session cookies
     res.clearCookie('connect.sid', { path: '/' });
     
     req.session.destroy((err: any) => {
@@ -164,48 +163,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const resetToken = generateResetToken();
       const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
       
-      // Check if it's a demo user email
-      const demoUserEmails = {
-        'admin_001@hublink.com': 'ADMIN_001',
-        'user_001@hublink.com': 'USER_001', 
-        'creator_001@hublink.com': 'CREATOR_001',
-        'free_001@hublink.com': 'FREE_001',
-        'publisher_001@hublink.com': 'PUBLISHER_001'
-      };
-      
-      const demoUserId = demoUserEmails[email.toLowerCase()];
-      
-      if (demoUserId) {
-        // Handle demo user password reset
-        console.log('🎭 Demo user password reset:', { email, demoUserId });
+      // Handle regular user password reset
+      try {
+        const user = await storage.getUserByEmail(email);
         
-        // Store reset token in memory for demo users (since they're not in DB)
-        global.demoResetTokens = global.demoResetTokens || {};
-        global.demoResetTokens[resetToken] = {
-          userId: demoUserId,
-          email: email,
-          expiry: tokenExpiry
-        };
-        
-        // Send email for demo user
-        const emailResult = await sendPasswordResetEmail(email, resetToken, 'demo');
-        
-        if (emailResult.success) {
-          console.log('✅ Demo user password reset email sent');
-          res.json({ 
-            message: 'Password reset email sent successfully',
-            type: 'demo'
-          });
-        } else {
-          console.error('❌ Failed to send demo user reset email:', emailResult.error);
-          res.status(500).json({ message: 'Failed to send reset email' });
-        }
-      } else {
-        // Handle regular user password reset
-        try {
-          const user = await storage.getUserByEmail(email);
-          
-          if (!user) {
+        if (!user) {
             // Don't reveal if user exists or not for security
             return res.json({ 
               message: 'If an account with that email exists, a password reset link has been sent',
@@ -232,10 +194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error('❌ Failed to send regular user reset email:', emailResult.error);
             res.status(500).json({ message: 'Failed to send reset email' });
           }
-        } catch (error) {
-          console.error('❌ Database error during password reset:', error);
-          res.status(500).json({ message: 'Failed to process password reset' });
-        }
+      } catch (error) {
+        console.error('❌ Database error during password reset:', error);
+        res.status(500).json({ message: 'Failed to process password reset' });
       }
     } catch (error) {
       console.error('❌ Password reset error:', error);
@@ -253,54 +214,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('🔐 Password reset attempt with token:', token.substring(0, 8) + '...');
       
-      // Check demo user tokens first
-      global.demoResetTokens = global.demoResetTokens || {};
-      const demoToken = global.demoResetTokens[token];
-      
-      if (demoToken) {
-        // Check token expiry
-        if (new Date() > demoToken.expiry) {
-          delete global.demoResetTokens[token];
-          return res.status(400).json({ message: 'Reset token has expired' });
-        }
+      // Handle regular user password reset
+      try {
+        const user = await storage.getUserByResetToken(token);
         
-        // Update demo user password
-        const demoUsers = {
-          'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
-          'USER_001': { password: 'user123', role: 'user', plan: 'premium' },
-          'CREATOR_001': { password: 'creator123', role: 'creator', plan: 'premium' },
-          'FREE_001': { password: 'free123', role: 'free_creator', plan: 'free' },
-          'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
-        };
-        
-        // Update demo user password (in-memory for demo)
-        if (demoUsers[demoToken.userId as keyof typeof demoUsers]) {
-          demoUsers[demoToken.userId as keyof typeof demoUsers].password = newPassword;
-          console.log('✅ Demo user password updated:', demoToken.userId);
-          
-          // Clean up token
-          delete global.demoResetTokens[token];
-          
-          res.json({ 
-            message: 'Password updated successfully',
-            type: 'demo',
-            userId: demoToken.userId
-          });
-        } else {
-          res.status(400).json({ message: 'Invalid demo user' });
-        }
-      } else {
-        // Handle regular user password reset
-        try {
-          const user = await storage.getUserByResetToken(token);
-          
-          if (!user || !user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+        if (!user || !user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
             return res.status(400).json({ message: 'Invalid or expired reset token' });
           }
           
+          // Hash password before storing
+          const bcrypt = await import('bcrypt');
+          const hashedPassword = await bcrypt.hash(newPassword, 12);
+          
           // Update user password and clear reset token
           await storage.updateUser(user.id, {
-            password: newPassword, // Note: In real app, this should be hashed
+            password: hashedPassword,
             resetToken: null,
             resetTokenExpiry: null
           });
@@ -311,10 +239,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: 'Password updated successfully',
             type: 'regular'
           });
-        } catch (error) {
-          console.error('❌ Database error during password reset:', error);
-          res.status(500).json({ message: 'Failed to reset password' });
-        }
+      } catch (error) {
+        console.error('❌ Database error during password reset:', error);
+        res.status(500).json({ message: 'Failed to reset password' });
       }
     } catch (error) {
       console.error('❌ Password reset confirmation error:', error);
@@ -322,91 +249,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Demo login endpoint for testing
-  app.post('/api/demo-login', async (req: any, res) => {
-    try {
-      const { id, password } = req.body;
-      
-      console.log('🔍 Demo login attempt:', { id, password, requestBody: req.body });
-      
-      // Validate demo credentials
-      const demoUsers = {
-        'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
-        'USER_001': { password: 'user123', role: 'user', plan: 'premium' },
-        'CREATOR_001': { password: 'creator123', role: 'creator', plan: 'premium' },
-        'FREE_001': { password: 'free123', role: 'free_creator', plan: 'free' },
-        'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
-      };
-      
-      const foundUser = demoUsers[id as keyof typeof demoUsers];
-      console.log('🔍 User lookup result:', { foundUser, expectedPassword: foundUser?.password });
-      
-      if (!foundUser || foundUser.password !== password) {
-        console.log('❌ Credential validation failed:', { 
-          userExists: !!foundUser, 
-          passwordMatch: foundUser?.password === password 
-        });
-        return res.status(401).json({ message: 'Invalid credentials' });
-      }
-      
-      const userInfo = demoUsers[id as keyof typeof demoUsers];
-      
-      // Create demo user object with proper country assignment
-      const demoCountries: Record<string, string> = {
-        'ADMIN_001': 'United Kingdom',
-        'USER_001': 'United States', 
-        'CREATOR_001': 'Canada',
-        'FREE_001': 'Australia',
-        'PUBLISHER_001': 'Germany'
-      };
-      
-      const demoUser = {
-        id: `demo-${id.toLowerCase()}`,
-        email: `${id.toLowerCase()}@hublink.com`,
-        firstName: userInfo.role === 'admin' ? 'System' : userInfo.role === 'free_creator' ? 'Free' : 'Demo',
-        lastName: userInfo.role === 'admin' ? 'Administrator' : userInfo.role === 'creator' ? 'Creator' : userInfo.role === 'free_creator' ? 'Creator' : 'Publisher',
-        displayName: userInfo.role === 'admin' ? 'System Administrator' : userInfo.role === 'creator' ? 'Demo Creator' : userInfo.role === 'free_creator' ? 'Free Creator' : 'Demo Publisher',
-        role: userInfo.role,
-        plan: userInfo.plan,
-        bio: null,
-        country: demoCountries[id] || 'United Kingdom',
-        city: 'London',
-        verificationStatus: 'verified',
-        youtubeTier: userInfo.role === 'admin' ? 5 : userInfo.role === 'creator' ? 3 : userInfo.role === 'free_creator' ? 1 : 4,
-        youtubeVerified: true,
-        youtubeChannelId: `demo-channel-${id.toLowerCase()}`,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      
-      // Set session for demo user
-      req.session.userId = demoUser.id;
-      req.session.user = demoUser;
-      
-      // Create mock user object for passport
-      req.user = {
-        claims: {
-          sub: demoUser.id,
-          email: demoUser.email,
-          first_name: demoUser.firstName,
-          last_name: demoUser.lastName
-        }
-      };
-      
-      console.log('✅ Demo login successful for:', demoUser.id);
-      
-      res.json({ 
-        message: 'Login successful',
-        user: demoUser
-      });
-    } catch (error) {
-      console.error('Demo login error:', error);
-      res.status(500).json({ message: 'Login failed' });
-    }
-  });
-
-  // OTP Generation and Verification Endpoints
-  const otpStore = new Map(); // Simple in-memory store for demo
 
   // Function to send OTP email using existing email infrastructure
   async function sendOTPEmail(email: string, otp: string) {
@@ -426,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         </div>
       `;
 
-      console.log(`📧 Email OTP sent to ${email}: ${otp}`);
+      console.log(`📧 OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
       console.log(`🔧 Using existing SMTP: smtp.hublink.com`);
       
       // In production, this would use the configured SMTP settings
@@ -465,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send SMS OTP (placeholder - would integrate with SMS service)
       if (type === 'sms' || type === 'both') {
         otpStore.set(`sms:${phone}`, { otp: smsOTP, expiresAt });
-        console.log(`📱 SMS OTP for ${phone}: ${smsOTP}`);
+        console.log(`📱 SMS OTP sent to ${phone?.replace(/(.{3}).*(.{2})/, '$1***$2')}`);
         smsSent = true; // Simulate SMS sent
       }
 
@@ -513,12 +355,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         otpStore.set(`email:${email}`, { otp: emailOTP, expiresAt });
         const emailResult = await sendOTPEmail(email, emailOTP);
         emailSent = emailResult.success;
-        console.log(`📧 Resent Email OTP using SMTP system`);
+        console.log(`📧 Email OTP resent successfully`);
       }
       
       if (type === 'sms' || type === 'both') {
         otpStore.set(`sms:${phone}`, { otp: smsOTP, expiresAt });
-        console.log(`📱 Resent SMS OTP for ${phone}: ${smsOTP}`);
+        console.log(`📱 SMS OTP resent successfully`);
         smsSent = true;
       }
 
@@ -1502,7 +1344,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...data
       });
       
-      // Skip audit log for demo users to avoid foreign key constraints
+      // Skip audit log on error to avoid foreign key constraints
       const isDemoUser = userId === 'demo-user-1' || userId?.startsWith('test-user-');
       if (!isDemoUser) {
         await storage.createAuditLog({
@@ -1547,7 +1389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If accepted, create follow relationship and conversation
       if (status === 'accepted') {
-        // Skip follow creation for demo users to avoid foreign key constraints
+        // Skip follow creation on error to avoid foreign key constraints
         const isDemoRequest = request.fromUserId?.startsWith('test-user-') || 
                              request.toUserId?.startsWith('test-user-') ||
                              request.fromUserId === 'demo-user-1' ||
@@ -1565,7 +1407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Skip audit log for demo users to avoid foreign key constraints  
+      // Skip audit log on error to avoid foreign key constraints  
       const isDemoUser = userId === 'demo-user-1' || userId?.startsWith('test-user-');
       if (!isDemoUser) {
         await storage.createAuditLog({
