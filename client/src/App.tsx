@@ -25,6 +25,7 @@ import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
 import MyBookings from "@/pages/MyBookings";
 import PersonalHosts from "@/pages/PersonalHosts";
+import Explore from "@/pages/Explore";
 import UserProfile from "@/pages/UserProfile";
 import Map from "@/pages/Map";
 import PaymentPage from "@/pages/PaymentPage";
@@ -71,20 +72,21 @@ function Router() {
           ) : (
             <>
               <Route path="/" component={() => {
-                // Publishers go to stays page, others go to dashboard
+                // Publishers go to explore page, others go to dashboard
                 if (user?.role === 'publisher') {
-                  return <Stays />;
+                  return <Explore />;
                 }
                 return <Dashboard />;
               }} />
               <Route path="/dashboard" component={() => {
-                // Publishers shouldn't access dashboard - redirect to stays
+                // Publishers shouldn't access dashboard - redirect to explore
                 if (user?.role === 'publisher') {
-                  return <Stays />;
+                  return <Explore />;
                 }
                 return <Dashboard />;
               }} />
               <Route path="/discover" component={DiscoverTravelers} />
+              <Route path="/explore" component={Explore} />
               <Route path="/stays" component={Stays} />
               <Route path="/trips" component={Trips} />
               <Route path="/tour-packages" component={TourPackages} />

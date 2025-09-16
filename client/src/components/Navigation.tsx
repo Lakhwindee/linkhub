@@ -93,9 +93,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   } else if (user.role === 'publisher') {
     // Publisher role sees business management menus
     navItems = [
-      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
-      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
+      { href: "/explore", icon: Globe, label: "Explore", testId: "nav-explore" },
       { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
       { href: "/billing", icon: CreditCard, label: "Finance", testId: "nav-finance" },
     ];
@@ -105,10 +103,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     navItems = [
       { href: "/dashboard", icon: TrendingUp, label: "Dashboard", testId: "nav-dashboard" },
       { href: "/discover", icon: Radar, label: "Discover", testId: "nav-discover" },
-      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+      { href: "/explore", icon: Globe, label: "Explore", testId: "nav-explore" },
       { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
-      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
-      { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
