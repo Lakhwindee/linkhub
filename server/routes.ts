@@ -607,6 +607,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check authentication status - returns current user or 401
+  app.get('/api/auth/user', async (req: any, res) => {
+    try {
+      const session = req.session;
+      
+      if (!session || !session.userId || !session.user) {
+        console.log('❌ Authentication failed - no authenticated session found');
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+      
+      console.log('✅ User authenticated via session:', session.user);
+      res.json(session.user);
+    } catch (error) {
+      console.error('❌ Auth check error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Function to send OTP email using actual email infrastructure
   async function sendOTPEmail(email: string, otp: string) {
     try {
