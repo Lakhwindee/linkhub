@@ -60,7 +60,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
   
   // For demo user, use demo logic. For real user, check if channel is connected (not necessarily verified)
-  const isYouTubeConnected = isDemoUser ? !demoDisconnected : (!!userData?.youtubeChannelId || !!pendingChannel?.channelId);
+  const isYouTubeConnected = isDemoUser ? !demoDisconnected : (!!userData?.youtubeChannelId || !!pendingChannel);
   const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
   const { toast } = useToast();
   const queryClient = useQueryClient();
