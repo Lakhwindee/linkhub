@@ -60,7 +60,7 @@ function Router() {
       <main className={isAuthenticated ? "pt-16" : ""}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
-          <Route path="/admin/:rest*" component={Admin} />
+          <Route path="/admin" component={Admin} />
           
           {!isAuthenticated ? (
             <>
