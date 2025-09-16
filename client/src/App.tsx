@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
@@ -31,6 +33,10 @@ import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
+
+// Initialize Stripe with a test key for demo purposes
+// In production, this would be loaded from environment variables
+const stripePromise = loadStripe('pk_test_51Hf6ZnKiG8GjZ0YhN2OU4ZqKwf9JhP8OjLnK6mN0fQ9nZ8G7cE1jRnT4fW3sA9wE2vB5dF7kL1nM0xY6pQ8oI3uN5tV00q9vZ8G7c');
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -112,12 +118,14 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
-      </ThemeProvider>
+      <Elements stripe={stripePromise}>
+        <ThemeProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </ThemeProvider>
+      </Elements>
     </QueryClientProvider>
   );
 }
