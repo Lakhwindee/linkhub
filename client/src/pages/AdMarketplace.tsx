@@ -1204,21 +1204,21 @@ export default function AdMarketplace() {
             {/* Available Campaigns */}
             <TabsContent value="campaigns" className="space-y-6">
               {/* User Tier Information */}
-              {userData?.youtubeVerified && (
+              {(user as any)?.youtubeVerified && (
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-blue-900">Your Creator Tier</h3>
                       <p className="text-sm text-blue-700">
-                        You can access campaigns from Tier 1 to Tier {userData?.youtubeTier || 1}
+                        You can access campaigns from Tier 1 to Tier {(user as any)?.youtubeTier || 1}
                       </p>
                     </div>
                     <div className="text-right">
                       <Badge className="bg-blue-600 text-white text-lg px-4 py-2">
-                        Tier {userData?.youtubeTier || 1}
+                        Tier {(user as any)?.youtubeTier || 1}
                       </Badge>
                       <p className="text-xs text-blue-600 mt-1">
-                        {(userData?.youtubeSubscribers || 0).toLocaleString()} subscribers
+                        {((user as any)?.youtubeSubscribers || 0).toLocaleString()} subscribers
                       </p>
                     </div>
                   </div>
