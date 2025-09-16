@@ -79,6 +79,9 @@ export interface IStorage {
   
   // Profile operations
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByResetToken(token: string): Promise<User | undefined>;
+  updateUser(id: string, data: Partial<User>): Promise<User>;
   updateUserProfile(id: string, data: Partial<User>): Promise<User>;
   updateStripeCustomerId(id: string, customerId: string): Promise<User>;
   updateUserStripeInfo(id: string, data: { customerId: string; subscriptionId: string }): Promise<User>;
@@ -1187,6 +1190,25 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async getUserByResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.resetToken, token));
+    return user;
+  }
+
+  async updateUser(id: string, data: Partial<User>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
     return user;
   }
 
