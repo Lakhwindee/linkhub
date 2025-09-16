@@ -47,10 +47,6 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     // Initialize from localStorage for demo user
     return isDemoUser ? localStorage.getItem('demo_youtube_disconnected') === 'true' : false;
   });
-  // For demo user, use demo logic. For real user, check if channel is connected (not necessarily verified)
-  const isYouTubeConnected = isDemoUser ? !demoDisconnected : !!userData?.youtubeChannelId;
-  const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
-  const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
   
   // Declare all state variables BEFORE useEffect to prevent hoisting issues
   const [isConnecting, setIsConnecting] = useState(false);
@@ -60,6 +56,12 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 30000 });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+  const [pendingChannel, setPendingChannel] = useState<{channelId?: string; title?: string; subscribers?: number; region?: string; tier?: number} | null>(null);
+  const [youtubeUrl, setYoutubeUrl] = useState(userData?.youtubeUrl || '');
+  
+  // For demo user, use demo logic. For real user, check if channel is connected (not necessarily verified)
+  const isYouTubeConnected = isDemoUser ? !demoDisconnected : (!!userData?.youtubeChannelId || !!pendingChannel?.channelId);
+  const isYouTubeVerified = isDemoUser ? !demoDisconnected : userData?.youtubeVerified;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -79,6 +81,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   }, [userData?.youtubeUrl, showCongratulations]);
 
+  // Clear pending channel data when userData gets updated to avoid stale fallbacks
+  useEffect(() => {
+    if (userData?.youtubeChannelId && pendingChannel?.channelId) {
+      console.log('Clearing pending channel data - userData now has channel info');
+      setPendingChannel(null);
+    }
+  }, [userData?.youtubeChannelId, pendingChannel?.channelId]);
+
   const syncYouTube = useMutation({
     mutationFn: async (url: string) => {
       console.log('syncYouTube API call with URL:', url); // Debug log
@@ -89,6 +99,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     },
     onSuccess: (data) => {
       setVerificationCode(data.verificationCode);
+      // Store channel data immediately for instant display
+      setPendingChannel({
+        channelId: data.channelId,
+        title: data.title,
+        subscribers: data.subscriberCount,
+        region: data.country || data.region,
+        tier: data.tier
+      });
       // For demo user, clear disconnect state when reconnecting
       if (isDemoUser) {
         setDemoDisconnected(false);
@@ -339,7 +357,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     }
   };
 
-  const tierInfo = getTierInfo(userData?.youtubeTier || 0);
+  const tierInfo = getTierInfo(userData?.youtubeTier || pendingChannel?.tier || 0);
 
   return (
     <Card>
@@ -372,7 +390,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-green-800">
-                      {userData.youtubeSubscribers?.toLocaleString() || '0'}
+                      {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-green-600">subscribers</p>
                   </div>
@@ -391,7 +409,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       </div>
                     </div>
                     <Badge variant="default" className="bg-blue-500 text-white text-sm px-3 py-1">
-                      Tier {userData.youtubeTier || 1}
+                      Tier {userData.youtubeTier || pendingChannel?.tier || 1}
                     </Badge>
                   </div>
                 </div>
@@ -425,7 +443,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-yellow-800">
-                      {userData.youtubeSubscribers?.toLocaleString() || '0'}
+                      {(userData.youtubeSubscribers || pendingChannel?.subscribers)?.toLocaleString() || '0'}
                     </p>
                     <p className="text-sm text-yellow-600">subscribers</p>
                   </div>
@@ -444,7 +462,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
                       </div>
                     </div>
                     <Badge variant="default" className="bg-blue-500 text-white text-sm px-3 py-1">
-                      Tier {userData.youtubeTier || 1}
+                      Tier {userData.youtubeTier || pendingChannel?.tier || 1}
                     </Badge>
                   </div>
                 </div>
