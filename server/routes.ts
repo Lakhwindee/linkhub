@@ -1086,6 +1086,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           firstName: userId === 'demo-user-1' ? 'Demo' : 'Unknown',
           lastName: userId === 'demo-user-1' ? 'User' : 'User',
           profileImageUrl: userId === 'demo-user-1' ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' : '',
+          username: userId === 'demo-user-1' ? 'demo_user' : `user_${userId.slice(-6)}`, // Add required username field
           displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
           country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
           city: userId === 'demo-user-1' ? 'London' : undefined,
