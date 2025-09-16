@@ -94,12 +94,14 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         setDemoDisconnected(false);
         localStorage.removeItem('demo_youtube_disconnected');
       }
-      // No toast popup - congratulations message shows in center screen instead
-      // Delay data refresh until after VFX completes to prevent re-render interference
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        refetchUser();
-      }, 3500); // After congratulations VFX ends
+      // Immediately invalidate cache and refetch user data
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      refetchUser();
+      // Show success toast
+      toast({
+        title: "YouTube Connected!",
+        description: `Channel linked successfully with ${data.subscriberCount?.toLocaleString()} subscribers (Tier ${data.tier})`,
+      });
     },
     onError: (error: any) => {
       console.log('Connection Failed:', error.message);
