@@ -74,16 +74,16 @@ function Router() {
           ) : (
             <>
               <Route path="/" component={() => {
-                // Publishers go to explore page, others go to dashboard
+                // Publishers go to stays page (flat structure), others go to dashboard
                 if (user?.role === 'publisher') {
-                  return <Explore />;
+                  return <Stays />;
                 }
                 return <Dashboard />;
               }} />
               <Route path="/dashboard" component={() => {
-                // Publishers shouldn't access dashboard - redirect to explore
+                // Publishers shouldn't access dashboard - redirect to stays
                 if (user?.role === 'publisher') {
-                  return <Explore />;
+                  return <Stays />;
                 }
                 return <Dashboard />;
               }} />

@@ -91,9 +91,11 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   if (isLoading || !user) {
     navItems = [];
   } else if (user.role === 'publisher') {
-    // Publisher role sees business management menus
+    // Publisher role sees flat navigation structure (original)
     navItems = [
-      { href: "/explore", icon: Globe, label: "Explore", testId: "nav-explore" },
+      { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
+      { href: "/tour-packages", icon: Package, label: "Tour Packages", testId: "nav-tour-packages" },
+      { href: "/personal-hosts", icon: UserCheck, label: "Personal Hosts", testId: "nav-personal-hosts" },
       { href: "/ads", icon: DollarSign, label: "Campaigns", testId: "nav-campaigns" },
       { href: "/billing", icon: CreditCard, label: "Finance", testId: "nav-finance" },
     ];
