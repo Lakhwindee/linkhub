@@ -9,6 +9,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
+import { isCountryTargeted, getDemoUserCountry, logGeoTargeting } from "@shared/countryUtils";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
@@ -176,7 +177,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const userInfo = demoUsers[id as keyof typeof demoUsers];
       
-      // Create demo user object
+      // Create demo user object with proper country assignment
+      const demoCountries: Record<string, string> = {
+        'ADMIN_001': 'United Kingdom',
+        'USER_001': 'United States', 
+        'CREATOR_001': 'Canada',
+        'FREE_001': 'Australia',
+        'PUBLISHER_001': 'Germany'
+      };
+      
       const demoUser = {
         id: `demo-${id.toLowerCase()}`,
         email: `${id.toLowerCase()}@hublink.com`,
@@ -186,9 +195,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: userInfo.role,
         plan: userInfo.plan,
         bio: null,
-        country: 'United Kingdom',
+        country: demoCountries[id] || 'United Kingdom',
         city: 'London',
         verificationStatus: 'verified',
+        youtubeTier: userInfo.role === 'admin' ? 5 : userInfo.role === 'creator' ? 3 : userInfo.role === 'free_creator' ? 1 : 4,
+        youtubeVerified: true,
+        youtubeChannelId: `demo-channel-${id.toLowerCase()}`,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -2594,15 +2606,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('📊 Total ads before filtering:', ads.length);
         
         // Filter ads based on user's YouTube tier - only show ads at or below their tier
-        const filteredAds = ads.filter(ad => {
+        const tierFilteredAds = ads.filter(ad => {
           const adTier = ad.tierLevel || 1;
           const canAccess = adTier <= userTier;
           console.log(`📋 Demo: Ad "${ad.title}" (Tier ${adTier}) - User can access: ${canAccess}`);
           return canAccess;
         });
         
-        console.log('✅ Demo filtered ads count:', filteredAds.length);
-        return res.json(filteredAds);
+        // Apply geo-targeting filter with proper normalization
+        const userCountry = getDemoUserCountry(user, req);
+        console.log(`🌍 Demo user country: ${userCountry || 'Not set'}`);
+        
+        const geoFilteredAds = tierFilteredAds.filter(ad => {
+          // Global campaigns (empty or null countries array) - show to everyone
+          if (!ad.countries || ad.countries.length === 0) {
+            logGeoTargeting(ad.title || 'Untitled', [], userCountry, true);
+            return true;
+          }
+          
+          // Targeted campaigns - use normalized country matching
+          const isTargeted = isCountryTargeted(userCountry, ad.countries || []);
+          logGeoTargeting(ad.title || 'Untitled', ad.countries || [], userCountry, isTargeted);
+          return isTargeted;
+        });
+        
+        console.log('✅ Demo filtered ads count (after geo-targeting):', geoFilteredAds.length);
+        return res.json(geoFilteredAds);
       }
       
       // Admin role has unrestricted access
@@ -2638,15 +2667,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('📊 Total ads before filtering:', ads.length);
       
       // Filter ads based on user's YouTube tier - only show ads at or below their tier
-      const filteredAds = ads.filter(ad => {
+      const tierFilteredAds = ads.filter(ad => {
         const adTier = ad.tierLevel || 1;
         const canAccess = adTier <= userTier;
         console.log(`📋 Ad "${ad.title}" (Tier ${adTier}) - User can access: ${canAccess}`);
         return canAccess;
       });
       
-      console.log('✅ Filtered ads count:', filteredAds.length);
-      res.json(filteredAds);
+      // Apply geo-targeting filter
+      const userCountry = user?.country;
+      console.log(`🌍 User country: ${userCountry || 'Not set'}`);
+      
+      const geoFilteredAds = tierFilteredAds.filter(ad => {
+        // Global campaigns (empty or null countries array) - show to everyone
+        if (!ad.countries || ad.countries.length === 0) {
+          console.log(`🌎 Ad "${ad.title}" is GLOBAL - showing to all users`);
+          return true;
+        }
+        
+        // Targeted campaigns - show only to users from target countries
+        if (!userCountry) {
+          console.log(`⚠️ Ad "${ad.title}" is targeted but user has no country - hiding`);
+          return false;
+        }
+        
+        const isTargeted = ad.countries.includes(userCountry);
+        console.log(`🎯 Ad "${ad.title}" targets [${ad.countries.join(', ')}] - User country: ${userCountry} - Match: ${isTargeted}`);
+        return isTargeted;
+      });
+      
+      console.log('✅ Filtered ads count (after geo-targeting):', geoFilteredAds.length);
+      res.json(geoFilteredAds);
     } catch (error) {
       console.error("Error fetching ads:", error);
       res.status(500).json({ message: "Failed to fetch ads" });
