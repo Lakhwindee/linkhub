@@ -182,56 +182,35 @@ function YouTubeCreatorSection({ user }: { user: any }) {
     console.log('handleConnect called with URL:', youtubeUrl); // Debug log
     
     if (!youtubeUrl.trim()) {
-      console.log('URL Required - Please enter your YouTube channel URL');
+      toast({
+        title: "URL Required",
+        description: "Please enter your YouTube channel URL",
+        variant: "destructive",
+      });
       return;
     }
 
     // Validate YouTube URL format
     if (!validateYouTubeUrl(youtubeUrl.trim())) {
-      console.log('Invalid YouTube URL - Please enter a valid URL');
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a valid YouTube channel URL",
+        variant: "destructive",
+      });
       return;
     }
     
-    // Step 1: Show loading for 5 seconds
+    // Show loading and immediately call API
     setIsConnecting(true);
     
-    setTimeout(() => {
-      // Step 2: Switch to verifying for 5 seconds
+    try {
+      console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
+      await syncYouTube.mutateAsync(youtubeUrl.trim());
+    } catch (error) {
+      console.error('Connect failed:', error);
+    } finally {
       setIsConnecting(false);
-      setIsVerifyingConnection(true);
-      
-      setTimeout(async () => {
-        // Step 3: Call API after 5 seconds of verifying
-        try {
-          console.log('Calling syncYouTube with URL:', youtubeUrl.trim()); // Debug log
-          await syncYouTube.mutateAsync(youtubeUrl.trim());
-          
-          // Step 4: Switch to congratulations in same location
-          console.log('API success, showing congratulations'); // Debug log
-          setIsVerifyingConnection(false);
-          
-          // IMMEDIATE state update with double-check
-          console.log('Setting showCongratulations to true'); // Debug log
-          setShowCongratulations(true);
-          
-          // Force re-render by updating multiple states
-          setTimeout(() => {
-            console.log('Forcing congratulations state again');
-            setShowCongratulations(true); // Force again
-          }, 10);
-          
-          setTimeout(() => {
-            console.log('Hiding congratulations'); // Debug log
-            setShowCongratulations(false);
-          }, 3000); // 3 seconds congratulations
-          
-        } catch (error) {
-          console.error('Connect failed:', error);
-          setIsVerifyingConnection(false);
-          setShowCongratulations(false);
-        }
-      }, 3000); // 3 seconds verifying, then API call
-    }, 3000); // 3 seconds loading
+    }
   };
 
   const handleVerify = async () => {
