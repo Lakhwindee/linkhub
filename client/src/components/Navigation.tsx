@@ -65,11 +65,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
-              <Link href="/admin">
-                <Button variant="outline" data-testid="button-admin">
-                  Admin
-                </Button>
-              </Link>
               <Button variant="ghost" onClick={handleSignIn} data-testid="button-sign-in">
                 Sign In
               </Button>
@@ -216,12 +211,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                   <Link href="/profile" data-testid="link-profile">
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/admin" data-testid="link-admin">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Admin Panel
                   </Link>
                 </DropdownMenuItem>
                 {/* Boosted Posts - Only for creators/users, not publishers */}
