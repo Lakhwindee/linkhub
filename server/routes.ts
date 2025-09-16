@@ -26,6 +26,9 @@ interface YTChannelsResponse {
     };
     snippet?: {
       description?: string;
+      country?: string;  // Added for geo-targeting
+      title?: string;
+      publishedAt?: string;
     };
   }>;
 }
@@ -1045,8 +1048,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid YouTube URL format" });
       }
 
-      // Fetch channel statistics
-      const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`;
+      // Fetch channel statistics AND snippet for country detection
+      const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`;
       const response = await fetch(apiUrl);
 
       if (!response.ok) {
@@ -1060,6 +1063,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const subscriberCount = parseInt(data.items?.[0]?.statistics?.subscriberCount || '0') || 0;
+      
+      // Extract country from YouTube channel snippet
+      const channelSnippet = data.items?.[0]?.snippet;
+      const detectedCountry = channelSnippet?.country || '';
+      
+      if (detectedCountry) {
+        console.log(`🌍 Detected YouTube channel country: ${detectedCountry} (User: ${userId}, Channel: ${channelId})`);
+      } else {
+        console.log(`⚠️ No country detected for YouTube channel (User: ${userId}, Channel: ${channelId}) - channel may not have set location`);
+      }
       
       // Use shared tier configuration to determine tier
       const tier = computeTierFromSubscribers(subscriberCount);
@@ -1088,14 +1101,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           profileImageUrl: userId === 'demo-user-1' ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' : '',
           username: userId === 'demo-user-1' ? 'demo_user' : `user_${userId.slice(-6)}`, // Add required username field
           displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
-          country: userId === 'demo-user-1' ? 'United Kingdom' : undefined,
+          country: detectedCountry || (userId === 'demo-user-1' ? 'United Kingdom' : undefined),
           city: userId === 'demo-user-1' ? 'London' : undefined,
           plan: userId === 'demo-user-1' ? 'standard' : 'free',
           role: userId === 'demo-user-1' ? 'creator' : 'user',
         });
       }
 
-      // Update user with YouTube data (not verified yet)
+      // Update user with YouTube data AND detected country (not verified yet)
       const updatedUser = await storage.updateUserProfile(userId, {
         youtubeUrl,
         youtubeChannelId: channelId,
@@ -1104,7 +1117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         youtubeVerified: false, // Reset verification status
         youtubeVerificationCode: verificationCode,
         youtubeVerificationAttempts: 0,
-        youtubeLastUpdated: new Date()
+        youtubeLastUpdated: new Date(),
+        ...(detectedCountry && { country: detectedCountry }) // Only update if country detected
       });
 
       res.json({
