@@ -95,17 +95,6 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </DialogDescription>
         </DialogHeader>
         
-        {/* Demo Login Credentials (Main Website Users Only) */}
-        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-          <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-1">Demo Login Credentials:</div>
-          <div className="text-xs text-blue-700 dark:text-blue-300">
-            <div>User ID: <span className="font-mono bg-white dark:bg-gray-800 px-1 rounded">USER_001</span></div>
-            <div>Password: <span className="font-mono bg-white dark:bg-gray-800 px-1 rounded">user123</span></div>
-          </div>
-          <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-            Note: Admin access is available separately at <span className="font-mono">/admin</span>
-          </div>
-        </div>
         
         
         <form onSubmit={handleSubmit} className="space-y-4">

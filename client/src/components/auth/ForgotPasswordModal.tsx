@@ -67,13 +67,6 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
     setIsLoading(false);
   };
 
-  const demoEmails = [
-    'admin_001@hublink.com',
-    'user_001@hublink.com', 
-    'creator_001@hublink.com',
-    'free_001@hublink.com',
-    'publisher_001@hublink.com'
-  ];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,26 +81,6 @@ export function ForgotPasswordModal({ open, onOpenChange }: ForgotPasswordModalP
           </DialogDescription>
         </DialogHeader>
         
-        {/* Demo Emails Section */}
-        <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-          <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-            Demo Account Emails:
-          </div>
-          <div className="grid grid-cols-1 gap-1 text-xs text-blue-700 dark:text-blue-300">
-            {demoEmails.map((demoEmail) => (
-              <button
-                key={demoEmail}
-                onClick={() => setEmail(demoEmail)}
-                className="text-left font-mono bg-white dark:bg-gray-800 px-2 py-1 rounded hover:bg-blue-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                {demoEmail}
-              </button>
-            ))}
-          </div>
-          <div className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-            💡 Click any email above to auto-fill, then click "Send Reset Email"
-          </div>
-        </div>
         
         {/* Status Messages */}
         {status === 'success' && (
