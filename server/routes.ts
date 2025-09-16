@@ -527,6 +527,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEVELOPMENT ONLY: Demo admin login for testing
+  app.post('/api/auth/demo-admin-login', async (req: any, res) => {
+    try {
+      const { secret } = req.body;
+      
+      // Simple secret check for development
+      if (secret !== 'dev-admin-2025') {
+        return res.status(401).json({ message: 'Invalid admin secret' });
+      }
+      
+      // Create admin session
+      (req.session as any).userId = 'demo-admin';
+      (req.session as any).user = { 
+        id: 'demo-admin', 
+        email: 'admin@hublink.dev', 
+        role: 'admin' 
+      };
+      
+      console.log('✅ Demo admin session created');
+      
+      res.json({ 
+        message: 'Admin session created successfully',
+        user: {
+          id: 'demo-admin',
+          email: 'admin@hublink.dev',
+          role: 'admin'
+        }
+      });
+    } catch (error) {
+      console.error('Demo admin login error:', error);
+      res.status(500).json({ message: 'Failed to create admin session' });
+    }
+  });
 
   // Function to send OTP email using actual email infrastructure
   async function sendOTPEmail(email: string, otp: string) {
