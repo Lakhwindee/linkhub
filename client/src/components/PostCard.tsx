@@ -163,6 +163,7 @@ export function PostCard({ post, compact = false }: PostCardProps) {
   }
 
   return (
+    <>
     <Card data-testid={`card-post-${post.id}`}>
       <CardContent className="p-6">
         {/* Post Header */}
@@ -460,12 +461,14 @@ export function PostCard({ post, compact = false }: PostCardProps) {
         </div>
       </CardContent>
     </Card>
-    
     {/* Boost Post Modal */}
-    <BoostPostModal 
-      post={post}
-      open={showBoostModal}
-      onOpenChange={setShowBoostModal}
-    />
+    {isOwnPost && (
+      <BoostPostModal 
+        post={post}
+        open={showBoostModal}
+        onOpenChange={setShowBoostModal}
+      />
+    )}
+    </>
   );
 }
