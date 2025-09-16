@@ -32,6 +32,8 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
   const [numberOfInfluencers, setNumberOfInfluencers] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [adImageUrl, setAdImageUrl] = useState("");
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [showAllCountries, setShowAllCountries] = useState(true);
 
   const { toast } = useToast();
 
@@ -71,7 +73,7 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
         title: title.trim(),
         briefMd: description.trim(),
         adImageUrl: adImageUrl.trim(),
-        countries: [],
+        countries: showAllCountries ? [] : selectedCountries,
         hashtags: [],
         currency: "USD",
         deadlineAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -155,6 +157,126 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
             rows={4}
             required
           />
+        </div>
+
+        {/* Geo-Targeting Section */}
+        <div className="space-y-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+          <div className="flex items-center space-x-2 mb-3">
+            <Target className="w-5 h-5 text-blue-600" />
+            <Label className="text-base font-semibold text-blue-900 dark:text-blue-100">
+              🌍 Target Countries & Regions
+            </Label>
+          </div>
+          
+          <div className="space-y-3">
+            {/* All Countries Toggle */}
+            <div className="flex items-center space-x-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg border">
+              <input
+                type="radio"
+                id="all-countries"
+                name="targeting"
+                checked={showAllCountries}
+                onChange={() => {
+                  setShowAllCountries(true);
+                  setSelectedCountries([]);
+                }}
+                className="w-4 h-4 text-blue-600"
+              />
+              <Label htmlFor="all-countries" className="font-medium text-gray-900 dark:text-gray-100">
+                🌎 All Countries (Global Campaign)
+              </Label>
+            </div>
+
+            {/* Specific Countries Toggle */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 p-3 bg-white/60 dark:bg-gray-800/60 rounded-lg border">
+                <input
+                  type="radio"
+                  id="specific-countries"
+                  name="targeting"
+                  checked={!showAllCountries}
+                  onChange={() => setShowAllCountries(false)}
+                  className="w-4 h-4 text-blue-600"
+                />
+                <Label htmlFor="specific-countries" className="font-medium text-gray-900 dark:text-gray-100">
+                  🎯 Specific Countries Only
+                </Label>
+              </div>
+
+              {/* Country Selection Dropdown */}
+              {!showAllCountries && (
+                <div className="ml-7 space-y-2">
+                  <Select
+                    value=""
+                    onValueChange={(country) => {
+                      if (country && !selectedCountries.includes(country)) {
+                        setSelectedCountries([...selectedCountries, country]);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="🔍 Select countries to target..." />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-60">
+                      {worldCountries
+                        .filter(c => !selectedCountries.includes(c.name))
+                        .map((country) => (
+                          <SelectItem key={country.name} value={country.name}>
+                            {country.flag} {country.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Selected Countries Display */}
+                  {selectedCountries.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Selected Countries:</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCountries.map((country) => {
+                          const countryData = worldCountries.find(c => c.name === country);
+                          return (
+                            <Badge 
+                              key={country} 
+                              variant="secondary"
+                              className="flex items-center space-x-1 bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100 px-3 py-1"
+                            >
+                              <span>{countryData?.flag} {country}</span>
+                              <button
+                                onClick={() => setSelectedCountries(selectedCountries.filter(c => c !== country))}
+                                className="ml-2 text-blue-700 hover:text-red-600 font-bold"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedCountries.length === 0 && !showAllCountries && (
+                    <div className="text-sm text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/20 p-2 rounded">
+                      ⚠️ Please select at least one country for targeted campaigns
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Info Box */}
+          <div className="bg-blue-100/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-700/50 rounded-md p-3 text-sm">
+            <div className="flex items-start space-x-2">
+              <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
+              <div className="text-blue-800 dark:text-blue-200">
+                <strong>💡 How it works:</strong>
+                <br />• <strong>Global Campaigns:</strong> Visible to creators worldwide
+                <br />• <strong>Targeted Campaigns:</strong> Only shown to creators from selected countries
+                <br />• Creators see campaigns based on their YouTube channel location
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
