@@ -2568,15 +2568,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       console.log('👤 User data:', user ? { id: user.id, plan: user.plan, youtubeVerified: user.youtubeVerified } : 'null');
       
-      // For demo users, always show test campaigns - BYPASS ALL CHECKS
+      // For demo users, apply tier filtering but bypass plan/verification checks
       if (userId && userId.startsWith('demo-')) {
         console.log('🎯 Demo user detected:', userId);
+        
+        // Get user's YouTube tier for filtering (demo users have tier in userData)
+        const userTier = user?.youtubeTier || 1; // Default to tier 1 if not set
+        console.log('🎯 Demo user tier:', userTier);
+        
         const ads = await storage.getAds();
-        console.log('📊 Retrieved ads count:', ads.length);
-        if (ads.length > 0) {
-          console.log('📋 First ad:', ads[0].title);
-        }
-        return res.json(ads);
+        console.log('📊 Total ads before filtering:', ads.length);
+        
+        // Filter ads based on user's YouTube tier - only show ads at or below their tier
+        const filteredAds = ads.filter(ad => {
+          const adTier = ad.tierLevel || 1;
+          const canAccess = adTier <= userTier;
+          console.log(`📋 Demo: Ad "${ad.title}" (Tier ${adTier}) - User can access: ${canAccess}`);
+          return canAccess;
+        });
+        
+        console.log('✅ Demo filtered ads count:', filteredAds.length);
+        return res.json(filteredAds);
       }
       
       // Admin role has unrestricted access
@@ -2606,12 +2618,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get user's YouTube tier for filtering
       const userTier = user?.youtubeTier || 1; // Default to tier 1 if not set
+      console.log('🎯 User tier:', userTier, 'YouTube verified:', user?.youtubeVerified);
       
       const ads = await storage.getAds();
+      console.log('📊 Total ads before filtering:', ads.length);
       
       // Filter ads based on user's YouTube tier - only show ads at or below their tier
-      const filteredAds = ads.filter(ad => (ad.tierLevel || 1) <= userTier);
+      const filteredAds = ads.filter(ad => {
+        const adTier = ad.tierLevel || 1;
+        const canAccess = adTier <= userTier;
+        console.log(`📋 Ad "${ad.title}" (Tier ${adTier}) - User can access: ${canAccess}`);
+        return canAccess;
+      });
       
+      console.log('✅ Filtered ads count:', filteredAds.length);
       res.json(filteredAds);
     } catch (error) {
       console.error("Error fetching ads:", error);
@@ -2625,6 +2645,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       
       let user = await storage.getUser(userId);
+      const ad = await storage.getAd(id);
+      
+      if (!ad) {
+        return res.status(404).json({ message: "Campaign not found" });
+      }
+      
+      // Check tier authorization - user must be at or above campaign tier level
+      const userTier = user?.youtubeTier || 1;
+      const requiredTier = ad.tierLevel || 1;
+      
+      if (userTier < requiredTier) {
+        console.log(`🚫 Tier access denied: User tier ${userTier} < Required tier ${requiredTier} for campaign "${ad.title}"`);
+        return res.status(403).json({ 
+          message: `Access denied. This campaign requires Tier ${requiredTier} or higher. Your current tier: ${userTier}` 
+        });
+      }
+      
+      console.log(`✅ Tier access granted: User tier ${userTier} >= Required tier ${requiredTier} for campaign "${ad.title}"`);
       
       // Auto-fix demo user plan if needed
       if ((userId === 'demo-user-1' || userId === 'demo-admin') && user?.plan !== 'standard') {
