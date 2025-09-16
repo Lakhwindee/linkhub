@@ -65,6 +65,59 @@ interface YTSearchResponse {
   }>;
 }
 
+// In-memory OTP store for temporary OTP storage
+interface OTPData {
+  otp: string;
+  expiresAt: number;
+}
+
+class OTPStore {
+  private store = new Map<string, OTPData>();
+  
+  set(key: string, data: OTPData): void {
+    this.store.set(key, data);
+    // Auto-cleanup expired OTPs every 10 minutes
+    setTimeout(() => {
+      const stored = this.store.get(key);
+      if (stored && stored.expiresAt < Date.now()) {
+        this.store.delete(key);
+      }
+    }, 10 * 60 * 1000);
+  }
+  
+  get(key: string): OTPData | undefined {
+    const data = this.store.get(key);
+    if (data && data.expiresAt < Date.now()) {
+      this.store.delete(key);
+      return undefined;
+    }
+    return data;
+  }
+  
+  delete(key: string): boolean {
+    return this.store.delete(key);
+  }
+  
+  // Cleanup expired OTPs (called periodically)
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, data] of this.store.entries()) {
+      if (data.expiresAt < now) {
+        this.store.delete(key);
+      }
+    }
+  }
+}
+
+// Global OTP store instance
+const otpStore = new OTPStore();
+
+// Cleanup expired OTPs every 5 minutes
+setInterval(() => {
+  otpStore.cleanup();
+  console.log('🧹 Cleaned up expired OTP codes');
+}, 5 * 60 * 1000);
+
 // Helper for safe auth claims access
 function getAuthSub(req: any): string | undefined {
   return req.user?.claims?.sub ?? req.session?.userId;

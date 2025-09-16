@@ -113,19 +113,9 @@ export default function DocumentSignup() {
       localStorage.setItem('signup_email', formData.email);
       localStorage.setItem('verification_type', 'email');
       
-      // Success stage with animation
-      setSuccessStage('success');
-      
-      // Wait for success animation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Redirecting stage
-      setSuccessStage('redirecting');
-      
-      // Final redirect to OTP verification
-      setTimeout(() => {
-        window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&type=email`;
-      }, 1000);
+      // Immediately redirect to OTP verification - don't show success yet
+      // User will see success message after OTP verification is complete
+      window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&type=email`;
       
     } catch (error) {
       setIsSubmitting(false);
