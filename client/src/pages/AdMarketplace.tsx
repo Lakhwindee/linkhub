@@ -805,6 +805,12 @@ export default function AdMarketplace() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { isFree, isStandard, isPremium, canApplyCampaigns, canAccessAnalytics, canAccessPayouts } = usePlanAccess();
   
+  // YouTube verification check - creators must have verified YouTube channels to reserve ads
+  const isYouTubeVerifiedForReservations = user?.role === 'creator' ? 
+    (user as any)?.youtubeVerified || false : 
+    false;
+  const canReserveAds = canApplyCampaigns && isYouTubeVerifiedForReservations;
+  
   // Show visual locks for non-premium users (including FREE_CREATOR)
   const shouldShowLocks = !isPremium;
   const { toast } = useToast();
@@ -1306,20 +1312,35 @@ export default function AdMarketplace() {
 
                         <Dialog open={isReserveDialogOpen} onOpenChange={setIsReserveDialogOpen}>
                           <DialogTrigger asChild>
-                            <Button 
-                              size="sm" 
-                              className={`w-full ${!canApplyCampaigns ? 'bg-gray-400 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'}`}
-                              disabled={!canApplyCampaigns || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
-                              data-testid={`button-reserve-ad-${ad.id}`}
-                            >
-                              {reserveAdMutation.isPending ? (
-                                <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
-                              ) : !canApplyCampaigns ? (
-                                "Premium Required to Reserve"
-                              ) : (
-                                "Reserve Campaign"
+                            <div className="relative group">
+                              <Button 
+                                size="sm" 
+                                className={`w-full ${!canReserveAds ? 'bg-gray-400 cursor-not-allowed' : 'bg-accent hover:bg-accent/90'}`}
+                                disabled={!canReserveAds || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                                data-testid={`button-reserve-ad-${ad.id}`}
+                              >
+                                {reserveAdMutation.isPending ? (
+                                  <div className="animate-spin w-3 h-3 border-2 border-accent-foreground border-t-transparent rounded-full" />
+                                ) : !canApplyCampaigns ? (
+                                  "Premium Required to Reserve"
+                                ) : !isYouTubeVerifiedForReservations ? (
+                                  "Channel Not Verified"
+                                ) : (
+                                  "Reserve Campaign"
+                                )}
+                              </Button>
+                              
+                              {/* Hover tooltip for unverified channels */}
+                              {canApplyCampaigns && !isYouTubeVerifiedForReservations && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-yellow-600 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                                  <div className="text-center">
+                                    <div className="font-semibold">Channel Not Verified</div>
+                                    <div className="text-xs">Verify your YouTube channel to reserve campaigns</div>
+                                  </div>
+                                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-yellow-600"></div>
+                                </div>
                               )}
-                            </Button>
+                            </div>
                           </DialogTrigger>
                           <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                             <DialogHeader>
@@ -1390,11 +1411,13 @@ export default function AdMarketplace() {
                               <div className="pt-4">
                                 <Button 
                                   size="lg" 
-                                  className="w-full bg-accent hover:bg-accent/90 text-lg py-6"
+                                  className={`w-full text-lg py-6 ${canReserveAds ? 'bg-accent hover:bg-accent/90' : 'bg-gray-400 cursor-not-allowed'}`}
                                   onClick={() => {
-                                    reserveAdMutation.mutate(ad.id);
+                                    if (canReserveAds) {
+                                      reserveAdMutation.mutate(ad.id);
+                                    }
                                   }}
-                                  disabled={reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
+                                  disabled={!canReserveAds || reserveAdMutation.isPending || (ad.currentReservations || 0) >= (ad.quota || 1)}
                                 >
                                   {reserveAdMutation.isPending ? (
                                     <div className="animate-spin w-4 h-4 border-2 border-accent-foreground border-t-transparent rounded-full" />
