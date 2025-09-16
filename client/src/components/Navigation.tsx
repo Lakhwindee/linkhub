@@ -5,7 +5,7 @@ import { useTheme } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck, History } from "lucide-react";
+import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck, History, Zap } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
 
@@ -107,6 +107,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
+      { href: "/boosted-posts", icon: Zap, label: "Boosted Posts", testId: "nav-boosted-posts" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
       { href: "/ads", icon: DollarSign, label: campaignsLabel, testId: "nav-campaigns" },
     ];

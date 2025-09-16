@@ -27,6 +27,7 @@ import MyBookings from "@/pages/MyBookings";
 import PersonalHosts from "@/pages/PersonalHosts";
 import Explore from "@/pages/Explore";
 import UserProfile from "@/pages/UserProfile";
+import BoostedPosts from "@/pages/BoostedPosts";
 import Map from "@/pages/Map";
 import PaymentPage from "@/pages/PaymentPage";
 import PaymentSuccess from "@/pages/PaymentSuccess";
@@ -96,6 +97,7 @@ function Router() {
               <Route path="/map" component={Map} />
               <Route path="/profile" component={Profile} />
               <Route path="/feed" component={Feed} />
+              <Route path="/boosted-posts" component={BoostedPosts} />
               <Route path="/ads" component={AdsWrapper} />
               <Route path="/earn" component={AdsWrapper} />
               <Route path="/payment/:campaignId" component={PaymentPage} />
