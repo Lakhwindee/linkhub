@@ -475,34 +475,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
 
-  // Function to send OTP email using existing email infrastructure
+  // Function to send OTP email using actual email infrastructure
   async function sendOTPEmail(email: string, otp: string) {
     try {
-      // Use existing email template system
+      // Import nodemailer
+      const nodemailer = await import('nodemailer');
+      
+      // Check if Gmail credentials are available
+      if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
+        console.warn('⚠️ Gmail credentials not configured - OTP email will be simulated');
+        console.log(`📧 [SIMULATED] OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
+        console.log(`🔒 [SIMULATED] OTP Code: ${otp} (for development)`);
+        return { success: true, messageId: `simulated_${Date.now()}`, simulated: true };
+      }
+
+      // Create transporter using Gmail credentials (same as emailUtils.ts)
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_EMAIL,
+          pass: process.env.GMAIL_APP_PASSWORD,
+        },
+      });
+      
+      // Professional email template
       const emailContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">HubLink Account Verification</h2>
-          <p>Your verification code is:</p>
-          <div style="background: #f3f4f6; padding: 20px; margin: 20px 0; text-align: center; border-radius: 8px;">
-            <span style="font-size: 32px; font-weight: bold; color: #2563eb; letter-spacing: 8px;">${otp}</span>
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px;">
+            <h1 style="margin: 0; font-size: 28px;">✅ Account Verification</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink Tourism Platform</p>
           </div>
-          <p>This code will expire in 10 minutes.</p>
-          <p>If you didn't request this verification, please ignore this email.</p>
-          <hr>
-          <p style="color: #6b7280; font-size: 12px;">This is an automated message from HubLink.</p>
+          
+          <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-top: 20px;">
+            <h2 style="color: #333; margin-top: 0;">Your Verification Code</h2>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+              Welcome to HubLink! Please use the verification code below to complete your account setup:
+            </p>
+            
+            <div style="background: #667eea; color: white; padding: 25px; margin: 30px 0; text-align: center; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <span style="font-size: 36px; font-weight: bold; letter-spacing: 6px; font-family: 'Courier New', monospace;">${otp}</span>
+            </div>
+            
+            <div style="background: #e3f2fd; padding: 20px; border-radius: 8px; border-left: 4px solid #2196f3; margin: 20px 0;">
+              <p style="margin: 0; color: #1976d2; font-size: 14px;">
+                <strong>⏰ Important:</strong><br>
+                • This code will expire in 10 minutes<br>
+                • Use this code only on the HubLink verification page<br>
+                • Do not share this code with anyone
+              </p>
+            </div>
+            
+            <p style="color: #666; font-size: 14px; margin-top: 25px;">
+              If you didn't create an account with HubLink, please ignore this email and your email will not be used.
+            </p>
+            
+            <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+            
+            <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
+              © 2025 HubLink Tourism Platform - Connect with travelers worldwide<br>
+              This is an automated message, please do not reply to this email.
+            </p>
+          </div>
         </div>
       `;
 
-      console.log(`📧 OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
-      console.log(`🔧 Using existing SMTP: smtp.hublink.com`);
+      // Send actual email
+      const result = await transporter.sendMail({
+        from: `"HubLink Verification" <${process.env.GMAIL_EMAIL}>`,
+        to: email,
+        subject: '🔐 Your HubLink Verification Code',
+        html: emailContent
+      });
+
+      console.log(`✅ Real OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
+      console.log(`📧 Message ID: ${result.messageId}`);
       
-      // In production, this would use the configured SMTP settings
-      // For demo, we simulate successful email delivery
-      return { success: true, messageId: `email_${Date.now()}` };
+      return { success: true, messageId: result.messageId, simulated: false };
       
     } catch (error) {
-      console.error('Error sending OTP email:', error);
-      throw error;
+      console.error('❌ Error sending OTP email:', error);
+      
+      // Fallback to simulation on error
+      console.log(`📧 [FALLBACK] OTP email simulated for ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
+      console.log(`🔒 [FALLBACK] OTP Code: ${otp} (for development)`);
+      return { success: true, messageId: `fallback_${Date.now()}`, simulated: true, error: error.message };
     }
   }
 

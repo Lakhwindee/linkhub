@@ -44,25 +44,6 @@ export default function DocumentSignup() {
     city: '',
   });
 
-  const fillDemoData = () => {
-    const demoData = {
-      email: 'priya.sharma@example.com',
-      username: 'priya_mumbai',
-      firstName: 'Priya',
-      lastName: 'Sharma',
-      bio: 'Mumbai-based travel enthusiast and content creator exploring India\'s hidden gems.',
-      country: 'India',
-      city: 'Ahmedabad',
-    };
-    
-    setFormData(demoData);
-    
-    toast({
-      title: "Demo Data Filled!",
-      description: "Form has been filled with sample data for testing.",
-      duration: 3000,
-    });
-  };
 
   const handleDocumentUpload = async (url: string) => {
     setDocumentUrl(url);
@@ -489,9 +470,6 @@ export default function DocumentSignup() {
                 </Button>
                 
                 <div className="flex gap-2">
-                  <Button variant="secondary" onClick={fillDemoData}>
-                    🎯 Fill Demo Data
-                  </Button>
                   <Button 
                     onClick={handleSubmit}
                     disabled={isSubmitting || !formData.username || !formData.email}

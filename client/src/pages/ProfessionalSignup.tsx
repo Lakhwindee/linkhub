@@ -75,52 +75,6 @@ export default function ProfessionalSignup() {
     taxId: '',
   });
 
-  const fillDemoData = () => {
-    const demoData = {
-      // Personal Information
-      firstName: 'Rajesh',
-      lastName: 'Kumar',
-      email: 'rajesh.kumar@example.com',
-      phone: '9876543210',
-      dateOfBirth: '1990-03-15',
-      gender: 'male',
-      nationality: 'Indian',
-      
-      // Address Information  
-      address: 'Sector 14, Cyber City',
-      city: 'Ahmedabad',
-      state: 'Gujarat',
-      postalCode: '380001',
-      country: 'India',
-      
-      // Professional Information
-      username: 'rajesh_travels',
-      bio: 'Professional travel blogger and photographer with 5+ years experience in tourism industry.',
-      profession: 'Travel Blogger & Photographer',
-      experience: '5+ years',
-      languages: 'English, Hindi, Gujarati',
-      
-      // Account Information
-      password: 'Demo123!',
-      confirmPassword: 'Demo123!',
-      countryCode: '+91',
-      
-      // Publisher specific
-      businessName: 'Gujarat Tourism Hub',
-      businessType: 'Travel Agency',
-      businessAddress: 'Commerce House, Ashram Road, Ahmedabad',
-      businessPhone: '9876543210',
-      taxId: 'GSTIN123456789',
-    };
-    
-    setFormData(demoData);
-    
-    toast({
-      title: "Demo Data Filled!",
-      description: "Form has been filled with sample Indian data for testing.",
-      duration: 3000,
-    });
-  };
 
   const handleRoleSelection = (role: 'creator' | 'publisher') => {
     setSelectedRole(role);
@@ -240,7 +194,7 @@ export default function ProfessionalSignup() {
       // Store OTP verification data
       localStorage.setItem('signup_email', formData.email);
       localStorage.setItem('signup_phone', `${formData.countryCode}${formData.phone}`);
-      localStorage.setItem('verification_type', 'both');
+      localStorage.setItem('verification_type', 'email');
       localStorage.setItem('signup_role', selectedRole || 'creator');
       
       // Success stage with animation
@@ -255,7 +209,7 @@ export default function ProfessionalSignup() {
       // Final redirect to OTP verification
       setTimeout(() => {
         const phone = `${formData.countryCode}${formData.phone}`;
-        window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&phone=${encodeURIComponent(phone)}&type=both`;
+        window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&type=email`;
       }, 1000);
       
     } catch (error) {
@@ -298,13 +252,13 @@ export default function ProfessionalSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Join HubLink Professional
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground px-4">
             Create your professional account and start connecting with travelers worldwide
           </p>
         </div>
@@ -321,10 +275,10 @@ export default function ProfessionalSignup() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <button
                   onClick={() => handleRoleSelection('creator')}
-                  className={`p-6 border-2 rounded-lg text-left transition-colors ${
+                  className={`p-4 sm:p-6 border-2 rounded-lg text-left transition-colors ${
                     selectedRole === 'creator'
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50'
@@ -352,7 +306,7 @@ export default function ProfessionalSignup() {
 
                 <button
                   onClick={() => handleRoleSelection('publisher')}
-                  className={`p-6 border-2 rounded-lg text-left transition-colors ${
+                  className={`p-4 sm:p-6 border-2 rounded-lg text-left transition-colors ${
                     selectedRole === 'publisher'
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50'
@@ -593,9 +547,9 @@ export default function ProfessionalSignup() {
                   </div>
                   <div>
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <div className="flex">
+                    <div className="flex gap-2">
                       <Select value={formData.countryCode || "+44"} onValueChange={(value) => setFormData(prev => ({ ...prev, countryCode: value }))}>
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-20 sm:w-24">
                           <SelectValue placeholder="+44" />
                         </SelectTrigger>
                         <SelectContent className="max-h-80 overflow-y-auto">
@@ -611,7 +565,7 @@ export default function ProfessionalSignup() {
                         value={formData.phone}
                         onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                         placeholder="123 456 7890"
-                        className="ml-2 flex-1"
+                        className="flex-1"
                         required
                       />
                     </div>
@@ -669,7 +623,7 @@ export default function ProfessionalSignup() {
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="country">Country *</Label>
                       <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, state: '', city: '' }))}>
@@ -911,25 +865,23 @@ export default function ProfessionalSignup() {
                 </div>
               </div>
 
-              <div className="flex justify-between items-center pt-6 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-center pt-6 border-t gap-4">
                 <Button 
                   variant="outline" 
                   onClick={() => selectedRole === 'creator' ? setStep(1) : setStep(2)}
+                  className="w-full sm:w-auto"
                 >
                   Back
                 </Button>
                 
-                <div className="flex gap-2">
-                  <Button variant="secondary" onClick={fillDemoData}>
-                    🎯 Fill Demo Data
-                  </Button>
+                <div className="flex gap-2 w-full sm:w-auto">
                   <Button 
                     onClick={handleSubmit}
                     disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
                              !formData.address || !formData.city || !formData.postalCode || !formData.country || 
                              !formData.username || !formData.password || !formData.confirmPassword ||
                              (selectedRole === 'publisher' && !formData.businessName)}
-                    className="px-8 min-w-[200px]"
+                    className="px-4 sm:px-8 min-w-0 sm:min-w-[200px] w-full sm:w-auto"
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-2">
