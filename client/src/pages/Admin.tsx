@@ -54,6 +54,24 @@ export default function Admin() {
   ]);
   const [aiInput, setAiInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  
+  // Email Management state
+  const [emailTemplates] = useState([
+    { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to HubLink!', content: '' },
+    { id: 'password-reset', name: 'Password Reset', subject: 'Reset Your Password', content: '' },
+    { id: 'subscription', name: 'Subscription Update', subject: 'Subscription Changes', content: '' },
+    { id: 'payment', name: 'Payment Receipt', subject: 'Payment Confirmation', content: '' }
+  ]);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const [editingTemplate, setEditingTemplate] = useState(false);
+  const [templateForm, setTemplateForm] = useState({ name: '', subject: '', content: '' });
+  const [campaignForm, setCampaignForm] = useState({
+    type: '',
+    audience: '',
+    schedule: 'now',
+    subject: '',
+    content: ''
+  });
 
   // AI Assistant functions
   const handleAiMessage = async () => {
@@ -271,6 +289,98 @@ export default function Admin() {
   
   // Track which service is currently being saved
   const [savingService, setSavingService] = useState<string | null>(null);
+
+  // Email Management mutations
+  const sendCampaignMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/email/send-campaign", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Campaign Sent",
+        description: "Email campaign has been sent successfully!",
+      });
+      setCampaignForm({ type: '', audience: '', schedule: 'now', subject: '', content: '' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Campaign Failed",
+        description: error.message || "Failed to send email campaign.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateTemplateMutation = useMutation({
+    mutationFn: async (data: { templateId: string; templateData: any }) => {
+      return await apiRequest("PUT", `/api/admin/email/template/${data.templateId}`, data.templateData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Template Updated",
+        description: "Email template has been updated successfully!",
+      });
+      setEditingTemplate(false);
+      setSelectedTemplate(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update email template.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Email Management helper functions
+  const handleEditTemplate = (template: any) => {
+    setSelectedTemplate(template);
+    setTemplateForm({
+      name: template.name,
+      subject: template.subject,
+      content: template.content
+    });
+    setEditingTemplate(true);
+  };
+
+  const handleSaveTemplate = () => {
+    if (!selectedTemplate) return;
+    
+    updateTemplateMutation.mutate({
+      templateId: selectedTemplate.id,
+      templateData: templateForm
+    });
+  };
+
+  const handleSendCampaign = () => {
+    if (!campaignForm.type || !campaignForm.audience || !campaignForm.subject) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in campaign type, audience, and subject.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    sendCampaignMutation.mutate(campaignForm);
+  };
+
+  const handleAddTemplate = () => {
+    const newTemplate = {
+      id: `custom-${Date.now()}`,
+      name: 'New Template',
+      subject: 'New Email Template',
+      content: 'Enter your email content here...'
+    };
+    
+    setSelectedTemplate(newTemplate);
+    setTemplateForm({
+      name: newTemplate.name,
+      subject: newTemplate.subject,
+      content: newTemplate.content
+    });
+    setEditingTemplate(true);
+  };
 
   // Initialize form data with API settings
   useEffect(() => {
@@ -1774,24 +1884,24 @@ export default function Admin() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span className="text-sm">Welcome Email</span>
-                          <Button variant="outline" size="sm">Edit</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span className="text-sm">Password Reset</span>
-                          <Button variant="outline" size="sm">Edit</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span className="text-sm">Subscription Update</span>
-                          <Button variant="outline" size="sm">Edit</Button>
-                        </div>
-                        <div className="flex items-center justify-between p-2 border rounded">
-                          <span className="text-sm">Payment Receipt</span>
-                          <Button variant="outline" size="sm">Edit</Button>
-                        </div>
+                        {emailTemplates.map((template) => (
+                          <div key={template.id} className="flex items-center justify-between p-2 border rounded">
+                            <span className="text-sm">{template.name}</span>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleEditTemplate(template)}
+                            >
+                              Edit
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                      <Button variant="outline" className="w-full">
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={handleAddTemplate}
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Template
                       </Button>
@@ -1808,7 +1918,7 @@ export default function Admin() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label>Campaign Type</Label>
-                        <Select>
+                        <Select value={campaignForm.type} onValueChange={(value) => setCampaignForm({...campaignForm, type: value})}>
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Select type" />
                           </SelectTrigger>
@@ -1822,7 +1932,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Target Audience</Label>
-                        <Select>
+                        <Select value={campaignForm.audience} onValueChange={(value) => setCampaignForm({...campaignForm, audience: value})}>
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Select audience" />
                           </SelectTrigger>
@@ -1837,7 +1947,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Schedule</Label>
-                        <Select>
+                        <Select value={campaignForm.schedule} onValueChange={(value) => setCampaignForm({...campaignForm, schedule: value})}>
                           <SelectTrigger className="mt-1">
                             <SelectValue placeholder="Send now" />
                           </SelectTrigger>
@@ -1850,16 +1960,29 @@ export default function Admin() {
                     </div>
                     <div>
                       <Label>Email Subject</Label>
-                      <Input placeholder="Enter email subject..." className="mt-1" />
+                      <Input 
+                        placeholder="Enter email subject..." 
+                        className="mt-1"
+                        value={campaignForm.subject}
+                        onChange={(e) => setCampaignForm({...campaignForm, subject: e.target.value})}
+                      />
                     </div>
                     <div>
                       <Label>Email Content</Label>
-                      <div className="mt-1 p-4 border rounded min-h-[120px] bg-muted/20">
-                        <p className="text-sm text-muted-foreground">Rich text editor would go here...</p>
-                      </div>
+                      <Textarea
+                        placeholder="Enter your email content here..."
+                        className="mt-1 min-h-[120px]"
+                        value={campaignForm.content}
+                        onChange={(e) => setCampaignForm({...campaignForm, content: e.target.value})}
+                      />
                     </div>
                     <div className="flex space-x-2">
-                      <Button>Send Campaign</Button>
+                      <Button 
+                        onClick={handleSendCampaign}
+                        disabled={sendCampaignMutation.isPending}
+                      >
+                        {sendCampaignMutation.isPending ? "Sending..." : "Send Campaign"}
+                      </Button>
                       <Button variant="outline">Save Draft</Button>
                       <Button variant="outline">Preview</Button>
                     </div>
@@ -1892,6 +2015,65 @@ export default function Admin() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Template Editor Dialog */}
+                <Dialog open={editingTemplate} onOpenChange={setEditingTemplate}>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {selectedTemplate?.id?.startsWith('custom-') ? 'Add New Template' : 'Edit Email Template'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="template-name">Template Name</Label>
+                        <Input 
+                          id="template-name"
+                          value={templateForm.name}
+                          onChange={(e) => setTemplateForm({...templateForm, name: e.target.value})}
+                          placeholder="Enter template name..."
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="template-subject">Email Subject</Label>
+                        <Input 
+                          id="template-subject"
+                          value={templateForm.subject}
+                          onChange={(e) => setTemplateForm({...templateForm, subject: e.target.value})}
+                          placeholder="Enter email subject..."
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="template-content">Email Content</Label>
+                        <Textarea 
+                          id="template-content"
+                          value={templateForm.content}
+                          onChange={(e) => setTemplateForm({...templateForm, content: e.target.value})}
+                          placeholder="Enter email content... You can use variables like {{userName}}, {{companyName}}, etc."
+                          className="mt-1 min-h-[200px]"
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setEditingTemplate(false)}
+                          disabled={updateTemplateMutation.isPending}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleSaveTemplate}
+                          disabled={updateTemplateMutation.isPending}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {updateTemplateMutation.isPending ? "Saving..." : "Save Template"}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
