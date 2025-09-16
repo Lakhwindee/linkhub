@@ -85,7 +85,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   }
 
   // Navigation items based on user role
-  let navItems = [];
+  let navItems: Array<{href: string, icon: any, label: string, testId: string}> = [];
   
   // Don't render navigation items until user data is fully loaded to prevent flashing
   if (isLoading || !user) {
