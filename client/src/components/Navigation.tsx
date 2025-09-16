@@ -10,7 +10,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   
   const { theme, setTheme } = useTheme();
@@ -87,7 +87,10 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   // Navigation items based on user role
   let navItems = [];
   
-  if (user?.role === 'publisher') {
+  // Don't render navigation items until user data is fully loaded to prevent flashing
+  if (isLoading || !user) {
+    navItems = [];
+  } else if (user.role === 'publisher') {
     // Publisher role sees business management menus
     navItems = [
       { href: "/stays", icon: Home, label: "Stays", testId: "nav-stays" },
@@ -190,10 +193,18 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="button-user-menu">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.profileImageUrl || ""} alt={user?.displayName || user?.username} />
-                  <AvatarFallback data-testid="text-user-initials">
-                    {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
-                  </AvatarFallback>
+                  {!isLoading && user ? (
+                    <>
+                      <AvatarImage src={user.profileImageUrl || ""} alt={user.displayName || user.username} />
+                      <AvatarFallback data-testid="text-user-initials">
+                        {(user.displayName || user.username || "U").charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </>
+                  ) : (
+                    <AvatarFallback data-testid="text-user-initials">
+                      U
+                    </AvatarFallback>
+                  )}
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
