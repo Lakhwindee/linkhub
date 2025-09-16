@@ -1,11 +1,34 @@
 import type { Express } from "express";
 import cookieParser from "cookie-parser";
+import session from "express-session";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
 import OpenAI from "openai";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { OAuth2Client } from 'google-auth-library';
+
+// Session-based authentication middleware
+function isAuthenticated(req: any, res: any, next: any) {
+  if (req.session?.userId) {
+    req.user = { claims: { sub: req.session.userId } };
+    return next();
+  }
+  
+  console.log('❌ Authentication failed - no authenticated session found');
+  return res.status(401).json({ message: 'Not authenticated' });
+}
+
+// Initialize Google OAuth client with production-ready configuration
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+  console.warn('⚠️ Google OAuth credentials not configured - Google login will not work');
+}
+
+const googleOAuthClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
+);
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
@@ -94,7 +117,204 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(cookieParser());
   
   // Auth middleware
-  await setupAuth(app);
+  // Production-ready session configuration
+  if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required for production');
+  }
+  
+  app.set('trust proxy', 1); // Trust proxy headers
+  
+  app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // CSRF protection
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    },
+    name: 'hublink-session' // Custom session name
+  }));
+
+  // Authentication routes
+  
+  // Google OAuth routes
+  app.get('/api/auth/google', (req, res) => {
+    const scopes = [
+      'openid',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/userinfo.email'
+    ];
+    
+    // Generate random state for CSRF protection
+    const state = Math.random().toString(36).substring(2);
+    (req.session as any).oauth_state = state;
+    
+    const authUrl = googleOAuthClient.generateAuthUrl({
+      access_type: 'offline',
+      scope: scopes,
+      state: state,
+    });
+    
+    res.redirect(authUrl);
+  });
+
+  app.get('/api/auth/google/callback', async (req, res) => {
+    try {
+      const { code, state } = req.query;
+      
+      if (!code) {
+        return res.redirect('/?error=no_code');
+      }
+
+      // Verify state parameter for CSRF protection
+      if (!state || state !== (req.session as any)?.oauth_state) {
+        return res.redirect('/?error=invalid_state');
+      }
+      
+      // Clear the state from session
+      delete (req.session as any).oauth_state;
+
+      const { tokens } = await googleOAuthClient.getToken(code as string);
+      googleOAuthClient.setCredentials(tokens);
+
+      // Get user info from Google
+      const ticket = await googleOAuthClient.verifyIdToken({
+        idToken: tokens.id_token!,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+
+      const payload = ticket.getPayload();
+      if (!payload) {
+        return res.redirect('/?error=invalid_token');
+      }
+
+      // Create or update user in database
+      const userData = {
+        id: payload.sub,
+        email: payload.email!,
+        firstName: payload.given_name || '',
+        lastName: payload.family_name || '',
+        profileImageUrl: payload.picture || ''
+      };
+
+      await storage.upsertUser(userData);
+
+      // Set session
+      (req.session as any).userId = payload.sub;
+      (req.session as any).user = userData;
+
+      res.redirect('/');
+    } catch (error) {
+      console.error('Google OAuth callback error:', error);
+      res.redirect('/?error=oauth_failed');
+    }
+  });
+
+  // Traditional login endpoint
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password required' });
+      }
+
+      // Check if user exists and verify password
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Verify password (assuming bcrypt is used)
+      const bcrypt = await import('bcrypt');
+      const isValidPassword = await bcrypt.compare(password, user.password || '');
+      
+      if (!isValidPassword) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+
+      // Set session
+      (req.session as any).userId = user.id;
+      (req.session as any).user = user;
+
+      res.json({ 
+        message: 'Login successful',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
+
+  // Registration endpoint
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const { email, password, firstName, lastName } = req.body;
+
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ message: 'User already exists' });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create user
+      const newUser = {
+        id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        profileImageUrl: ''
+      };
+
+      await storage.upsertUser(newUser);
+
+      // Set session
+      (req.session as any).userId = newUser.id;
+      (req.session as any).user = newUser;
+
+      res.json({ 
+        message: 'Registration successful',
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName
+        }
+      });
+    } catch (error) {
+      console.error('Registration error:', error);
+      res.status(500).json({ message: 'Registration failed' });
+    }
+  });
+
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.session?.destroy((err: any) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.status(500).json({ message: 'Logout failed' });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logout successful' });
+    });
+  });
 
   // Config routes
   app.get('/api/config/maps-key', async (req, res) => {
