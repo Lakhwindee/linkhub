@@ -2768,45 +2768,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       console.log('👤 User data:', user ? { id: user.id, plan: user.plan, youtubeVerified: user.youtubeVerified } : 'null');
       
-      // For demo users, apply tier filtering but bypass plan/verification checks
-      if (userId && userId.startsWith('demo-')) {
-        console.log('🎯 Demo user detected:', userId);
-        
-        // Get user's YouTube tier for filtering (demo users have tier in userData)
-        const userTier = user?.youtubeTier || 1; // Default to tier 1 if not set
-        console.log('🎯 Demo user tier:', userTier);
-        
-        const ads = await storage.getAds();
-        console.log('📊 Total ads before filtering:', ads.length);
-        
-        // Filter ads based on user's YouTube tier - only show ads at or below their tier
-        const tierFilteredAds = ads.filter(ad => {
-          const adTier = ad.tierLevel || 1;
-          const canAccess = adTier <= userTier;
-          console.log(`📋 Demo: Ad "${ad.title}" (Tier ${adTier}) - User can access: ${canAccess}`);
-          return canAccess;
-        });
-        
-        // Apply geo-targeting filter with proper normalization
-        const userCountry = getDemoUserCountry(user, req);
-        console.log(`🌍 Demo user country: ${userCountry || 'Not set'}`);
-        
-        const geoFilteredAds = tierFilteredAds.filter(ad => {
-          // Global campaigns (empty or null countries array) - show to everyone
-          if (!ad.countries || ad.countries.length === 0) {
-            logGeoTargeting(ad.title || 'Untitled', [], userCountry, true);
-            return true;
-          }
-          
-          // Targeted campaigns - use normalized country matching
-          const isTargeted = isCountryTargeted(userCountry, ad.countries || []);
-          logGeoTargeting(ad.title || 'Untitled', ad.countries || [], userCountry, isTargeted);
-          return isTargeted;
-        });
-        
-        console.log('✅ Demo filtered ads count (after geo-targeting):', geoFilteredAds.length);
-        return res.json(geoFilteredAds);
-      }
       
       // Admin role has unrestricted access
       if (user?.role === 'admin') {
