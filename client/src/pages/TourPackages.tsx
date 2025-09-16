@@ -592,7 +592,7 @@ export default function TourPackages() {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-b">
-        <div className="container mx-auto px-4 py-12">
+        <div className="max-w-[1600px] mx-auto px-6 py-12">
           <div className="text-center space-y-4">
             <h1 className="text-4xl font-bold tracking-tight">Tour Packages</h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -645,7 +645,7 @@ export default function TourPackages() {
                   )}
                 </div>
 
-                <div className="container mx-auto px-4 py-8 space-y-8">
+                <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                   {/* Search & Filters */}
                   <Card>
                     <CardHeader>
@@ -655,7 +655,7 @@ export default function TourPackages() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         <Input
                           placeholder="Search packages..."
                           value={searchFilters.search}
@@ -709,7 +709,7 @@ export default function TourPackages() {
                   </Card>
 
                   {/* Packages Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {packages.map((pkg) => (
                       <PackageCard key={pkg.id} package={pkg} />
                     ))}
