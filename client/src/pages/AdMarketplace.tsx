@@ -1246,9 +1246,18 @@ export default function AdMarketplace() {
                               by {ad.brand}
                             </p>
                           </div>
-                          <Badge className="bg-chart-2 text-primary" data-testid={`badge-ad-payout-${ad.id}`}>
-                            £{ad.payoutAmount}
-                          </Badge>
+                          <div className="flex flex-col gap-2 items-end">
+                            <Badge className="bg-chart-2 text-primary" data-testid={`badge-ad-payout-${ad.id}`}>
+                              £{ad.payoutAmount}
+                            </Badge>
+                            <Badge 
+                              variant="secondary" 
+                              className="bg-blue-100 text-blue-800 text-xs px-2 py-1" 
+                              data-testid={`badge-ad-tier-${ad.id}`}
+                            >
+                              Tier {(ad as any).tierLevel || 1}
+                            </Badge>
+                          </div>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -1347,7 +1356,15 @@ export default function AdMarketplace() {
                               <DialogTitle className="text-xl">{ad.title}</DialogTitle>
                               <div className="flex items-center justify-between">
                                 <span className="text-muted-foreground">by {ad.brand}</span>
-                                <Badge className="bg-chart-2 text-primary text-lg px-3 py-1">£{ad.payoutAmount}</Badge>
+                                <div className="flex items-center gap-3">
+                                  <Badge className="bg-chart-2 text-primary text-lg px-3 py-1">£{ad.payoutAmount}</Badge>
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="bg-blue-100 text-blue-800 text-sm px-3 py-1"
+                                  >
+                                    Tier {(ad as any).tierLevel || 1}
+                                  </Badge>
+                                </div>
                               </div>
                             </DialogHeader>
                             
