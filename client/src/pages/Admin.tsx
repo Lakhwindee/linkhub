@@ -374,9 +374,12 @@ export default function Admin() {
                         title: "Login Successful",
                         description: "Welcome to HubLink Admin Panel",
                       });
+                      // Trigger auth update event for useAuth hook
+                      window.dispatchEvent(new CustomEvent('authUpdate'));
+                      // Small delay to allow auth to update, then reload
                       setTimeout(() => {
                         window.location.reload();
-                      }, 1000);
+                      }, 500);
                     } else {
                       toast({
                         title: "Login Failed",

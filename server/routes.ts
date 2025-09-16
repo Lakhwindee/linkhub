@@ -527,6 +527,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEVELOPMENT ONLY: Demo admin login for testing  
+  app.post('/api/demo-login', async (req: any, res) => {
+    try {
+      const { id, password } = req.body;
+      
+      // Simple credentials check for development
+      if (id !== 'ADMIN_001' || password !== 'admin123') {
+        return res.status(401).json({ message: 'Invalid admin credentials' });
+      }
+      
+      // Create admin session
+      (req.session as any).userId = 'demo-admin';
+      (req.session as any).user = { 
+        id: 'demo-admin', 
+        email: 'admin@hublink.dev', 
+        role: 'admin',
+        firstName: 'Admin',
+        lastName: 'User',
+        displayName: 'Admin User',
+        username: 'admin',
+        profileImageUrl: '',
+        plan: 'admin'
+      };
+      
+      console.log('✅ Demo admin session created');
+      
+      res.json({ 
+        message: 'Admin session created successfully',
+        user: {
+          id: 'demo-admin',
+          email: 'admin@hublink.dev',
+          role: 'admin',
+          firstName: 'Admin',
+          lastName: 'User',
+          displayName: 'Admin User',
+          username: 'admin',
+          profileImageUrl: '',
+          plan: 'admin'
+        }
+      });
+    } catch (error) {
+      console.error('❌ Demo login error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // DEVELOPMENT ONLY: Demo admin login for testing
   app.post('/api/auth/demo-admin-login', async (req: any, res) => {
     try {
