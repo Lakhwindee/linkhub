@@ -73,6 +73,9 @@ export const users = pgTable("users", {
   dateOfBirth: varchar("date_of_birth"), // extracted from document
   nationality: varchar("nationality"), // extracted from document
   expiryDate: varchar("expiry_date"), // document expiry date
+  // Password reset fields
+  resetToken: varchar("reset_token"),
+  resetTokenExpiry: timestamp("reset_token_expiry"),
   verifiedAt: timestamp("verified_at"),
   verificationNotes: text("verification_notes"), // admin notes or AI confidence score
   createdAt: timestamp("created_at").defaultNow(),

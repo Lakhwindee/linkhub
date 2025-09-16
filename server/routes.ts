@@ -148,6 +148,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Password reset endpoints
+  app.post('/api/auth/forgot-password', async (req: any, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: 'Email is required' });
+      }
+      
+      console.log('🔐 Password reset request for:', email);
+      
+      // Generate reset token
+      const { generateResetToken, sendPasswordResetEmail } = await import('./emailUtils');
+      const resetToken = generateResetToken();
+      const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      
+      // Check if it's a demo user email
+      const demoUserEmails = {
+        'admin_001@hublink.com': 'ADMIN_001',
+        'user_001@hublink.com': 'USER_001', 
+        'creator_001@hublink.com': 'CREATOR_001',
+        'free_001@hublink.com': 'FREE_001',
+        'publisher_001@hublink.com': 'PUBLISHER_001'
+      };
+      
+      const demoUserId = demoUserEmails[email.toLowerCase()];
+      
+      if (demoUserId) {
+        // Handle demo user password reset
+        console.log('🎭 Demo user password reset:', { email, demoUserId });
+        
+        // Store reset token in memory for demo users (since they're not in DB)
+        global.demoResetTokens = global.demoResetTokens || {};
+        global.demoResetTokens[resetToken] = {
+          userId: demoUserId,
+          email: email,
+          expiry: tokenExpiry
+        };
+        
+        // Send email for demo user
+        const emailResult = await sendPasswordResetEmail(email, resetToken, 'demo');
+        
+        if (emailResult.success) {
+          console.log('✅ Demo user password reset email sent');
+          res.json({ 
+            message: 'Password reset email sent successfully',
+            type: 'demo'
+          });
+        } else {
+          console.error('❌ Failed to send demo user reset email:', emailResult.error);
+          res.status(500).json({ message: 'Failed to send reset email' });
+        }
+      } else {
+        // Handle regular user password reset
+        try {
+          const user = await storage.getUserByEmail(email);
+          
+          if (!user) {
+            // Don't reveal if user exists or not for security
+            return res.json({ 
+              message: 'If an account with that email exists, a password reset link has been sent',
+              type: 'regular'
+            });
+          }
+          
+          // Update user with reset token
+          await storage.updateUser(user.id, {
+            resetToken: resetToken,
+            resetTokenExpiry: tokenExpiry
+          });
+          
+          // Send email for regular user
+          const emailResult = await sendPasswordResetEmail(email, resetToken, 'real');
+          
+          if (emailResult.success) {
+            console.log('✅ Regular user password reset email sent');
+            res.json({ 
+              message: 'Password reset email sent successfully',
+              type: 'regular'
+            });
+          } else {
+            console.error('❌ Failed to send regular user reset email:', emailResult.error);
+            res.status(500).json({ message: 'Failed to send reset email' });
+          }
+        } catch (error) {
+          console.error('❌ Database error during password reset:', error);
+          res.status(500).json({ message: 'Failed to process password reset' });
+        }
+      }
+    } catch (error) {
+      console.error('❌ Password reset error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+  
+  app.post('/api/auth/reset-password', async (req: any, res) => {
+    try {
+      const { token, newPassword } = req.body;
+      
+      if (!token || !newPassword) {
+        return res.status(400).json({ message: 'Token and new password are required' });
+      }
+      
+      console.log('🔐 Password reset attempt with token:', token.substring(0, 8) + '...');
+      
+      // Check demo user tokens first
+      global.demoResetTokens = global.demoResetTokens || {};
+      const demoToken = global.demoResetTokens[token];
+      
+      if (demoToken) {
+        // Check token expiry
+        if (new Date() > demoToken.expiry) {
+          delete global.demoResetTokens[token];
+          return res.status(400).json({ message: 'Reset token has expired' });
+        }
+        
+        // Update demo user password
+        const demoUsers = {
+          'ADMIN_001': { password: 'admin123', role: 'admin', plan: 'premium' },
+          'USER_001': { password: 'user123', role: 'user', plan: 'premium' },
+          'CREATOR_001': { password: 'creator123', role: 'creator', plan: 'premium' },
+          'FREE_001': { password: 'free123', role: 'free_creator', plan: 'free' },
+          'PUBLISHER_001': { password: 'publisher123', role: 'publisher', plan: 'premium' }
+        };
+        
+        // Update demo user password (in-memory for demo)
+        if (demoUsers[demoToken.userId as keyof typeof demoUsers]) {
+          demoUsers[demoToken.userId as keyof typeof demoUsers].password = newPassword;
+          console.log('✅ Demo user password updated:', demoToken.userId);
+          
+          // Clean up token
+          delete global.demoResetTokens[token];
+          
+          res.json({ 
+            message: 'Password updated successfully',
+            type: 'demo',
+            userId: demoToken.userId
+          });
+        } else {
+          res.status(400).json({ message: 'Invalid demo user' });
+        }
+      } else {
+        // Handle regular user password reset
+        try {
+          const user = await storage.getUserByResetToken(token);
+          
+          if (!user || !user.resetTokenExpiry || new Date() > user.resetTokenExpiry) {
+            return res.status(400).json({ message: 'Invalid or expired reset token' });
+          }
+          
+          // Update user password and clear reset token
+          await storage.updateUser(user.id, {
+            password: newPassword, // Note: In real app, this should be hashed
+            resetToken: null,
+            resetTokenExpiry: null
+          });
+          
+          console.log('✅ Regular user password updated:', user.id);
+          
+          res.json({ 
+            message: 'Password updated successfully',
+            type: 'regular'
+          });
+        } catch (error) {
+          console.error('❌ Database error during password reset:', error);
+          res.status(500).json({ message: 'Failed to reset password' });
+        }
+      }
+    } catch (error) {
+      console.error('❌ Password reset confirmation error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
+
   // Demo login endpoint for testing
   app.post('/api/demo-login', async (req: any, res) => {
     try {

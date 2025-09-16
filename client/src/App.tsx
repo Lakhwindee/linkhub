@@ -35,6 +35,7 @@ import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
+import ResetPassword from "@/pages/ResetPassword";
 
 // Initialize Stripe with a test key for demo purposes
 // In production, this would be loaded from environment variables
@@ -112,6 +113,8 @@ function Router() {
               <Route path="/verify-otp" component={OTPVerification} />
             </>
           )}
+          {/* Public routes (accessible to everyone) */}
+          <Route path="/reset-password" component={ResetPassword} />
           <Route component={NotFound} />
         </Switch>
       </main>
