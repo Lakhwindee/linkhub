@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
 import { 
   Settings, Users, FileText, Flag, DollarSign, BarChart3, CheckCircle, XCircle, Eye, AlertTriangle,
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
@@ -143,6 +144,9 @@ export default function Admin() {
     enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
     retry: false,
   });
+  
+  // Cast submissions to proper type for TypeScript
+  const typedSubmissions = submissions as AdSubmission[];
 
   // Fetch reports
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
@@ -250,8 +254,28 @@ export default function Admin() {
     },
   });
 
-  // API Settings form state
+  // API Settings form state  
   const [apiFormData, setApiFormData] = useState<any>({
+    stripe: {
+      publishableKey: '',
+      secretKey: '',
+      webhookSecret: ''
+    },
+    paypal: {
+      clientId: '',
+      clientSecret: '',
+      environment: 'sandbox'
+    },
+    youtube: {
+      apiKey: '',
+      projectId: 'hublink-project'
+    },
+    openai: {
+      apiKey: '',
+      model: 'gpt-3.5-turbo',
+      maxTokens: 1000,
+      temperature: 0.7
+    },
     maps: {
       apiKey: '',
       enableAdvancedFeatures: true
@@ -264,12 +288,13 @@ export default function Admin() {
   // Initialize form data with API settings
   useEffect(() => {
     if (apiSettings) {
+      const settings = apiSettings as any; // Type cast for safety
       setApiFormData({
         openai: {
           apiKey: '', // Don't pre-populate sensitive data
-          model: apiSettings.openai?.model || 'gpt-3.5-turbo',
-          maxTokens: apiSettings.openai?.maxTokens || 1000,
-          temperature: apiSettings.openai?.temperature || 0.7,
+          model: settings.openai?.model || 'gpt-3.5-turbo',
+          maxTokens: settings.openai?.maxTokens || 1000,
+          temperature: settings.openai?.temperature || 0.7,
         },
         stripe: {
           publishableKey: '',
@@ -279,11 +304,11 @@ export default function Admin() {
         paypal: {
           clientId: '',
           clientSecret: '',
-          environment: apiSettings.paypal?.environment || 'sandbox',
+          environment: settings.paypal?.environment || 'sandbox',
         },
         youtube: {
           apiKey: '',
-          projectId: apiSettings.youtube?.projectId || 'hublink-project',
+          projectId: settings.youtube?.projectId || 'hublink-project',
         },
         maps: {
           apiKey: '', // Don't pre-populate sensitive data
@@ -807,10 +832,10 @@ export default function Admin() {
                           Stripe API Keys
                         </div>
                         <Badge 
-                          variant={apiSettings?.stripe?.status === 'active' ? "secondary" : "destructive"}
-                          className={apiSettings?.stripe?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                          variant={(apiSettings as any)?.stripe?.status === 'active' ? "secondary" : "destructive"}
+                          className={(apiSettings as any)?.stripe?.status === 'active' ? "bg-green-100 text-green-800" : ""}
                         >
-                          {apiSettings?.stripe?.status === 'active' ? 'Active' : 'Inactive'}
+                          {(apiSettings as any)?.stripe?.status === 'active' ? 'Active' : 'Inactive'}
                         </Badge>
                       </CardTitle>
                     </CardHeader>
@@ -908,10 +933,10 @@ export default function Admin() {
                           PayPal API Keys
                         </div>
                         <Badge 
-                          variant={apiSettings?.paypal?.status === 'active' ? "secondary" : "destructive"}
-                          className={apiSettings?.paypal?.status === 'active' ? "bg-green-100 text-green-800" : ""}
+                          variant={(apiSettings as any)?.paypal?.status === 'active' ? "secondary" : "destructive"}
+                          className={(apiSettings as any)?.paypal?.status === 'active' ? "bg-green-100 text-green-800" : ""}
                         >
-                          {apiSettings?.paypal?.status === 'active' ? 'Active' : 'Inactive'}
+                          {(apiSettings as any)?.paypal?.status === 'active' ? 'Active' : 'Inactive'}
                         </Badge>
                       </CardTitle>
                     </CardHeader>
