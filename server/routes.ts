@@ -107,7 +107,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('🗺️ Using saved Google Maps API key');
       } else {
         // Fallback to environment variable or hardcoded for demo
-        apiKey = process.env.GOOGLE_MAPS_API_KEY || "AIzaSyDdnPsmwNOylJSDrt-K2T6n3gBhBK_RoHs";
+        apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          return res.status(503).json({ 
+            message: 'Google Maps API key not configured. Please set GOOGLE_MAPS_API_KEY environment variable.' 
+          });
+        }
         console.log('🗺️ Using environment Google Maps API key');
       }
       
@@ -324,12 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: 'OTP sent successfully',
         emailSent,
-        smsSent,
-        // For demo purposes, include OTPs in response (never do this in production!)
-        debug: {
-          emailOTP: type === 'email' || type === 'both' ? emailOTP : null,
-          smsOTP: type === 'sms' || type === 'both' ? smsOTP : null
-        }
+        smsSent
       });
       
     } catch (error) {
@@ -377,11 +377,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         message: 'OTP resent successfully',
         emailSent,
-        smsSent,
-        debug: {
-          emailOTP: type === 'email' || type === 'both' ? emailOTP : null,
-          smsOTP: type === 'sms' || type === 'both' ? smsOTP : null
-        }
+        smsSent
       });
       
     } catch (error) {
@@ -459,74 +455,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo users - check if userId starts with 'demo-'
-      if (userId && userId.startsWith('demo-')) {
-        const baseDemoUser = {
-          id: userId,
-          email: userId.includes('admin') ? 'admin@hublink.com' : 
-                userId.includes('creator') && userId.includes('free') ? 'free-creator@hublink.com' : 
-                userId.includes('creator') ? 'creator@hublink.com' : 
-                'publisher@hublink.com',
-          firstName: userId.includes('admin') ? 'System' : 
-                    userId.includes('free') ? 'Free' : 
-                    'Demo',
-          lastName: userId.includes('admin') ? 'Administrator' : 
-                   userId.includes('free_001') ? 'Creator' :
-                   userId.includes('creator') ? 'Creator' : 
-                   userId.includes('demo-user_001') ? 'User' :
-                   'Publisher',
-          displayName: userId.includes('admin') ? 'System Administrator' : 
-                      userId.includes('free_001') ? 'Free Creator' : 
-                      userId.includes('creator') ? 'Demo Creator' : 
-                      userId.includes('demo-user_001') ? 'Demo User' :
-                      'Demo Publisher',
-          bio: null,
-          country: 'United Kingdom',
-          city: 'London',
-          homeCountry: null,
-          homeCity: null,
-          lat: null,
-          lng: null,
-          showOnMap: false,
-          locationRadius: 10,
-          languages: null,
-          interests: null,
-          profileImageUrl: null,
-          avatarUrl: null,
-          coverUrl: null,
-          instagramUrl: null,
-          youtubeUrl: null,
-          tiktokUrl: null,
-          role: userId.includes('admin') ? 'admin' : 
-                userId.includes('free_001') ? 'free_creator' :
-                userId.includes('creator') ? 'creator' : 
-                userId.includes('demo-user_001') ? 'user' :
-                'publisher',
-          plan: userId.includes('admin') ? 'premium' : 
-                userId.includes('free_001') ? 'free' :
-                userId.includes('creator') ? 'premium' : 
-                'premium',
-          stripeCustomerId: null,
-          stripeSubscriptionId: null,
-          canDmMe: 'all',
-          verificationStatus: 'verified',
-          youtubeChannelId: null,
-          youtubeSubscribers: 0,
-          youtubeTier: 0,
-          youtubeVerified: false,
-          youtubeVerificationCode: null,
-          youtubeVerificationAttempts: 0,
-          youtubeLastUpdated: null,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        console.log('✅ Returning demo user:', baseDemoUser.role);
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
-        res.set('Expires', '0');
-        return res.json(baseDemoUser);
-      }
       
       // Handle regular users
       const user = await storage.getUser(userId);
@@ -753,14 +681,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   // Complete signup with document verification
-  app.post('/api/complete-signup', async (req: any, res) => {
+  app.post('/api/complete-signup', isAuthenticated, async (req: any, res) => {
     try {
-      // Get userId from session or create new user
-      let userId = req.session?.userId;
+      // Get authenticated user ID from Replit OAuth
+      const userId = req.user.claims.sub;
       
       if (!userId) {
-        // Generate new user ID for signup
-        userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        return res.status(401).json({ message: "Authentication required" });
       }
       const {
         username,
@@ -810,11 +737,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const user = await storage.updateUserProfile(userId, userData);
-      
-      // Set user session after successful signup
-      req.session.userId = userId;
-      req.session.user = user;
-      req.session.isAuthenticated = true;
       
       res.json({ 
         success: true, 

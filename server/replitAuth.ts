@@ -128,52 +128,11 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Check for demo session first
-  const sessionUser = (req.session as any)?.user;
-  if (sessionUser && sessionUser.id?.startsWith('demo-')) {
-    // Mock the user object for demo users
-    req.user = {
-      claims: {
-        sub: sessionUser.id,
-        email: sessionUser.email,
-        first_name: sessionUser.firstName,
-        last_name: sessionUser.lastName
-      }
-    };
-    console.log('✅ Demo user authenticated:', sessionUser.id);
-    return next();
-  }
-  
-  // Check for demo session via custom header (fallback)
-  const demoSessionHeader = req.headers['x-demo-session'] as string;
-  if (demoSessionHeader && demoSessionHeader.startsWith('demo-session-')) {
-    const demoUserId = demoSessionHeader.replace('demo-session-', '');
-    
-    // Create demo user based on ID
-    const demoUser = {
-      id: demoUserId,
-      email: `${demoUserId.replace('demo-', '')}@hublink.com`,
-      firstName: demoUserId.includes('admin') ? 'System' : 'Demo',
-      lastName: demoUserId.includes('admin') ? 'Administrator' : 'User'
-    };
-    
-    req.user = {
-      claims: {
-        sub: demoUser.id,
-        email: demoUser.email,
-        first_name: demoUser.firstName,
-        last_name: demoUser.lastName
-      }
-    };
-    console.log('✅ Demo user authenticated via header:', demoUser.id);
-    return next();
-  }
-  
   // Check standard authenticated session
   if (req.isAuthenticated && req.isAuthenticated()) {
     return next();
   }
   
-  console.log('❌ Authentication failed - no session or demo header found');
+  console.log('❌ Authentication failed - no authenticated session found');
   return res.status(401).json({ message: 'Not authenticated' });
 };
