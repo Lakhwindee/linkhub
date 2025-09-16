@@ -107,7 +107,6 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
       { href: "/trips", icon: Plane, label: "Trips", testId: "nav-trips" },
       { href: "/messages", icon: MessageCircle, label: "Messages", testId: "nav-messages" },
       { href: "/feed", icon: Users, label: "Feed", testId: "nav-feed" },
-      { href: "/boosted-posts", icon: Zap, label: "Boosted Posts", testId: "nav-boosted-posts" },
       { href: "/events", icon: Calendar, label: "Events", testId: "nav-events" },
       { href: "/ads", icon: DollarSign, label: campaignsLabel, testId: "nav-campaigns" },
     ];
@@ -212,6 +211,15 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                     Profile Settings
                   </Link>
                 </DropdownMenuItem>
+                {/* Boosted Posts - Only for creators/users, not publishers */}
+                {user?.role !== 'publisher' && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/boosted-posts" data-testid="link-boosted-posts">
+                      <Zap className="mr-2 h-4 w-4" />
+                      Boosted Posts
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 {user?.plan !== 'free' && user?.role !== 'publisher' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/billing" data-testid="link-billing">
