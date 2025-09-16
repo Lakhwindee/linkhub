@@ -220,6 +220,16 @@ export function PostCard({ post, compact = false }: PostCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {/* Boost option - only for post owner */}
+                {isOwnPost && (
+                  <DropdownMenuItem 
+                    onClick={() => setShowBoostModal(true)}
+                    data-testid={`button-boost-menu-${post.id}`}
+                  >
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    Boost Post
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem data-testid={`button-report-post-${post.id}`}>
                   <Flag className="w-4 h-4 mr-2" />
                   Report Post
