@@ -89,6 +89,7 @@ export interface IStorage {
   // Discovery operations
   getUsersNearby(lat: number, lng: number, radiusKm: number, filters?: any): Promise<User[]>;
   searchUsers(query: string, filters?: any): Promise<User[]>;
+  getUsers(filters?: any): Promise<User[]>;
   
   // Connect requests
   createConnectRequest(data: { fromUserId: string; toUserId: string; message?: string }): Promise<ConnectRequest>;
@@ -1270,6 +1271,36 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .limit(50);
+  }
+
+  async getUsers(filters?: any): Promise<User[]> {
+    try {
+      let query = db.select().from(users);
+      
+      // Apply filters if provided
+      if (filters?.role) {
+        query = query.where(eq(users.role, filters.role));
+      }
+      if (filters?.status) {
+        query = query.where(eq(users.status, filters.status));
+      }
+      if (filters?.search) {
+        query = query.where(
+          or(
+            ilike(users.username, `%${filters.search}%`),
+            ilike(users.displayName, `%${filters.search}%`),
+            ilike(users.email, `%${filters.search}%`)
+          )
+        );
+      }
+      
+      return await query
+        .orderBy(desc(users.createdAt))
+        .limit(filters?.limit || 100);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      return [];
+    }
   }
 
   // Connect requests
