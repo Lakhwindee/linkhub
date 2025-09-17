@@ -2763,23 +2763,9 @@ export default function Admin() {
                 </div>
               </div>
             )}
-
+            
             {activeSection === "users" && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-2xl font-bold text-foreground">User Management</h2>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export Users
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Bulk Actions
-                    </Button>
-                  </div>
-                </div>
-
                 {/* User Search and Filters */}
                 <Card>
                   <CardHeader>
@@ -3572,15 +3558,17 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {usersLoading ? (
+                    {usersLoading && (
                       <div className="flex justify-center py-8">
                         <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full" />
                       </div>
-                    ) : users.length === 0 ? (
+                    )}
+                    {!usersLoading && users.length === 0 && (
                       <div className="text-center py-8 text-muted-foreground">
                         No users found.
                       </div>
-                    ) : (
+                    )}
+                    {!usersLoading && users.length > 0 && (
                       <Table>
                       <TableHeader>
                         <TableRow>
