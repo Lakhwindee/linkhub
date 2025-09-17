@@ -647,10 +647,10 @@ export default function Admin() {
                   }
 
                   try {
-                    const response = await fetch('/api/demo-login', {
+                    const response = await fetch('/api/admin-login', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ id, password }),
+                      body: JSON.stringify({ email: id, password }),
                       credentials: 'include',
                     });
                     

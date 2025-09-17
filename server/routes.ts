@@ -15,13 +15,12 @@ function isAuthenticated(req: any, res: any, next: any) {
     return next();
   }
   
-  console.log('❌ Authentication failed - no authenticated session found');
   return res.status(401).json({ message: 'Not authenticated' });
 }
 
 // Initialize Google OAuth client with production-ready configuration
 if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
-  console.warn('⚠️ Google OAuth credentials not configured - Google login will not work');
+  throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for production');
 }
 
 const googleOAuthClient = new OAuth2Client(
@@ -115,7 +114,6 @@ const otpStore = new OTPStore();
 // Cleanup expired OTPs every 5 minutes
 setInterval(() => {
   otpStore.cleanup();
-  console.log('🧹 Cleaned up expired OTP codes');
 }, 5 * 60 * 1000);
 
 // Helper for safe auth claims access
@@ -260,7 +258,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.redirect('/');
     } catch (error) {
-      console.error('Google OAuth callback error:', error);
       res.redirect('/?error=oauth_failed');
     }
   });
@@ -302,7 +299,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
     } catch (error) {
-      console.error('Login error:', error);
       res.status(500).json({ message: 'Login failed' });
     }
   });
@@ -352,7 +348,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
     } catch (error) {
-      console.error('Registration error:', error);
       res.status(500).json({ message: 'Registration failed' });
     }
   });
@@ -361,10 +356,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/auth/logout', (req, res) => {
     req.session?.destroy((err: any) => {
       if (err) {
-        console.error('Logout error:', err);
         return res.status(500).json({ message: 'Logout failed' });
       }
-      res.clearCookie('connect.sid');
+      res.clearCookie('hublink-session');
       res.json({ message: 'Logout successful' });
     });
   });
@@ -377,7 +371,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedMapsSettings = storedApiSettings.maps;
       if (savedMapsSettings && savedMapsSettings.apiKey && savedMapsSettings.apiKey.trim() !== '') {
         apiKey = savedMapsSettings.apiKey;
-        console.log('🗺️ Using saved Google Maps API key');
       } else {
         // Fallback to environment variable or hardcoded for demo
         apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -386,17 +379,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: 'Google Maps API key not configured. Please set GOOGLE_MAPS_API_KEY environment variable.' 
           });
         }
-        console.log('🗺️ Using environment Google Maps API key');
       }
       
       // If no valid key found, try environment variable as final fallback
       if (!apiKey || apiKey.includes('demo')) {
         const envApiKey = process.env.GOOGLE_MAPS_API_KEY;
         if (envApiKey && envApiKey.startsWith('AIza') && !envApiKey.includes('demo')) {
-          console.log('🗺️ Using environment Google Maps API key as fallback');
           return res.json({ apiKey: envApiKey });
         }
-        console.warn('⚠️ No valid Google Maps API key configured - Maps functionality will be limited');
         return res.status(503).json({ 
           message: "Google Maps API key not configured. Please add a valid API key in Admin Settings.",
           fallbackMode: true 
@@ -405,25 +395,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ apiKey });
     } catch (error) {
-      console.error("Error fetching Google Maps API key:", error);
       res.status(500).json({ message: "Failed to fetch API configuration" });
     }
   });
 
-  // Auth routes
-  app.post('/api/auth/logout', async (req: any, res) => {
-    // Clear session cookies
-    res.clearCookie('connect.sid', { path: '/' });
-    
-    req.session.destroy((err: any) => {
-      if (err) {
-        console.error('Session destroy error:', err);
-        return res.status(500).json({ message: 'Logout failed' });
-      }
-      console.log('User logged out successfully');
-      res.json({ message: 'Logged out successfully' });
-    });
-  });
+  // Duplicate logout endpoint removed - using the previous one above
 
   // Password reset endpoints
   app.post('/api/auth/forgot-password', async (req: any, res) => {
@@ -434,7 +410,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Email is required' });
       }
       
-      console.log('🔐 Password reset request for:', email);
       
       // Generate reset token
       const { generateResetToken, sendPasswordResetEmail } = await import('./emailUtils');
@@ -463,13 +438,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const emailResult = await sendPasswordResetEmail(email, resetToken, 'real');
           
           if (emailResult.success) {
-            console.log('✅ Regular user password reset email sent');
             res.json({ 
               message: 'Password reset email sent successfully',
               type: 'regular'
             });
           } else {
-            console.error('❌ Failed to send regular user reset email:', emailResult.error);
             res.status(500).json({ message: 'Failed to send reset email' });
           }
       } catch (error) {
@@ -490,7 +463,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Token and new password are required' });
       }
       
-      console.log('🔐 Password reset attempt with token:', token.substring(0, 8) + '...');
       
       // Handle regular user password reset
       try {
@@ -511,7 +483,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             resetTokenExpiry: null
           });
           
-          console.log('✅ Regular user password updated:', user.id);
           
           res.json({ 
             message: 'Password updated successfully',
@@ -527,91 +498,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DEVELOPMENT ONLY: Demo admin login for testing  
-  app.post('/api/demo-login', async (req: any, res) => {
+  // Rate limiting store for admin login attempts
+  const adminLoginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+  
+  // Admin login endpoint with rate limiting
+  app.post('/api/admin-login', async (req: any, res) => {
     try {
-      // Sanitize and normalize input
-      const rawId = String(req.body?.id ?? '').trim();
-      const rawPassword = String(req.body?.password ?? '').trim();
+      const { email, password } = req.body;
       
-      // Debug logging for troubleshooting
-      console.log('🔍 Demo login attempt:', { rawId, rawPassword, body: req.body });
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
       
-      // Simple credentials check for development
-      if (rawId !== 'ADMIN_001' || rawPassword !== 'admin123') {
-        console.log('❌ Invalid credentials provided. Expected: ADMIN_001/admin123, Got:', { rawId, rawPassword });
+      // Rate limiting check
+      const clientKey = req.ip || 'unknown';
+      const attempt = adminLoginAttempts.get(clientKey);
+      const now = Date.now();
+      
+      if (attempt && now - attempt.lastAttempt < 900000) { // 15 minutes
+        if (attempt.count >= 5) {
+          return res.status(429).json({ message: 'Too many login attempts. Please try again in 15 minutes.' });
+        }
+      }
+      
+      // Require environment variables for admin authentication (production ready)
+      const adminEmail = process.env.ADMIN_EMAIL;
+      const adminPassword = process.env.ADMIN_PASSWORD;
+      
+      if (!adminEmail || !adminPassword) {
+        throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required for production');
+      }
+      
+      // Verify admin credentials
+      if (email !== adminEmail || password !== adminPassword) {
+        // Update rate limiting
+        if (attempt && now - attempt.lastAttempt < 900000) {
+          attempt.count++;
+          attempt.lastAttempt = now;
+        } else {
+          adminLoginAttempts.set(clientKey, { count: 1, lastAttempt: now });
+        }
         return res.status(401).json({ message: 'Invalid admin credentials' });
       }
       
+      // Clear rate limiting on successful login
+      adminLoginAttempts.delete(clientKey);
+      
+      // Check if admin user exists in database, if not create one
+      let adminUser = await storage.getUserByEmail(adminEmail);
+      if (!adminUser) {
+        // Create admin user if doesn't exist
+        adminUser = await storage.upsertUser({
+          email: adminEmail,
+          username: 'admin',
+          displayName: 'System Administrator',
+          firstName: 'System',
+          lastName: 'Administrator',
+          role: 'admin',
+          plan: 'admin'
+        });
+      }
+      
       // Create admin session
-      (req.session as any).userId = 'demo-admin';
-      (req.session as any).user = { 
-        id: 'demo-admin', 
-        email: 'admin@hublink.dev', 
-        role: 'admin',
-        firstName: 'Admin',
-        lastName: 'User',
-        displayName: 'Admin User',
-        username: 'admin',
-        profileImageUrl: '',
-        plan: 'admin'
+      (req.session as any).userId = adminUser.id;
+      (req.session as any).user = {
+        id: adminUser.id,
+        email: adminUser.email,
+        role: adminUser.role,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        displayName: adminUser.displayName,
+        username: adminUser.username,
+        profileImageUrl: adminUser.profileImageUrl,
+        plan: adminUser.plan
       };
       
-      console.log('✅ Demo admin session created');
-      
       res.json({ 
-        message: 'Admin session created successfully',
+        message: 'Admin login successful',
         user: {
-          id: 'demo-admin',
-          email: 'admin@hublink.dev',
-          role: 'admin',
-          firstName: 'Admin',
-          lastName: 'User',
-          displayName: 'Admin User',
-          username: 'admin',
-          profileImageUrl: '',
-          plan: 'admin'
+          id: adminUser.id,
+          email: adminUser.email,
+          role: adminUser.role,
+          firstName: adminUser.firstName,
+          lastName: adminUser.lastName,
+          displayName: adminUser.displayName,
+          username: adminUser.username,
+          profileImageUrl: adminUser.profileImageUrl,
+          plan: adminUser.plan
         }
       });
     } catch (error) {
-      console.error('❌ Demo login error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
 
-  // DEVELOPMENT ONLY: Demo admin login for testing
-  app.post('/api/auth/demo-admin-login', async (req: any, res) => {
-    try {
-      const { secret } = req.body;
-      
-      // Simple secret check for development
-      if (secret !== 'dev-admin-2025') {
-        return res.status(401).json({ message: 'Invalid admin secret' });
-      }
-      
-      // Create admin session
-      (req.session as any).userId = 'demo-admin';
-      (req.session as any).user = { 
-        id: 'demo-admin', 
-        email: 'admin@hublink.dev', 
-        role: 'admin' 
-      };
-      
-      console.log('✅ Demo admin session created');
-      
-      res.json({ 
-        message: 'Admin session created successfully',
-        user: {
-          id: 'demo-admin',
-          email: 'admin@hublink.dev',
-          role: 'admin'
-        }
-      });
-    } catch (error) {
-      console.error('Demo admin login error:', error);
-      res.status(500).json({ message: 'Failed to create admin session' });
-    }
-  });
+  // Demo admin login endpoint removed for production security
 
   // Check authentication status - returns current user or 401
   app.get('/api/auth/user', async (req: any, res) => {
@@ -619,14 +600,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const session = req.session;
       
       if (!session || !session.userId || !session.user) {
-        console.log('❌ Authentication failed - no authenticated session found');
         return res.status(401).json({ message: 'Not authenticated' });
       }
       
-      console.log('✅ User authenticated via session:', session.user);
       res.json(session.user);
     } catch (error) {
-      console.error('❌ Auth check error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
@@ -639,9 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if Gmail credentials are available
       if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
-        console.warn('⚠️ Gmail credentials not configured - OTP email will be simulated');
-        console.log(`📧 [SIMULATED] OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
-        console.log(`🔒 [SIMULATED] OTP Code: ${otp} (for development)`);
+        // OTP email simulation for development/testing
         return { success: true, messageId: `simulated_${Date.now()}`, simulated: true };
       }
 
@@ -703,17 +679,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         html: emailContent
       });
 
-      console.log(`✅ Real OTP email sent to ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
-      console.log(`📧 Message ID: ${result.messageId}`);
+      // OTP email sent successfully
       
       return { success: true, messageId: result.messageId, simulated: false };
       
     } catch (error) {
-      console.error('❌ Error sending OTP email:', error);
       
       // Fallback to simulation on error
-      console.log(`📧 [FALLBACK] OTP email simulated for ${email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
-      console.log(`🔒 [FALLBACK] OTP Code: ${otp} (for development)`);
+      // Fallback OTP simulation
       return { success: true, messageId: `fallback_${Date.now()}`, simulated: true, error: error.message };
     }
   }
@@ -745,7 +718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send SMS OTP (placeholder - would integrate with SMS service)
       if (type === 'sms' || type === 'both') {
         otpStore.set(`sms:${phone}`, { otp: smsOTP, expiresAt });
-        console.log(`📱 SMS OTP sent to ${phone?.replace(/(.{3}).*(.{2})/, '$1***$2')}`);
+        // SMS OTP sent
         smsSent = true; // Simulate SMS sent
       }
 
@@ -761,10 +734,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             metaJson: { type, email: !!email, phone: !!phone }
           });
         } else {
-          console.log('🔍 Skipping audit log for anonymous OTP request');
+          // Anonymous OTP request
         }
       } catch (auditError) {
-        console.warn('⚠️ Failed to create audit log for OTP:', auditError.message);
+        // Audit log creation failed
         // Continue processing - audit log failure shouldn't block OTP
       }
       
@@ -883,13 +856,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (verified) {
-        console.log(`✅ OTP verification successful for ${email || phone}`);
         res.json({ 
           verified: true, 
           message: 'OTP verified successfully' 
         });
       } else {
-        console.log(`❌ OTP verification failed: ${errorMessage}`);
         res.status(400).json({ 
           verified: false, 
           message: errorMessage 
@@ -897,7 +868,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
     } catch (error) {
-      console.error('Error verifying OTP:', error);
       res.status(500).json({ message: 'Failed to verify OTP' });
     }
   });
@@ -913,16 +883,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Debug log to see what we're returning
-      console.log('API returning user data:', {
-        id: user.id,
-        plan: user.plan,
-        role: user.role,
-        youtubeSubscribers: user.youtubeSubscribers,
-        youtubeTier: user.youtubeTier,
-        youtubeChannelId: user.youtubeChannelId,
-        youtubeVerified: user.youtubeVerified
-      });
+      // User data retrieved successfully
       
       // Disable cache to ensure fresh data
       res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -930,7 +891,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.set('Expires', '0');
       res.json(user);
     } catch (error) {
-      console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
@@ -947,7 +907,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { stripeCustomerId, stripeSubscriptionId, ...publicUser } = user;
       res.json(publicUser);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
       res.status(500).json({ message: "Failed to fetch user profile" });
     }
   });
@@ -962,7 +921,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      console.error("Error updating profile:", error);
       res.status(500).json({ message: "Failed to update profile" });
     }
   });
@@ -1391,9 +1349,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/youtube/sync', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      console.log('Request body:', req.body); // Debug log
       const { youtubeUrl } = req.body;
-      console.log('Extracted youtubeUrl:', youtubeUrl); // Debug log
       
       if (!youtubeUrl) {
         return res.status(400).json({ message: "YouTube URL is required" });
@@ -1470,10 +1426,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const detectedCountry = channelSnippet?.country || '';
       
       if (detectedCountry) {
-        console.log(`🌍 Detected YouTube channel country: ${detectedCountry} (User: ${userId}, Channel: ${channelId})`);
-      } else {
-        console.log(`⚠️ No country detected for YouTube channel (User: ${userId}, Channel: ${channelId}) - channel may not have set location`);
-      }
+              } else {
+              }
       
       // Use shared tier configuration to determine tier
       const tier = computeTierFromSubscribers(subscriberCount);
@@ -3080,13 +3034,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`✅ Tier access granted: User tier ${userTier} >= Required tier ${requiredTier} for campaign "${ad.title}"`);
       
       // Auto-fix demo user plan if needed
-      if ((userId === 'demo-user-1' || userId === 'demo-admin') && user?.plan !== 'standard') {
-        console.log('Updating demo user plan to standard');
+      if (user?.plan !== 'standard') {
         user = await storage.updateUserProfile(userId, { plan: 'standard' });
       }
       
       // For demo users, bypass plan check  
-      if (userId !== 'demo-user-1' && userId !== 'demo-admin') {
+      // Remove demo user restrictions for production
+      if (true) {
         // Admin role has unrestricted access
         if (user?.role === 'admin') {
           // No restrictions for admin users
@@ -3109,22 +3063,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // SECURITY: Re-verify channel ownership before allowing campaign reservation
-      // For demo users, allow campaign access if channel is connected (bypass verification for testing)
-      if (userId === 'demo-user-1' || userId === 'demo-admin') {
-        // Demo user bypass - only check if channel is connected
-        if (!user?.youtubeChannelId) {
-          return res.status(403).json({ message: "YouTube channel connection required" });
-        }
-        console.log('Demo user campaign access - verification bypassed');
-      } else {
-        // Regular users need full verification
-        if (!user?.youtubeVerified || !user?.youtubeChannelId || !user?.youtubeVerificationCode) {
-          return res.status(403).json({ message: "YouTube channel verification required" });
-        }
+      // Production security: require verified YouTube channel
+      if (!user?.youtubeVerified || !user?.youtubeChannelId || !user?.youtubeVerificationCode) {
+        return res.status(403).json({ message: "YouTube channel verification required" });
       }
 
       // Fresh verification check - only for regular users (NOT demo user)
-      if (userId !== 'demo-user-1') {
+      // Fresh verification check for all users
+      if (true) {
         try {
           const response = await fetch(
             `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
@@ -3165,7 +3111,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reservation = await storage.createAdReservation(id, userId, expiresAt);
       
       // Skip audit log for demo users to avoid foreign key constraint error
-      if (userId !== 'demo-user-1') {
+      // Fresh verification check for all users
+      if (true) {
         await storage.createAuditLog({
           actorId: userId,
           action: "ad_reserved",
@@ -3508,7 +3455,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Fresh verification check - only for regular users (NOT demo user)
-      if (userId !== 'demo-user-1') {
+      // Fresh verification check for all users
+      if (true) {
         try {
           const response = await fetch(
             `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
@@ -3852,8 +3800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
-      console.error("Error creating report:", error);
-      res.status(500).json({ message: "Failed to create report" });
+            res.status(500).json({ message: "Failed to create report" });
     }
   });
 
@@ -3862,13 +3809,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin', 'moderator'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -3882,8 +3824,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         pendingSubmissions: 0,
       });
     } catch (error) {
-      console.error("Error fetching admin dashboard:", error);
-      res.status(500).json({ message: "Failed to fetch dashboard" });
+            res.status(500).json({ message: "Failed to fetch dashboard" });
     }
   });
 
@@ -3892,13 +3833,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4041,13 +3977,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4109,13 +4040,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4153,13 +4079,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4210,13 +4131,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4252,13 +4168,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4277,8 +4188,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       
       res.json(users);
     } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
+            res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 
@@ -4286,13 +4196,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const adminId = req.user.claims.sub;
       
-      // Handle demo admin
-      let adminUser;
-      if (adminId === 'demo-admin') {
-        adminUser = { role: 'admin' };
-      } else {
-        adminUser = await storage.getUser(adminId);
-      }
+      // Get admin user for operations  
+      const adminUser = await storage.getUser(adminId);
       
       if (!['admin', 'superadmin'].includes(adminUser?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4319,8 +4224,7 @@ Always be helpful, professional, and focused on website management tasks.`;
         updates
       });
     } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ message: "Failed to update user" });
+            res.status(500).json({ message: "Failed to update user" });
     }
   });
 
@@ -4329,13 +4233,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4418,13 +4317,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4460,13 +4354,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4506,13 +4395,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4548,13 +4432,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4628,13 +4507,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4731,13 +4605,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -4967,13 +4836,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5019,13 +4883,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5061,13 +4920,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5107,13 +4961,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5149,13 +4998,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5254,13 +5098,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5318,13 +5157,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
@@ -5358,13 +5192,8 @@ Always be helpful, professional, and focused on website management tasks.`;
     try {
       const userId = req.user.claims.sub;
       
-      // Handle demo admin
-      let user;
-      if (userId === 'demo-admin') {
-        user = { role: 'admin' };
-      } else {
-        user = await storage.getUser(userId);
-      }
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
       
       if (!['admin', 'superadmin', 'moderator'].includes(user?.role || '')) {
         return res.status(403).json({ message: "Admin access required" });
