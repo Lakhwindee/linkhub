@@ -530,10 +530,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // DEVELOPMENT ONLY: Demo admin login for testing  
   app.post('/api/demo-login', async (req: any, res) => {
     try {
-      const { id, password } = req.body;
+      // Sanitize and normalize input
+      const rawId = String(req.body?.id ?? '').trim();
+      const rawPassword = String(req.body?.password ?? '').trim();
+      
+      // Debug logging for troubleshooting
+      console.log('🔍 Demo login attempt:', { rawId, rawPassword, body: req.body });
       
       // Simple credentials check for development
-      if (id !== 'ADMIN_001' || password !== 'admin123') {
+      if (rawId !== 'ADMIN_001' || rawPassword !== 'admin123') {
+        console.log('❌ Invalid credentials provided. Expected: ADMIN_001/admin123, Got:', { rawId, rawPassword });
         return res.status(401).json({ message: 'Invalid admin credentials' });
       }
       
