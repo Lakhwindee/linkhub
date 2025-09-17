@@ -26,6 +26,37 @@ import { format, subDays, subWeeks, subMonths } from "date-fns";
 import { Link } from "wouter";
 import type { AdSubmission, Report } from "@shared/schema";
 
+// TypeScript interfaces for better type safety
+interface AdminUser {
+  id: string;
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  role: string;
+  plan?: string;
+  status?: string;
+  postsCount?: number;
+  createdAt?: string | Date;
+  lastActiveAt?: string | Date;
+}
+
+type ApiSettings = {
+  openai?: { model?: string; maxTokens?: number; temperature?: number };
+  stripe?: { publishableKey?: string; secretKey?: string; webhookSecret?: string };
+  paypal?: { environment?: 'sandbox' | 'live' };
+  youtube?: { projectId?: string };
+  maps?: { apiKey?: string; enableAdvancedFeatures?: boolean };
+};
+
+type ApiFormData = {
+  stripe: { publishableKey: string; secretKey: string; webhookSecret: string };
+  paypal: { clientId: string; clientSecret: string; environment: 'sandbox' | 'live' };
+  youtube: { apiKey: string; projectId: string };
+  openai: { apiKey: string; model: string; maxTokens: number; temperature: number };
+  maps: { apiKey: string; enableAdvancedFeatures: boolean };
+};
+
 export default function Admin() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -71,6 +102,18 @@ export default function Admin() {
     schedule: 'now',
     subject: '',
     content: ''
+  });
+
+  // User Management state
+  const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+  const [editingUser, setEditingUser] = useState(false);
+  const [userActionsOpen, setUserActionsOpen] = useState<string | null>(null);
+
+  // Fetch users from backend
+  const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
+    queryKey: ["/api/admin/users"],
+    enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
+    retry: false,
   });
 
   // AI Assistant functions
@@ -161,7 +204,7 @@ export default function Admin() {
   });
 
   // Fetch API settings
-  const { data: apiSettings, isLoading: apiSettingsLoading, refetch: refetchApiSettings } = useQuery({
+  const { data: apiSettings, isLoading: apiSettingsLoading, refetch: refetchApiSettings } = useQuery<ApiSettings>({
     queryKey: ["/api/admin/api-settings"],
     enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
     retry: false,
@@ -260,7 +303,7 @@ export default function Admin() {
   });
 
   // API Settings form state  
-  const [apiFormData, setApiFormData] = useState<any>({
+  const [apiFormData, setApiFormData] = useState<ApiFormData>({
     stripe: {
       publishableKey: '',
       secretKey: '',
@@ -331,6 +374,138 @@ export default function Admin() {
       });
     },
   });
+
+  // User Management mutations
+  const updateUserMutation = useMutation({
+    mutationFn: async (data: { userId: string; updates: any }) => {
+      return await apiRequest("PUT", `/api/admin/users/${data.userId}`, data.updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "User Updated",
+        description: "User information has been updated successfully!",
+      });
+      setEditingUser(false);
+      setSelectedUser(null);
+      // Refetch users to show updated data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update user.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkActionMutation = useMutation({
+    mutationFn: async (data: { action: string; userIds: string[] }) => {
+      return await apiRequest("POST", "/api/admin/users/bulk", data);
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Bulk Action Complete",
+        description: `Successfully applied ${variables.action} to ${variables.userIds.length} users.`,
+      });
+      setSelectedUsers([]);
+      setBulkAction("");
+      // Refetch users to show updated data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bulk Action Failed",
+        description: error.message || "Failed to apply bulk action.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // User Management helper functions
+  const handleViewUser = (user: AdminUser) => {
+    setSelectedUser(user);
+    toast({
+      title: "User Profile",
+      description: `Viewing profile for ${user.displayName || user.email}`,
+    });
+  };
+
+  const handleEditUser = (user: AdminUser) => {
+    setSelectedUser(user);
+    setEditingUser(true);
+  };
+
+  const handleUserAction = (userId: string, action: string) => {
+    const foundUser = users.find((u: AdminUser) => u.id === userId);
+    if (!user) return;
+
+    switch (action) {
+      case 'ban':
+        updateUserMutation.mutate({
+          userId,
+          updates: { status: 'Banned' }
+        });
+        break;
+      case 'unban':
+        updateUserMutation.mutate({
+          userId,
+          updates: { status: 'Active' }
+        });
+        break;
+      case 'promote':
+        updateUserMutation.mutate({
+          userId,
+          updates: { role: 'Premium' }
+        });
+        break;
+      case 'demote':
+        updateUserMutation.mutate({
+          userId,
+          updates: { role: 'Free' }
+        });
+        break;
+      default:
+        toast({
+          title: "Action",
+          description: `${action} action for ${user.name}`,
+        });
+    }
+    
+    setUserActionsOpen(null);
+  };
+
+  const handleBulkAction = () => {
+    if (!bulkAction || selectedUsers.length === 0) {
+      toast({
+        title: "No Action Selected",
+        description: "Please select users and an action to perform.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    bulkActionMutation.mutate({
+      action: bulkAction,
+      userIds: selectedUsers
+    });
+  };
+
+  const handleUserSelect = (userId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedUsers([...selectedUsers, userId]);
+    } else {
+      setSelectedUsers(selectedUsers.filter(id => id !== userId));
+    }
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedUsers(users.map(u => u.id));
+    } else {
+      setSelectedUsers([]);
+    }
+  };
 
   // Email Management helper functions
   const handleEditTemplate = (template: any) => {
@@ -2074,6 +2249,88 @@ export default function Admin() {
                     </div>
                   </DialogContent>
                 </Dialog>
+
+                {/* User Edit Dialog */}
+                <Dialog open={editingUser} onOpenChange={setEditingUser}>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Edit User: {selectedUser?.name}</DialogTitle>
+                    </DialogHeader>
+                    {selectedUser && (
+                      <div className="space-y-4">
+                        <div>
+                          <Label>User Name</Label>
+                          <Input 
+                            value={selectedUser.name} 
+                            readOnly 
+                            className="bg-muted"
+                          />
+                        </div>
+                        <div>
+                          <Label>Email</Label>
+                          <Input 
+                            value={selectedUser.email} 
+                            readOnly 
+                            className="bg-muted"
+                          />
+                        </div>
+                        <div>
+                          <Label>Role</Label>
+                          <Select 
+                            value={selectedUser.role}
+                            onValueChange={(value) => setSelectedUser({...selectedUser, role: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Free">Free</SelectItem>
+                              <SelectItem value="Premium">Premium</SelectItem>
+                              <SelectItem value="Creator">Creator</SelectItem>
+                              <SelectItem value="Admin">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label>Status</Label>
+                          <Select 
+                            value={selectedUser.status}
+                            onValueChange={(value) => setSelectedUser({...selectedUser, status: value})}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Active">Active</SelectItem>
+                              <SelectItem value="Inactive">Inactive</SelectItem>
+                              <SelectItem value="Banned">Banned</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setEditingUser(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={() => updateUserMutation.mutate({
+                              userId: selectedUser.id,
+                              updates: {
+                                role: selectedUser.role,
+                                status: selectedUser.status
+                              }
+                            })}
+                            disabled={updateUserMutation.isPending}
+                          >
+                            {updateUserMutation.isPending ? "Saving..." : "Save Changes"}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
@@ -3283,7 +3540,14 @@ export default function Admin() {
                           <SelectItem value="delete">Delete Users</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button size="sm" variant="destructive">Apply</Button>
+                      <Button 
+                        size="sm" 
+                        variant="destructive"
+                        onClick={handleBulkAction}
+                        disabled={bulkActionMutation.isPending}
+                      >
+                        {bulkActionMutation.isPending ? "Processing..." : "Apply"}
+                      </Button>
                     </div>
                     <Button 
                       variant="outline" 
@@ -3301,15 +3565,31 @@ export default function Admin() {
                     <CardTitle className="flex items-center space-x-2">
                       <Users className="w-5 h-5" />
                       <span>Platform Users</span>
-                      <Badge variant="secondary">1,247 total</Badge>
+                      <Badge variant="secondary">{users.length} total</Badge>
+                      {usersLoading && (
+                        <div className="animate-spin w-4 h-4 border-2 border-accent border-t-transparent rounded-full" />
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Table>
+                    {usersLoading ? (
+                      <div className="flex justify-center py-8">
+                        <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full" />
+                      </div>
+                    ) : users.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">
+                        No users found.
+                      </div>
+                    ) : (
+                      <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-12">
-                            <input type="checkbox" />
+                            <input 
+                              type="checkbox" 
+                              checked={selectedUsers.length === users.length && users.length > 0}
+                              onChange={(e) => handleSelectAll(e.target.checked)}
+                            />
                           </TableHead>
                           <TableHead>User</TableHead>
                           <TableHead>Role</TableHead>
@@ -3321,45 +3601,108 @@ export default function Admin() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        <TableRow>
-                          <TableCell>
-                            <input type="checkbox" />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span className="text-xs font-medium">JD</span>
+                        {users.map((user) => (
+                          <TableRow key={user.id}>
+                            <TableCell>
+                              <input 
+                                type="checkbox"
+                                checked={selectedUsers.includes(user.id)}
+                                onChange={(e) => handleUserSelect(user.id, e.target.checked)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <span className="text-xs font-medium">{user.displayName?.slice(0, 2).toUpperCase() || user.email?.slice(0, 2).toUpperCase()}</span>
+                                </div>
+                                <div>
+                                  <div className="font-medium">{user.displayName || user.firstName + ' ' + user.lastName || user.email}</div>
+                                  <div className="text-sm text-muted-foreground">{user.email}</div>
+                                </div>
                               </div>
-                              <div>
-                                <div className="font-medium">John Doe</div>
-                                <div className="text-sm text-muted-foreground">john@example.com</div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{user.role}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge 
+                                variant="default" 
+                                className={
+                                  user.plan === 'premium' || user.role === 'admin'
+                                    ? "bg-green-100 text-green-800" 
+                                    : user.plan === 'free' 
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-800"
+                                }
+                              >
+                                {user.plan || 'Free'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{user.postsCount || 0}</TableCell>
+                            <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</TableCell>
+                            <TableCell>{user.lastActiveAt ? new Date(user.lastActiveAt).toLocaleDateString() : 'Never'}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center space-x-2 relative">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleViewUser(user)}
+                                  title="View User"
+                                >
+                                  <Eye className="w-3 h-3" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditUser(user)}
+                                  title="Edit User"
+                                >
+                                  <Edit3 className="w-3 h-3" />
+                                </Button>
+                                <div className="relative">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => setUserActionsOpen(userActionsOpen === user.id ? null : user.id)}
+                                    title="More Actions"
+                                  >
+                                    <MoreVertical className="w-3 h-3" />
+                                  </Button>
+                                  {userActionsOpen === user.id && (
+                                    <div className="absolute right-0 top-8 bg-background border border-border rounded-md shadow-lg z-10 min-w-[120px]">
+                                      <div className="py-1">
+                                        <button
+                                          onClick={() => handleUserAction(user.id, 'ban')}
+                                          className="block w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                        >
+                                          Ban User
+                                        </button>
+                                        <button
+                                          onClick={() => handleUserAction(user.id, 'unban')}
+                                          className="block w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                        >
+                                          Unban User
+                                        </button>
+                                        <button
+                                          onClick={() => handleUserAction(user.id, 'promote')}
+                                          className="block w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                        >
+                                          Promote
+                                        </button>
+                                        <button
+                                          onClick={() => handleUserAction(user.id, 'demote')}
+                                          className="block w-full text-left px-3 py-2 text-sm hover:bg-muted"
+                                        >
+                                          Demote
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Creator</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
-                          </TableCell>
-                          <TableCell>24</TableCell>
-                          <TableCell>Jan 15, 2024</TableCell>
-                          <TableCell>2 hours ago</TableCell>
-                          <TableCell>
-                            <div className="flex items-center space-x-2">
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Edit3 className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <MoreVertical className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                        {/* More rows... */}
+                            </TableCell>
+                          </TableRow>
+                        ))}
                       </TableBody>
                     </Table>
                   </CardContent>
