@@ -48,7 +48,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Technical Implementations
 - 10% platform fee applied across all booking services.
-- **Worldwide Tax System**: Automatic tax calculation and withholding for creator campaign earnings based on country of residence. Supports UK (20%), India (10%), US (24%), and other major countries with complete audit trail.
+- **Worldwide Tax System** (Implemented October 2025):
+  - Automatic tax calculation and withholding for creator campaign earnings based on country of residence
+  - Database: tax_configurations table for country tax rates, tax_records table for complete audit trail
+  - Wallet tracking: totalEarnedMinor (gross), totalTaxWithheldMinor (tax), balanceMinor (net)
+  - Admin features: Add/manage country tax rates, view all tax records, export tax reports
+  - Creator features: Tax summary card in billing page showing gross earnings, tax withheld, and net received
+  - Default configurations: UK (20%), India (10%), US (24%), Canada (15%), Australia (10%), France (20%), Germany (19%)
+  - Tax calculation flow: On campaign approval → calculate tax → update wallet → create tax record
+  - Full compliance support with currency handling and detailed audit trail
 - Continuous YouTube channel verification with fraud prevention.
 - Standardized location data using real-world country/city information.
 - Enhanced financial management in admin panel including revenue overview, service breakdown, payout management, and tax reporting.
