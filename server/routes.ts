@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
+import connectPg from "connect-pg-simple";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
@@ -177,8 +178,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.set('trust proxy', 1); // Trust proxy headers
   
+  // Configure PostgreSQL session store for persistence
+  const PgStore = connectPg(session);
+  const sessionStore = new PgStore({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: false,
+    ttl: 24 * 60 * 60, // 24 hours in seconds
+    tableName: 'sessions',
+  });
+  
   app.use(session({
     secret: process.env.SESSION_SECRET,
+    store: sessionStore, // Use PostgreSQL store
     resave: false,
     saveUninitialized: false,
     cookie: {
