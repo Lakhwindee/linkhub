@@ -41,6 +41,13 @@ export default function Billing() {
     retry: false,
   });
 
+  // Fetch wallet data for creators
+  const { data: walletData } = useQuery({
+    queryKey: ["/api/wallet"],
+    enabled: user?.plan === 'creator',
+    retry: false,
+  });
+
 
   if (isLoading) {
     return (
@@ -465,6 +472,54 @@ export default function Billing() {
                 )}
               </CardContent>
             </Card>
+
+            {/* Creator Tax Summary - Only for Creator Plan */}
+            {user.plan === 'creator' && walletData?.wallet && (
+              <Card className="border-purple-200 dark:border-purple-800" data-testid="card-creator-tax">
+                <CardHeader className="bg-purple-50 dark:bg-purple-950">
+                  <CardTitle className="flex items-center space-x-2 text-purple-800 dark:text-purple-200">
+                    <DollarSign className="w-5 h-5" />
+                    <span>Tax Summary</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Total Earned (Gross)</span>
+                      <span className="text-sm font-semibold">
+                        £{((walletData.wallet.totalEarnedMinor || 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-red-600">
+                      <span className="text-sm">Tax Withheld</span>
+                      <span className="text-sm font-semibold">
+                        -£{((walletData.wallet.totalTaxWithheldMinor || 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="pt-2 border-t">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Net Received</span>
+                        <span className="text-lg font-bold text-green-600">
+                          £{((walletData.wallet.balanceMinor || 0) / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <div className="text-xs text-muted-foreground mb-2">
+                      Your Country: {user.country || 'GB'}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Tax is automatically calculated based on your country's tax regulations.
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    View Tax Records
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Quick Actions */}
             <Card data-testid="card-billing-actions">

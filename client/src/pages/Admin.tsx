@@ -144,6 +144,58 @@ export default function Admin() {
     retry: false,
   });
 
+  // Fetch tax configurations
+  const { data: taxConfigurations = [], refetch: refetchTaxConfigs } = useQuery<any[]>({
+    queryKey: ["/api/admin/tax/configurations"],
+    enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
+    retry: false,
+  });
+
+  // Fetch tax records
+  const { data: taxRecords = [] } = useQuery<any[]>({
+    queryKey: ["/api/admin/tax/records"],
+    enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
+    retry: false,
+  });
+
+  // Tax configuration form state
+  const [taxConfigForm, setTaxConfigForm] = useState({
+    country: '',
+    countryName: '',
+    taxRate: '',
+    taxName: '',
+    taxType: 'withholding',
+    notes: ''
+  });
+
+  const createTaxConfigMutation = useMutation({
+    mutationFn: async (data: typeof taxConfigForm) => {
+      const taxRate = parseFloat(data.taxRate);
+      if (isNaN(taxRate) || taxRate <= 0 || taxRate > 100) {
+        throw new Error("Tax rate must be a valid number between 0 and 100");
+      }
+      return await apiRequest("POST", "/api/admin/tax/configurations", {
+        ...data,
+        taxRate: taxRate
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Tax configuration created successfully",
+      });
+      refetchTaxConfigs();
+      setTaxConfigForm({ country: '', countryName: '', taxRate: '', taxName: '', taxType: 'withholding', notes: '' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create tax configuration",
+        variant: "destructive",
+      });
+    },
+  });
+
   const reviewSubmissionMutation = useMutation({
     mutationFn: async (data: { submissionId: string; status: string; notes?: string }) => {
       return await apiRequest("POST", `/api/admin/submissions/${data.submissionId}/review`, {
@@ -621,6 +673,7 @@ export default function Admin() {
     { id: "content", label: "Content Moderation", icon: FileText, description: "Posts, stays, events" },
     { id: "ad-review", label: "Ad Review", icon: Eye, description: "Review ad submissions", badge: "Updated" },
     { id: "financial", label: "Financial", icon: DollarSign, description: "Revenue, payments & finances" },
+    { id: "tax-management", label: "Tax Management", icon: Percent, description: "Tax rates & records", badge: "New" },
     { id: "reports", label: "Reports & Flags", icon: Flag, description: "User reports" },
     { id: "analytics", label: "Analytics", icon: BarChart3, description: "Platform metrics" },
     { id: "settings", label: "System Settings", icon: Settings, description: "Platform config" },
@@ -3652,6 +3705,246 @@ export default function Admin() {
                     </CardContent>
                   </Card>
                 </div>
+              </div>
+            )}
+
+            {/* Tax Management Section */}
+            {activeSection === "tax-management" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">Worldwide Tax Management</h2>
+                  <div className="flex space-x-2">
+                    <Button variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Export Tax Records
+                    </Button>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Country Tax Rate
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader>
+                          <DialogTitle>Add Tax Configuration</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4 py-4">
+                          <div>
+                            <Label>Country Code (e.g., US, IN, GB)</Label>
+                            <Input 
+                              placeholder="GB" 
+                              value={taxConfigForm.country}
+                              onChange={(e) => setTaxConfigForm({...taxConfigForm, country: e.target.value.toUpperCase()})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Country Name</Label>
+                            <Input 
+                              placeholder="United Kingdom"
+                              value={taxConfigForm.countryName}
+                              onChange={(e) => setTaxConfigForm({...taxConfigForm, countryName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Tax Rate (%)</Label>
+                            <Input 
+                              type="number" 
+                              placeholder="20.00" 
+                              step="0.01"
+                              value={taxConfigForm.taxRate}
+                              onChange={(e) => setTaxConfigForm({...taxConfigForm, taxRate: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Tax Name</Label>
+                            <Input 
+                              placeholder="Income Tax"
+                              value={taxConfigForm.taxName}
+                              onChange={(e) => setTaxConfigForm({...taxConfigForm, taxName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <Label>Tax Type</Label>
+                            <Select 
+                              value={taxConfigForm.taxType}
+                              onValueChange={(value) => setTaxConfigForm({...taxConfigForm, taxType: value})}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="withholding">Withholding Tax</SelectItem>
+                                <SelectItem value="vat">VAT/GST</SelectItem>
+                                <SelectItem value="income">Income Tax</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label>Notes (Optional)</Label>
+                            <Textarea 
+                              placeholder="Additional notes about this tax configuration" 
+                              rows={3}
+                              value={taxConfigForm.notes}
+                              onChange={(e) => setTaxConfigForm({...taxConfigForm, notes: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <Button variant="outline">Cancel</Button>
+                          <Button 
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => createTaxConfigMutation.mutate(taxConfigForm)}
+                            disabled={!taxConfigForm.country || !taxConfigForm.countryName || !taxConfigForm.taxRate}
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            Save Configuration
+                          </Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+
+                {/* Tax Configuration Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Globe className="w-5 h-5 text-blue-600" />
+                      <span>Tax Rates by Country</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Tax Rate</TableHead>
+                          <TableHead>Tax Type</TableHead>
+                          <TableHead>Tax Name</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {taxConfigurations.length > 0 ? taxConfigurations.map((config: any) => (
+                          <TableRow key={config.id}>
+                            <TableCell className="font-medium">{config.countryName}</TableCell>
+                            <TableCell><Badge variant="secondary" className="bg-blue-100 text-blue-800">{config.taxRate}%</Badge></TableCell>
+                            <TableCell className="capitalize">{config.taxType}</TableCell>
+                            <TableCell>{config.taxName || 'N/A'}</TableCell>
+                            <TableCell><Badge className="bg-green-100 text-green-800">Active</Badge></TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm"><Edit3 className="w-4 h-4" /></Button>
+                            </TableCell>
+                          </TableRow>
+                        )) : (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                              No tax configurations found. Add a country tax rate to get started.
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+
+                {/* Tax Records */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <FileText className="w-5 h-5 text-purple-600" />
+                      <span>Tax Records & Audit Trail</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex space-x-2 mb-4">
+                      <Select defaultValue="all">
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Filter by country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Countries</SelectItem>
+                          <SelectItem value="GB">United Kingdom</SelectItem>
+                          <SelectItem value="IN">India</SelectItem>
+                          <SelectItem value="US">United States</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select defaultValue="2025">
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder="Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="2025">2025</SelectItem>
+                          <SelectItem value="2024">2024</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">£8,452</div>
+                        <div className="text-sm text-muted-foreground">Total Tax Collected</div>
+                      </div>
+                      <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">£42,260</div>
+                        <div className="text-sm text-muted-foreground">Gross Earnings</div>
+                      </div>
+                      <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">£33,808</div>
+                        <div className="text-sm text-muted-foreground">Net Paid to Creators</div>
+                      </div>
+                      <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">247</div>
+                        <div className="text-sm text-muted-foreground">Tax Records</div>
+                      </div>
+                    </div>
+
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Creator</TableHead>
+                          <TableHead>Country</TableHead>
+                          <TableHead>Gross Amount</TableHead>
+                          <TableHead>Tax Rate</TableHead>
+                          <TableHead>Tax Withheld</TableHead>
+                          <TableHead>Net Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell>{format(new Date(), 'MMM dd, yyyy')}</TableCell>
+                          <TableCell className="font-medium">@sarah_travels</TableCell>
+                          <TableCell>🇬🇧 UK</TableCell>
+                          <TableCell>£50.00</TableCell>
+                          <TableCell><Badge variant="secondary">20%</Badge></TableCell>
+                          <TableCell className="text-red-600">-£10.00</TableCell>
+                          <TableCell className="text-green-600 font-semibold">£40.00</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>{format(new Date(Date.now() - 86400000), 'MMM dd, yyyy')}</TableCell>
+                          <TableCell className="font-medium">@raj_wanderer</TableCell>
+                          <TableCell>🇮🇳 India</TableCell>
+                          <TableCell>₹4,000</TableCell>
+                          <TableCell><Badge variant="secondary">10%</Badge></TableCell>
+                          <TableCell className="text-red-600">-₹400</TableCell>
+                          <TableCell className="text-green-600 font-semibold">₹3,600</TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
+                          <TableCell className="font-medium">@mike_explorer</TableCell>
+                          <TableCell>🇺🇸 US</TableCell>
+                          <TableCell>$125.00</TableCell>
+                          <TableCell><Badge variant="secondary">24%</Badge></TableCell>
+                          <TableCell className="text-red-600">-$30.00</TableCell>
+                          <TableCell className="text-green-600 font-semibold">$95.00</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
