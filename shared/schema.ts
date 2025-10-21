@@ -444,7 +444,7 @@ export const bookingNights = pgTable("booking_nights", {
 export const payments = pgTable("payments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   bookingId: varchar("booking_id").references(() => stayBookings.id, { onDelete: "cascade" }),
-  provider: varchar("provider").default("stripe"), // stripe, paypal, etc
+  provider: varchar("provider").default("stripe"), // stripe, bank, etc
   intentId: varchar("intent_id").notNull(), // Stripe PaymentIntent ID
   amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
   currency: varchar("currency").notNull(),
