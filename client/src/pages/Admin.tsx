@@ -42,7 +42,6 @@ interface AdminUser {
 }
 
 type ApiSettings = {
-  openai?: { model?: string; maxTokens?: number; temperature?: number };
   stripe?: { publishableKey?: string; secretKey?: string; webhookSecret?: string };
   youtube?: { projectId?: string };
   maps?: { apiKey?: string; enableAdvancedFeatures?: boolean };
@@ -51,7 +50,6 @@ type ApiSettings = {
 type ApiFormData = {
   stripe: { publishableKey: string; secretKey: string; webhookSecret: string };
   youtube: { apiKey: string; projectId: string };
-  openai: { apiKey: string; model: string; maxTokens: number; temperature: number };
   maps: { apiKey: string; enableAdvancedFeatures: boolean };
 };
 
@@ -71,18 +69,6 @@ export default function Admin() {
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState("");
   const [activeForm, setActiveForm] = useState<'discount' | 'trial' | null>(null);
-  
-  // AI Assistant state
-  const [aiMessages, setAiMessages] = useState<Array<{id: string, role: 'user' | 'assistant', content: string, timestamp: Date}>>([
-    {
-      id: '1',
-      role: 'assistant',
-      content: 'Hello! I\'m your AI Assistant. I can help you edit and modify your website through natural language commands. For example, you can say:\n\n• "Add a new menu item called About Us"\n• "Change the homepage title to Welcome to HubLink"\n• "Create a new user with admin privileges"\n• "Update the pricing section with new rates"\n\nWhat would you like me to help you with today?',
-      timestamp: new Date()
-    }
-  ]);
-  const [aiInput, setAiInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
   
   // Email Management state
   const [emailTemplates] = useState([
@@ -113,56 +99,6 @@ export default function Admin() {
     enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
     retry: false,
   });
-
-  // AI Assistant functions
-  const handleAiMessage = async () => {
-    if (!aiInput.trim() || aiLoading) return;
-    
-    const userMessage = {
-      id: Date.now().toString(),
-      role: 'user' as const,
-      content: aiInput.trim(),
-      timestamp: new Date()
-    };
-    
-    setAiMessages(prev => [...prev, userMessage]);
-    setAiInput("");
-    setAiLoading(true);
-    
-    try {
-      const response = await apiRequest('POST', '/api/ai/chat', {
-        message: userMessage.content,
-        context: 'admin_panel'
-      });
-      
-      const result = await response.json();
-      const aiResponse = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant' as const,
-        content: result.response,
-        timestamp: new Date()
-      };
-      
-      setAiMessages(prev => [...prev, aiResponse]);
-    } catch (error: any) {
-      console.error('AI chat error:', error);
-      const errorResponse = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant' as const,
-        content: `Sorry, I encountered an error: ${error.message || 'Unable to process your request'}. Please try again.`,
-        timestamp: new Date()
-      };
-      setAiMessages(prev => [...prev, errorResponse]);
-      
-      toast({
-        title: "AI Assistant Error",
-        description: "Failed to process your request. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   // Show login screen if not authenticated instead of redirecting
 
@@ -310,12 +246,6 @@ export default function Admin() {
     youtube: {
       apiKey: '',
       projectId: 'hublink-project'
-    },
-    openai: {
-      apiKey: '',
-      model: 'gpt-3.5-turbo',
-      maxTokens: 1000,
-      temperature: 0.7
     },
     maps: {
       apiKey: '',
@@ -555,12 +485,6 @@ export default function Admin() {
     if (apiSettings) {
       const settings = apiSettings as any; // Type cast for safety
       setApiFormData({
-        openai: {
-          apiKey: '', // Don't pre-populate sensitive data
-          model: settings.openai?.model || 'gpt-3.5-turbo',
-          maxTokens: settings.openai?.maxTokens || 1000,
-          temperature: settings.openai?.temperature || 0.7,
-        },
         stripe: {
           publishableKey: '',
           secretKey: '',
@@ -698,7 +622,6 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
-    { id: "ai-assistant", label: "AI Assistant", icon: MessageSquare, description: "ChatGPT-style website editor", badge: "AI" },
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
     { id: "discount-codes", label: "Coupons & Trials", icon: Percent, description: "Manage discount codes, trial coupons & auto-billing", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
@@ -908,164 +831,6 @@ export default function Admin() {
           {/* Section Content */}
           <div className="space-y-6">
             {activeSection === "dashboard" && renderDashboardSection()}
-
-            {/* AI Assistant Section */}
-            {activeSection === "ai-assistant" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                      <Bot className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-foreground">AI Assistant</h2>
-                      <p className="text-muted-foreground">ChatGPT-style website editor</p>
-                    </div>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                      <Zap className="w-3 h-3 mr-1" />
-                      AI Powered
-                    </Badge>
-                    <Button variant="outline" onClick={() => setAiMessages([{
-                      id: Date.now().toString(),
-                      role: 'assistant',
-                      content: 'Hello! I\'m your AI Assistant. I can help you edit and modify your website through natural language commands. What would you like me to help you with today?',
-                      timestamp: new Date()
-                    }])}>
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      New Chat
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Chat Interface */}
-                <Card className="h-[600px] flex flex-col">
-                  <CardHeader className="border-b">
-                    <CardTitle className="flex items-center space-x-2">
-                      <MessageSquare className="w-5 h-5" />
-                      <span>Website Editor Chat</span>
-                    </CardTitle>
-                  </CardHeader>
-                  
-                  {/* Messages Area */}
-                  <CardContent className="flex-1 p-0 overflow-hidden">
-                    <div className="h-full overflow-y-auto p-4 space-y-4">
-                      {aiMessages.map((message) => (
-                        <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] rounded-lg p-3 ${
-                            message.role === 'user' 
-                              ? 'bg-blue-500 text-white' 
-                              : 'bg-muted text-foreground border'
-                          }`}>
-                            <div className="flex items-start space-x-2">
-                              {message.role === 'assistant' && (
-                                <Bot className="w-4 h-4 mt-1 text-purple-500" />
-                              )}
-                              <div className="flex-1">
-                                <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-                                <div className={`text-xs mt-1 ${
-                                  message.role === 'user' ? 'text-blue-100' : 'text-muted-foreground'
-                                }`}>
-                                  {format(message.timestamp, 'h:mm a')}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      
-                      {aiLoading && (
-                        <div className="flex justify-start">
-                          <div className="bg-muted text-foreground border rounded-lg p-3 max-w-[80%]">
-                            <div className="flex items-center space-x-2">
-                              <Bot className="w-4 h-4 text-purple-500" />
-                              <div className="flex space-x-1">
-                                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce"></div>
-                                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                                <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  
-                  {/* Input Area */}
-                  <div className="border-t p-4">
-                    <div className="flex space-x-2">
-                      <div className="flex-1 relative">
-                        <Textarea
-                          value={aiInput}
-                          onChange={(e) => setAiInput(e.target.value)}
-                          placeholder="Type your command... e.g., 'Add a new menu item called About Us' or 'Change the homepage title'"
-                          className="pr-12 resize-none"
-                          rows={1}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleAiMessage();
-                            }
-                          }}
-                          disabled={aiLoading}
-                        />
-                        <Button
-                          size="sm"
-                          className="absolute right-2 top-1.5"
-                          onClick={handleAiMessage}
-                          disabled={!aiInput.trim() || aiLoading}
-                        >
-                          <ArrowUp className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      💡 Try commands like: "Add new user", "Update homepage", "Change menu items", "Modify pricing"
-                    </div>
-                  </div>
-                </Card>
-
-                {/* AI Features Info */}
-                <div className="grid md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Globe className="w-4 h-4 text-blue-500" />
-                        <span className="font-medium">Website Editing</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Modify content, menus, pages, and layout through natural language commands
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Users className="w-4 h-4 text-green-500" />
-                        <span className="font-medium">User Management</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Create, update, or manage users, roles, and permissions with simple commands
-                      </p>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Settings className="w-4 h-4 text-purple-500" />
-                        <span className="font-medium">System Config</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Update settings, configurations, and platform features through AI assistance
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            )}
 
             {/* API Settings Section */}
             {activeSection === "api-settings" && (

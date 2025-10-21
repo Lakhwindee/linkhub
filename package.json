@@ -82,7 +82,6 @@
     "next-themes": "^0.4.6",
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.6",
-    "openai": "^5.19.1",
     "openid-client": "^6.7.1",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
