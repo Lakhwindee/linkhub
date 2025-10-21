@@ -289,7 +289,7 @@ export default function Stays() {
   };
 
   const handleBookStay = (stayId: string) => {
-    const stay = stays.find(s => s.id === stayId);
+    const stay = stays.find((s: Stay) => s.id === stayId);
     if (stay) {
       setSelectedStay(stay);
       setIsBookingOpen(true);
@@ -480,7 +480,7 @@ export default function Stays() {
 
           {/* Stays Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {stays.map((stay) => (
+            {stays.map((stay: Stay) => (
               <Card key={stay.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <div className="relative">
                   <img 
@@ -535,7 +535,7 @@ export default function Stays() {
                   </div>
 
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {stay.amenities?.slice(0, 4).map((amenity) => {
+                    {stay.amenities?.slice(0, 4).map((amenity: string) => {
                       const IconComponent = amenityIcons[amenity];
                       return (
                         <Badge key={amenity} variant="secondary" className="text-xs flex items-center">

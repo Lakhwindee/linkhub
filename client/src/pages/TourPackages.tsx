@@ -997,7 +997,7 @@ export default function TourPackages() {
                 <PlatformFeeBreakdown
                   basePrice={currentBookingPackage.price * bookingDetails.travelers}
                   currency={currentBookingPackage.currency}
-                  serviceType="trip"
+                  itemType="trip"
                 />
               </div>
             )}
@@ -1126,18 +1126,16 @@ export default function TourPackages() {
       {isBookingModalOpen && bookingPackage && (
         <BookingConfirmation 
           isOpen={isBookingModalOpen}
-          onOpenChange={setIsBookingModalOpen}
-          serviceType="tour-package"
-          booking={{
-            id: 'booking-' + Date.now(),
-            packageTitle: bookingPackage.title,
-            destination: bookingPackage.destination,
-            duration: bookingPackage.duration,
-            travelers: bookingDetails.travelers,
-            departureDate: bookingDetails.departureDate,
-            price: bookingPackage.price,
+          onClose={() => setIsBookingModalOpen(false)}
+          bookingType="trip"
+          bookingData={{
+            itemName: bookingPackage.title,
+            basePrice: bookingPackage.price * bookingDetails.travelers,
             currency: bookingPackage.currency,
-            contactInfo: bookingDetails.contactInfo
+            location: bookingPackage.destination,
+            duration: `${bookingPackage.duration} days`,
+            guests: bookingDetails.travelers,
+            dates: bookingDetails.departureDate
           }}
         />
       )}

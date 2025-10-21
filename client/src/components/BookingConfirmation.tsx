@@ -44,7 +44,7 @@ export function BookingConfirmation({
   };
 
   return (
-    <Dialog open={isOpen} onValueChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-3 text-2xl">
