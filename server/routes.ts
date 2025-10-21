@@ -4835,15 +4835,6 @@ Always be helpful, professional, and focused on website management tasks.`;
           platformFee: 10,
           currency: 'GBP'
         },
-        paypal: {
-          id: 'paypal_account',
-          name: 'PayPal',
-          status: 'disconnected',
-          mode: 'sandbox',
-          clientId: '',
-          platformFee: 10,
-          currency: 'GBP'
-        },
         financial: {
           totalRevenue: 12450.00,
           platformFees: 1245.00,
