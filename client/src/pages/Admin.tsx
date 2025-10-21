@@ -44,14 +44,12 @@ interface AdminUser {
 type ApiSettings = {
   openai?: { model?: string; maxTokens?: number; temperature?: number };
   stripe?: { publishableKey?: string; secretKey?: string; webhookSecret?: string };
-  paypal?: { environment?: 'sandbox' | 'live' };
   youtube?: { projectId?: string };
   maps?: { apiKey?: string; enableAdvancedFeatures?: boolean };
 };
 
 type ApiFormData = {
   stripe: { publishableKey: string; secretKey: string; webhookSecret: string };
-  paypal: { clientId: string; clientSecret: string; environment: 'sandbox' | 'live' };
   youtube: { apiKey: string; projectId: string };
   openai: { apiKey: string; model: string; maxTokens: number; temperature: number };
   maps: { apiKey: string; enableAdvancedFeatures: boolean };
@@ -308,11 +306,6 @@ export default function Admin() {
       publishableKey: '',
       secretKey: '',
       webhookSecret: ''
-    },
-    paypal: {
-      clientId: '',
-      clientSecret: '',
-      environment: 'sandbox'
     },
     youtube: {
       apiKey: '',
@@ -572,11 +565,6 @@ export default function Admin() {
           publishableKey: '',
           secretKey: '',
           webhookSecret: '',
-        },
-        paypal: {
-          clientId: '',
-          clientSecret: '',
-          environment: settings.paypal?.environment || 'sandbox',
         },
         youtube: {
           apiKey: '',
@@ -1191,102 +1179,6 @@ export default function Admin() {
                           variant="outline" 
                           size="sm"
                           onClick={() => testApiConnectionMutation.mutate('stripe')}
-                          disabled={testApiConnectionMutation.isPending}
-                        >
-                          {testApiConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* PayPal API Configuration */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <DollarSign className="w-5 h-5 mr-2" />
-                          PayPal API Keys
-                        </div>
-                        <Badge 
-                          variant={(apiSettings as any)?.paypal?.status === 'active' ? "secondary" : "destructive"}
-                          className={(apiSettings as any)?.paypal?.status === 'active' ? "bg-green-100 text-green-800" : ""}
-                        >
-                          {(apiSettings as any)?.paypal?.status === 'active' ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label>Client ID</Label>
-                        <div className="flex space-x-2 mt-1">
-                          <Input 
-                            type="password" 
-                            placeholder="Enter PayPal Client ID"
-                            value={apiFormData.paypal?.clientId || ''}
-                            onChange={(e) => setApiFormData(prev => ({
-                              ...prev,
-                              paypal: { ...prev.paypal, clientId: e.target.value }
-                            }))} 
-                          />
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Client Secret</Label>
-                        <div className="flex space-x-2 mt-1">
-                          <Input 
-                            type="password" 
-                            placeholder="Enter PayPal Client Secret"
-                            value={apiFormData.paypal?.clientSecret || ''}
-                            onChange={(e) => setApiFormData(prev => ({
-                              ...prev,
-                              paypal: { ...prev.paypal, clientSecret: e.target.value }
-                            }))} 
-                          />
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div>
-                        <Label>Environment</Label>
-                        <Select defaultValue="sandbox">
-                          <SelectTrigger className="mt-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="sandbox">Sandbox</SelectItem>
-                            <SelectItem value="live">Live</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button 
-                          size="sm"
-                          onClick={() => {
-                            if (!apiFormData.paypal?.clientId || !apiFormData.paypal?.clientSecret) {
-                              toast({
-                                title: "API Keys Required",
-                                description: "Please enter both PayPal Client ID and Secret.",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            saveApiSettingsMutation.mutate({
-                              service: 'paypal',
-                              settings: apiFormData.paypal || {}
-                            });
-                          }}
-                          disabled={savingService === 'paypal'}
-                        >
-                          {savingService === 'paypal' ? 'Saving...' : 'Save Keys'}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => testApiConnectionMutation.mutate('paypal')}
                           disabled={testApiConnectionMutation.isPending}
                         >
                           {testApiConnectionMutation.isPending ? 'Testing...' : 'Test Connection'}

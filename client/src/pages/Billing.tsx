@@ -207,11 +207,11 @@ export default function Billing() {
                 <CardContent className="space-y-4">
                   <div className="p-3 border rounded-lg">
                     <div className="flex items-center space-x-2">
-                      <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center text-white text-xs font-bold">
-                        PP
+                      <div className="w-8 h-8 bg-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                        ST
                       </div>
                       <div>
-                        <p className="font-medium">PayPal</p>
+                        <p className="font-medium">Stripe</p>
                         <p className="text-sm text-muted-foreground">publisher@example.com</p>
                       </div>
                     </div>

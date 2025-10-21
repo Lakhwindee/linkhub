@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CreditCard, Plus } from "lucide-react";
-import PayPalButton from "./PayPalButton";
+import { CreditCard } from "lucide-react";
 
 interface PaymentMethodDialogProps {
   open: boolean;
@@ -15,8 +14,7 @@ interface PaymentMethodDialogProps {
 }
 
 export function PaymentMethodDialog({ open, onOpenChange, onPaymentMethodAdded }: PaymentMethodDialogProps) {
-  const [paymentType, setPaymentType] = useState("paypal");
-  const [paypalEmail, setPaypalEmail] = useState("");
+  const [paymentType, setPaymentType] = useState("stripe");
   const [bankDetails, setBankDetails] = useState({
     accountNumber: "",
     routingNumber: "",
@@ -25,7 +23,7 @@ export function PaymentMethodDialog({ open, onOpenChange, onPaymentMethodAdded }
 
   const handleSavePaymentMethod = () => {
     // TODO: Save payment method to backend
-    console.log("Saving payment method:", { paymentType, paypalEmail, bankDetails });
+    console.log("Saving payment method:", { paymentType, bankDetails });
     onPaymentMethodAdded();
     onOpenChange(false);
   };
@@ -48,37 +46,11 @@ export function PaymentMethodDialog({ open, onOpenChange, onPaymentMethodAdded }
                 <SelectValue placeholder="Select payment method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="paypal">PayPal</SelectItem>
-                <SelectItem value="bank">Bank Transfer</SelectItem>
                 <SelectItem value="stripe">Stripe Express</SelectItem>
+                <SelectItem value="bank">Bank Transfer</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          {paymentType === "paypal" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">PayPal Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="paypal-email">PayPal Email Address</Label>
-                  <Input
-                    id="paypal-email"
-                    type="email"
-                    placeholder="your-paypal@email.com"
-                    value={paypalEmail}
-                    onChange={(e) => setPaypalEmail(e.target.value)}
-                  />
-                </div>
-                <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    We'll send payouts directly to this PayPal email address. Make sure it's verified and active.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {paymentType === "bank" && (
             <Card>

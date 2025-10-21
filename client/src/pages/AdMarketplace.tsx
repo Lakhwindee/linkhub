@@ -1755,9 +1755,8 @@ export default function AdMarketplace() {
                             <SelectValue placeholder="Select payout method" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="bank">Bank Transfer</SelectItem>
-                            <SelectItem value="paypal">PayPal</SelectItem>
                             <SelectItem value="stripe">Stripe Express</SelectItem>
+                            <SelectItem value="bank">Bank Transfer</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -1766,7 +1765,7 @@ export default function AdMarketplace() {
                         <Label htmlFor="account-details">Account Details</Label>
                         <Input
                           id="account-details"
-                          placeholder="Account number or PayPal email"
+                          placeholder="Account number or email"
                         />
                       </div>
 
@@ -1836,7 +1835,7 @@ export default function AdMarketplace() {
                         </div>
                         <div className="font-semibold text-green-600">$320.00</div>
                         <div className="text-sm">
-                          <div>PayPal</div>
+                          <div>Stripe</div>
                           <div className="text-muted-foreground">creator@email.com</div>
                         </div>
                         <div>
