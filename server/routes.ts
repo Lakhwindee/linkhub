@@ -38,7 +38,6 @@ import { isCountryTargeted, logGeoTargeting } from "@shared/countryUtils";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
-import { createPaypalOrder, capturePaypalOrder, loadPaypalDefault } from "./paypal";
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import { computeTierFromSubscribers } from "@shared/tierConfig";
@@ -140,11 +139,6 @@ let storedApiSettings = {
     publishableKey: '',
     secretKey: '',
     webhookSecret: ''
-  },
-  paypal: {
-    clientId: '',
-    clientSecret: '',
-    environment: 'sandbox'
   },
   youtube: {
     apiKey: '',
@@ -3799,20 +3793,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // PayPal routes for publisher payments
-  app.get("/paypal/setup", async (req, res) => {
-    await loadPaypalDefault(req, res);
-  });
-
-  app.post("/paypal/order", async (req, res) => {
-    // Request body should contain: { intent, amount, currency }
-    await createPaypalOrder(req, res);
-  });
-
-  app.post("/paypal/order/:orderID/capture", async (req, res) => {
-    await capturePaypalOrder(req, res);
-  });
-
   // Reports
   app.post('/api/reports', isAuthenticated, async (req: any, res) => {
     try {
@@ -4408,8 +4388,7 @@ Always be helpful, professional, and focused on website management tasks.`;
         payment: {
           platformFeePercentage: 10,
           currency: 'GBP',
-          stripeEnabled: true,
-          paypalEnabled: false
+          stripeEnabled: true
         }
       };
       
@@ -4477,13 +4456,6 @@ Always be helpful, professional, and focused on website management tasks.`;
           status: (storedApiSettings.stripe.secretKey || process.env.STRIPE_SECRET_KEY) ? 'active' : 'inactive',
           lastTested: new Date().toISOString()
         },
-        paypal: {
-          clientId: storedApiSettings.paypal.clientId || process.env.PAYPAL_CLIENT_ID || '',
-          clientSecret: storedApiSettings.paypal.clientSecret || (process.env.PAYPAL_CLIENT_SECRET ? '••••••••••••' : ''),
-          environment: storedApiSettings.paypal.environment || 'sandbox',
-          status: (storedApiSettings.paypal.clientId || process.env.PAYPAL_CLIENT_ID) ? 'active' : 'inactive',
-          lastTested: null
-        },
         youtube: {
           apiKey: storedApiSettings.youtube.apiKey || (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
           projectId: storedApiSettings.youtube.projectId || 'hublink-project',
@@ -4518,7 +4490,6 @@ Always be helpful, professional, and focused on website management tasks.`;
         },
         usage: {
           stripe: { calls: 2456, period: '30_days' },
-          paypal: { calls: 0, period: '30_days' },
           youtube: { calls: 0, period: '30_days' },
           openai: { tokens: 12450, period: '30_days' },
           storage: { requests: 12890, period: '30_days' }
@@ -4547,7 +4518,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const settingsData = req.body;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -4566,11 +4537,6 @@ Always be helpful, professional, and focused on website management tasks.`;
           }
           if (settingsData.secretKey && !settingsData.secretKey.startsWith('sk_')) {
             validationResult = { valid: false, message: 'Invalid Stripe secret key format' };
-          }
-          break;
-        case 'paypal':
-          if (settingsData.environment && !['sandbox', 'live'].includes(settingsData.environment)) {
-            validationResult = { valid: false, message: 'Invalid PayPal environment' };
           }
           break;
         case 'youtube':
@@ -4644,7 +4610,7 @@ Always be helpful, professional, and focused on website management tasks.`;
       const { service } = req.params;
       
       // Validate service type
-      const validServices = ['stripe', 'paypal', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -4668,21 +4634,6 @@ Always be helpful, professional, and focused on website management tasks.`;
             };
           } else {
             testResult.message = 'Stripe API keys not configured';
-          }
-          break;
-          
-        case 'paypal':
-          if (process.env.PAYPAL_CLIENT_ID) {
-            testResult = { 
-              success: true, 
-              message: 'PayPal connection successful',
-              details: { 
-                environment: 'sandbox',
-                merchantId: 'merchant_••••••••••••'
-              }
-            };
-          } else {
-            testResult.message = 'PayPal credentials not configured';
           }
           break;
           
