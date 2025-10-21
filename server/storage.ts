@@ -30,6 +30,10 @@ import {
   personalHosts,
   hostBookings,
   tourPackageBookings,
+  trips,
+  tripParticipants,
+  taxConfiguration,
+  taxRecords,
   type User,
   type UpsertUser,
   type ConnectRequest,
@@ -61,6 +65,10 @@ import {
   type PersonalHost,
   type HostBooking,
   type TourPackageBooking,
+  type Trip,
+  type TripParticipant,
+  type TaxConfiguration,
+  type TaxRecord,
   insertStaySchema,
   insertStayBookingSchema,
   insertStayReviewSchema,
@@ -157,12 +165,21 @@ export interface IStorage {
   getFeedAdImpressions(filters?: any): Promise<FeedAdImpression[]>;
   getFeedAdsForUser(userId?: string, ipAddress?: string, country?: string): Promise<any[]>;
   
-  // Wallet and Payouts
+  // Wallet and Payouts (with tax support)
   createWallet(userId: string): Promise<Wallet>;
   getWallet(userId: string): Promise<Wallet | undefined>;
-  updateWalletBalance(userId: string, amountMinor: number): Promise<Wallet>;
-  createPayout(data: { userId: string; amountMinor: number; currency?: string; method?: string }): Promise<Payout>;
+  updateWalletBalance(userId: string, amountMinor: number, grossAmountMinor?: number, taxWithheldMinor?: number): Promise<Wallet>;
+  createPayout(data: { userId: string; grossAmountMinor: number; taxWithheldMinor: number; amountMinor: number; taxRate?: number; currency?: string; method?: string }): Promise<Payout>;
   getUserPayouts(userId: string): Promise<Payout[]>;
+  
+  // Tax Configuration & Records (Worldwide Support)
+  getTaxConfiguration(country: string): Promise<TaxConfiguration | undefined>;
+  getAllTaxConfigurations(): Promise<TaxConfiguration[]>;
+  createTaxConfiguration(data: { country: string; countryName: string; taxRate: string; taxType: string; taxName?: string; exemptionThreshold?: number; notes?: string }): Promise<TaxConfiguration>;
+  updateTaxConfiguration(id: string, data: Partial<TaxConfiguration>): Promise<TaxConfiguration>;
+  createTaxRecord(data: { userId: string; transactionType: string; transactionId?: string; grossAmountMinor: number; taxWithheldMinor: number; netAmountMinor: number; taxRate: string; taxYear?: number; taxQuarter?: number; country?: string; taxConfigId?: string; description?: string }): Promise<TaxRecord>;
+  getUserTaxRecords(userId: string, filters?: { year?: number; quarter?: number; country?: string }): Promise<TaxRecord[]>;
+  getAllTaxRecords(filters?: { year?: number; country?: string }): Promise<TaxRecord[]>;
   
   // Subscriptions
   createSubscription(data: any): Promise<Subscription>;

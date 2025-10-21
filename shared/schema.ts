@@ -313,24 +313,66 @@ export const feedAdImpressions = pgTable("feed_ad_impressions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Wallets
+// Wallets - Enhanced with tax tracking
 export const wallets = pgTable("wallets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).unique(),
-  balanceMinor: integer("balance_minor").default(0), // in pence/paisa
+  balanceMinor: integer("balance_minor").default(0), // in pence/paisa - available balance after tax
+  totalEarnedMinor: integer("total_earned_minor").default(0), // total gross earnings (before tax)
+  totalTaxWithheldMinor: integer("total_tax_withheld_minor").default(0), // total tax withheld
   currency: varchar("currency").default("GBP"),
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("20.00"), // UK: 20%, India: 10% TDS
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Payouts
+// Payouts - Enhanced with tax tracking
 export const payouts = pgTable("payouts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
-  amountMinor: integer("amount_minor").notNull(),
+  grossAmountMinor: integer("gross_amount_minor").notNull(), // amount before tax
+  taxWithheldMinor: integer("tax_withheld_minor").default(0), // tax deducted
+  amountMinor: integer("amount_minor").notNull(), // net amount paid (after tax)
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("20.00"), // tax rate applied
   currency: varchar("currency").default("GBP"),
   method: varchar("method").default("stripe"), // stripe, bank-transfer
   reference: varchar("reference"),
   status: varchar("status").default("pending"), // pending, processing, completed, failed
+  processedAt: timestamp("processed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Global Tax Configuration - Per country tax rates (WORLDWIDE SUPPORT)
+export const taxConfiguration = pgTable("tax_configuration", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  country: varchar("country").notNull().unique(), // ISO country code (GB, IN, US, FR, DE, etc.)
+  countryName: varchar("country_name").notNull(), // Display name (United Kingdom, India, USA, etc.)
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).notNull(), // Tax rate percentage (e.g., 20.00 for 20%)
+  taxType: varchar("tax_type").notNull(), // Type: 'income_tax', 'withholding_tax', 'vat', 'gst'
+  taxName: varchar("tax_name"), // e.g., "UK Income Tax", "India TDS", "US Federal Tax"
+  enabled: boolean("enabled").default(true),
+  exemptionThreshold: integer("exemption_threshold"), // Minimum earning before tax applies (in minor units)
+  notes: text("notes"), // Additional tax info or requirements
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Tax Records - Track all tax withholding transactions (WORLDWIDE)
+export const taxRecords = pgTable("tax_records", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  transactionType: varchar("transaction_type").notNull(), // 'campaign_earning', 'payout', 'booking'
+  transactionId: varchar("transaction_id"), // related campaign/payout/booking ID
+  grossAmountMinor: integer("gross_amount_minor").notNull(), // amount before tax
+  taxWithheldMinor: integer("tax_withheld_minor").notNull(), // tax amount
+  netAmountMinor: integer("net_amount_minor").notNull(), // amount after tax
+  taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).notNull(), // tax rate applied (e.g., 20.00 for 20%)
+  taxYear: integer("tax_year"), // fiscal year for reporting
+  taxQuarter: integer("tax_quarter"), // quarter (1-4) for reporting
+  currency: varchar("currency").default("GBP"),
+  country: varchar("country"), // User's country (for tax jurisdiction)
+  taxConfigId: varchar("tax_config_id").references(() => taxConfiguration.id), // Link to tax config
+  description: text("description"), // e.g., "Tax withheld on campaign #123 earnings"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -625,6 +667,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   adReservations: many(adReservations),
   wallet: one(wallets),
   payouts: many(payouts),
+  taxRecords: many(taxRecords),
   subscriptions: many(subscriptions),
   invoices: many(invoices),
   hostedStays: many(stays),
@@ -696,6 +739,15 @@ export const walletsRelations = relations(wallets, ({ one }) => ({
 
 export const payoutsRelations = relations(payouts, ({ one }) => ({
   user: one(users, { fields: [payouts.userId], references: [users.id] }),
+}));
+
+export const taxRecordsRelations = relations(taxRecords, ({ one }) => ({
+  user: one(users, { fields: [taxRecords.userId], references: [users.id] }),
+  taxConfig: one(taxConfiguration, { fields: [taxRecords.taxConfigId], references: [taxConfiguration.id] }),
+}));
+
+export const taxConfigurationRelations = relations(taxConfiguration, ({ many }) => ({
+  taxRecords: many(taxRecords),
 }));
 
 export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
@@ -1124,3 +1176,5 @@ export type DiscountCode = typeof discountCodes.$inferSelect;
 export type SiteSetting = typeof siteSettings.$inferSelect;
 export type DiscountCodeUsage = typeof discountCodeUsage.$inferSelect;
 export type UserTrial = typeof userTrials.$inferSelect;
+export type TaxConfiguration = typeof taxConfiguration.$inferSelect;
+export type TaxRecord = typeof taxRecords.$inferSelect;
