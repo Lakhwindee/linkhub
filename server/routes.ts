@@ -4318,15 +4318,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           status: 'active',
           lastTested: new Date().toISOString()
         },
-        openai: {
-          apiKey: storedApiSettings.openai.apiKey || (process.env.OPENAI_API_KEY ? 'sk-••••••••••••••••••••••••••••••••••••••••••••••••' : ''),
-          model: storedApiSettings.openai.model || 'gpt-3.5-turbo',
-          maxTokens: storedApiSettings.openai.maxTokens || 1000,
-          temperature: storedApiSettings.openai.temperature || 0.7,
-          status: (storedApiSettings.openai.apiKey || process.env.OPENAI_API_KEY) ? 'active' : 'inactive',
-          lastTested: (storedApiSettings.openai.apiKey || process.env.OPENAI_API_KEY) ? new Date().toISOString() : null,
-          monthlyUsage: 12450
-        },
         email: {
           provider: storedApiSettings.email.provider || 'not_configured',
           apiKey: storedApiSettings.email.apiKey || '',
@@ -4336,7 +4327,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         usage: {
           stripe: { calls: 2456, period: '30_days' },
           youtube: { calls: 0, period: '30_days' },
-          openai: { tokens: 12450, period: '30_days' },
           storage: { requests: 12890, period: '30_days' }
         }
       };
@@ -4363,7 +4353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const settingsData = req.body;
       
       // Validate service type
-      const validServices = ['stripe', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'youtube', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -4387,20 +4377,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         case 'youtube':
           if (settingsData.apiKey && settingsData.apiKey.length < 20) {
             validationResult = { valid: false, message: 'Invalid YouTube API key format' };
-          }
-          break;
-        case 'openai':
-          if (settingsData.apiKey && !settingsData.apiKey.startsWith('sk-')) {
-            validationResult = { valid: false, message: 'Invalid OpenAI API key format. Must start with sk-' };
-          }
-          if (settingsData.model && !['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o'].includes(settingsData.model)) {
-            validationResult = { valid: false, message: 'Invalid OpenAI model selection' };
-          }
-          if (settingsData.maxTokens && (settingsData.maxTokens < 1 || settingsData.maxTokens > 4000)) {
-            validationResult = { valid: false, message: 'Max tokens must be between 1 and 4000' };
-          }
-          if (settingsData.temperature && (settingsData.temperature < 0 || settingsData.temperature > 2)) {
-            validationResult = { valid: false, message: 'Temperature must be between 0 and 2' };
           }
           break;
         case 'maps':
@@ -4455,7 +4431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { service } = req.params;
       
       // Validate service type
-      const validServices = ['stripe', 'youtube', 'openai', 'maps', 'database', 'storage', 'email'];
+      const validServices = ['stripe', 'youtube', 'maps', 'database', 'storage', 'email'];
       if (!validServices.includes(service)) {
         return res.status(400).json({ message: "Invalid service type" });
       }
@@ -4494,58 +4470,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             };
           } else {
             testResult.message = 'YouTube API key not configured';
-          }
-          break;
-
-        case 'openai':
-          // Check for saved OpenAI API key first, then environment variable
-          let openaiApiKey = null;
-          const savedOpenAISettings = storedApiSettings.openai;
-          if (savedOpenAISettings && savedOpenAISettings.apiKey && savedOpenAISettings.apiKey.trim() !== '') {
-            openaiApiKey = savedOpenAISettings.apiKey;
-            console.log('🧪 Test using saved OpenAI API key:', openaiApiKey.slice(0, 10) + '...');
-          } else {
-            openaiApiKey = process.env.OPENAI_API_KEY;
-            console.log('🧪 Test using environment OpenAI API key:', openaiApiKey ? openaiApiKey.slice(0, 10) + '...' : 'none');
-          }
-
-          if (openaiApiKey && openaiApiKey.startsWith('sk-')) {
-            try {
-              // Create a fresh OpenAI client with the current API key
-              const testOpenAI = new OpenAI({ apiKey: openaiApiKey });
-              
-              const testCompletion = await testOpenAI.chat.completions.create({
-                model: "gpt-3.5-turbo",
-                messages: [
-                  { role: "system", content: "You are a helpful assistant." },
-                  { role: "user", content: "Say 'Hello from HubLink Admin Panel! AI test successful.'" }
-                ],
-                max_tokens: 50
-              });
-
-              testResult = { 
-                success: true, 
-                message: 'OpenAI API connection successful',
-                details: { 
-                  model: 'gpt-3.5-turbo',
-                  tokensUsed: testCompletion.usage?.total_tokens || 0,
-                  response: testCompletion.choices[0]?.message?.content || 'Test successful',
-                  status: 'connected'
-                }
-              };
-            } catch (openaiError: any) {
-              console.error('OpenAI test error:', openaiError);
-              if (openaiError.code === 'invalid_api_key') {
-                testResult.message = 'Invalid OpenAI API key. Please check your configuration.';
-              } else if (openaiError.code === 'insufficient_quota') {
-                testResult.message = 'OpenAI API quota exceeded. Please check your billing.';
-              } else {
-                testResult.message = `OpenAI API test failed: ${openaiError.message || 'Unknown error'}`;
-              }
-              testResult.details = { error: openaiError.code || 'unknown_error' };
-            }
-          } else {
-            testResult.message = 'Please configure a valid OpenAI API key (must start with sk-)';
           }
           break;
           
