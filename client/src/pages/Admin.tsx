@@ -1657,14 +1657,10 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">2,456</div>
                         <div className="text-sm text-muted-foreground">Stripe API Calls</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">0</div>
-                        <div className="text-sm text-muted-foreground">PayPal API Calls</div>
                       </div>
                       <div className="text-center">
                         <div className="text-2xl font-bold text-red-600">0</div>
@@ -3907,28 +3903,8 @@ export default function Admin() {
                             <span className="text-sm">Stripe Payments</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£38,950</div>
-                            <div className="text-xs text-muted-foreground">86.1%</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <DollarSign className="w-4 h-4 text-yellow-600" />
-                            <span className="text-sm">PayPal</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm font-medium">£6,281</div>
-                            <div className="text-xs text-muted-foreground">13.9%</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <CreditCard className="w-4 h-4 text-green-600" />
-                            <span className="text-sm">Bank Transfer</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm font-medium">£0</div>
-                            <div className="text-xs text-muted-foreground">0%</div>
+                            <div className="text-sm font-medium">£45,231</div>
+                            <div className="text-xs text-muted-foreground">100%</div>
                           </div>
                         </div>
                       </div>
@@ -4053,13 +4029,6 @@ export default function Admin() {
                           <span className="text-sm">Stripe Processing</span>
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-medium">2.9% + 30p</span>
-                            <Button variant="outline" size="sm">View</Button>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">PayPal Processing</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">3.4% + 20p</span>
                             <Button variant="outline" size="sm">View</Button>
                           </div>
                         </div>

@@ -8,6 +8,15 @@ Preferred communication style: Simple, everyday language.
 
 # Recent Changes
 
+**October 2025 - Complete PayPal Removal**
+- **Removed PayPal Integration**: Completely eliminated PayPal as a payment provider
+- **Stripe-Only Payment System**: Platform now exclusively uses Stripe for all payments
+- **Backend Cleanup**: Removed all PayPal server files, routes, and API endpoints
+- **Frontend Cleanup**: Removed PayPal UI components, buttons, and references across all pages
+- **Schema Updates**: Updated payment schema comments to reflect Stripe-only system
+- **Package Cleanup**: Uninstalled PayPal SDK package (@paypal/checkout-server-sdk)
+- **Rationale**: Stripe chosen for superior API, better subscription management, comprehensive documentation, and modern developer experience
+
 **September 2025 - Booking System Restructuring**
 - **Removed Main "My Bookings" Menu**: Eliminated the standalone "My Bookings" navigation item from the main menu across all user interfaces
 - **Integrated Bookings Within Service Pages**: Added dedicated "My Bookings" tabs within both Stays and Tour Packages pages

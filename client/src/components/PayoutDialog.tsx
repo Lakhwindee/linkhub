@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download, AlertCircle, DollarSign } from "lucide-react";
-import PayPalButton from "./PayPalButton";
 
 interface PayoutDialogProps {
   open: boolean;
@@ -22,7 +21,7 @@ export function PayoutDialog({
   availableBalance = 892.30 
 }: PayoutDialogProps) {
   const [payoutAmount, setPayoutAmount] = useState("");
-  const [payoutMethod, setPayoutMethod] = useState("paypal");
+  const [payoutMethod, setPayoutMethod] = useState("stripe");
 
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
@@ -92,9 +91,8 @@ export function PayoutDialog({
                 <SelectValue placeholder="Select payout method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="paypal">PayPal (1-2 business days)</SelectItem>
-                <SelectItem value="bank">Bank Transfer (3-5 business days)</SelectItem>
                 <SelectItem value="stripe">Stripe Express (1-2 business days)</SelectItem>
+                <SelectItem value="bank">Bank Transfer (3-5 business days)</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -106,7 +104,7 @@ export function PayoutDialog({
               <div className="text-sm text-blue-700 dark:text-blue-300">
                 <p className="font-medium">Processing Information:</p>
                 <ul className="mt-1 space-y-1 text-xs">
-                  <li>• PayPal payouts are processed within 1-2 business days</li>
+                  <li>• Stripe payouts are processed within 1-2 business days</li>
                   <li>• Bank transfers may take 3-5 business days</li>
                   <li>• No fees are charged for standard payouts</li>
                   <li>• You'll receive an email confirmation once processed</li>

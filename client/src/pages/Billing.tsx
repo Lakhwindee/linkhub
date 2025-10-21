@@ -180,7 +180,7 @@ export default function Billing() {
                       </TableRow>
                       <TableRow>
                         <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>Payout to PayPal</TableCell>
+                        <TableCell>Payout to Bank</TableCell>
                         <TableCell className="font-semibold text-red-600">-$250.00</TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="bg-orange-100 text-orange-800">
