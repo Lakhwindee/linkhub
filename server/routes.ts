@@ -633,11 +633,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create transporter using Gmail credentials (same as emailUtils.ts)
+      // Remove spaces from app password (Gmail gives them with spaces but they need to be removed)
+      const cleanPassword = process.env.GMAIL_APP_PASSWORD.replace(/\s+/g, '');
+      
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: process.env.GMAIL_EMAIL,
-          pass: process.env.GMAIL_APP_PASSWORD,
+          pass: cleanPassword,
         },
       });
       
@@ -694,11 +697,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       return { success: true, messageId: result.messageId, simulated: false };
       
-    } catch (error) {
+    } catch (error: any) {
+      console.error('❌ Email sending failed:', error.message);
+      console.error('Error details:', error);
       
       // Fallback to simulation on error
       // Fallback OTP simulation
-      return { success: true, messageId: `fallback_${Date.now()}`, simulated: true, error: error.message };
+      return { success: false, messageId: `fallback_${Date.now()}`, simulated: true, error: error.message };
     }
   }
 
@@ -724,6 +729,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         otpStore.set(`email:${email}`, { otp: emailOTP, expiresAt });
         emailResult = await sendOTPEmail(email, emailOTP);
         emailSent = emailResult.success;
+        
+        // Log email sending result
+        if (emailResult.simulated) {
+          console.log('⚠️ OTP Email simulated (not actually sent):', { email, error: emailResult.error });
+        } else {
+          console.log('✅ OTP Email sent successfully:', { email, messageId: emailResult.messageId });
+        }
       }
       
       // Send SMS OTP (placeholder - would integrate with SMS service)
