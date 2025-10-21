@@ -5,7 +5,6 @@ import connectPg from "connect-pg-simple";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
-import OpenAI from "openai";
 import { storage } from "./storage";
 import { OAuth2Client } from 'google-auth-library';
 
@@ -128,11 +127,6 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
   apiVersion: "2025-08-27.basil",
 }) : null;
 
-// Initialize OpenAI (only if API key is available)
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null;
-
 // In-memory store for API settings (in production, use database)
 let storedApiSettings = {
   stripe: {
@@ -143,12 +137,6 @@ let storedApiSettings = {
   youtube: {
     apiKey: '',
     projectId: 'hublink-project'
-  },
-  openai: {
-    apiKey: '',
-    model: 'gpt-3.5-turbo',
-    maxTokens: 1000,
-    temperature: 0.7
   },
   maps: {
     apiKey: '',
@@ -3837,149 +3825,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Assistant Chat API
-  app.post('/api/ai/chat', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      
-      // Get user for admin operations
-      const user = await storage.getUser(userId);
-      
-      if (!['admin', 'superadmin'].includes(user?.role || '')) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      // Get saved OpenAI API key from API settings
-      let apiKey = null;
-      let openaiClient = null;
-      
-      // Check if we have saved API settings for OpenAI
-      const savedSettings = storedApiSettings.openai;
-      if (savedSettings && savedSettings.apiKey && savedSettings.apiKey.trim() !== '') {
-        apiKey = savedSettings.apiKey;
-        console.log('🔑 Using saved OpenAI API key:', apiKey.slice(0, 10) + '...');
-      } else {
-        // Fallback to environment variable only if no saved key
-        apiKey = process.env.OPENAI_API_KEY;
-        console.log('🔑 Using environment OpenAI API key:', apiKey ? apiKey.slice(0, 10) + '...' : 'none');
-      }
-      
-      // Validate API key format (OpenAI keys start with 'sk-')
-      if (!apiKey || !apiKey.startsWith('sk-')) {
-        return res.status(503).json({ 
-          response: "Please configure a valid OpenAI API key in Admin Panel → API Settings. Valid keys start with 'sk-'.",
-          error: "service_unavailable"
-        });
-      }
-      
-      // Create OpenAI client with the validated API key
-      try {
-        openaiClient = new OpenAI({ apiKey });
-      } catch (error) {
-        return res.status(503).json({ 
-          response: "Failed to initialize OpenAI client. Please check your API key configuration.",
-          error: "service_unavailable"
-        });
-      }
-
-      const { message, context } = req.body;
-      
-      if (!message || typeof message !== 'string') {
-        return res.status(400).json({ 
-          response: "Please provide a valid message.",
-          error: "invalid_input"
-        });
-      }
-
-      // Create AI assistant prompt for website editing
-      const systemPrompt = `You are HubLink AI Assistant, a helpful AI that helps administrators manage and edit their tourism social platform website through natural language commands.
-
-You can help with:
-1. Website Content: Edit homepage, menu items, page content, titles, descriptions
-2. User Management: Create users, update roles, manage permissions, view user data
-3. System Settings: Update configurations, pricing, features, API settings
-4. Content Moderation: Manage posts, reviews, reports, user-generated content
-5. Financial Management: View revenue, update pricing, manage payments
-6. Marketing: Create campaigns, update promotions, manage advertisements
-
-Current context: ${context || 'admin_panel'}
-
-When users ask you to make changes:
-1. Acknowledge what they want to change
-2. Explain what the change would do
-3. Provide step-by-step instructions
-4. Suggest related improvements if applicable
-5. Be specific and actionable
-
-For example:
-- "Add menu item About Us" → Explain where to add it, what it would contain
-- "Change homepage title" → Explain current title, suggest new options
-- "Create admin user" → Explain user creation process, required fields
-- "Update pricing" → Show current pricing, explain impact of changes
-
-Always be helpful, professional, and focused on website management tasks.`;
-
-      try {
-        const completion = await openaiClient.chat.completions.create({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: message }
-          ],
-          max_tokens: 1000,
-          temperature: 0.7
-        });
-
-        const response = completion.choices[0]?.message?.content || 
-          "I'm sorry, I couldn't generate a response. Please try again.";
-
-        // Create audit log for AI usage
-        await storage.createAuditLog({
-          actorId: userId,
-          action: 'ai_chat_request',
-          targetType: 'ai_assistant',
-          targetId: 'chat_session',
-          metaJson: { 
-            message: message.substring(0, 100), // Log first 100 chars
-            context,
-            tokens_used: completion.usage?.total_tokens || 0
-          }
-        });
-
-        res.json({ 
-          response,
-          tokens_used: completion.usage?.total_tokens || 0,
-          model: "gpt-3.5-turbo"
-        });
-
-      } catch (openaiError: any) {
-        console.error('OpenAI API error:', openaiError);
-        
-        let errorMessage = "I'm experiencing technical difficulties. Please try again later.";
-        
-        if (openaiError.code === 'insufficient_quota') {
-          errorMessage = "OpenAI API quota exceeded. Please check your OpenAI account billing.";
-        } else if (openaiError.code === 'invalid_api_key') {
-          errorMessage = "OpenAI API key is invalid. Please check your configuration.";
-        } else if (openaiError.code === 'rate_limit_exceeded') {
-          errorMessage = "Too many requests. Please wait a moment and try again.";
-        }
-
-        res.json({ 
-          response: errorMessage,
-          error: "openai_error",
-          error_code: openaiError.code
-        });
-      }
-
-    } catch (error) {
-      console.error("AI chat error:", error);
-      res.status(500).json({ 
-        response: "I encountered an unexpected error. Please try again.",
-        error: "server_error"
-      });
-    }
-  });
 
   // Plan Pricing Management API
   app.get('/api/admin/plans', isAuthenticated, async (req: any, res) => {
