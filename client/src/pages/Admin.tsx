@@ -597,15 +597,7 @@ export default function Admin() {
                 Login to Admin Panel
               </Button>
               
-              <div className="mt-6 p-4 bg-muted rounded-lg">
-                <h3 className="font-semibold text-sm mb-2">Admin Credentials:</h3>
-                <div className="text-xs space-y-1 font-mono">
-                  <div><strong>ID:</strong> ADMIN_001</div>
-                  <div><strong>Password:</strong> admin123</div>
-                </div>
-              </div>
-              
-              <Button variant="outline" className="w-full" asChild>
+              <Button variant="outline" className="w-full mt-4" asChild>
                 <Link href="/">Back to Home</Link>
               </Button>
             </CardContent>
