@@ -4972,18 +4972,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const submission = await storage.updateAdSubmissionStatus(id, status, reviewerId, notes);
       
-      // If approved, add funds to creator's wallet
+      // If approved, add funds to creator's wallet (with tax calculation)
       if (status === 'approved' && submission.reservationId) {
         const reservation = await db.query.adReservations.findFirst({
           where: eq(adReservations.id, submission.reservationId),
-          with: { ad: true }
+          with: { ad: true, user: true }
         });
         
-        if (reservation?.ad) {
+        if (reservation?.ad && reservation?.user) {
+          const grossAmountMinor = Math.round(parseFloat(reservation.ad.payoutAmount) * 100);
+          
+          // Get tax configuration for creator's country
+          const creatorCountry = reservation.user.country || 'GB'; // Default to UK
+          const taxConfig = await storage.getTaxConfiguration(creatorCountry);
+          
+          let taxWithheldMinor = 0;
+          let taxRate = 0;
+          let taxConfigId: string | undefined;
+          
+          if (taxConfig) {
+            taxRate = parseFloat(taxConfig.taxRate);
+            taxWithheldMinor = Math.round(grossAmountMinor * (taxRate / 100));
+            taxConfigId = taxConfig.id;
+          }
+          
+          const netAmountMinor = grossAmountMinor - taxWithheldMinor;
+          
+          // Update wallet with gross, tax, and net amounts
           await storage.updateWalletBalance(
             reservation.userId!, 
-            Math.round(parseFloat(reservation.ad.payoutAmount) * 100)
+            netAmountMinor,
+            grossAmountMinor,
+            taxWithheldMinor
           );
+          
+          // Create tax record for audit trail
+          const now = new Date();
+          await storage.createTaxRecord({
+            userId: reservation.userId!,
+            transactionType: 'campaign_earning',
+            transactionId: submission.id,
+            grossAmountMinor,
+            taxWithheldMinor,
+            netAmountMinor,
+            taxRate: taxRate.toString(),
+            taxYear: now.getFullYear(),
+            taxQuarter: Math.ceil((now.getMonth() + 1) / 3),
+            country: creatorCountry,
+            taxConfigId,
+            description: `Campaign payout: ${reservation.ad.title}`,
+          });
         }
       }
       
@@ -5770,6 +5808,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching user trips:', error);
       res.status(500).json({ message: 'Failed to fetch user trips' });
+    }
+  });
+
+  // Tax Management Routes (Admin Only)
+  app.get('/api/admin/tax/configurations', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const configs = await storage.getAllTaxConfigurations();
+      res.json(configs);
+    } catch (error) {
+      console.error("Error fetching tax configurations:", error);
+      res.status(500).json({ message: "Failed to fetch tax configurations" });
+    }
+  });
+
+  app.post('/api/admin/tax/configurations', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const config = await storage.createTaxConfiguration(req.body);
+      
+      await storage.createAuditLog({
+        actorId: req.user.claims.sub,
+        action: "tax_configuration_created",
+        targetType: "tax_configuration",
+        targetId: config.id,
+        metaJson: req.body,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error creating tax configuration:", error);
+      res.status(500).json({ message: "Failed to create tax configuration" });
+    }
+  });
+
+  app.put('/api/admin/tax/configurations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const config = await storage.updateTaxConfiguration(req.params.id, req.body);
+      
+      await storage.createAuditLog({
+        actorId: req.user.claims.sub,
+        action: "tax_configuration_updated",
+        targetType: "tax_configuration",
+        targetId: req.params.id,
+        metaJson: req.body,
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error updating tax configuration:", error);
+      res.status(500).json({ message: "Failed to update tax configuration" });
+    }
+  });
+
+  app.get('/api/admin/tax/records', isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { year, country } = req.query;
+      const filters: any = {};
+      if (year) filters.year = parseInt(year as string);
+      if (country) filters.country = country as string;
+      
+      const records = await storage.getAllTaxRecords(filters);
+      res.json(records);
+    } catch (error) {
+      console.error("Error fetching tax records:", error);
+      res.status(500).json({ message: "Failed to fetch tax records" });
+    }
+  });
+
+  app.get('/api/my-tax-records', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { year, quarter, country } = req.query;
+      
+      const filters: any = {};
+      if (year) filters.year = parseInt(year as string);
+      if (quarter) filters.quarter = parseInt(quarter as string);
+      if (country) filters.country = country as string;
+      
+      const records = await storage.getUserTaxRecords(userId, filters);
+      res.json(records);
+    } catch (error) {
+      console.error("Error fetching user tax records:", error);
+      res.status(500).json({ message: "Failed to fetch tax records" });
     }
   });
 

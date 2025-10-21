@@ -2037,19 +2037,40 @@ export class DatabaseStorage implements IStorage {
     return wallet;
   }
 
-  async updateWalletBalance(userId: string, amountMinor: number): Promise<Wallet> {
+  async updateWalletBalance(userId: string, amountMinor: number, grossAmountMinor?: number, taxWithheldMinor?: number): Promise<Wallet> {
+    const updateData: any = { 
+      balanceMinor: sql`balance_minor + ${amountMinor}` 
+    };
+    
+    if (grossAmountMinor !== undefined) {
+      updateData.totalEarnedMinor = sql`total_earned_minor + ${grossAmountMinor}`;
+    }
+    
+    if (taxWithheldMinor !== undefined) {
+      updateData.totalTaxWithheldMinor = sql`total_tax_withheld_minor + ${taxWithheldMinor}`;
+    }
+    
     const [wallet] = await db
       .update(wallets)
-      .set({ balanceMinor: sql`balance_minor + ${amountMinor}` })
+      .set(updateData)
       .where(eq(wallets.userId, userId))
       .returning();
     return wallet;
   }
 
-  async createPayout(data: { userId: string; amountMinor: number; currency?: string; method?: string }): Promise<Payout> {
+  async createPayout(data: { userId: string; grossAmountMinor: number; taxWithheldMinor: number; amountMinor: number; taxRate?: number; currency?: string; method?: string }): Promise<Payout> {
     const [payout] = await db
       .insert(payouts)
-      .values(data)
+      .values({
+        userId: data.userId,
+        grossAmountMinor: data.grossAmountMinor,
+        taxWithheldMinor: data.taxWithheldMinor,
+        amountMinor: data.amountMinor,
+        taxRate: data.taxRate !== undefined ? data.taxRate.toString() : undefined,
+        currency: data.currency || 'GBP',
+        method: data.method || 'stripe',
+        status: 'pending',
+      })
       .returning();
     return payout;
   }
@@ -2697,6 +2718,84 @@ export class DatabaseStorage implements IStorage {
         lastMessageAt: new Date(),
       })
       .where(eq(groupConversations.id, conversationId));
+  }
+
+  // Tax Configuration & Records (Worldwide Support)
+  async getTaxConfiguration(country: string): Promise<TaxConfiguration | undefined> {
+    const [config] = await db
+      .select()
+      .from(taxConfiguration)
+      .where(eq(taxConfiguration.country, country));
+    return config;
+  }
+
+  async getAllTaxConfigurations(): Promise<TaxConfiguration[]> {
+    return await db
+      .select()
+      .from(taxConfiguration)
+      .orderBy(asc(taxConfiguration.countryName));
+  }
+
+  async createTaxConfiguration(data: { country: string; countryName: string; taxRate: string; taxType: string; taxName?: string; exemptionThreshold?: number; notes?: string }): Promise<TaxConfiguration> {
+    const [config] = await db
+      .insert(taxConfiguration)
+      .values(data)
+      .returning();
+    return config;
+  }
+
+  async updateTaxConfiguration(id: string, data: Partial<TaxConfiguration>): Promise<TaxConfiguration> {
+    const [config] = await db
+      .update(taxConfiguration)
+      .set(data)
+      .where(eq(taxConfiguration.id, id))
+      .returning();
+    return config;
+  }
+
+  async createTaxRecord(data: { userId: string; transactionType: string; transactionId?: string; grossAmountMinor: number; taxWithheldMinor: number; netAmountMinor: number; taxRate: string; taxYear?: number; taxQuarter?: number; country?: string; taxConfigId?: string; description?: string }): Promise<TaxRecord> {
+    const [record] = await db
+      .insert(taxRecords)
+      .values(data)
+      .returning();
+    return record;
+  }
+
+  async getUserTaxRecords(userId: string, filters?: { year?: number; quarter?: number; country?: string }): Promise<TaxRecord[]> {
+    let query = db
+      .select()
+      .from(taxRecords)
+      .where(eq(taxRecords.userId, userId));
+
+    if (filters?.year) {
+      query = query.where(eq(taxRecords.taxYear, filters.year));
+    }
+    if (filters?.quarter) {
+      query = query.where(eq(taxRecords.taxQuarter, filters.quarter));
+    }
+    if (filters?.country) {
+      query = query.where(eq(taxRecords.country, filters.country));
+    }
+
+    return await query.orderBy(desc(taxRecords.createdAt));
+  }
+
+  async getAllTaxRecords(filters?: { year?: number; country?: string }): Promise<TaxRecord[]> {
+    let query = db.select().from(taxRecords);
+
+    const conditions: any[] = [];
+    if (filters?.year) {
+      conditions.push(eq(taxRecords.taxYear, filters.year));
+    }
+    if (filters?.country) {
+      conditions.push(eq(taxRecords.country, filters.country));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query.orderBy(desc(taxRecords.createdAt));
   }
 }
 
