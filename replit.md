@@ -31,6 +31,7 @@ Preferred communication style: Simple, everyday language.
 - **Schema Management**: Drizzle Kit
 - **Session Storage**: PostgreSQL-backed sessions (connect-pg-simple)
 - **File Storage**: Google Cloud Storage (custom ACL policies)
+- **Tax Management**: tax_configuration (country tax rates) and tax_records (complete audit trail) tables
 
 ## Authentication & Authorization
 - **Provider**: Replit OpenID Connect
@@ -47,9 +48,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Technical Implementations
 - 10% platform fee applied across all booking services.
+- **Worldwide Tax System**: Automatic tax calculation and withholding for creator campaign earnings based on country of residence. Supports UK (20%), India (10%), US (24%), and other major countries with complete audit trail.
 - Continuous YouTube channel verification with fraud prevention.
 - Standardized location data using real-world country/city information.
-- Enhanced financial management in admin panel including revenue overview, service breakdown, and payout management.
+- Enhanced financial management in admin panel including revenue overview, service breakdown, payout management, and tax reporting.
 - Complete removal of OpenAI/ChatGPT and PayPal integrations to streamline functionality and standardize on Stripe.
 
 # External Dependencies

@@ -3767,9 +3767,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Insufficient balance" });
       }
       
+      // Create payout - no additional tax since tax was already withheld at earning time
       const payout = await storage.createPayout({
         userId,
+        grossAmountMinor: amountMinor, // For withdrawals, gross = net (no new tax)
+        taxWithheldMinor: 0, // No additional tax on withdrawal
         amountMinor,
+        taxRate: 0,
         method
       });
       
