@@ -594,6 +594,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         plan: adminUser.plan
       };
       
+      // Explicitly save session to database before responding
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err: any) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+      
       res.json({ 
         message: 'Admin login successful',
         user: {
