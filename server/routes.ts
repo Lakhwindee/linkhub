@@ -19,15 +19,17 @@ function isAuthenticated(req: any, res: any, next: any) {
 }
 
 // Initialize Google OAuth client with production-ready configuration
-if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+if (process.env.NODE_ENV === 'production' && (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)) {
   throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for production');
 }
 
-const googleOAuthClient = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
-);
+const googleOAuthClient = (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) 
+  ? new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
+    )
+  : null;
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
@@ -192,6 +194,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Google OAuth routes
   app.get('/api/auth/google', (req, res) => {
+    if (!googleOAuthClient) {
+      return res.status(503).json({ message: 'Google OAuth is not configured' });
+    }
+    
     const scopes = [
       'openid',
       'https://www.googleapis.com/auth/userinfo.profile',
@@ -213,6 +219,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/auth/google/callback', async (req, res) => {
     try {
+      if (!googleOAuthClient) {
+        return res.redirect('/?error=oauth_not_configured');
+      }
+      
       const { code, state } = req.query;
       
       if (!code) {
