@@ -1072,8 +1072,9 @@ export default function AdMarketplace() {
     return null;
   }
 
-  // Only creators and free_creators can access AdMarketplace
-  if (user.role !== 'creator' && user.role !== 'free_creator') {
+  // Only creators, free_creators, and admins can access AdMarketplace
+  const allowedRoles = ['creator', 'free_creator', 'admin', 'superadmin', 'moderator'];
+  if (!allowedRoles.includes(user.role || '')) {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto">
