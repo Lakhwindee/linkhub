@@ -54,7 +54,9 @@ Preferred communication style: Simple, everyday language.
   - Wallet tracking: totalEarnedMinor (gross), totalTaxWithheldMinor (tax), balanceMinor (net)
   - Admin features: Add/manage country tax rates, view all tax records, export tax reports
   - Creator features: Tax summary card in billing page showing gross earnings, tax withheld, and net received
-  - Default configurations: UK (20%), India (10%), US (24%), Canada (15%), Australia (10%), France (20%), Germany (19%)
+  - **Comprehensive Coverage**: 177+ countries pre-configured with accurate tax rates (based on PWC, KPMG, Deloitte 2025 data)
+  - Regional breakdown: Europe (38+), Americas (26+), Asia (29+), Middle East (17+), Africa (40+), Oceania (14+)
+  - Major economies configured: UK (20%), India (10%), US (30%), Canada (15%), Australia (10%), Germany (26.38%), France (20%), China (10%), Japan (20.42%), Brazil (15%)
   - Tax calculation flow: On campaign approval → calculate tax → update wallet → create tax record
   - Full compliance support with currency handling and detailed audit trail
 - Continuous YouTube channel verification with fraud prevention.
