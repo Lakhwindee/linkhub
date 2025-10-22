@@ -692,69 +692,6 @@ export default function ProfessionalSignup() {
                 </div>
               </div>
 
-              {/* Professional Information */}
-              <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <Briefcase className="w-5 h-5 mr-2" />
-                  Professional Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="username">Username *</Label>
-                    <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="johnsmith_travel"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="profession">Profession/Industry</Label>
-                    <Input
-                      id="profession"
-                      value={formData.profession}
-                      onChange={(e) => setFormData(prev => ({ ...prev, profession: e.target.value }))}
-                      placeholder="Travel Blogger, Hotel Manager, etc."
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="experience">Years of Experience</Label>
-                    <Select value={formData.experience} onValueChange={(value) => setFormData(prev => ({ ...prev, experience: value }))}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select experience" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="0-1">0-1 years</SelectItem>
-                        <SelectItem value="2-3">2-3 years</SelectItem>
-                        <SelectItem value="4-5">4-5 years</SelectItem>
-                        <SelectItem value="6-10">6-10 years</SelectItem>
-                        <SelectItem value="10+">10+ years</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="languages">Languages Spoken</Label>
-                    <Input
-                      id="languages"
-                      value={formData.languages}
-                      onChange={(e) => setFormData(prev => ({ ...prev, languages: e.target.value }))}
-                      placeholder="English, Spanish, French"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4">
-                  <Label htmlFor="bio">Professional Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    placeholder="Tell us about your professional background, expertise, and what makes you unique..."
-                    rows={4}
-                  />
-                </div>
-              </div>
-
               {/* Publisher Business Information */}
               {selectedRole === 'publisher' && (
                 <div>
