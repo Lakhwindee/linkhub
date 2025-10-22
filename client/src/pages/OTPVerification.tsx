@@ -203,14 +203,14 @@ export default function OTPVerification() {
         
         toast({
           title: "Verification Successful!",
-          description: "Your account has been verified successfully.",
-          duration: 3000,
+          description: "Completing your registration...",
+          duration: 2000,
         });
 
-        // Redirect to success page or dashboard
+        // Redirect to complete-signup to create user in database
         setTimeout(() => {
-          setLocation('/?signup=success');
-        }, 2000);
+          setLocation('/complete-signup');
+        }, 1500);
       } else {
         setVerificationStatus('failed');
         toast({

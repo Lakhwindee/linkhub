@@ -36,6 +36,8 @@ export default function DocumentSignup() {
   const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
   const [formData, setFormData] = useState({
     email: '',
+    password: '',
+    confirmPassword: '',
     username: '',
     firstName: '',
     lastName: '',
@@ -89,6 +91,36 @@ export default function DocumentSignup() {
   };
 
   const handleSubmit = async () => {
+    // Validate required fields
+    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields (email, password, name).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password match
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords Don't Match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password strength
+    if (formData.password.length < 6) {
+      toast({
+        title: "Weak Password",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     setSuccessStage('creating');
 
@@ -104,7 +136,7 @@ export default function DocumentSignup() {
         verificationStatus,
       };
 
-      // Store signup data for completion process
+      // Store signup data for completion process (including password for later)
       sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
       sessionStorage.setItem('hublink_signup_type', 'document');
       localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
@@ -362,6 +394,7 @@ export default function DocumentSignup() {
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="Enter your email"
+                      required
                     />
                   </div>
                   <div>
@@ -371,6 +404,31 @@ export default function DocumentSignup() {
                       value={formData.username}
                       onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
                       placeholder="Enter your username"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Create a password"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Confirm your password"
+                      required
                     />
                   </div>
                 </div>

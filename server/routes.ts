@@ -360,6 +360,90 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Complete registration after OTP verification (traditional email/password flow)
+  app.post('/api/auth/complete-registration', async (req, res) => {
+    try {
+      const {
+        email,
+        password,
+        username,
+        firstName,
+        lastName,
+        bio,
+        country,
+        city,
+        documentType,
+        documentUrl,
+        documentNumber,
+        fullName,
+        dateOfBirth,
+        nationality,
+        expiryDate,
+        verificationStatus
+      } = req.body;
+
+      if (!email || !password || !firstName || !lastName) {
+        return res.status(400).json({ message: 'Email, password, first name, and last name are required' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(409).json({ message: 'User already exists' });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      // Create user with all profile data
+      const newUser = {
+        id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        email,
+        password: hashedPassword,
+        username: username || `user${Date.now()}`,
+        firstName,
+        lastName,
+        bio: bio || '',
+        country: country || '',
+        city: city || '',
+        documentType: documentType || null,
+        documentUrl: documentUrl || '',
+        documentNumber: documentNumber || '',
+        fullName: fullName || `${firstName} ${lastName}`,
+        dateOfBirth: dateOfBirth || null,
+        nationality: nationality || '',
+        expiryDate: expiryDate || null,
+        verificationStatus: verificationStatus || 'verified',
+        verifiedAt: new Date(),
+        verificationNotes: 'Verified via OTP email verification',
+        profileImageUrl: '',
+        plan: 'free'
+      };
+
+      await storage.upsertUser(newUser);
+
+      // Set session
+      (req.session as any).userId = newUser.id;
+      (req.session as any).user = newUser;
+
+      res.json({ 
+        success: true,
+        message: 'Registration completed successfully',
+        user: {
+          id: newUser.id,
+          email: newUser.email,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          username: newUser.username
+        }
+      });
+    } catch (error) {
+      console.error('Complete registration error:', error);
+      res.status(500).json({ message: 'Failed to complete registration' });
+    }
+  });
+
   // Logout endpoint
   app.post('/api/auth/logout', (req, res) => {
     req.session?.destroy((err: any) => {

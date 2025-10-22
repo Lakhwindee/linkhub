@@ -22,8 +22,8 @@ export default function SignupCompletion() {
 
         const data = JSON.parse(signupData);
         
-        // Complete signup via API
-        const response = await fetch('/api/complete-signup', {
+        // Complete signup via traditional auth API (no OAuth required)
+        const response = await fetch('/api/auth/complete-registration', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
