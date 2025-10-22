@@ -625,43 +625,17 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  // Function to send OTP email using actual email infrastructure
+  // Function to send OTP email using Gmail API
   async function sendOTPEmail(email: string, otp: string) {
     try {
       console.log('📧 sendOTPEmail called for:', email);
-      console.log('🔑 Gmail credentials check:', {
-        hasEmail: !!process.env.GMAIL_EMAIL,
-        hasPassword: !!process.env.GMAIL_APP_PASSWORD,
-        emailLength: process.env.GMAIL_EMAIL?.length,
-        passwordLength: process.env.GMAIL_APP_PASSWORD?.length
-      });
       
-      // Import nodemailer
-      const nodemailer = await import('nodemailer');
-      
-      // Check if Gmail credentials are available
-      if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
-        console.log('⚠️ Gmail credentials missing - simulating email');
-        // OTP email simulation for development/testing
-        return { success: true, messageId: `simulated_${Date.now()}`, simulated: true };
-      }
-      
-      console.log('✅ Gmail credentials found - attempting to send real email');
-
-      // Create transporter using Gmail credentials (same as emailUtils.ts)
-      // Remove spaces from app password (Gmail gives them with spaces but they need to be removed)
-      const cleanPassword = process.env.GMAIL_APP_PASSWORD.replace(/\s+/g, '');
-      
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.GMAIL_EMAIL,
-          pass: cleanPassword,
-        },
-      });
-      
-      // Professional email template
-      const emailContent = `
+      // Try Gmail API integration first (Replit connector)
+      try {
+        const { sendEmailViaGmailAPI } = await import('./gmailApi.js');
+        
+        // Professional email template
+        const emailContent = `
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px;">
             <h1 style="margin: 0; font-size: 28px;">✅ Account Verification</h1>
@@ -701,25 +675,29 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         </div>
       `;
 
-      // Send actual email
-      console.log('📤 Attempting to send email via Gmail SMTP...');
-      const result = await transporter.sendMail({
-        from: `"HubLink Verification" <${process.env.GMAIL_EMAIL}>`,
-        to: email,
-        subject: '🔐 Your HubLink Verification Code',
-        html: emailContent
-      });
-
-      console.log('✅ Email sent successfully! MessageId:', result.messageId);
-      
-      return { success: true, messageId: result.messageId, simulated: false };
+        // Send email via Gmail API
+        const result = await sendEmailViaGmailAPI(
+          email,
+          '🔐 Your HubLink Verification Code',
+          emailContent
+        );
+        
+        if (result.success) {
+          return { success: true, messageId: result.messageId, simulated: false };
+        } else {
+          throw new Error(result.error || 'Gmail API failed');
+        }
+        
+      } catch (gmailApiError: any) {
+        console.error('❌ Gmail API failed:', gmailApiError.message);
+        console.log('⚠️ Falling back to development mode simulation');
+        
+        // Fallback to development mode simulation
+        return { success: false, messageId: `simulated_${Date.now()}`, simulated: true, error: gmailApiError.message };
+      }
       
     } catch (error: any) {
       console.error('❌ Email sending failed:', error.message);
-      console.error('Error details:', error);
-      
-      // Fallback to simulation on error
-      // Fallback OTP simulation
       return { success: false, messageId: `fallback_${Date.now()}`, simulated: true, error: error.message };
     }
   }
