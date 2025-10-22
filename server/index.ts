@@ -13,13 +13,18 @@ app.get('/health', (_req, res) => {
 });
 
 // Quick root health check for deployment (before middleware)
+// Respond to simple GET requests immediately for health checks
 app.get('/', (req, res, next) => {
-  // If this is a simple health check (not requesting HTML), respond immediately
-  const accept = req.get('Accept');
-  if (!accept || accept === '*/*' || !accept.includes('text/html')) {
+  const userAgent = req.get('User-Agent') || '';
+  const accept = req.get('Accept') || '';
+  
+  // Health check detection: no user agent, or simple curl/wget requests
+  if (!userAgent || userAgent.includes('curl') || userAgent.includes('health') || 
+      accept === '*/*' || (!accept.includes('text/html') && !accept.includes('text/'))) {
     return res.status(200).send('OK');
   }
-  // Otherwise, continue to serve the frontend
+  
+  // Browser requests: continue to frontend
   next();
 });
 

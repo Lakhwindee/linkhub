@@ -79,7 +79,18 @@ export function serveStatic(app: Express) {
   app.use(express.static(distPath));
 
   // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // BUT: Don't override health check endpoints
+  app.use("*", (req, res, next) => {
+    // Skip if response already sent (e.g., by health check)
+    if (res.headersSent) {
+      return next();
+    }
+    
+    // Skip health check endpoint
+    if (req.path === '/health') {
+      return next();
+    }
+    
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
