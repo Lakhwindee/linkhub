@@ -9,7 +9,7 @@ const server = createServer(app);
 // CRITICAL: Ultra-simple health checks - ZERO logic, instant response
 // Must be FIRST before any middleware to ensure fastest possible response
 
-// Primary health check endpoint
+// Primary health check endpoint - use THIS for deployment health checks
 app.get('/health', (_req, res) => {
   res.status(200).send('OK');
 });
@@ -19,20 +19,8 @@ app.get('/healthz', (_req, res) => {
   res.status(200).send('OK');
 });
 
-// Root endpoint health check - super simple, no logic
-// This MUST respond quickly for deployment health checks
-app.get('/', (_req, res, next) => {
-  // For health checks: simple request without complex headers
-  const accept = _req.get('Accept');
-  
-  // If no specific accept header or generic accept, treat as health check
-  if (!accept || accept === '*/*') {
-    return res.status(200).send('OK');
-  }
-  
-  // Otherwise continue to serve frontend
-  next();
-});
+// NOTE: "/" is NOT a health check endpoint
+// It will be handled by static middleware to serve the React frontend
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
@@ -73,16 +61,8 @@ app.use((req, res, next) => {
 // Other ports are firewalled. Default to 5000 if not specified.
 const port = parseInt(process.env.PORT || '5000', 10);
 
-// START LISTENING IMMEDIATELY - health checks work before DB is ready
-server.listen({
-  port,
-  host: "0.0.0.0",
-  reusePort: true,
-}, () => {
-  log(`Server listening on port ${port} - health checks active`);
-});
-
-// Initialize routes, DB, and sessions AFTER server is listening
+// Initialize routes, DB, and sessions BEFORE server starts listening
+// This ensures all routes are ready when health checks arrive
 (async () => {
   try {
     log('Initializing routes and database...');
@@ -114,8 +94,18 @@ server.listen({
     }
 
     log('Application fully initialized and ready');
+
+    // NOW start listening - all routes are ready for health checks
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`Server listening on port ${port} - ready for requests`);
+    });
+
   } catch (error) {
     log(`Failed to initialize application: ${error}`, "error");
-    // Don't crash - health checks still work
+    process.exit(1); // Exit on initialization failure
   }
 })();

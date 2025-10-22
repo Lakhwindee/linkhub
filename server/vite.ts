@@ -78,19 +78,9 @@ export function serveStatic(app: Express) {
 
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  // BUT: Don't override health check endpoints
-  app.use("*", (req, res, next) => {
-    // Skip if response already sent (e.g., by health check)
-    if (res.headersSent) {
-      return next();
-    }
-    
-    // Skip health check endpoint
-    if (req.path === '/health') {
-      return next();
-    }
-    
+  // Serve index.html for all routes that aren't static files or API endpoints
+  // This enables client-side routing for the SPA
+  app.use("*", (req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
