@@ -6,7 +6,7 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 channel = "stable-25_05"
 
 [deployment]
-deploymentTarget = "vm"
+deploymentTarget = "cloudrun"
 run = ["npm", "start"]
 build = ["npm", "run"]
 
@@ -75,10 +75,6 @@ externalPort = 3002
 [[ports]]
 localPort = 44825
 externalPort = 3003
-
-[[ports]]
-localPort = 46089
-externalPort = 6800
 
 [[ports]]
 localPort = 46711
