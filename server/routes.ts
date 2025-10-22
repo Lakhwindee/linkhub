@@ -628,14 +628,25 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   // Function to send OTP email using actual email infrastructure
   async function sendOTPEmail(email: string, otp: string) {
     try {
+      console.log('📧 sendOTPEmail called for:', email);
+      console.log('🔑 Gmail credentials check:', {
+        hasEmail: !!process.env.GMAIL_EMAIL,
+        hasPassword: !!process.env.GMAIL_APP_PASSWORD,
+        emailLength: process.env.GMAIL_EMAIL?.length,
+        passwordLength: process.env.GMAIL_APP_PASSWORD?.length
+      });
+      
       // Import nodemailer
       const nodemailer = await import('nodemailer');
       
       // Check if Gmail credentials are available
       if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
+        console.log('⚠️ Gmail credentials missing - simulating email');
         // OTP email simulation for development/testing
         return { success: true, messageId: `simulated_${Date.now()}`, simulated: true };
       }
+      
+      console.log('✅ Gmail credentials found - attempting to send real email');
 
       // Create transporter using Gmail credentials (same as emailUtils.ts)
       // Remove spaces from app password (Gmail gives them with spaces but they need to be removed)
@@ -691,6 +702,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       `;
 
       // Send actual email
+      console.log('📤 Attempting to send email via Gmail SMTP...');
       const result = await transporter.sendMail({
         from: `"HubLink Verification" <${process.env.GMAIL_EMAIL}>`,
         to: email,
@@ -698,7 +710,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         html: emailContent
       });
 
-      // OTP email sent successfully
+      console.log('✅ Email sent successfully! MessageId:', result.messageId);
       
       return { success: true, messageId: result.messageId, simulated: false };
       
