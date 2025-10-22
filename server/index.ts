@@ -3,6 +3,24 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// CRITICAL: Health check MUST be first, before ANY middleware or async operations
+// This ensures deployment health checks work even if DB/sessions are slow
+app.get('/health', (_req, res) => {
+  res.status(200).send('OK');
+});
+
+// Quick root health check for deployment (before middleware)
+app.get('/', (req, res, next) => {
+  // If this is a simple health check (not requesting HTML), respond immediately
+  const accept = req.get('Accept');
+  if (!accept || accept === '*/*' || !accept.includes('text/html')) {
+    return res.status(200).send('OK');
+  }
+  // Otherwise, continue to serve the frontend
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 

@@ -154,22 +154,6 @@ let storedApiSettings = {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Health check endpoint for deployment (responds immediately)
-  app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
-  });
-  
-  // Quick root health check for deployment
-  app.get('/', (_req, res, next) => {
-    // If this is a health check (no Accept header or simple request), respond quickly
-    const accept = _req.get('Accept');
-    if (!accept || accept === '*/*' || !accept.includes('text/html')) {
-      return res.status(200).json({ status: 'ok', service: 'HubLink' });
-    }
-    // Otherwise, let it continue to serve the frontend
-    next();
-  });
-  
   // Cookie parser middleware
   app.use(cookieParser());
   
