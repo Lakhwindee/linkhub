@@ -184,12 +184,9 @@ export default function ProfessionalSignup() {
         verificationStatus: selectedRole === 'publisher' ? verificationStatus : 'verified',
       };
 
-      // Create demo user account  
-      const demoUserId = 'demo-' + Date.now();
-      localStorage.setItem('hublink_demo_user', 'true');
-      localStorage.setItem('hublink_demo_user_id', demoUserId);
-      localStorage.setItem('hublink_user_role', selectedRole || 'creator');
-      localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
+      // Store signup data for completion after OTP verification
+      localStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      localStorage.setItem('hublink_signup_type', 'professional');
       
       // Store OTP verification data
       localStorage.setItem('signup_email', formData.email);
