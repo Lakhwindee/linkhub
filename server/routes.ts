@@ -4352,10 +4352,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           lastTested: new Date().toISOString()
         },
         email: {
-          provider: storedApiSettings.email.provider || 'not_configured',
-          apiKey: storedApiSettings.email.apiKey || '',
-          status: storedApiSettings.email.apiKey ? 'active' : 'inactive',
-          lastTested: null
+          provider: process.env.GMAIL_EMAIL ? 'gmail_smtp' : (storedApiSettings.email.provider || 'not_configured'),
+          email: process.env.GMAIL_EMAIL ? process.env.GMAIL_EMAIL.replace(/(.{2}).*(@.*)/, '$1***$2') : '',
+          appPassword: process.env.GMAIL_APP_PASSWORD ? '••••••••••••••••' : '',
+          status: (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) ? 'active' : 'inactive',
+          lastTested: null,
+          note: (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) ? 'Gmail SMTP configured via environment variables' : 'Configure Gmail App Password in Replit Secrets'
         },
         usage: {
           stripe: { calls: 2456, period: '30_days' },

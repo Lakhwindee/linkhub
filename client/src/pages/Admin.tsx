@@ -1274,38 +1274,92 @@ export default function Admin() {
                           <Mail className="w-5 h-5 mr-2" />
                           Email Service
                         </div>
-                        <Badge variant="outline">Not Configured</Badge>
+                        <Badge variant={apiSettings?.email?.status === 'active' ? 'default' : 'outline'}>
+                          {apiSettings?.email?.status === 'active' ? '✅ Active' : 'Not Configured'}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
                         <Label>Service Provider</Label>
-                        <Select>
+                        <Select value={apiSettings?.email?.provider || 'not_configured'} disabled>
                           <SelectTrigger className="mt-1">
-                            <SelectValue placeholder="Select email service" />
+                            <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="not_configured">Not Configured</SelectItem>
+                            <SelectItem value="gmail_smtp">Gmail SMTP</SelectItem>
                             <SelectItem value="sendgrid">SendGrid</SelectItem>
                             <SelectItem value="mailgun">Mailgun</SelectItem>
                             <SelectItem value="ses">Amazon SES</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-                      <div>
-                        <Label>API Key</Label>
-                        <div className="flex space-x-2 mt-1">
-                          <Input 
-                            type="password" 
-                            placeholder="Enter API Key" 
-                          />
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
+                      
+                      {apiSettings?.email?.provider === 'gmail_smtp' && (
+                        <>
+                          <div>
+                            <Label>Gmail Email</Label>
+                            <Input 
+                              value={apiSettings?.email?.email || ''} 
+                              disabled
+                              className="mt-1 font-mono text-sm"
+                            />
+                          </div>
+                          <div>
+                            <Label>App Password</Label>
+                            <Input 
+                              type="password"
+                              value={apiSettings?.email?.appPassword || ''} 
+                              disabled
+                              className="mt-1 font-mono text-sm"
+                            />
+                          </div>
+                        </>
+                      )}
+                      
+                      {apiSettings?.email?.note && (
+                        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 rounded-md">
+                          <p className="text-sm text-blue-800 dark:text-blue-200">
+                            ℹ️ {apiSettings.email.note}
+                          </p>
                         </div>
-                      </div>
+                      )}
+                      
                       <div className="flex space-x-2">
-                        <Button size="sm">Save Config</Button>
-                        <Button variant="outline" size="sm">Send Test Email</Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              const result = await fetch('/api/auth/send-otp', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ 
+                                  email: 'test@example.com', 
+                                  type: 'email' 
+                                })
+                              });
+                              const data = await result.json();
+                              if (data.emailSent) {
+                                alert('✅ Test email sent successfully!');
+                              } else {
+                                alert('⚠️ Email failed. Check console logs for details.');
+                              }
+                            } catch (error) {
+                              alert('❌ Test failed: ' + error);
+                            }
+                          }}
+                        >
+                          Send Test Email
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="ghost"
+                          onClick={() => window.open('https://support.google.com/accounts/answer/185833', '_blank')}
+                        >
+                          📖 Gmail Setup Guide
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
