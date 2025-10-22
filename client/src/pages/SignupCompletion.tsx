@@ -12,9 +12,9 @@ export default function SignupCompletion() {
         
         console.log('🔄 SignupCompletion: Starting signup completion...');
         
-        // Get stored signup data
-        const signupData = sessionStorage.getItem('hublink_signup_data');
-        const signupType = sessionStorage.getItem('hublink_signup_type');
+        // Get stored signup data from localStorage (persists across redirects)
+        const signupData = localStorage.getItem('hublink_signup_data');
+        const signupType = localStorage.getItem('hublink_signup_type');
         
         console.log('📦 SignupCompletion: Retrieved data from sessionStorage:', {
           hasData: !!signupData,
@@ -52,9 +52,9 @@ export default function SignupCompletion() {
           const result = await response.json();
           console.log('✅ SignupCompletion: Registration successful!', result);
           
-          // Clear signup data
-          sessionStorage.removeItem('hublink_signup_data');
-          sessionStorage.removeItem('hublink_signup_type');
+          // Clear signup data from localStorage
+          localStorage.removeItem('hublink_signup_data');
+          localStorage.removeItem('hublink_signup_type');
           
           toast({
             title: "Signup Complete!",
@@ -75,9 +75,9 @@ export default function SignupCompletion() {
       } catch (error) {
         console.error('Signup completion error:', error);
         
-        // Clear signup data on error
-        sessionStorage.removeItem('hublink_signup_data');
-        sessionStorage.removeItem('hublink_signup_type');
+        // Clear signup data on error from localStorage
+        localStorage.removeItem('hublink_signup_data');
+        localStorage.removeItem('hublink_signup_type');
         
         toast({
           title: "Signup Error",

@@ -137,9 +137,9 @@ export default function DocumentSignup() {
       };
 
       // Store signup data for completion process (including password for later)
-      sessionStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
-      sessionStorage.setItem('hublink_signup_type', 'document');
-      localStorage.setItem('hublink_user_data', JSON.stringify(signupData));
+      // IMPORTANT: Use localStorage instead of sessionStorage to persist across redirects
+      localStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      localStorage.setItem('hublink_signup_type', 'document');
       
       // Store OTP verification data
       localStorage.setItem('signup_email', formData.email);
