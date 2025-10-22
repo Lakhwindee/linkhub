@@ -845,14 +845,17 @@ export default function AdMarketplace() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Access check - allow premium and standard users
+  // Access check - block free users completely
   useEffect(() => {
     if (user && user.plan === 'free') {
       toast({
         title: "Upgrade Required",
-        description: "You need a paid plan to access the Ad Marketplace.",
+        description: "You need a paid plan to access the Ad Marketplace. Redirecting...",
         variant: "destructive",
       });
+      setTimeout(() => {
+        window.location.href = '/subscribe';
+      }, 1500);
     }
   }, [user, toast]);
 
