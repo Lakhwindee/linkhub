@@ -859,6 +859,19 @@ export default function AdMarketplace() {
     }
   }, [user, isFree, isLoading, toast]);
 
+  // Early return for free users - don't render marketplace
+  if (!isLoading && user && isFree) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   // Fetch ads - allow for premium and standard users
   const { data: ads = [], isLoading: adsLoading, error: adsError } = useQuery({
     queryKey: ["/api/ads"],
