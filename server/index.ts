@@ -6,25 +6,31 @@ import { setupVite, serveStatic, log } from "./vite";
 const app = express();
 const server = createServer(app);
 
-// CRITICAL: Health check MUST be first, before ANY middleware or async operations
-// This ensures deployment health checks work even if DB/sessions are slow
+// CRITICAL: Ultra-simple health checks - ZERO logic, instant response
+// Must be FIRST before any middleware to ensure fastest possible response
+
+// Primary health check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).send('OK');
 });
 
-// Quick root health check for deployment (before middleware)
-// Respond to simple GET requests immediately for health checks
-app.get('/', (req, res, next) => {
-  const userAgent = req.get('User-Agent') || '';
-  const accept = req.get('Accept') || '';
+// Kubernetes-style health check
+app.get('/healthz', (_req, res) => {
+  res.status(200).send('OK');
+});
+
+// Root endpoint health check - super simple, no logic
+// This MUST respond quickly for deployment health checks
+app.get('/', (_req, res, next) => {
+  // For health checks: simple request without complex headers
+  const accept = _req.get('Accept');
   
-  // Health check detection: no user agent, or simple curl/wget requests
-  if (!userAgent || userAgent.includes('curl') || userAgent.includes('health') || 
-      accept === '*/*' || (!accept.includes('text/html') && !accept.includes('text/'))) {
+  // If no specific accept header or generic accept, treat as health check
+  if (!accept || accept === '*/*') {
     return res.status(200).send('OK');
   }
   
-  // Browser requests: continue to frontend
+  // Otherwise continue to serve frontend
   next();
 });
 
