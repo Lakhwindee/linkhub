@@ -207,9 +207,9 @@ export default function OTPVerification() {
           duration: 2000,
         });
 
-        // Redirect to complete-signup to create user in database
+        // Redirect to signup-completion to create user in database
         setTimeout(() => {
-          setLocation('/complete-signup');
+          setLocation('/signup-completion');
         }, 1500);
       } else {
         setVerificationStatus('failed');
