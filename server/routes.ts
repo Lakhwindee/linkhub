@@ -18,11 +18,7 @@ function isAuthenticated(req: any, res: any, next: any) {
   return res.status(401).json({ message: 'Not authenticated' });
 }
 
-// Initialize Google OAuth client with production-ready configuration
-if (process.env.NODE_ENV === 'production' && (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET)) {
-  throw new Error('GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables are required for production');
-}
-
+// Initialize Google OAuth client (optional - only if credentials are provided)
 const googleOAuthClient = (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) 
   ? new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
@@ -30,6 +26,15 @@ const googleOAuthClient = (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CL
       process.env.GOOGLE_REDIRECT_URI || 'http://localhost:5000/api/auth/google/callback'
     )
   : null;
+
+// Log OAuth availability status
+if (process.env.NODE_ENV === 'production') {
+  if (googleOAuthClient) {
+    console.log('✅ Google OAuth enabled for production');
+  } else {
+    console.log('⚠️  Google OAuth disabled - GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET not configured');
+  }
+}
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
