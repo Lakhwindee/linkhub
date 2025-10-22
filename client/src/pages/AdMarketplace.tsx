@@ -847,7 +847,7 @@ export default function AdMarketplace() {
 
   // Access check - block free users completely
   useEffect(() => {
-    if (user && user.plan === 'free') {
+    if (!isLoading && user && isFree) {
       toast({
         title: "Upgrade Required",
         description: "You need a paid plan to access the Ad Marketplace. Redirecting...",
@@ -857,7 +857,7 @@ export default function AdMarketplace() {
         window.location.href = '/subscribe';
       }, 1500);
     }
-  }, [user, toast]);
+  }, [user, isFree, isLoading, toast]);
 
   // Fetch ads - allow for premium and standard users
   const { data: ads = [], isLoading: adsLoading, error: adsError } = useQuery({
