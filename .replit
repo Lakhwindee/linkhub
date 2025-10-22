@@ -8,7 +8,7 @@ channel = "stable-25_05"
 [deployment]
 deploymentTarget = "cloudrun"
 run = ["npm", "start"]
-build = ["npm", "run"]
+build = ["sh", "-c", "npm run build"]
 
 [env]
 PORT = "5000"
