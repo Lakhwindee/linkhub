@@ -10,19 +10,30 @@ export default function SignupCompletion() {
       try {
         setIsCompleting(true);
         
+        console.log('🔄 SignupCompletion: Starting signup completion...');
+        
         // Get stored signup data
         const signupData = sessionStorage.getItem('hublink_signup_data');
         const signupType = sessionStorage.getItem('hublink_signup_type');
         
+        console.log('📦 SignupCompletion: Retrieved data from sessionStorage:', {
+          hasData: !!signupData,
+          signupType,
+          dataLength: signupData?.length
+        });
+        
         if (!signupData) {
+          console.error('❌ SignupCompletion: No signup data found in sessionStorage!');
           // No signup data, redirect to home
           window.location.href = '/';
           return;
         }
 
         const data = JSON.parse(signupData);
+        console.log('✅ SignupCompletion: Parsed data:', { email: data.email, hasPassword: !!data.password });
         
         // Complete signup via traditional auth API (no OAuth required)
+        console.log('📡 SignupCompletion: Calling /api/auth/complete-registration...');
         const response = await fetch('/api/auth/complete-registration', {
           method: 'POST',
           headers: {
@@ -31,12 +42,15 @@ export default function SignupCompletion() {
           credentials: 'include',
           body: JSON.stringify(data),
         }).catch((error) => {
-          console.error('Network error during signup completion:', error);
+          console.error('❌ Network error during signup completion:', error);
           throw new Error(`Network error: ${error.message}`);
         });
 
+        console.log('📨 SignupCompletion: Response status:', response.status);
+
         if (response.ok) {
           const result = await response.json();
+          console.log('✅ SignupCompletion: Registration successful!', result);
           
           // Clear signup data
           sessionStorage.removeItem('hublink_signup_data');
