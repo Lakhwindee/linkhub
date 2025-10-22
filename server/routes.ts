@@ -153,7 +153,7 @@ let storedApiSettings = {
   }
 };
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express, httpServer?: Server): Promise<Server> {
   // Cookie parser middleware
   app.use(cookieParser());
   
@@ -5926,10 +5926,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
+  // Use provided server or create a new one
+  const server = httpServer || createServer(app);
 
   // WebSocket server for real-time messaging
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ server, path: '/ws' });
   
   wss.on('connection', (ws: WebSocket, req) => {
     console.log('WebSocket connection established');
@@ -5969,5 +5970,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  return httpServer;
+  return server;
 }
