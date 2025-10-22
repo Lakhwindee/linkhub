@@ -9,7 +9,7 @@ const server = createServer(app);
 // CRITICAL: Ultra-simple health checks - ZERO logic, instant response
 // Must be FIRST before any middleware to ensure fastest possible response
 
-// Primary health check endpoint - use THIS for deployment health checks
+// Primary health check endpoint
 app.get('/health', (_req, res) => {
   res.status(200).send('OK');
 });
@@ -19,8 +19,21 @@ app.get('/healthz', (_req, res) => {
   res.status(200).send('OK');
 });
 
-// NOTE: "/" is NOT a health check endpoint
-// It will be handled by static middleware to serve the React frontend
+// Root endpoint - handles BOTH health checks AND frontend serving
+// Health checks (no User-Agent) get instant OK response
+// Browsers (with User-Agent) get passed to static middleware
+app.get('/', (req, res, next) => {
+  // Simple, fast check: Health checks typically have no User-Agent
+  const userAgent = req.get('User-Agent');
+  
+  if (!userAgent) {
+    // No User-Agent = health check tool
+    return res.status(200).send('OK');
+  }
+  
+  // Has User-Agent = browser, continue to static middleware
+  next();
+});
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
