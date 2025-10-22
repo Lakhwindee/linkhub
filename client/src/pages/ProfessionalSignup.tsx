@@ -805,7 +805,7 @@ export default function ProfessionalSignup() {
                     onClick={handleSubmit}
                     disabled={isSubmitting || !formData.firstName || !formData.lastName || !formData.email || !formData.phone || 
                              !formData.address || !formData.city || !formData.postalCode || !formData.country || 
-                             !formData.username || !formData.password || !formData.confirmPassword ||
+                             !formData.password || !formData.confirmPassword ||
                              (selectedRole === 'publisher' && !formData.businessName)}
                     className="px-4 sm:px-8 min-w-0 sm:min-w-[200px] w-full sm:w-auto"
                   >
