@@ -636,6 +636,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Clear rate limiting on successful login
       adminLoginAttempts.delete(clientKey);
       
+      // IMPORTANT: Clear any existing session first (in case regular user is logged in)
+      if (req.session) {
+        req.session.userId = null;
+        req.session.user = null;
+      }
+      
       // Check if admin user exists in database, if not create one
       let adminUser = await storage.getUserByEmail(adminEmail);
       if (!adminUser) {
