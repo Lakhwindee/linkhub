@@ -1780,112 +1780,12 @@ export default function AdMarketplace() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {/* Payment History Table */}
-                    <div className="border rounded-lg">
-                      <div className="grid grid-cols-5 gap-4 p-4 bg-muted font-medium text-sm">
-                        <div>Date</div>
-                        <div>Amount</div>
-                        <div>Method</div>
-                        <div>Status</div>
-                        <div>Reference</div>
-                      </div>
-                      
-                      {/* Sample payment entries */}
-                      <div className="grid grid-cols-5 gap-4 p-4 border-t hover:bg-muted/50">
-                        <div className="text-sm">
-                          <div>Dec 15, 2024</div>
-                          <div className="text-muted-foreground">14:30</div>
-                        </div>
-                        <div className="font-semibold text-green-600">$450.00</div>
-                        <div className="text-sm">
-                          <div>Bank Transfer</div>
-                          <div className="text-muted-foreground">****1234</div>
-                        </div>
-                        <div>
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            Completed
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">TXN_8745</div>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-4 p-4 border-t hover:bg-muted/50">
-                        <div className="text-sm">
-                          <div>Nov 28, 2024</div>
-                          <div className="text-muted-foreground">09:15</div>
-                        </div>
-                        <div className="font-semibold text-green-600">$320.00</div>
-                        <div className="text-sm">
-                          <div>Stripe</div>
-                          <div className="text-muted-foreground">creator@email.com</div>
-                        </div>
-                        <div>
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            Completed
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">TXN_8621</div>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-4 p-4 border-t hover:bg-muted/50">
-                        <div className="text-sm">
-                          <div>Nov 12, 2024</div>
-                          <div className="text-muted-foreground">16:45</div>
-                        </div>
-                        <div className="font-semibold text-orange-600">$275.00</div>
-                        <div className="text-sm">
-                          <div>Bank Transfer</div>
-                          <div className="text-muted-foreground">****1234</div>
-                        </div>
-                        <div>
-                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                            Processing
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">TXN_8456</div>
-                      </div>
-
-                      <div className="grid grid-cols-5 gap-4 p-4 border-t hover:bg-muted/50">
-                        <div className="text-sm">
-                          <div>Oct 30, 2024</div>
-                          <div className="text-muted-foreground">11:20</div>
-                        </div>
-                        <div className="font-semibold text-green-600">$180.00</div>
-                        <div className="text-sm">
-                          <div>Stripe Express</div>
-                          <div className="text-muted-foreground">acct_****xyz</div>
-                        </div>
-                        <div>
-                          <Badge variant="default" className="bg-green-100 text-green-800">
-                            Completed
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">TXN_8234</div>
-                      </div>
-                    </div>
-
-                    {/* Summary Stats */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <div className="text-2xl font-bold text-green-600">$1,225</div>
-                          <div className="text-sm text-muted-foreground">Total Paid Out</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <div className="text-2xl font-bold text-blue-600">4</div>
-                          <div className="text-sm text-muted-foreground">Completed Payouts</div>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <div className="text-2xl font-bold text-orange-600">1</div>
-                          <div className="text-sm text-muted-foreground">Pending Payouts</div>
-                        </CardContent>
-                      </Card>
-                    </div>
+                  <div className="text-center py-12">
+                    <History className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Payment History Yet</h3>
+                    <p className="text-muted-foreground">
+                      Your payment history will appear here once you start earning from campaigns.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
