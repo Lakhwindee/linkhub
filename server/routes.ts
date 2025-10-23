@@ -2021,6 +2021,10 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         country as string,
         parseInt(limit as string)
       );
+      console.log(`📝 Feed query - tab: ${tab}, country: ${country}, posts count: ${posts.length}`);
+      if (posts.length > 0) {
+        console.log(`📝 First post: ${posts[0].id} - ${posts[0].body?.substring(0, 50)}`);
+      }
       res.json(posts);
     } catch (error) {
       console.error("Error fetching feed:", error);

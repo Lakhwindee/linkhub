@@ -700,26 +700,38 @@ export class DatabaseStorage implements IStorage {
       })) as Post[];
     }
     
-    // For global and country tabs, return test posts with user info for demo
-    let filteredPosts = testPosts;
+    // For global and country tabs, fetch real posts from database
+    const conditions = [eq(posts.status, 'published')];
     
+    // Add country filter if tab is 'country' and country is provided
     if (tab === 'country' && country) {
-      filteredPosts = testPosts.filter(post => 
-        post.country?.toLowerCase().includes(country.toLowerCase())
-      );
+      conditions.push(eq(posts.country, country));
     }
     
-    return filteredPosts.map((post) => {
-      const user = testUsers.find(u => u.id === post.userId);
-      return {
-        ...post,
-        status: 'published',
-        username: user?.username || 'unknown',
-        displayName: user?.displayName || 'Unknown User',
-        profileImageUrl: user?.profileImageUrl || '',
-        updatedAt: new Date(),
-      };
-    }) as Post[];
+    const result = await db
+      .select({
+        post: posts,
+        user: {
+          id: users.id,
+          username: users.username,
+          displayName: users.displayName,
+          profileImageUrl: users.profileImageUrl,
+          avatarUrl: users.avatarUrl
+        }
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(posts.createdAt))
+      .limit(limit);
+    
+    return result.map(r => ({
+      ...r.post,
+      username: r.user.username || 'unknown',
+      displayName: r.user.displayName || 'Unknown User',
+      profileImageUrl: r.user.profileImageUrl || r.user.avatarUrl || '',
+      updatedAt: new Date(),
+    })) as Post[];
   }
 
   async getUserPosts(userId: string, limit = 20): Promise<Post[]> {

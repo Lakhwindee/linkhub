@@ -64,9 +64,11 @@ export default function Feed() {
   
   // Get all cities for the selected country by aggregating from all states
   const availableCities = selectedCountry && statesByCountry[selectedCountry]
-    ? statesByCountry[selectedCountry].flatMap(state => 
-        citiesByCountry[`${selectedCountry}-${state}`] || []
-      ).slice(0, 100) // Limit to 100 cities total
+    ? Array.from(new Set(  // Remove duplicates using Set
+        statesByCountry[selectedCountry].flatMap(state => 
+          citiesByCountry[`${selectedCountry}-${state}`] || []
+        )
+      )).slice(0, 100) // Limit to 100 unique cities
     : [];
 
   // Fetch posts
