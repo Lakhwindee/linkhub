@@ -845,33 +845,6 @@ export default function AdMarketplace() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
-  // Access check - block free users completely
-  useEffect(() => {
-    if (!isLoading && user && isFree) {
-      toast({
-        title: "Upgrade Required",
-        description: "You need a paid plan to access the Ad Marketplace. Redirecting...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = '/subscribe';
-      }, 1500);
-    }
-  }, [user, isFree, isLoading, toast]);
-
-  // Early return for free users - don't render marketplace
-  if (!isLoading && user && isFree) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Fetch ads - allow for premium and standard users
   const { data: ads = [], isLoading: adsLoading, error: adsError } = useQuery({
     queryKey: ["/api/ads"],
@@ -885,6 +858,33 @@ export default function AdMarketplace() {
     enabled: user?.plan === 'premium' || user?.plan === 'standard',
     retry: false,
   });
+
+  // Access check - block free users completely (after all hooks)
+  useEffect(() => {
+    if (!isLoading && user && isFree) {
+      toast({
+        title: "Upgrade Required",
+        description: "You need a paid plan to access the Ad Marketplace. Redirecting...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = '/subscribe';
+      }, 1500);
+    }
+  }, [user, isFree, isLoading, toast]);
+
+  // Conditional render for free users - after all hooks
+  if (!isLoading && user && isFree) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Handle unauthorized error
   useEffect(() => {
