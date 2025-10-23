@@ -695,9 +695,18 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         name: admin.name
       };
       
-      // Also set user session for compatibility with existing admin routes
+      // Also set FULL user session for compatibility with existing admin routes and useAuth
       (req.session as any).userId = adminUser.id;
       (req.session as any).user = {
+        id: adminUser.id,
+        email: adminUser.email,
+        role: adminUser.role,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        displayName: adminUser.displayName,
+        username: adminUser.username,
+        profileImageUrl: adminUser.profileImageUrl,
+        plan: adminUser.plan,
         claims: { sub: adminUser.id }
       };
       
