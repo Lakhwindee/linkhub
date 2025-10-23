@@ -19,7 +19,7 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp
+  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp, Receipt
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
