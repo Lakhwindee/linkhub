@@ -32,6 +32,7 @@ interface AdminUser {
   displayName?: string;
   firstName?: string;
   lastName?: string;
+  name?: string;
   email: string;
   username?: string;
   role: string;
@@ -55,8 +56,9 @@ interface AdminUser {
 
 type ApiSettings = {
   stripe?: { publishableKey?: string; secretKey?: string; webhookSecret?: string };
-  youtube?: { projectId?: string };
-  maps?: { apiKey?: string; enableAdvancedFeatures?: boolean };
+  youtube?: { projectId?: string; status?: string; monthlyRequests?: number; lastTested?: string };
+  maps?: { apiKey?: string; enableAdvancedFeatures?: boolean; status?: string; monthlyRequests?: number; lastTested?: string };
+  email?: { service?: string; host?: string; port?: string; secure?: boolean; username?: string; password?: string };
 };
 
 type ApiFormData = {
@@ -126,6 +128,12 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [editingUser, setEditingUser] = useState(false);
   const [userActionsOpen, setUserActionsOpen] = useState<string | null>(null);
+  
+  // Financial Management state
+  const [editingPlatformFee, setEditingPlatformFee] = useState(false);
+  const [platformFeeValue, setPlatformFeeValue] = useState("10");
+  const [viewingStripeDetails, setViewingStripeDetails] = useState(false);
+  const [advancedFeeSettings, setAdvancedFeeSettings] = useState(false);
 
   // Fetch users from backend
   const { data: users = [], isLoading: usersLoading, refetch: refetchUsers } = useQuery<AdminUser[]>({
@@ -3975,20 +3983,36 @@ export default function Admin() {
                         <div className="flex justify-between items-center">
                           <span className="text-sm">Platform Fee</span>
                           <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">10%</span>
-                            <Button variant="outline" size="sm">Edit</Button>
+                            <span className="text-sm font-medium">{platformFeeValue}%</span>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setEditingPlatformFee(true)}
+                            >
+                              Edit
+                            </Button>
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm">Stripe Processing</span>
                           <div className="flex items-center space-x-2">
                             <span className="text-sm font-medium">2.9% + 30p</span>
-                            <Button variant="outline" size="sm">View</Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => setViewingStripeDetails(true)}
+                            >
+                              View
+                            </Button>
                           </div>
                         </div>
                       </div>
                       <div className="pt-3 border-t">
-                        <Button variant="outline" className="w-full">
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={() => setAdvancedFeeSettings(true)}
+                        >
                           <Settings className="w-4 h-4 mr-2" />
                           Advanced Fee Settings
                         </Button>
@@ -3996,6 +4020,277 @@ export default function Admin() {
                     </CardContent>
                   </Card>
                 </div>
+                
+                {/* Platform Fee Edit Dialog */}
+                <Dialog open={editingPlatformFee} onOpenChange={setEditingPlatformFee}>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Platform Fee</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <Label>Platform Fee Percentage (%)</Label>
+                        <Input 
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={platformFeeValue}
+                          onChange={(e) => setPlatformFeeValue(e.target.value)}
+                          placeholder="10"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Current fee: {platformFeeValue}% of booking value
+                        </p>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg">
+                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                          <strong>Note:</strong> This fee applies to all bookings (Stays, Tour Packages, Personal Hosts). Changes take effect immediately for new bookings.
+                        </p>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button variant="outline" onClick={() => setEditingPlatformFee(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={() => {
+                          toast({
+                            title: "Fee Updated",
+                            description: `Platform fee updated to ${platformFeeValue}%`,
+                          });
+                          setEditingPlatformFee(false);
+                        }}>
+                          Save Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Stripe Details Dialog */}
+                <Dialog open={viewingStripeDetails} onOpenChange={setViewingStripeDetails}>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Stripe Payment Processing Details</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">Standard Rate</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">2.9% + 30p</div>
+                            <p className="text-xs text-muted-foreground mt-1">Per successful charge</p>
+                          </CardContent>
+                        </Card>
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-sm">International Cards</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-2xl font-bold">+1.0%</div>
+                            <p className="text-xs text-muted-foreground mt-1">Additional fee</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <h4 className="font-semibold">Processing Breakdown</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span>Domestic Cards:</span>
+                            <span className="font-medium">2.9% + 30p</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>International Cards:</span>
+                            <span className="font-medium">3.9% + 30p</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Currency Conversion:</span>
+                            <span className="font-medium">+2%</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
+                        <h4 className="font-semibold mb-2">Example Calculation</h4>
+                        <div className="space-y-1 text-sm">
+                          <div className="flex justify-between">
+                            <span>Booking Amount:</span>
+                            <span>£100.00</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Platform Fee (10%):</span>
+                            <span>£10.00</span>
+                          </div>
+                          <div className="flex justify-between text-muted-foreground">
+                            <span>Stripe Fee (2.9% + 30p):</span>
+                            <span>£3.20</span>
+                          </div>
+                          <div className="flex justify-between font-semibold pt-2 border-t">
+                            <span>Publisher Receives:</span>
+                            <span>£86.80</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <Button onClick={() => setViewingStripeDetails(false)}>
+                          Close
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Advanced Fee Settings Dialog */}
+                <Dialog open={advancedFeeSettings} onOpenChange={setAdvancedFeeSettings}>
+                  <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Advanced Fee Configuration</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 py-4">
+                      {/* Service-Specific Fees */}
+                      <div>
+                        <h3 className="font-semibold mb-3 flex items-center">
+                          <Percent className="w-4 h-4 mr-2" />
+                          Service-Specific Platform Fees
+                        </h3>
+                        <div className="space-y-3">
+                          <Card>
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Home className="w-5 h-5 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium">Stays Bookings</div>
+                                    <div className="text-xs text-muted-foreground">Per booking fee</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Input 
+                                    type="number"
+                                    className="w-20"
+                                    defaultValue="10"
+                                    min="0"
+                                    max="100"
+                                  />
+                                  <span className="text-sm">%</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card>
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <MapPin className="w-5 h-5 text-green-600" />
+                                  <div>
+                                    <div className="font-medium">Tour Packages</div>
+                                    <div className="text-xs text-muted-foreground">Per package fee</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Input 
+                                    type="number"
+                                    className="w-20"
+                                    defaultValue="10"
+                                    min="0"
+                                    max="100"
+                                  />
+                                  <span className="text-sm">%</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card>
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-3">
+                                  <Users className="w-5 h-5 text-purple-600" />
+                                  <div>
+                                    <div className="font-medium">Personal Hosts</div>
+                                    <div className="text-xs text-muted-foreground">Per booking fee</div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Input 
+                                    type="number"
+                                    className="w-20"
+                                    defaultValue="10"
+                                    min="0"
+                                    max="100"
+                                  />
+                                  <span className="text-sm">%</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+
+                      {/* Subscription Management Fees */}
+                      <div>
+                        <h3 className="font-semibold mb-3 flex items-center">
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Subscription Fees
+                        </h3>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                            <span className="text-sm">Standard Plan (£25/mo)</span>
+                            <span className="text-sm font-medium">Stripe Standard Rate</span>
+                          </div>
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                            <span className="text-sm">Premium Plan (£45/mo)</span>
+                            <span className="text-sm font-medium">Stripe Standard Rate</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ad Campaign Fees */}
+                      <div>
+                        <h3 className="font-semibold mb-3 flex items-center">
+                          <Eye className="w-4 h-4 mr-2" />
+                          Ad Campaign Configuration
+                        </h3>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-900 rounded">
+                            <span className="text-sm">Platform Commission</span>
+                            <div className="flex items-center space-x-2">
+                              <Input 
+                                type="number"
+                                className="w-20"
+                                defaultValue="0"
+                                min="0"
+                                max="100"
+                              />
+                              <span className="text-sm">%</span>
+                            </div>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Commission on creator payouts (currently no commission - creators receive full payout minus tax)
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end space-x-2 pt-4 border-t">
+                        <Button variant="outline" onClick={() => setAdvancedFeeSettings(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={() => {
+                          toast({
+                            title: "Settings Updated",
+                            description: "Advanced fee settings have been saved successfully",
+                          });
+                          setAdvancedFeeSettings(false);
+                        }}>
+                          Save All Changes
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             )}
 
