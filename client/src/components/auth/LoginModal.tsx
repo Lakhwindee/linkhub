@@ -70,14 +70,15 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
 
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader>
-          <DialogTitle>Sign In to HubLink</DialogTitle>
-          <DialogDescription>
-            Choose your preferred sign-in method
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>Sign In to HubLink</DialogTitle>
+            <DialogDescription>
+              Choose your preferred sign-in method
+            </DialogDescription>
+          </DialogHeader>
         
         <Tabs defaultValue="google" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -124,7 +125,6 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      onOpenChange(false);
                       setForgotPasswordOpen(true);
                     }}
                     className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
@@ -158,11 +158,12 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </TabsContent>
         </Tabs>
       </DialogContent>
+      </Dialog>
       
       <ForgotPasswordModal 
         open={forgotPasswordOpen} 
         onOpenChange={setForgotPasswordOpen}
       />
-    </Dialog>
+    </>
   );
 }
