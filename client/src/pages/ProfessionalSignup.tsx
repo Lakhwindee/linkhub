@@ -6,23 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  FileText, Upload, CheckCircle, AlertCircle, Clock, User, MapPin, Calendar, 
-  Briefcase, IdCard, Phone, Mail, Home, Users, Star, Building, Loader2
+  User, MapPin, Calendar, Briefcase, Phone, Mail, Home, Users, Star, Building, Loader2
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { countryCodes, countries, statesByCountry, getCitiesForState, citiesByCountry } from "@/data/locationData";
-
-interface ExtractedInfo {
-  documentNumber?: string;
-  fullName?: string;
-  dateOfBirth?: string;
-  nationality?: string;
-  expiryDate?: string;
-}
 
 export default function ProfessionalSignup() {
   const [, setLocation] = useLocation();
@@ -30,11 +19,6 @@ export default function ProfessionalSignup() {
   
   const [step, setStep] = useState(1);
   const [selectedRole, setSelectedRole] = useState<'creator' | 'publisher' | null>(null);
-  const [documentType, setDocumentType] = useState<'passport' | 'driving_license' | null>(null);
-  const [documentUrl, setDocumentUrl] = useState<string>('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'failed'>('pending');
-  const [extractedInfo, setExtractedInfo] = useState<ExtractedInfo>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
   
@@ -78,74 +62,8 @@ export default function ProfessionalSignup() {
 
   const handleRoleSelection = (role: 'creator' | 'publisher') => {
     setSelectedRole(role);
-    if (role === 'creator') {
-      // Creator goes directly to form
-      setStep(3);
-    } else {
-      // Publisher needs document verification
-      setStep(2);
-    }
-  };
-
-  const handleDocumentUpload = async (url: string) => {
-    setDocumentUrl(url);
-    setIsVerifying(true);
-    
-    try {
-      // Call real OCR API for document verification
-      const response = await fetch('/api/verify-document', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          documentUrl: url,
-          documentType: documentType
-        }),
-      }).catch((error) => {
-        console.error('Network error during document verification:', error);
-        throw new Error(`Network error: ${error.message}`);
-      });
-
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.message || 'Verification failed');
-      }
-
-      if (result.success && result.extractedInfo) {
-        const extractedInfo = result.extractedInfo;
-        
-        setExtractedInfo(extractedInfo);
-        setFormData(prev => ({
-          ...prev,
-          firstName: extractedInfo.fullName?.split(' ')[0] || '',
-          lastName: extractedInfo.fullName?.split(' ').slice(1).join(' ') || '',
-          dateOfBirth: extractedInfo.dateOfBirth || '',
-          nationality: extractedInfo.nationality || ''
-        }));
-        
-        setVerificationStatus('verified');
-        setStep(3);
-        
-        toast({
-          title: "Document Verified!",
-          description: `Real document verification successful! Extracted: ${extractedInfo.fullName || 'Name'}, ${extractedInfo.documentNumber || 'Document Number'}`,
-        });
-      } else {
-        throw new Error('Could not extract valid information from document');
-      }
-    } catch (error: any) {
-      console.error('Document verification error:', error);
-      setVerificationStatus('failed');
-      toast({
-        title: "Verification Failed",
-        description: error.message || "Unable to verify your document. Please ensure the image is clear and try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsVerifying(false);
-    }
+    // Both creator and publisher go directly to form
+    setStep(3);
   };
 
   const handleSubmit = async () => {
@@ -178,10 +96,7 @@ export default function ProfessionalSignup() {
       const signupData = {
         ...formData,
         role: selectedRole,
-        documentType: selectedRole === 'publisher' ? documentType : null,
-        documentUrl: selectedRole === 'publisher' ? documentUrl : null,
-        ...extractedInfo,
-        verificationStatus: selectedRole === 'publisher' ? verificationStatus : 'verified',
+        verificationStatus: 'pending', // Will be verified by admin
       };
 
       // Store signup data for completion after OTP verification
@@ -210,8 +125,8 @@ export default function ProfessionalSignup() {
   };
 
   const renderStepIndicator = () => {
-    const totalSteps = selectedRole === 'creator' ? 2 : 3;
-    const currentStep = selectedRole === 'creator' && step === 3 ? 2 : step;
+    const totalSteps = 2; // Both creator and publisher have 2 steps now
+    const currentStep = step === 3 ? 2 : step;
     
     return (
       <div className="flex items-center justify-center mb-8">
@@ -314,7 +229,7 @@ export default function ProfessionalSignup() {
                     <li>• List accommodations & stays</li>
                     <li>• Create tour packages</li>
                     <li>• Business analytics</li>
-                    <li>• Document verification required</li>
+                    <li>• Manage bookings & revenue</li>
                   </ul>
                 </button>
               </div>
@@ -322,138 +237,6 @@ export default function ProfessionalSignup() {
           </Card>
         )}
 
-        {/* Step 2: Document Upload (Publisher Only) */}
-        {step === 2 && selectedRole === 'publisher' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <span>Business Verification</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>Publisher accounts require document verification</strong> to ensure trust and security for travelers. Please upload your passport or driving license.
-                </p>
-              </div>
-
-              {!documentType && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => setDocumentType('passport')}
-                    className="p-6 border-2 rounded-lg text-left transition-colors border-border hover:border-primary/50"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Passport</h3>
-                        <p className="text-sm text-muted-foreground">International travel document</p>
-                      </div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => setDocumentType('driving_license')}
-                    className="p-6 border-2 rounded-lg text-left transition-colors border-border hover:border-primary/50"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <IdCard className="w-6 h-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">Driving License</h3>
-                        <p className="text-sm text-muted-foreground">Government issued ID</p>
-                      </div>
-                    </div>
-                  </button>
-                </div>
-              )}
-
-              {documentType && (
-                <div className="space-y-4">
-                  <Badge variant="outline" className="mb-4">
-                    {documentType === 'passport' ? 'Passport' : 'Driving License'} Selected
-                  </Badge>
-                  
-                  {!documentUrl ? (
-                    <ObjectUploader
-                      onGetUploadParameters={() => Promise.resolve({ method: "PUT" as const, url: "/api/upload-demo" })}
-                      onComplete={(result) => {
-                        if (result.successful && result.successful.length > 0) {
-                          handleDocumentUpload(result.successful[0].uploadURL);
-                        }
-                      }}
-                      maxFileSize={10 * 1024 * 1024} // 10MB
-                      buttonClassName="border-2 border-dashed border-primary/20 p-8 rounded-lg w-full"
-                    >
-                      <div className="text-center">
-                        <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">
-                          Upload {documentType === 'passport' ? 'Passport' : 'Driving License'}
-                        </h3>
-                        <p className="text-muted-foreground mb-4">
-                          Drag and drop or click to select your document
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Supported formats: JPEG, PNG, PDF (Max 10MB)
-                        </p>
-                      </div>
-                    </ObjectUploader>
-                  ) : (
-                    <div className="space-y-4">
-                      {isVerifying ? (
-                        <div className="text-center p-8">
-                          <Clock className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
-                          <h3 className="text-lg font-semibold mb-2">Verifying Document...</h3>
-                          <p className="text-muted-foreground mb-4">
-                            Our AI is analyzing your document. This may take a few moments.
-                          </p>
-                          <Progress value={66} className="w-full max-w-xs mx-auto" />
-                        </div>
-                      ) : (
-                        <div className="text-center p-8">
-                          {verificationStatus === 'verified' ? (
-                            <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                          ) : (
-                            <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                          )}
-                          <h3 className="text-lg font-semibold mb-2">
-                            {verificationStatus === 'verified' ? 'Document Verified!' : 'Verification Failed'}
-                          </h3>
-                          {verificationStatus === 'failed' && (
-                            <Button 
-                              variant="outline" 
-                              onClick={() => {
-                                setDocumentUrl('');
-                                setVerificationStatus('pending');
-                              }}
-                            >
-                              Try Again
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  Back
-                </Button>
-                {verificationStatus === 'verified' && (
-                  <Button onClick={() => setStep(3)}>
-                    Continue
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Step 3: Complete Professional Form */}
         {step === 3 && (
@@ -465,34 +248,6 @@ export default function ProfessionalSignup() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* Verified Information Display (Publisher Only) */}
-              {selectedRole === 'publisher' && extractedInfo.fullName && (
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-3 flex items-center">
-                    <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                    Verified Information
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <Label className="text-muted-foreground">Full Name</Label>
-                      <p className="font-medium">{extractedInfo.fullName}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Document Number</Label>
-                      <p className="font-medium">{extractedInfo.documentNumber}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Date of Birth</Label>
-                      <p className="font-medium">{extractedInfo.dateOfBirth}</p>
-                    </div>
-                    <div>
-                      <Label className="text-muted-foreground">Nationality</Label>
-                      <p className="font-medium">{extractedInfo.nationality}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Personal Information */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -791,7 +546,7 @@ export default function ProfessionalSignup() {
               <div className="flex flex-col sm:flex-row justify-between items-center pt-6 border-t gap-4">
                 <Button 
                   variant="outline" 
-                  onClick={() => selectedRole === 'creator' ? setStep(1) : setStep(2)}
+                  onClick={() => setStep(1)}
                   className="w-full sm:w-auto"
                 >
                   Back

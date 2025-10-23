@@ -48,6 +48,7 @@ Preferred communication style: Simple, everyday language.
 
 ## Technical Implementations
 - 10% platform fee applied across all booking services.
+- **Publisher Signup**: Simplified registration process - no document verification required. Publishers provide detailed business information through form fields only (business name, type, address, tax ID, etc.). Verification status managed by admin.
 - **Worldwide Tax System** (Implemented October 2025):
   - Automatic tax calculation and withholding for creator campaign earnings based on country of residence
   - Database: tax_configurations table for country tax rates, tax_records table for complete audit trail
