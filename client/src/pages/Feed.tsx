@@ -20,7 +20,7 @@ import { insertPostSchema } from "@shared/schema";
 import { z } from "zod";
 import type { Post } from "@shared/schema";
 import { Link } from "wouter";
-import { worldCountries, citiesByCountry } from "@/data/locationData";
+import { worldCountries, statesByCountry, citiesByCountry } from "@/data/locationData";
 
 type CreatePostData = z.infer<typeof insertPostSchema>;
 
@@ -61,8 +61,12 @@ export default function Feed() {
   
   // Watch country to filter cities
   const selectedCountry = watch("country");
-  const availableCities = selectedCountry && citiesByCountry[selectedCountry] 
-    ? citiesByCountry[selectedCountry].slice(0, 100) // Limit to 100 cities
+  
+  // Get all cities for the selected country by aggregating from all states
+  const availableCities = selectedCountry && statesByCountry[selectedCountry]
+    ? statesByCountry[selectedCountry].flatMap(state => 
+        citiesByCountry[`${selectedCountry}-${state}`] || []
+      ).slice(0, 100) // Limit to 100 cities total
     : [];
 
   // Fetch posts
