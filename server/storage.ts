@@ -35,6 +35,7 @@ import {
   tripParticipants,
   taxConfiguration,
   taxRecords,
+  discountCodes,
   type User,
   type UpsertUser,
   type ConnectRequest,
@@ -181,6 +182,12 @@ export interface IStorage {
   createTaxRecord(data: { userId: string; transactionType: string; transactionId?: string; grossAmountMinor: number; taxWithheldMinor: number; netAmountMinor: number; taxRate: string; taxYear?: number; taxQuarter?: number; country?: string; taxConfigId?: string; description?: string }): Promise<TaxRecord>;
   getUserTaxRecords(userId: string, filters?: { year?: number; quarter?: number; country?: string }): Promise<TaxRecord[]>;
   getAllTaxRecords(filters?: { year?: number; country?: string }): Promise<TaxRecord[]>;
+  
+  // Discount & Trial Codes
+  createDiscountCode(data: any): Promise<any>;
+  getAllDiscountCodes(): Promise<any[]>;
+  getDiscountCodeByCode(code: string): Promise<any | undefined>;
+  updateDiscountCode(id: string, data: Partial<any>): Promise<any>;
   
   // Subscriptions
   createSubscription(data: any): Promise<Subscription>;
@@ -1927,6 +1934,39 @@ export class DatabaseStorage implements IStorage {
     }
 
     return await query.orderBy(desc(taxRecords.createdAt));
+  }
+
+  // Discount & Trial Codes
+  async createDiscountCode(data: any): Promise<any> {
+    const [code] = await db
+      .insert(discountCodes)
+      .values(data)
+      .returning();
+    return code;
+  }
+
+  async getAllDiscountCodes(): Promise<any[]> {
+    return await db
+      .select()
+      .from(discountCodes)
+      .orderBy(desc(discountCodes.createdAt));
+  }
+
+  async getDiscountCodeByCode(code: string): Promise<any | undefined> {
+    const [discountCode] = await db
+      .select()
+      .from(discountCodes)
+      .where(eq(discountCodes.code, code));
+    return discountCode;
+  }
+
+  async updateDiscountCode(id: string, data: Partial<any>): Promise<any> {
+    const [code] = await db
+      .update(discountCodes)
+      .set(data)
+      .where(eq(discountCodes.id, id))
+      .returning();
+    return code;
   }
 }
 

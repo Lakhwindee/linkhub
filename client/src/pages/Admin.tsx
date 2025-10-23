@@ -170,6 +170,13 @@ export default function Admin() {
     retry: false,
   });
 
+  // Fetch discount and trial codes
+  const { data: discountCodes = [], refetch: refetchDiscountCodes } = useQuery<any[]>({
+    queryKey: ["/api/admin/discount-codes"],
+    enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
+    retry: false,
+  });
+
   // Tax configuration form state
   const [taxConfigForm, setTaxConfigForm] = useState({
     country: '',
@@ -237,6 +244,7 @@ export default function Admin() {
         description: ''
       });
       setActiveForm(null);
+      refetchDiscountCodes();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -272,6 +280,7 @@ export default function Admin() {
         description: ''
       });
       setActiveForm(null);
+      refetchDiscountCodes();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -2105,13 +2114,67 @@ export default function Admin() {
                     <CardTitle>All Discount & Trial Codes</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-col items-center justify-center py-8 text-center">
-                      <Percent className="w-12 h-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No Codes Created Yet</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Click "Create Discount Code" or "Create Trial Code" to add your first promotional code
-                      </p>
-                    </div>
+                    {discountCodes.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Percent className="w-12 h-12 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No Codes Created Yet</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Click "Create Discount Code" or "Create Trial Code" to add your first promotional code
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left p-3">Code</th>
+                              <th className="text-left p-3">Type</th>
+                              <th className="text-left p-3">Value/Period</th>
+                              <th className="text-left p-3">Used/Max</th>
+                              <th className="text-left p-3">Status</th>
+                              <th className="text-left p-3">Created</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {discountCodes.map((code: any) => (
+                              <tr key={code.id} className="border-b hover:bg-muted/50">
+                                <td className="p-3 font-mono font-bold">{code.code}</td>
+                                <td className="p-3">
+                                  {code.discountType === 'trial' ? (
+                                    <span className="bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 px-2 py-1 rounded text-xs">
+                                      Trial
+                                    </span>
+                                  ) : (
+                                    <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded text-xs">
+                                      Discount
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3">
+                                  {code.discountType === 'trial' 
+                                    ? `${code.trialPeriodDays} days` 
+                                    : code.discountType === 'percentage' 
+                                      ? `${code.discountValue}%` 
+                                      : `£${code.discountValue}`
+                                  }
+                                </td>
+                                <td className="p-3">{code.usedCount || 0} / {code.maxUses || '∞'}</td>
+                                <td className="p-3">
+                                  {code.isActive ? (
+                                    <span className="text-green-600 dark:text-green-400">✅ Active</span>
+                                  ) : (
+                                    <span className="text-red-600 dark:text-red-400">❌ Inactive</span>
+                                  )}
+                                </td>
+                                <td className="p-3 text-sm text-muted-foreground">
+                                  {new Date(code.createdAt).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 

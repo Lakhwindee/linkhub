@@ -4331,25 +4331,105 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const codeData = req.body;
       
       // Create discount code in database
-      console.log('Creating discount code:', codeData);
+      const code = await storage.createDiscountCode({
+        code: codeData.code,
+        description: codeData.description,
+        discountType: codeData.discountType,
+        discountValue: codeData.discountValue,
+        maxUses: codeData.maxUses ? parseInt(codeData.maxUses) : null,
+        validFrom: codeData.validFrom ? new Date(codeData.validFrom) : new Date(),
+        validUntil: codeData.validUntil ? new Date(codeData.validUntil) : null,
+        isActive: codeData.status === 'active',
+        applicablePlans: codeData.applicablePlans ? [codeData.applicablePlans] : ['all'],
+        createdBy: userId
+      });
       
       // Create audit log
       await storage.createAuditLog({
         actorId: userId,
         action: 'create_discount_code',
         targetType: 'discount_code',
-        targetId: codeData.code,
+        targetId: code.id,
         metaJson: codeData
       });
       
       res.json({ 
         success: true, 
         message: "Discount code created successfully",
-        code: { id: 'new-' + Date.now(), ...codeData, usedCount: 0, createdAt: new Date() }
+        code
       });
     } catch (error) {
       console.error("Error creating discount code:", error);
       res.status(500).json({ message: "Failed to create discount code" });
+    }
+  });
+
+  // Create trial code
+  app.post('/api/admin/trial-codes', isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const codeData = req.body;
+      
+      // Create trial code in database
+      const code = await storage.createDiscountCode({
+        code: codeData.code,
+        description: codeData.description,
+        discountType: 'trial',
+        discountValue: 0,
+        trialPeriodDays: parseInt(codeData.trialPeriod),
+        trialPlanType: codeData.planType,
+        autoDebitEnabled: codeData.autoDebit === 'enabled',
+        maxUses: codeData.maxUses ? parseInt(codeData.maxUses) : null,
+        isActive: true,
+        applicablePlans: [codeData.planType],
+        createdBy: userId
+      });
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: userId,
+        action: 'create_trial_code',
+        targetType: 'trial_code',
+        targetId: code.id,
+        metaJson: codeData
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Trial code created successfully",
+        code
+      });
+    } catch (error) {
+      console.error("Error creating trial code:", error);
+      res.status(500).json({ message: "Failed to create trial code" });
+    }
+  });
+
+  // Get all discount and trial codes
+  app.get('/api/admin/discount-codes', isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user for admin operations
+      const user = await storage.getUser(userId);
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const codes = await storage.getAllDiscountCodes();
+      res.json(codes);
+    } catch (error) {
+      console.error("Error fetching discount codes:", error);
+      res.status(500).json({ message: "Failed to fetch discount codes" });
     }
   });
 
