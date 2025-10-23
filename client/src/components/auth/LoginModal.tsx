@@ -48,6 +48,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
