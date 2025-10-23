@@ -859,7 +859,7 @@ export default function AdMarketplace() {
     retry: false,
   });
 
-  // Access check - block free users completely (after all hooks)
+  // Access check - block free users completely
   useEffect(() => {
     if (!isLoading && user && isFree) {
       toast({
@@ -872,19 +872,6 @@ export default function AdMarketplace() {
       }, 1500);
     }
   }, [user, isFree, isLoading, toast]);
-
-  // Conditional render for free users - after all hooks
-  if (!isLoading && user && isFree) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   // Handle unauthorized error
   useEffect(() => {
@@ -1086,6 +1073,19 @@ export default function AdMarketplace() {
 
   if (!user) {
     return null;
+  }
+
+  // Block free users completely from Ad Marketplace
+  if (!isLoading && user && isFree) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md">
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Only creators, free_creators, and admins can access AdMarketplace
