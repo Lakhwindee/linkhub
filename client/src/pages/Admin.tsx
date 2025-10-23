@@ -1366,15 +1366,15 @@ export default function Admin() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">2,456</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Stripe API Calls</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">0</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">YouTube API Calls</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">12,890</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Storage Requests</div>
                       </div>
                     </div>
@@ -1767,19 +1767,19 @@ export default function Admin() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold">2,341</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Emails Sent</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">89.2%</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0%</div>
                         <div className="text-sm text-muted-foreground">Delivery Rate</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">34.5%</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0%</div>
                         <div className="text-sm text-muted-foreground">Open Rate</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">12.3%</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0%</div>
                         <div className="text-sm text-muted-foreground">Click Rate</div>
                       </div>
                     </div>
@@ -2303,43 +2303,16 @@ export default function Admin() {
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell>
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center">
-                                <span className="text-xs font-medium">JD</span>
-                              </div>
-                              <div>
-                                <div className="font-medium">John Doe</div>
-                                <div className="text-sm text-muted-foreground">@johndoe</div>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>john@example.com</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Creator</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">Premium</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
-                          </TableCell>
-                          <TableCell>Jan 15, 2024</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-1">
-                              <Button variant="outline" size="sm">
-                                <Edit3 className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Lock className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <MoreVertical className="w-3 h-3" />
-                              </Button>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center justify-center">
+                              <Users className="w-12 h-12 text-muted-foreground mb-3" />
+                              <h3 className="text-sm font-medium mb-1">No Users Yet</h3>
+                              <p className="text-xs text-muted-foreground">
+                                Users will appear here when they register
+                              </p>
                             </div>
                           </TableCell>
                         </TableRow>
-                        {/* More user rows would be populated dynamically */}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -2700,11 +2673,10 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Users className="w-8 h-8 text-blue-500" />
+                        <Users className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">2,847</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Total Users</div>
-                          <div className="text-xs text-green-600">+12.5%</div>
                         </div>
                       </div>
                     </CardContent>
@@ -2712,11 +2684,10 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <DollarSign className="w-8 h-8 text-green-500" />
+                        <DollarSign className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">£34,521</div>
+                          <div className="text-2xl font-bold text-muted-foreground">£0</div>
                           <div className="text-sm text-muted-foreground">Revenue</div>
-                          <div className="text-xs text-green-600">+8.2%</div>
                         </div>
                       </div>
                     </CardContent>
@@ -2724,11 +2695,10 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <FileText className="w-8 h-8 text-purple-500" />
+                        <FileText className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">1,283</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Posts Created</div>
-                          <div className="text-xs text-green-600">+15.3%</div>
                         </div>
                       </div>
                     </CardContent>
@@ -2736,11 +2706,10 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <TrendingUp className="w-8 h-8 text-orange-500" />
+                        <TrendingUp className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">94.2%</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0%</div>
                           <div className="text-sm text-muted-foreground">Engagement</div>
-                          <div className="text-xs text-green-600">+2.1%</div>
                         </div>
                       </div>
                     </CardContent>
@@ -2754,34 +2723,12 @@ export default function Admin() {
                       <CardTitle>Content Performance</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Travel Posts</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-20 h-2 bg-muted rounded">
-                              <div className="w-16 h-2 bg-blue-500 rounded"></div>
-                            </div>
-                            <span className="text-sm font-medium">80%</span>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Event Posts</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-20 h-2 bg-muted rounded">
-                              <div className="w-12 h-2 bg-green-500 rounded"></div>
-                            </div>
-                            <span className="text-sm font-medium">60%</span>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Stays & Bookings</span>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-20 h-2 bg-muted rounded">
-                              <div className="w-14 h-2 bg-purple-500 rounded"></div>
-                            </div>
-                            <span className="text-sm font-medium">70%</span>
-                          </div>
-                        </div>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <TrendingUp className="w-12 h-12 text-muted-foreground mb-3" />
+                        <h3 className="text-sm font-medium mb-1">No Content Data</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Performance metrics will appear when content is posted
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -2791,28 +2738,12 @@ export default function Admin() {
                       <CardTitle>Top Performing Content</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium text-sm">Amazing sunset in Bali</div>
-                            <div className="text-xs text-muted-foreground">Travel Post</div>
-                          </div>
-                          <Badge variant="secondary">2.3k views</Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium text-sm">London Food Festival</div>
-                            <div className="text-xs text-muted-foreground">Event</div>
-                          </div>
-                          <Badge variant="secondary">1.8k views</Badge>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <div className="font-medium text-sm">Cozy Cottage in Peak District</div>
-                            <div className="text-xs text-muted-foreground">Stay</div>
-                          </div>
-                          <Badge variant="secondary">1.2k views</Badge>
-                        </div>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <FileText className="w-12 h-12 text-muted-foreground mb-3" />
+                        <h3 className="text-sm font-medium mb-1">No Posts Yet</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Top content will be displayed here
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -2836,9 +2767,9 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <FileText className="w-8 h-8 text-blue-500" />
+                        <FileText className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">1,847</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Total Posts</div>
                         </div>
                       </div>
@@ -2847,9 +2778,9 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Flag className="w-8 h-8 text-red-500" />
+                        <Flag className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">23</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Flagged Content</div>
                         </div>
                       </div>
@@ -2858,9 +2789,9 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <Calendar className="w-8 h-8 text-green-500" />
+                        <Calendar className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">156</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Events</div>
                         </div>
                       </div>
@@ -2869,9 +2800,9 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center space-x-3">
-                        <MapPin className="w-8 h-8 text-purple-500" />
+                        <MapPin className="w-8 h-8 text-muted-foreground" />
                         <div>
-                          <div className="text-2xl font-bold">89</div>
+                          <div className="text-2xl font-bold text-muted-foreground">0</div>
                           <div className="text-sm text-muted-foreground">Stays Listed</div>
                         </div>
                       </div>
@@ -2897,30 +2828,13 @@ export default function Admin() {
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell>
-                            <div>
-                              <div className="font-medium">Beautiful beaches in Thailand</div>
-                              <div className="text-sm text-muted-foreground">Amazing experience visiting...</div>
-                            </div>
-                          </TableCell>
-                          <TableCell>John Doe</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">Travel Post</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">Published</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-1">
-                              <Button variant="outline" size="sm">
-                                <Eye className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Edit3 className="w-3 h-3" />
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                <Trash2 className="w-3 h-3" />
-                              </Button>
+                          <TableCell colSpan={5} className="text-center py-8">
+                            <div className="flex flex-col items-center justify-center">
+                              <FileText className="w-12 h-12 text-muted-foreground mb-3" />
+                              <h3 className="text-sm font-medium mb-1">No Content Posted</h3>
+                              <p className="text-xs text-muted-foreground">
+                                Content from users will appear here
+                              </p>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -3742,20 +3656,20 @@ export default function Admin() {
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                      <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">£8,452</div>
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="text-2xl font-bold text-muted-foreground">£0</div>
                         <div className="text-sm text-muted-foreground">Total Tax Collected</div>
                       </div>
-                      <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">£42,260</div>
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="text-2xl font-bold text-muted-foreground">£0</div>
                         <div className="text-sm text-muted-foreground">Gross Earnings</div>
                       </div>
-                      <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
-                        <div className="text-2xl font-bold text-purple-600">£33,808</div>
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="text-2xl font-bold text-muted-foreground">£0</div>
                         <div className="text-sm text-muted-foreground">Net Paid to Creators</div>
                       </div>
-                      <div className="p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">247</div>
+                      <div className="p-4 bg-muted rounded-lg">
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Tax Records</div>
                       </div>
                     </div>
@@ -3774,31 +3688,15 @@ export default function Admin() {
                       </TableHeader>
                       <TableBody>
                         <TableRow>
-                          <TableCell>{format(new Date(), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell className="font-medium">@sarah_travels</TableCell>
-                          <TableCell>🇬🇧 UK</TableCell>
-                          <TableCell>£50.00</TableCell>
-                          <TableCell><Badge variant="secondary">20%</Badge></TableCell>
-                          <TableCell className="text-red-600">-£10.00</TableCell>
-                          <TableCell className="text-green-600 font-semibold">£40.00</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>{format(new Date(Date.now() - 86400000), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell className="font-medium">@raj_wanderer</TableCell>
-                          <TableCell>🇮🇳 India</TableCell>
-                          <TableCell>₹4,000</TableCell>
-                          <TableCell><Badge variant="secondary">10%</Badge></TableCell>
-                          <TableCell className="text-red-600">-₹400</TableCell>
-                          <TableCell className="text-green-600 font-semibold">₹3,600</TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell className="font-medium">@mike_explorer</TableCell>
-                          <TableCell>🇺🇸 US</TableCell>
-                          <TableCell>$125.00</TableCell>
-                          <TableCell><Badge variant="secondary">24%</Badge></TableCell>
-                          <TableCell className="text-red-600">-$30.00</TableCell>
-                          <TableCell className="text-green-600 font-semibold">$95.00</TableCell>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center justify-center">
+                              <Receipt className="w-12 h-12 text-muted-foreground mb-3" />
+                              <h3 className="text-sm font-medium mb-1">No Tax Records</h3>
+                              <p className="text-xs text-muted-foreground">
+                                Tax records will appear here when creator earnings are processed
+                              </p>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
@@ -3875,9 +3773,9 @@ export default function Admin() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm text-muted-foreground">Active Users</div>
-                          <div className="text-lg font-bold">1,247</div>
+                          <div className="text-lg font-bold text-muted-foreground">0</div>
                         </div>
-                        <Users className="w-8 h-8 text-blue-600" />
+                        <Users className="w-8 h-8 text-muted-foreground" />
                       </div>
                     </CardContent>
                   </Card>
@@ -3886,9 +3784,9 @@ export default function Admin() {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="text-sm text-muted-foreground">Response Time</div>
-                          <div className="text-lg font-bold text-green-600">142ms</div>
+                          <div className="text-lg font-bold text-green-600">-</div>
                         </div>
-                        <TrendingUp className="w-8 h-8 text-green-600" />
+                        <TrendingUp className="w-8 h-8 text-muted-foreground" />
                       </div>
                     </CardContent>
                   </Card>
@@ -3903,52 +3801,12 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
-                      <div className="flex items-start space-x-3 p-3 border rounded">
-                        <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            <span className="font-medium">New user registration:</span> sarah@example.com
-                          </div>
-                          <div className="text-xs text-muted-foreground">2 minutes ago</div>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border rounded">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            <span className="font-medium">Payment processed:</span> £45.00 subscription
-                          </div>
-                          <div className="text-xs text-muted-foreground">5 minutes ago</div>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border rounded">
-                        <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            <span className="font-medium">Trial expired:</span> user_123 converted to paid
-                          </div>
-                          <div className="text-xs text-muted-foreground">8 minutes ago</div>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border rounded">
-                        <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            <span className="font-medium">Content reported:</span> Post ID 456 flagged for review
-                          </div>
-                          <div className="text-xs text-muted-foreground">12 minutes ago</div>
-                        </div>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border rounded">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
-                        <div className="flex-1">
-                          <div className="text-sm">
-                            <span className="font-medium">Ad submission:</span> New campaign pending review
-                          </div>
-                          <div className="text-xs text-muted-foreground">15 minutes ago</div>
-                        </div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Activity className="w-12 h-12 text-muted-foreground mb-3" />
+                      <h3 className="text-sm font-medium mb-1">No Recent Activity</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Real-time activity will appear here when users interact with the platform
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -3966,28 +3824,28 @@ export default function Admin() {
                       <div>
                         <div className="flex justify-between text-sm">
                           <span>CPU Usage</span>
-                          <span>23%</span>
+                          <span className="text-muted-foreground">-</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-2 mt-1">
-                          <div className="bg-green-600 h-2 rounded-full" style={{width: '23%'}}></div>
+                          <div className="bg-muted-foreground h-2 rounded-full" style={{width: '0%'}}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between text-sm">
                           <span>Memory Usage</span>
-                          <span>67%</span>
+                          <span className="text-muted-foreground">-</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-2 mt-1">
-                          <div className="bg-yellow-600 h-2 rounded-full" style={{width: '67%'}}></div>
+                          <div className="bg-muted-foreground h-2 rounded-full" style={{width: '0%'}}></div>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between text-sm">
                           <span>Disk Usage</span>
-                          <span>45%</span>
+                          <span className="text-muted-foreground">-</span>
                         </div>
                         <div className="w-full bg-muted rounded-full h-2 mt-1">
-                          <div className="bg-blue-600 h-2 rounded-full" style={{width: '45%'}}></div>
+                          <div className="bg-muted-foreground h-2 rounded-full" style={{width: '0%'}}></div>
                         </div>
                       </div>
                     </CardContent>
@@ -4050,7 +3908,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold">2,456</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Total Actions Today</div>
                       </div>
                     </CardContent>
@@ -4058,7 +3916,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">12</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Failed Login Attempts</div>
                       </div>
                     </CardContent>
@@ -4066,7 +3924,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">89</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Admin Actions</div>
                       </div>
                     </CardContent>
@@ -4074,7 +3932,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">234</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Security Events</div>
                       </div>
                     </CardContent>
@@ -4100,76 +3958,15 @@ export default function Admin() {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:23:45</td>
-                            <td className="p-2">
-                              <Badge variant="outline">User Login</Badge>
-                            </td>
-                            <td className="p-2 text-sm">sarah@example.com</td>
-                            <td className="p-2 text-sm">Authentication</td>
-                            <td className="p-2 text-sm font-mono">192.168.1.45</td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:20:12</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Apply Trial Coupon</Badge>
-                            </td>
-                            <td className="p-2 text-sm">john@example.com</td>
-                            <td className="p-2 text-sm">TRIAL30</td>
-                            <td className="p-2 text-sm font-mono">192.168.1.67</td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:18:33</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Admin Action</Badge>
-                            </td>
-                            <td className="p-2 text-sm">admin@hublink.com</td>
-                            <td className="p-2 text-sm">User: user_456</td>
-                            <td className="p-2 text-sm font-mono">192.168.1.10</td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:15:21</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Failed Login</Badge>
-                            </td>
-                            <td className="p-2 text-sm">unknown@attacker.com</td>
-                            <td className="p-2 text-sm">Authentication</td>
-                            <td className="p-2 text-sm font-mono">45.123.87.234</td>
-                            <td className="p-2">
-                              <Badge variant="destructive">Failed</Badge>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:12:45</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Payment Processed</Badge>
-                            </td>
-                            <td className="p-2 text-sm">emma@example.com</td>
-                            <td className="p-2 text-sm">£45.00 Subscription</td>
-                            <td className="p-2 text-sm font-mono">192.168.1.89</td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 text-sm">2024-12-07 15:10:12</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Create Trial Code</Badge>
-                            </td>
-                            <td className="p-2 text-sm">admin@hublink.com</td>
-                            <td className="p-2 text-sm">FREETRIAL7</td>
-                            <td className="p-2 text-sm font-mono">192.168.1.10</td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Success</Badge>
+                          <tr>
+                            <td colSpan={6} className="p-8 text-center">
+                              <div className="flex flex-col items-center justify-center">
+                                <FileText className="w-12 h-12 text-muted-foreground mb-3" />
+                                <h3 className="text-sm font-medium mb-1">No Audit Logs</h3>
+                                <p className="text-xs text-muted-foreground">
+                                  System activity will be logged here
+                                </p>
+                              </div>
                             </td>
                           </tr>
                         </tbody>
@@ -4187,39 +3984,12 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-3 p-3 border border-red-200 rounded bg-red-50 dark:bg-red-900/20">
-                        <AlertTriangle className="w-5 h-5 text-red-600 mt-1" />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">Suspicious Login Activity</div>
-                          <div className="text-xs text-muted-foreground">
-                            Multiple failed login attempts from IP: 45.123.87.234
-                          </div>
-                          <div className="text-xs text-muted-foreground">15 minutes ago</div>
-                        </div>
-                        <Button size="sm" variant="outline">Block IP</Button>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border border-yellow-200 rounded bg-yellow-50 dark:bg-yellow-900/20">
-                        <AlertCircle className="w-5 h-5 text-yellow-600 mt-1" />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">Unusual Payment Pattern</div>
-                          <div className="text-xs text-muted-foreground">
-                            Large number of trial-to-paid conversions from same region
-                          </div>
-                          <div className="text-xs text-muted-foreground">1 hour ago</div>
-                        </div>
-                        <Button size="sm" variant="outline">Investigate</Button>
-                      </div>
-                      <div className="flex items-start space-x-3 p-3 border border-green-200 rounded bg-green-50 dark:bg-green-900/20">
-                        <CheckCircle className="w-5 h-5 text-green-600 mt-1" />
-                        <div className="flex-1">
-                          <div className="text-sm font-medium">Security Scan Complete</div>
-                          <div className="text-xs text-muted-foreground">
-                            No vulnerabilities detected in latest security scan
-                          </div>
-                          <div className="text-xs text-muted-foreground">2 hours ago</div>
-                        </div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Shield className="w-12 h-12 text-muted-foreground mb-3" />
+                      <h3 className="text-sm font-medium mb-1">No Security Events</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Security alerts and threats will appear here
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
