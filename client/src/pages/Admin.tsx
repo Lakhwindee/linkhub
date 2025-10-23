@@ -70,6 +70,28 @@ export default function Admin() {
   const [bulkAction, setBulkAction] = useState("");
   const [activeForm, setActiveForm] = useState<'discount' | 'trial' | null>(null);
   
+  // Coupon/Trial form state
+  const [discountForm, setDiscountForm] = useState({
+    code: '',
+    discountType: 'percentage',
+    discountValue: '',
+    maxUses: '',
+    validFrom: '',
+    validUntil: '',
+    applicablePlans: 'all',
+    status: 'active',
+    description: ''
+  });
+
+  const [trialForm, setTrialForm] = useState({
+    code: '',
+    trialPeriod: '30',
+    planType: 'premium',
+    maxUses: '',
+    autoDebit: 'enabled',
+    description: ''
+  });
+  
   // Email Management state
   const [emailTemplates] = useState([
     { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to HubLink!', content: '' },
@@ -185,6 +207,79 @@ export default function Admin() {
       });
     },
   });
+
+  // Discount coupon creation
+  const handleCreateDiscountCode = async () => {
+    if (!discountForm.code || !discountForm.discountValue) {
+      toast({
+        title: "Error",
+        description: "Please fill in coupon code and discount value",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await apiRequest("POST", "/api/admin/discount-codes", discountForm);
+      toast({
+        title: "Success",
+        description: "Discount code created successfully",
+      });
+      setDiscountForm({
+        code: '',
+        discountType: 'percentage',
+        discountValue: '',
+        maxUses: '',
+        validFrom: '',
+        validUntil: '',
+        applicablePlans: 'all',
+        status: 'active',
+        description: ''
+      });
+      setActiveForm(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create discount code",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Trial coupon creation
+  const handleCreateTrialCode = async () => {
+    if (!trialForm.code || !trialForm.trialPeriod) {
+      toast({
+        title: "Error",
+        description: "Please fill in coupon code and trial period",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await apiRequest("POST", "/api/admin/trial-codes", trialForm);
+      toast({
+        title: "Success",
+        description: "Trial code created successfully",
+      });
+      setTrialForm({
+        code: '',
+        trialPeriod: '30',
+        planType: 'premium',
+        maxUses: '',
+        autoDebit: 'enabled',
+        description: ''
+      });
+      setActiveForm(null);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create trial code",
+        variant: "destructive",
+      });
+    }
+  };
 
   const reviewSubmissionMutation = useMutation({
     mutationFn: async (data: { submissionId: string; status: string; notes?: string }) => {
@@ -2030,11 +2125,16 @@ export default function Admin() {
                       <div className="grid md:grid-cols-3 gap-4">
                         <div>
                           <Label>Coupon Code</Label>
-                          <Input placeholder="WELCOME50" className="mt-1 font-mono" />
+                          <Input 
+                            placeholder="WELCOME50" 
+                            className="mt-1 font-mono" 
+                            value={discountForm.code}
+                            onChange={(e) => setDiscountForm({...discountForm, code: e.target.value.toUpperCase()})}
+                          />
                         </div>
                         <div>
                           <Label>Discount Type</Label>
-                          <Select>
+                          <Select value={discountForm.discountType} onValueChange={(value) => setDiscountForm({...discountForm, discountType: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select type" />
                             </SelectTrigger>
@@ -2046,27 +2146,49 @@ export default function Admin() {
                         </div>
                         <div>
                           <Label>Discount Value</Label>
-                          <Input type="number" placeholder="50" className="mt-1" />
+                          <Input 
+                            type="number" 
+                            placeholder="50" 
+                            className="mt-1" 
+                            value={discountForm.discountValue}
+                            onChange={(e) => setDiscountForm({...discountForm, discountValue: e.target.value})}
+                          />
                         </div>
                       </div>
                       <div className="grid md:grid-cols-3 gap-4">
                         <div>
                           <Label>Max Uses</Label>
-                          <Input type="number" placeholder="100" className="mt-1" />
+                          <Input 
+                            type="number" 
+                            placeholder="100" 
+                            className="mt-1" 
+                            value={discountForm.maxUses}
+                            onChange={(e) => setDiscountForm({...discountForm, maxUses: e.target.value})}
+                          />
                         </div>
                         <div>
-                          <Label>Min Order Value (£)</Label>
-                          <Input type="number" placeholder="25" className="mt-1" />
+                          <Label>Valid From</Label>
+                          <Input 
+                            type="date" 
+                            className="mt-1" 
+                            value={discountForm.validFrom}
+                            onChange={(e) => setDiscountForm({...discountForm, validFrom: e.target.value})}
+                          />
                         </div>
                         <div>
                           <Label>Valid Until</Label>
-                          <Input type="date" className="mt-1" />
+                          <Input 
+                            type="date" 
+                            className="mt-1" 
+                            value={discountForm.validUntil}
+                            onChange={(e) => setDiscountForm({...discountForm, validUntil: e.target.value})}
+                          />
                         </div>
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <Label>Applicable Plans</Label>
-                          <Select>
+                          <Select value={discountForm.applicablePlans} onValueChange={(value) => setDiscountForm({...discountForm, applicablePlans: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select plans" />
                             </SelectTrigger>
@@ -2079,7 +2201,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <Label>Status</Label>
-                          <Select defaultValue="active">
+                          <Select value={discountForm.status} onValueChange={(value) => setDiscountForm({...discountForm, status: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
@@ -2092,9 +2214,14 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Description</Label>
-                        <Input placeholder="50% off for new users" className="mt-1" />
+                        <Input 
+                          placeholder="50% off for new users" 
+                          className="mt-1" 
+                          value={discountForm.description}
+                          onChange={(e) => setDiscountForm({...discountForm, description: e.target.value})}
+                        />
                       </div>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                      <Button onClick={handleCreateDiscountCode} className="w-full bg-blue-600 hover:bg-blue-700">
                         Create Discount Code
                       </Button>
                     </CardContent>
@@ -2110,11 +2237,16 @@ export default function Admin() {
                       <div className="grid md:grid-cols-3 gap-4">
                         <div>
                           <Label>Coupon Code</Label>
-                          <Input placeholder="TRIAL30" className="mt-1 font-mono" />
+                          <Input 
+                            placeholder="TRIAL30" 
+                            className="mt-1 font-mono" 
+                            value={trialForm.code}
+                            onChange={(e) => setTrialForm({...trialForm, code: e.target.value.toUpperCase()})}
+                          />
                         </div>
                         <div>
                           <Label>Trial Period</Label>
-                          <Select>
+                          <Select value={trialForm.trialPeriod} onValueChange={(value) => setTrialForm({...trialForm, trialPeriod: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select period" />
                             </SelectTrigger>
@@ -2129,7 +2261,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <Label>Plan Type</Label>
-                          <Select>
+                          <Select value={trialForm.planType} onValueChange={(value) => setTrialForm({...trialForm, planType: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue placeholder="Select plan" />
                             </SelectTrigger>
@@ -2143,11 +2275,17 @@ export default function Admin() {
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
                           <Label>Max Uses</Label>
-                          <Input type="number" placeholder="100" className="mt-1" />
+                          <Input 
+                            type="number" 
+                            placeholder="100" 
+                            className="mt-1" 
+                            value={trialForm.maxUses}
+                            onChange={(e) => setTrialForm({...trialForm, maxUses: e.target.value})}
+                          />
                         </div>
                         <div>
                           <Label>Auto-Debit After Trial</Label>
-                          <Select defaultValue="enabled">
+                          <Select value={trialForm.autoDebit} onValueChange={(value) => setTrialForm({...trialForm, autoDebit: value})}>
                             <SelectTrigger className="mt-1">
                               <SelectValue />
                             </SelectTrigger>
@@ -2160,9 +2298,14 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Description</Label>
-                        <Input placeholder="30 days free trial - Premium Plan" className="mt-1" />
+                        <Input 
+                          placeholder="30 days free trial - Premium Plan" 
+                          className="mt-1" 
+                          value={trialForm.description}
+                          onChange={(e) => setTrialForm({...trialForm, description: e.target.value})}
+                        />
                       </div>
-                      <Button className="w-full bg-purple-600 hover:bg-purple-700">
+                      <Button onClick={handleCreateTrialCode} className="w-full bg-purple-600 hover:bg-purple-700">
                         Create Trial Coupon
                       </Button>
                     </CardContent>
