@@ -811,8 +811,8 @@ export default function AdMarketplace() {
     false;
   const canReserveAds = canApplyCampaigns && isYouTubeVerifiedForReservations;
   
-  // Show visual locks for non-premium users (including FREE_CREATOR)
-  const shouldShowLocks = !isPremium;
+  // Show visual locks for free users (including FREE_CREATOR)
+  const shouldShowLocks = isFree;
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
@@ -859,19 +859,22 @@ export default function AdMarketplace() {
     retry: false,
   });
 
-  // Access check - block free users completely
-  useEffect(() => {
-    if (!isLoading && user && isFree) {
+  // Handler for free user clicks on ads - redirect to upgrade
+  const handleAdClick = (e: React.MouseEvent) => {
+    if (isFree) {
+      e.preventDefault();
+      e.stopPropagation();
       toast({
         title: "Upgrade Required",
-        description: "You need a paid plan to access the Ad Marketplace. Redirecting...",
+        description: "You need a paid plan to access campaigns. Redirecting to upgrade...",
         variant: "destructive",
+        duration: 3000,
       });
       setTimeout(() => {
         window.location.href = '/subscribe';
-      }, 1500);
+      }, 1000);
     }
-  }, [user, isFree, isLoading, toast]);
+  };
 
   // Handle unauthorized error
   useEffect(() => {
@@ -1075,19 +1078,6 @@ export default function AdMarketplace() {
     return null;
   }
 
-  // Block free users completely from Ad Marketplace
-  if (!isLoading && user && isFree) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">Redirecting to upgrade page...</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   // Only creators, free_creators, and admins can access AdMarketplace
   const allowedRoles = ['creator', 'free_creator', 'admin', 'superadmin', 'moderator'];
   if (!allowedRoles.includes(user.role || '')) {
@@ -1261,10 +1251,11 @@ export default function AdMarketplace() {
                   {(filteredAds as Ad[]).map((ad: Ad) => (
                     <Card 
                       key={ad.id} 
-                      className={`travel-card ${isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
+                      className={`travel-card ${isFree ? 'group cursor-not-allowed' : isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
+                      onClick={handleAdClick}
                       data-testid={`card-ad-${ad.id}`}
                     >
-                      {/* Hover X Indicator for Non-Premium Users (including FREE_CREATOR) */}
+                      {/* Hover X Indicator for Free Users */}
                       {shouldShowLocks && (
                         <div className="absolute inset-0 bg-red-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
                           <div className="bg-red-500 text-white p-4 rounded-full shadow-lg transform scale-75 group-hover:scale-100 transition-transform duration-300">
