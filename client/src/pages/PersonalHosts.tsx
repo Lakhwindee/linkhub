@@ -459,7 +459,7 @@ export default function PersonalHosts() {
             <HostProfileForm
               onSubmit={handleEditHost}
               onCancel={() => setEditingHost(null)}
-              initialData={editingHost}
+              initialData={editingHost as any}
               isEditing={true}
             />
           </DialogContent>

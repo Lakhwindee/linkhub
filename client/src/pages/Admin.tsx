@@ -33,12 +33,24 @@ interface AdminUser {
   firstName?: string;
   lastName?: string;
   email: string;
+  username?: string;
   role: string;
   plan?: string;
   status?: string;
   postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
+  reportsCount?: number;
   createdAt?: string | Date;
   lastActiveAt?: string | Date;
+  verificationStatus?: string;
+  bio?: string;
+  country?: string;
+  city?: string;
+  phone?: string;
+  instagramUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
 }
 
 type ApiSettings = {
@@ -516,10 +528,7 @@ export default function Admin() {
   // User Management helper functions
   const handleViewUser = (user: AdminUser) => {
     setSelectedUser(user);
-    toast({
-      title: "User Profile",
-      description: `Viewing profile for ${user.displayName || user.email}`,
-    });
+    // Dialog will open automatically when selectedUser is set
   };
 
   const handleEditUser = (user: AdminUser) => {
@@ -564,7 +573,7 @@ export default function Admin() {
       default:
         toast({
           title: "Action",
-          description: `${action} action for ${user.name}`,
+          description: `${action} action for ${foundUser?.displayName || 'user'}`,
         });
     }
     
@@ -3218,7 +3227,12 @@ export default function Admin() {
                                   <span className="text-xs font-medium">{user.displayName?.slice(0, 2).toUpperCase() || user.email?.slice(0, 2).toUpperCase()}</span>
                                 </div>
                                 <div>
-                                  <div className="font-medium">{user.displayName || user.firstName + ' ' + user.lastName || user.email}</div>
+                                  <button 
+                                    onClick={() => handleViewUser(user)}
+                                    className="font-medium hover:text-primary hover:underline cursor-pointer text-left"
+                                  >
+                                    {user.displayName || user.firstName + ' ' + user.lastName || user.email}
+                                  </button>
                                   <div className="text-sm text-muted-foreground">{user.email}</div>
                                 </div>
                               </div>
@@ -3317,6 +3331,274 @@ export default function Admin() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* User Profile View Dialog */}
+                {selectedUser && !editingUser && (
+                  <Dialog open={!!selectedUser && !editingUser} onOpenChange={() => setSelectedUser(null)}>
+                    <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle className="flex items-center gap-3">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center">
+                            <span className="text-xl font-bold">
+                              {selectedUser.displayName?.slice(0, 2).toUpperCase() || selectedUser.email?.slice(0, 2).toUpperCase()}
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-xl font-bold">{selectedUser.displayName || selectedUser.firstName + ' ' + selectedUser.lastName}</div>
+                            <div className="text-sm text-muted-foreground font-normal">{selectedUser.email}</div>
+                          </div>
+                        </DialogTitle>
+                      </DialogHeader>
+
+                      <div className="space-y-6">
+                        {/* Status Badges */}
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="outline" className="text-sm">
+                            <Users className="w-3 h-3 mr-1" />
+                            {selectedUser.role || 'user'}
+                          </Badge>
+                          <Badge className={
+                            selectedUser.plan === 'premium' || selectedUser.role === 'admin'
+                              ? "bg-green-100 text-green-800" 
+                              : selectedUser.plan === 'free' 
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-blue-100 text-blue-800"
+                          }>
+                            {selectedUser.plan || 'free'} Plan
+                          </Badge>
+                          {selectedUser.verificationStatus && (
+                            <Badge variant="outline">
+                              {selectedUser.verificationStatus}
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* User Stats */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="bg-muted/50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-primary">{selectedUser.postsCount || 0}</div>
+                            <div className="text-sm text-muted-foreground">Posts</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-primary">{selectedUser.followersCount || 0}</div>
+                            <div className="text-sm text-muted-foreground">Followers</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-primary">{selectedUser.followingCount || 0}</div>
+                            <div className="text-sm text-muted-foreground">Following</div>
+                          </div>
+                          <div className="bg-muted/50 rounded-lg p-4">
+                            <div className="text-2xl font-bold text-primary">{selectedUser.reportsCount || 0}</div>
+                            <div className="text-sm text-muted-foreground">Reports</div>
+                          </div>
+                        </div>
+
+                        {/* User Details */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold text-lg">Profile Information</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-sm text-muted-foreground">Username</label>
+                              <div className="font-medium">@{selectedUser.username || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">Display Name</label>
+                              <div className="font-medium">{selectedUser.displayName || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">First Name</label>
+                              <div className="font-medium">{selectedUser.firstName || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">Last Name</label>
+                              <div className="font-medium">{selectedUser.lastName || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">Country</label>
+                              <div className="font-medium">{selectedUser.country || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">City</label>
+                              <div className="font-medium">{selectedUser.city || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">Phone</label>
+                              <div className="font-medium">{selectedUser.phone || 'Not set'}</div>
+                            </div>
+                            <div>
+                              <label className="text-sm text-muted-foreground">Joined</label>
+                              <div className="font-medium">
+                                {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleDateString() : 'Unknown'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bio */}
+                        {selectedUser.bio && (
+                          <div>
+                            <label className="text-sm text-muted-foreground">Bio</label>
+                            <div className="mt-1 p-3 bg-muted/50 rounded-lg">
+                              {selectedUser.bio}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Social Links */}
+                        {(selectedUser.instagramUrl || selectedUser.youtubeUrl || selectedUser.tiktokUrl) && (
+                          <div>
+                            <h3 className="font-semibold text-lg mb-3">Social Media</h3>
+                            <div className="space-y-2">
+                              {selectedUser.instagramUrl && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-muted-foreground w-24">Instagram:</span>
+                                  <a href={selectedUser.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    {selectedUser.instagramUrl}
+                                  </a>
+                                </div>
+                              )}
+                              {selectedUser.youtubeUrl && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-muted-foreground w-24">YouTube:</span>
+                                  <a href={selectedUser.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    {selectedUser.youtubeUrl}
+                                  </a>
+                                </div>
+                              )}
+                              {selectedUser.tiktokUrl && (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm text-muted-foreground w-24">TikTok:</span>
+                                  <a href={selectedUser.tiktokUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    {selectedUser.tiktokUrl}
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-4 border-t">
+                          <Button 
+                            onClick={() => handleEditUser(selectedUser)}
+                            className="flex-1"
+                          >
+                            <Edit3 className="w-4 h-4 mr-2" />
+                            Edit Profile
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => {
+                              window.open(`/profile/${selectedUser.id}`, '_blank');
+                            }}
+                          >
+                            View Public Profile
+                          </Button>
+                          <Button 
+                            variant="destructive"
+                            onClick={() => {
+                              if (confirm('Are you sure you want to delete this user?')) {
+                                deleteUserMutation.mutate(selectedUser.id);
+                                setSelectedUser(null);
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+
+                {/* User Edit Dialog */}
+                {selectedUser && editingUser && (
+                  <Dialog open={editingUser} onOpenChange={() => { setEditingUser(false); setSelectedUser(null); }}>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Edit User Profile</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Email</label>
+                          <Input value={selectedUser.email} disabled className="bg-muted" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-sm font-medium">First Name</label>
+                            <Input 
+                              value={selectedUser.firstName || ''} 
+                              onChange={(e) => setSelectedUser({...selectedUser, firstName: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium">Last Name</label>
+                            <Input 
+                              value={selectedUser.lastName || ''} 
+                              onChange={(e) => setSelectedUser({...selectedUser, lastName: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Role</label>
+                          <select 
+                            value={selectedUser.role || 'user'}
+                            onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value})}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="user">User</option>
+                            <option value="creator">Creator</option>
+                            <option value="publisher">Publisher</option>
+                            <option value="moderator">Moderator</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Plan</label>
+                          <select 
+                            value={selectedUser.plan || 'free'}
+                            onChange={(e) => setSelectedUser({...selectedUser, plan: e.target.value})}
+                            className="w-full p-2 border rounded-md"
+                          >
+                            <option value="free">Free</option>
+                            <option value="standard">Standard</option>
+                            <option value="premium">Premium</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-3 pt-4">
+                          <Button 
+                            onClick={() => {
+                              updateUserMutation.mutate({
+                                userId: selectedUser.id,
+                                updates: {
+                                  firstName: selectedUser.firstName,
+                                  lastName: selectedUser.lastName,
+                                  role: selectedUser.role,
+                                  plan: selectedUser.plan,
+                                }
+                              });
+                              setEditingUser(false);
+                              setSelectedUser(null);
+                            }}
+                            className="flex-1"
+                          >
+                            Save Changes
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            onClick={() => {
+                              setEditingUser(false);
+                              setSelectedUser(null);
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
             )}
 
