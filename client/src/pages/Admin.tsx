@@ -1958,7 +1958,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">45</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0</div>
                         <div className="text-sm text-muted-foreground">Active Trials</div>
                       </div>
                     </CardContent>
@@ -1966,7 +1966,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">75.3%</div>
+                        <div className="text-2xl font-bold text-muted-foreground">0%</div>
                         <div className="text-sm text-muted-foreground">Conversion Rate</div>
                       </div>
                     </CardContent>
@@ -1974,7 +1974,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">£2,305</div>
+                        <div className="text-2xl font-bold text-muted-foreground">£0</div>
                         <div className="text-sm text-muted-foreground">Revenue Lost</div>
                       </div>
                     </CardContent>
@@ -1982,7 +1982,7 @@ export default function Admin() {
                   <Card>
                     <CardContent className="p-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">£2,025</div>
+                        <div className="text-2xl font-bold text-muted-foreground">£0</div>
                         <div className="text-sm text-muted-foreground">Projected Revenue</div>
                       </div>
                     </CardContent>
@@ -1998,72 +1998,12 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left p-2">User</th>
-                            <th className="text-left p-2">Coupon Code</th>
-                            <th className="text-left p-2">Plan Type</th>
-                            <th className="text-left p-2">Days Left</th>
-                            <th className="text-left p-2">Auto-Debit</th>
-                            <th className="text-left p-2">Price</th>
-                            <th className="text-left p-2">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b">
-                            <td className="p-2">
-                              <div>
-                                <div className="font-medium">john@example.com</div>
-                                <div className="text-xs text-muted-foreground">user_123</div>
-                              </div>
-                            </td>
-                            <td className="p-2 font-mono">TRIAL30</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Premium</Badge>
-                            </td>
-                            <td className="p-2">
-                              <div className="flex items-center">
-                                <Clock className="w-4 h-4 mr-1 text-orange-600" />
-                                <span className="font-bold text-orange-600">25 days</span>
-                              </div>
-                            </td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Enabled</Badge>
-                            </td>
-                            <td className="p-2 font-semibold">£45/mo</td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm" className="text-red-600">Cancel</Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2">
-                              <div>
-                                <div className="font-medium">sarah@example.com</div>
-                                <div className="text-xs text-muted-foreground">user_456</div>
-                              </div>
-                            </td>
-                            <td className="p-2 font-mono">FREETRIAL7</td>
-                            <td className="p-2">
-                              <Badge variant="outline">Creator</Badge>
-                            </td>
-                            <td className="p-2">
-                              <div className="flex items-center">
-                                <Clock className="w-4 h-4 mr-1 text-red-600" />
-                                <span className="font-bold text-red-600">3 days</span>
-                              </div>
-                            </td>
-                            <td className="p-2">
-                              <Badge variant="secondary" className="bg-green-100 text-green-800">Enabled</Badge>
-                            </td>
-                            <td className="p-2 font-semibold">£45/mo</td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm" className="text-red-600">Cancel</Button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Clock className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Active Trials</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Trial users will appear here when they activate trial codes
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -2074,76 +2014,12 @@ export default function Admin() {
                     <CardTitle>All Discount & Trial Codes</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="border-b">
-                            <th className="text-left p-2">Code</th>
-                            <th className="text-left p-2">Type</th>
-                            <th className="text-left p-2">Benefit</th>
-                            <th className="text-left p-2">Usage</th>
-                            <th className="text-left p-2">Expires</th>
-                            <th className="text-left p-2">Status</th>
-                            <th className="text-left p-2">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="border-b">
-                            <td className="p-2 font-mono font-bold">WELCOME50</td>
-                            <td className="p-2"><Badge>Discount</Badge></td>
-                            <td className="p-2">50% off</td>
-                            <td className="p-2">23/100</td>
-                            <td className="p-2">30 days</td>
-                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm">Edit</Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b">
-                            <td className="p-2 font-mono font-bold">SAVE10</td>
-                            <td className="p-2"><Badge>Discount</Badge></td>
-                            <td className="p-2">£10 off</td>
-                            <td className="p-2">8/50</td>
-                            <td className="p-2">60 days</td>
-                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm">Edit</Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b bg-purple-50 dark:bg-purple-900/20">
-                            <td className="p-2 font-mono font-bold text-purple-700">TRIAL30</td>
-                            <td className="p-2"><Badge className="bg-purple-600">Trial</Badge></td>
-                            <td className="p-2">
-                              <div>
-                                <div className="font-semibold">30 days free</div>
-                                <div className="text-xs text-muted-foreground">Premium Plan</div>
-                              </div>
-                            </td>
-                            <td className="p-2">45/500</td>
-                            <td className="p-2">90 days</td>
-                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm">Edit</Button>
-                            </td>
-                          </tr>
-                          <tr className="border-b bg-purple-50 dark:bg-purple-900/20">
-                            <td className="p-2 font-mono font-bold text-purple-700">FREETRIAL7</td>
-                            <td className="p-2"><Badge className="bg-purple-600">Trial</Badge></td>
-                            <td className="p-2">
-                              <div>
-                                <div className="font-semibold">7 days free</div>
-                                <div className="text-xs text-muted-foreground">Creator Plan</div>
-                              </div>
-                            </td>
-                            <td className="p-2">12/100</td>
-                            <td className="p-2">30 days</td>
-                            <td className="p-2"><Badge variant="secondary">Active</Badge></td>
-                            <td className="p-2">
-                              <Button variant="outline" size="sm">Edit</Button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Percent className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Codes Created Yet</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Click "Create Discount Code" or "Create Trial Code" to add your first promotional code
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -3306,14 +3182,10 @@ export default function Admin() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-green-600">+24%</div>
-                      <p className="text-sm text-muted-foreground">vs last month</p>
-                      <div className="mt-4 h-20 bg-gradient-to-r from-green-100 to-green-200 rounded-lg flex items-end p-2">
-                        <div className="flex items-end space-x-1 w-full">
-                          {[20, 35, 25, 40, 30, 45, 38, 50, 42, 55, 48, 60].map((height, i) => (
-                            <div key={i} className="bg-green-500 rounded-t" style={{ height: `${height}%`, width: '8%' }}></div>
-                          ))}
-                        </div>
+                      <div className="text-3xl font-bold text-muted-foreground">0%</div>
+                      <p className="text-sm text-muted-foreground">No data yet</p>
+                      <div className="mt-4 h-20 bg-muted rounded-lg flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Awaiting user activity</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -3326,14 +3198,10 @@ export default function Admin() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-purple-600">$12,458</div>
-                      <p className="text-sm text-muted-foreground">this month</p>
-                      <div className="mt-4 h-20 bg-gradient-to-r from-purple-100 to-purple-200 rounded-lg flex items-end p-2">
-                        <div className="flex items-end space-x-1 w-full">
-                          {[30, 45, 35, 50, 40, 55, 48, 60, 52, 65, 58, 70].map((height, i) => (
-                            <div key={i} className="bg-purple-500 rounded-t" style={{ height: `${height}%`, width: '8%' }}></div>
-                          ))}
-                        </div>
+                      <div className="text-3xl font-bold text-muted-foreground">£0.00</div>
+                      <p className="text-sm text-muted-foreground">No revenue yet</p>
+                      <div className="mt-4 h-20 bg-muted rounded-lg flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Awaiting transactions</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -3346,14 +3214,10 @@ export default function Admin() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold text-blue-600">89%</div>
-                      <p className="text-sm text-muted-foreground">daily active users</p>
-                      <div className="mt-4 h-20 bg-gradient-to-r from-blue-100 to-blue-200 rounded-lg flex items-end p-2">
-                        <div className="flex items-end space-x-1 w-full">
-                          {[40, 55, 45, 60, 50, 65, 58, 70, 62, 75, 68, 80].map((height, i) => (
-                            <div key={i} className="bg-blue-500 rounded-t" style={{ height: `${height}%`, width: '8%' }}></div>
-                          ))}
-                        </div>
+                      <div className="text-3xl font-bold text-muted-foreground">0%</div>
+                      <p className="text-sm text-muted-foreground">No active users yet</p>
+                      <div className="mt-4 h-20 bg-muted rounded-lg flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground">Awaiting user engagement</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -3366,19 +3230,12 @@ export default function Admin() {
                       <CardTitle>Top Content</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Travel Guide: Tokyo</span>
-                          <span className="text-sm font-medium">1,247 views</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Photography Tips</span>
-                          <span className="text-sm font-medium">892 views</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Budget Travel Hacks</span>
-                          <span className="text-sm font-medium">673 views</span>
-                        </div>
+                      <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <Eye className="w-10 h-10 text-muted-foreground mb-3" />
+                        <h3 className="text-sm font-medium mb-1">No Content Yet</h3>
+                        <p className="text-xs text-muted-foreground">
+                          Popular content will appear here
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -3388,11 +3245,10 @@ export default function Admin() {
                       <CardTitle>User Activity by Hour</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="h-32 bg-muted rounded-lg flex items-end p-4">
-                        <div className="flex items-end space-x-2 w-full">
-                          {[10, 15, 12, 20, 25, 30, 45, 60, 70, 65, 80, 85, 90, 75, 70, 65, 60, 55, 50, 40, 30, 25, 20, 15].map((height, i) => (
-                            <div key={i} className="bg-primary rounded-t" style={{ height: `${height}%`, width: '3.5%' }}></div>
-                          ))}
+                      <div className="h-32 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="text-center">
+                          <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground">No activity data yet</p>
                         </div>
                       </div>
                     </CardContent>
@@ -3502,9 +3358,9 @@ export default function Admin() {
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-green-600">£45,231.89</div>
+                      <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                       <p className="text-xs text-muted-foreground">
-                        +20.1% from last month
+                        No transactions yet
                       </p>
                     </CardContent>
                   </Card>
@@ -3514,7 +3370,7 @@ export default function Admin() {
                       <CreditCard className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-blue-600">£4,523.19</div>
+                      <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                       <p className="text-xs text-muted-foreground">
                         10% of total revenue
                       </p>
@@ -3526,9 +3382,9 @@ export default function Admin() {
                       <TrendingUp className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-orange-600">£1,234.56</div>
+                      <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                       <p className="text-xs text-muted-foreground">
-                        2.7% processing cost
+                        Stripe processing cost
                       </p>
                     </CardContent>
                   </Card>
@@ -3538,7 +3394,7 @@ export default function Admin() {
                       <Activity className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                      <div className="text-2xl font-bold text-purple-600">£39,474.14</div>
+                      <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                       <p className="text-xs text-muted-foreground">
                         After all fees
                       </p>
@@ -3560,8 +3416,8 @@ export default function Admin() {
                             <span className="text-sm">Stays Bookings</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£18,450</div>
-                            <div className="text-xs text-muted-foreground">40.8%</div>
+                            <div className="text-sm font-medium text-muted-foreground">£0.00</div>
+                            <div className="text-xs text-muted-foreground">0%</div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -3570,8 +3426,8 @@ export default function Admin() {
                             <span className="text-sm">Trip Packages</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£15,780</div>
-                            <div className="text-xs text-muted-foreground">34.9%</div>
+                            <div className="text-sm font-medium text-muted-foreground">£0.00</div>
+                            <div className="text-xs text-muted-foreground">0%</div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -3580,8 +3436,8 @@ export default function Admin() {
                             <span className="text-sm">Subscriptions</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£8,950</div>
-                            <div className="text-xs text-muted-foreground">19.8%</div>
+                            <div className="text-sm font-medium text-muted-foreground">£0.00</div>
+                            <div className="text-xs text-muted-foreground">0%</div>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
@@ -3590,8 +3446,8 @@ export default function Admin() {
                             <span className="text-sm">Ad Revenue</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£2,051</div>
-                            <div className="text-xs text-muted-foreground">4.5%</div>
+                            <div className="text-sm font-medium text-muted-foreground">£0.00</div>
+                            <div className="text-xs text-muted-foreground">0%</div>
                           </div>
                         </div>
                       </div>
@@ -3610,7 +3466,7 @@ export default function Admin() {
                             <span className="text-sm">Stripe Payments</span>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">£45,231</div>
+                            <div className="text-sm font-medium text-muted-foreground">£0.00</div>
                             <div className="text-xs text-muted-foreground">100%</div>
                           </div>
                         </div>
@@ -3628,53 +3484,12 @@ export default function Admin() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {[
-                        { id: "TXN-001", type: "Booking", amount: "£450.00", status: "Completed", user: "Alice Johnson", date: "2025-09-09" },
-                        { id: "TXN-002", type: "Subscription", amount: "£45.00", status: "Completed", user: "Bob Smith", date: "2025-09-09" },
-                        { id: "TXN-003", type: "Trip Package", amount: "£1,200.00", status: "Pending", user: "Carol Brown", date: "2025-09-08" },
-                        { id: "TXN-004", type: "Ad Payment", amount: "£125.00", status: "Completed", user: "David Wilson", date: "2025-09-08" },
-                        { id: "TXN-005", type: "Booking", amount: "£750.00", status: "Refunded", user: "Emma Davis", date: "2025-09-07" }
-                      ].map((transaction) => (
-                        <div key={transaction.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="space-y-1">
-                              <div className="text-sm font-medium">{transaction.type} - {transaction.id}</div>
-                              <div className="text-xs text-muted-foreground">{transaction.user} • {transaction.date}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <div className="text-right">
-                              <div className="text-sm font-medium">{transaction.amount}</div>
-                              <Badge 
-                                variant={
-                                  transaction.status === 'Completed' ? 'default' :
-                                  transaction.status === 'Pending' ? 'secondary' :
-                                  'destructive'
-                                }
-                                className="text-xs"
-                              >
-                                {transaction.status}
-                              </Badge>
-                            </div>
-                            <Button variant="outline" size="sm">
-                              <Eye className="w-3 h-3 mr-2" />
-                              View
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="flex justify-between items-center">
-                        <Button variant="outline">
-                          <Download className="w-4 h-4 mr-2" />
-                          Export All Transactions
-                        </Button>
-                        <div className="text-sm text-muted-foreground">
-                          Showing 5 of 1,247 transactions
-                        </div>
-                      </div>
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <Activity className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium mb-2">No Transactions Yet</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Transactions will appear here once users start making bookings and subscriptions.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -3691,18 +3506,18 @@ export default function Admin() {
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-green-600">£28,450</div>
+                          <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                           <div className="text-xs text-muted-foreground">Total Paid Out</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">£4,320</div>
+                          <div className="text-2xl font-bold text-muted-foreground">£0.00</div>
                           <div className="text-xs text-muted-foreground">Pending Payouts</div>
                         </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Next payout date:</span>
-                          <span className="font-medium">September 15, 2025</span>
+                          <span className="font-medium text-muted-foreground">Not scheduled</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span>Payout frequency:</span>
