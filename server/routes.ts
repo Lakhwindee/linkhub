@@ -4453,6 +4453,13 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           status: (storedApiSettings.youtube.apiKey || process.env.YOUTUBE_API_KEY) ? 'active' : 'inactive',
           lastTested: null
         },
+        maps: {
+          apiKey: storedApiSettings.maps.apiKey || (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
+          enableAdvancedFeatures: storedApiSettings.maps.enableAdvancedFeatures !== undefined ? storedApiSettings.maps.enableAdvancedFeatures : true,
+          status: (storedApiSettings.maps.apiKey || process.env.GOOGLE_MAPS_API_KEY) ? 'active' : 'inactive',
+          monthlyRequests: 6,
+          lastTested: null
+        },
         database: {
           url: process.env.DATABASE_URL ? 'postgres://••••••••••••' : '',
           poolSize: 10,
