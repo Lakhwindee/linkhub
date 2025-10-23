@@ -1078,31 +1078,6 @@ export default function AdMarketplace() {
     return null;
   }
 
-  // Only creators, free_creators, and admins can access AdMarketplace
-  const allowedRoles = ['creator', 'free_creator', 'admin', 'superadmin', 'moderator'];
-  if (!allowedRoles.includes(user.role || '')) {
-    return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-4xl mx-auto">
-          <Card className="border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950">
-            <CardContent className="p-12 text-center">
-              <DollarSign className="w-16 h-16 mx-auto mb-4 text-yellow-600 dark:text-yellow-400" />
-              <h2 className="text-2xl font-bold text-yellow-800 dark:text-yellow-200 mb-4">
-                Creator Access Required
-              </h2>
-              <p className="text-yellow-700 dark:text-yellow-300 mb-6">
-                Switch to a Creator role to access the Ad Marketplace and start earning from brand collaborations.
-              </p>
-              <Button asChild className="bg-yellow-600 hover:bg-yellow-700 text-white" data-testid="button-upgrade-to-creator">
-                <Link href="/role-test">Switch Role</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   const filteredAds = (ads as Ad[]).filter((ad: Ad) => {
     const matchesSearch = !searchQuery || 
       ad.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
