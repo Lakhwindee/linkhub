@@ -390,7 +390,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         dateOfBirth,
         nationality,
         expiryDate,
-        verificationStatus
+        verificationStatus,
+        role
       } = req.body;
 
       if (!email || !password || !firstName || !lastName) {
@@ -418,6 +419,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         bio: bio || '',
         country: country || '',
         city: city || '',
+        role: role || 'user',
         documentType: documentType || null,
         documentUrl: documentUrl || '',
         documentNumber: documentNumber || '',
