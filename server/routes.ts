@@ -1057,14 +1057,30 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   // Profile routes
   app.get('/api/users/:handle', async (req, res) => {
     try {
-      const user = await storage.getUserByUsername(req.params.handle);
+      const { handle } = req.params;
+      
+      // Try to get user by ID first, then by username
+      let user = await storage.getUser(handle);
+      if (!user) {
+        user = await storage.getUserByUsername(handle);
+      }
+      
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
+      // Get follower and following counts
+      const followers = await storage.getFollowers(user.id);
+      const following = await storage.getFollowing(user.id);
+      
       // Remove sensitive information for public profiles
       const { stripeCustomerId, stripeSubscriptionId, ...publicUser } = user;
-      res.json(publicUser);
+      
+      res.json({
+        user: publicUser,
+        followerCount: followers.length,
+        followingCount: following.length
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user profile" });
     }
@@ -1965,34 +1981,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  // User profile routes
-  app.get('/api/users/:userId', async (req, res) => {
-    try {
-      const { userId } = req.params;
-      console.log(`📝 Fetching user profile for userId: ${userId}`);
-      
-      const user = await storage.getUser(userId);
-      console.log(`📝 User found:`, user ? 'YES' : 'NO', user ? { username: user.username, displayName: user.displayName } : null);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      const followers = await storage.getFollowers(userId);
-      const following = await storage.getFollowing(userId);
-      console.log(`📝 Followers: ${followers.length}, Following: ${following.length}`);
-      
-      res.json({
-        user,
-        followerCount: followers.length,
-        followingCount: following.length
-      });
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ message: "Failed to fetch user profile" });
-    }
-  });
-
+  // User posts route
   app.get('/api/users/:userId/posts', async (req, res) => {
     try {
       const { userId } = req.params;
