@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ForgotPasswordModal } from "./ForgotPasswordModal";
 
 interface LoginModalProps {
   open: boolean;
@@ -14,6 +15,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
 
   const handleGoogleLogin = async () => {
     setIsLoading(true);
@@ -117,7 +119,19 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onOpenChange(false);
+                      setForgotPasswordOpen(true);
+                    }}
+                    className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
                 <Input
                   id="password"
                   type="password"
@@ -144,6 +158,11 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
           </TabsContent>
         </Tabs>
       </DialogContent>
+      
+      <ForgotPasswordModal 
+        open={forgotPasswordOpen} 
+        onOpenChange={setForgotPasswordOpen}
+      />
     </Dialog>
   );
 }
