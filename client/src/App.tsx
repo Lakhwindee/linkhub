@@ -79,169 +79,40 @@ function Router() {
           ) : (
             <>
               <Route path="/" component={() => {
-                // Admins should ONLY access admin panel, not user dashboard
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
                 // Publishers go to stays page (flat structure), others go to dashboard
                 if (user?.role === 'publisher') {
                   return <Stays />;
                 }
+                // Regular users see dashboard
                 return <Dashboard />;
               }} />
               <Route path="/dashboard" component={() => {
-                // Block admins from accessing user dashboard
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
                 // Publishers shouldn't access dashboard - redirect to stays
                 if (user?.role === 'publisher') {
                   return <Stays />;
                 }
                 return <Dashboard />;
               }} />
-              <Route path="/discover" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <DiscoverTravelers />;
-              }} />
-              <Route path="/explore" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Explore />;
-              }} />
-              <Route path="/stays" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Stays />;
-              }} />
-              <Route path="/trips" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Trips />;
-              }} />
-              <Route path="/tour-packages" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <TourPackages />;
-              }} />
-              <Route path="/my-bookings" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <MyBookings />;
-              }} />
-              <Route path="/personal-hosts" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <PersonalHosts />;
-              }} />
-              <Route path="/profile/:userId" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <UserProfile />;
-              }} />
-              <Route path="/map" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Map />;
-              }} />
-              <Route path="/profile" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Profile />;
-              }} />
-              <Route path="/feed" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Feed />;
-              }} />
-              <Route path="/boosted-posts" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <BoostedPosts />;
-              }} />
-              <Route path="/ads" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <AdsWrapper />;
-              }} />
-              <Route path="/earn" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <AdsWrapper />;
-              }} />
-              <Route path="/payment/:campaignId" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <PaymentPage />;
-              }} />
-              <Route path="/payment/success/:campaignId" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <PaymentSuccess />;
-              }} />
-              <Route path="/messages" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Messages />;
-              }} />
-              <Route path="/subscribe" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Subscribe />;
-              }} />
-              <Route path="/events" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Events />;
-              }} />
-              <Route path="/billing" component={() => {
-                if (isAdminUser) {
-                  window.location.href = '/admin';
-                  return null;
-                }
-                return <Billing />;
-              }} />
+              <Route path="/discover" component={DiscoverTravelers} />
+              <Route path="/explore" component={Explore} />
+              <Route path="/stays" component={Stays} />
+              <Route path="/trips" component={Trips} />
+              <Route path="/tour-packages" component={TourPackages} />
+              <Route path="/my-bookings" component={MyBookings} />
+              <Route path="/personal-hosts" component={PersonalHosts} />
+              <Route path="/profile/:userId" component={UserProfile} />
+              <Route path="/map" component={Map} />
+              <Route path="/profile" component={Profile} />
+              <Route path="/feed" component={Feed} />
+              <Route path="/boosted-posts" component={BoostedPosts} />
+              <Route path="/ads" component={AdsWrapper} />
+              <Route path="/earn" component={AdsWrapper} />
+              <Route path="/payment/:campaignId" component={PaymentPage} />
+              <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
+              <Route path="/messages" component={Messages} />
+              <Route path="/subscribe" component={Subscribe} />
+              <Route path="/events" component={Events} />
+              <Route path="/billing" component={Billing} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
               <Route path="/signup-completion" component={SignupCompletion} />
