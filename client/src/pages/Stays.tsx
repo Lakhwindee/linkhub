@@ -326,24 +326,6 @@ export default function Stays() {
                     {stays.length} stays found
                   </span>
                 </div>
-                {permissions.canCreateStays ? (
-                  <Button onClick={handleAddListing} className="flex items-center space-x-2">
-                    <Plus className="w-4 h-4" />
-                    <span>Add Your Stay</span>
-                  </Button>
-                ) : user?.role === 'creator' ? (
-                  <div className="text-sm text-muted-foreground text-center">
-                    <span><strong>Creator users can browse and view all stays</strong></span>
-                    <br />
-                    <span className="text-xs">Contact our team to upgrade to Publisher role for listing stays</span>
-                  </div>
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    <span>To list stays, you need Publisher role</span>
-                    <br />
-                    <span className="text-xs">Current role: {permissions.roleDisplayName}</span>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>

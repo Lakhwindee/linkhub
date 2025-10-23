@@ -614,37 +614,6 @@ export default function TourPackages() {
 
               {/* Browse Tab Content */}
               <TabsContent value="browse" className="space-y-6">
-                <div className="flex justify-center">
-                  {permissions.canCreateTourPackages ? (
-                    <Button 
-                      size="lg" 
-                      onClick={() => setIsCreateModalOpen(true)}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      <Plus className="w-5 h-5 mr-2" />
-                      List Your Package
-                    </Button>
-                  ) : user?.role === 'creator' ? (
-                    <div className="text-center">
-                      <p className="text-muted-foreground mb-2">
-                        <strong>Creator users can browse and view all packages</strong>
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Contact our team to upgrade to Publisher role for listing packages
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-muted-foreground mb-2">
-                        To create tour packages, you need Publisher role
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Current role: {permissions.roleDisplayName}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
                 <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                   {/* Search & Filters */}
                   <Card>
@@ -720,17 +689,8 @@ export default function TourPackages() {
                       <Package className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                       <h3 className="text-xl font-semibold mb-2">No packages found</h3>
                       <p className="text-muted-foreground mb-4">
-                        {permissions.canCreateTourPackages 
-                          ? "Be the first to create an amazing tour package!" 
-                          : "No tour packages available yet. Tour providers will add packages soon!"
-                        }
+                        No tour packages available yet. Check back soon for exciting travel experiences!
                       </p>
-                      {permissions.canCreateTourPackages && (
-                        <Button onClick={() => setIsCreateModalOpen(true)}>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Create First Package
-                        </Button>
-                      )}
                     </div>
                   )}
                 </div>

@@ -219,39 +219,14 @@ export default function PersonalHosts() {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Personal Hosts</h1>
             <p className="text-muted-foreground mt-2">
-              {user?.role === 'publisher' 
-                ? 'List yourself as a host or book other hosts for unique travel experiences'
-                : 'Book hosts for unique travel experiences'
-              }
+              Book hosts for unique travel experiences
             </p>
           </div>
-          {user?.role === 'publisher' && (
-            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Become a Host
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh]">
-                <DialogHeader>
-                  <DialogTitle>Create Host Profile</DialogTitle>
-                </DialogHeader>
-                <HostProfileForm
-                  onSubmit={handleCreateHost}
-                  onCancel={() => setShowCreateDialog(false)}
-                />
-              </DialogContent>
-            </Dialog>
-          )}
         </div>
 
         <Tabs defaultValue="browse" className="space-y-6">
           <TabsList>
             <TabsTrigger value="browse">Browse Hosts</TabsTrigger>
-            {user?.role === 'publisher' && (
-              <TabsTrigger value="my-hosts">My Host Profiles</TabsTrigger>
-            )}
             <TabsTrigger value="bookings">My Bookings</TabsTrigger>
           </TabsList>
 
