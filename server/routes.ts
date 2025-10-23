@@ -655,6 +655,14 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           role: 'admin',
           plan: 'admin'
         });
+      } else {
+        // IMPORTANT: If user exists but is NOT admin, upgrade them to admin
+        if (adminUser.role !== 'admin' && adminUser.role !== 'superadmin' && adminUser.role !== 'moderator') {
+          adminUser = await storage.updateUser(adminUser.id, {
+            role: 'admin',
+            plan: 'admin'
+          });
+        }
       }
       
       // Create admin session
