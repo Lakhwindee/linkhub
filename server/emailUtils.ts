@@ -27,7 +27,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
       <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
         <h2 style="color: #333; margin-top: 0;">Reset Your Password</h2>
         <p style="color: #666; line-height: 1.6;">
-          हमें आपके account के लिए password reset की request मिली है। अगर यह आपने request की है, तो नीचे दिए गए button को click करें:
+          We received a password reset request for your account. If you made this request, please click the button below to reset your password:
         </p>
         
         <div style="text-align: center; margin: 30px 0;">
@@ -46,14 +46,14 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
         </div>
         
         <p style="color: #666; font-size: 14px; margin-top: 20px;">
-          अगर आपने यह request नहीं की है, तो इस email को ignore करें। आपका password change नहीं होगा।
+          If you did not request this password reset, please ignore this email. Your password will not be changed.
         </p>
         
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         
         <p style="color: #999; font-size: 12px; text-align: center;">
           © 2025 HubLink Tourism Platform<br>
-          यह automated email है, reply न करें।
+          This is an automated email. Please do not reply.
         </p>
       </div>
     </div>
