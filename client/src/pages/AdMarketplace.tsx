@@ -1651,114 +1651,15 @@ export default function AdMarketplace() {
                   </div>
                 </div>
               )}
-              <div className="grid gap-6">
-                {/* Earnings Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">This Month</p>
-                          <p className="text-2xl font-bold text-green-600">$1,245</p>
-                        </div>
-                        <TrendingUp className="w-8 h-8 text-green-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Available</p>
-                          <p className="text-2xl font-bold text-blue-600">$890</p>
-                        </div>
-                        <Banknote className="w-8 h-8 text-blue-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                          <p className="text-2xl font-bold text-orange-600">$355</p>
-                        </div>
-                        <Clock className="w-8 h-8 text-orange-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-muted-foreground">Total Earned</p>
-                          <p className="text-2xl font-bold text-purple-600">$8,750</p>
-                        </div>
-                        <DollarSign className="w-8 h-8 text-purple-600" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Withdraw Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="w-5 h-5" />
-                      Request Payout
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                      <p className="text-sm text-blue-800">
-                        <strong>Available for withdrawal:</strong> $890.00
-                      </p>
-                      <p className="text-xs text-blue-600 mt-1">
-                        Minimum withdrawal amount: $500
-                      </p>
-                    </div>
-                    
-                    <div className="grid gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="payout-amount">Amount (£)</Label>
-                        <Input
-                          id="payout-amount"
-                          type="number"
-                          placeholder="100.00"
-                          min="100"
-                          max="890"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="payout-method">Payout Method</Label>
-                        <Select defaultValue="bank">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select payout method" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="stripe">Stripe Express</SelectItem>
-                            <SelectItem value="bank">Bank Transfer</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="account-details">Account Details</Label>
-                        <Input
-                          id="account-details"
-                          placeholder="Account number or email"
-                        />
-                      </div>
-
-                      <Button className="w-full md:w-auto">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Request Payout
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <DollarSign className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <h3 className="text-lg font-semibold mb-2">No Earnings Yet</h3>
+                  <p className="text-muted-foreground">
+                    Start completing campaigns to earn money. Your earnings and payout options will appear here.
+                  </p>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Payment History Tab */}
