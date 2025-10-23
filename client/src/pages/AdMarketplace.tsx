@@ -1251,7 +1251,7 @@ export default function AdMarketplace() {
                   {(filteredAds as Ad[]).map((ad: Ad) => (
                     <Card 
                       key={ad.id} 
-                      className={`travel-card ${isFree ? 'group cursor-not-allowed' : isStandard ? 'group cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
+                      className={`travel-card group ${isFree ? 'cursor-not-allowed' : isStandard ? 'cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
                       onClick={handleAdClick}
                       data-testid={`card-ad-${ad.id}`}
                     >
