@@ -615,9 +615,9 @@ export default function Admin() {
                       });
                       // Trigger auth update event for useAuth hook
                       window.dispatchEvent(new CustomEvent('authUpdate'));
-                      // Small delay to allow auth to update, then reload
+                      // Redirect to admin panel (stay on same page, just reload auth)
                       setTimeout(() => {
-                        window.location.reload();
+                        window.location.href = '/admin';
                       }, 500);
                     } else {
                       toast({
