@@ -24,24 +24,11 @@ export function PostCard({ post, compact = false }: PostCardProps) {
   const { user } = useAuth();
   const [isLiked, setIsLiked] = useState(false);
   const [isDisliked, setIsDisliked] = useState(false);
-  const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 50) + 5);
-  const [dislikeCount, setDislikeCount] = useState(Math.floor(Math.random() * 5));
-  const [commentCount, setCommentCount] = useState(Math.floor(Math.random() * 20) + 2);
+  const [likeCount, setLikeCount] = useState(0);
+  const [dislikeCount, setDislikeCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
   const [showBoostModal, setShowBoostModal] = useState(false);
-  const [comments, setComments] = useState<{id: string, author: string, text: string, time: Date}[]>([
-    {
-      id: '1',
-      author: 'travel_lover',
-      text: 'Amazing photo! 😍',
-      time: new Date(Date.now() - 2 * 60 * 60 * 1000)
-    },
-    {
-      id: '2', 
-      author: 'wanderlust_soul',
-      text: 'I need to visit this place! Thanks for sharing ✈️',
-      time: new Date(Date.now() - 5 * 60 * 60 * 1000)
-    }
-  ]);
+  const [comments, setComments] = useState<{id: string, author: string, text: string, time: Date}[]>([]);
 
   // Check if current user owns this post
   const isOwnPost = user?.id === post.userId;
@@ -404,20 +391,24 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           {/* Like and interaction counts */}
           <div className="text-sm space-y-1">
             <div className="flex items-center space-x-4">
-              <span className="font-semibold">
-                {likeCount} likes
-              </span>
+              {likeCount > 0 && (
+                <span className="font-semibold">
+                  {likeCount} likes
+                </span>
+              )}
               {dislikeCount > 0 && (
                 <span className="text-muted-foreground">
                   {dislikeCount} dislikes
                 </span>
               )}
-              <button 
-                onClick={() => setShowComments(!showComments)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                View all {commentCount} comments
-              </button>
+              {commentCount > 0 && (
+                <button 
+                  onClick={() => setShowComments(!showComments)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  View all {commentCount} comments
+                </button>
+              )}
             </div>
           </div>
 
