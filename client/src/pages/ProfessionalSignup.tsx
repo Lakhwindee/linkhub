@@ -484,410 +484,90 @@ export default function ProfessionalSignup() {
 
               {/* Publisher Business Information */}
               {selectedRole === 'publisher' && (
-                <>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Building className="w-5 h-5 mr-2" />
-                      Business Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="businessName">Business/Company Name *</Label>
-                        <Input
-                          id="businessName"
-                          value={formData.businessName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessName: e.target.value }))}
-                          placeholder="ABC Travel Services Ltd."
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="businessRegistrationNumber">Business Registration Number *</Label>
-                        <Input
-                          id="businessRegistrationNumber"
-                          value={formData.businessRegistrationNumber}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessRegistrationNumber: e.target.value }))}
-                          placeholder="Company registration/incorporation number"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="businessType">Business Type *</Label>
-                        <Select value={formData.businessType} onValueChange={(value) => setFormData(prev => ({ ...prev, businessType: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select business type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="hotel">Hotel/Resort</SelectItem>
-                            <SelectItem value="hostel">Hostel/Lodge</SelectItem>
-                            <SelectItem value="tour-operator">Tour Operator</SelectItem>
-                            <SelectItem value="travel-agency">Travel Agency</SelectItem>
-                            <SelectItem value="restaurant">Restaurant/Cafe</SelectItem>
-                            <SelectItem value="transport">Transport Service</SelectItem>
-                            <SelectItem value="activity">Activity Provider</SelectItem>
-                            <SelectItem value="vacation-rental">Vacation Rental</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="businessCategory">Service Category</Label>
-                        <Select value={formData.businessCategory} onValueChange={(value) => setFormData(prev => ({ ...prev, businessCategory: value }))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Primary service category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="accommodation">Accommodation</SelectItem>
-                            <SelectItem value="tours">Tours & Activities</SelectItem>
-                            <SelectItem value="dining">Dining & Hospitality</SelectItem>
-                            <SelectItem value="transportation">Transportation</SelectItem>
-                            <SelectItem value="events">Events & Experiences</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="yearEstablished">Year Established</Label>
-                        <Input
-                          id="yearEstablished"
-                          type="number"
-                          value={formData.yearEstablished}
-                          onChange={(e) => setFormData(prev => ({ ...prev, yearEstablished: e.target.value }))}
-                          placeholder="2020"
-                          min="1900"
-                          max={new Date().getFullYear()}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="taxId">Tax ID/VAT Number *</Label>
-                        <Input
-                          id="taxId"
-                          value={formData.taxId}
-                          onChange={(e) => setFormData(prev => ({ ...prev, taxId: e.target.value }))}
-                          placeholder="Tax identification number"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="vatNumber">VAT Registration Number</Label>
-                        <Input
-                          id="vatNumber"
-                          value={formData.vatNumber}
-                          onChange={(e) => setFormData(prev => ({ ...prev, vatNumber: e.target.value }))}
-                          placeholder="VAT number (if applicable)"
-                        />
-                      </div>
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center">
+                    <Building className="w-5 h-5 mr-2" />
+                    Business Information
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="businessName">Business Name *</Label>
+                      <Input
+                        id="businessName"
+                        value={formData.businessName}
+                        onChange={(e) => setFormData(prev => ({ ...prev, businessName: e.target.value }))}
+                        placeholder="ABC Travel Services Ltd."
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessRegistrationNumber">Registration Number</Label>
+                      <Input
+                        id="businessRegistrationNumber"
+                        value={formData.businessRegistrationNumber}
+                        onChange={(e) => setFormData(prev => ({ ...prev, businessRegistrationNumber: e.target.value }))}
+                        placeholder="Company registration number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessType">Business Type *</Label>
+                      <Select value={formData.businessType} onValueChange={(value) => setFormData(prev => ({ ...prev, businessType: value }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select business type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="hotel">Hotel/Resort</SelectItem>
+                          <SelectItem value="tour-operator">Tour Operator</SelectItem>
+                          <SelectItem value="travel-agency">Travel Agency</SelectItem>
+                          <SelectItem value="restaurant">Restaurant</SelectItem>
+                          <SelectItem value="transport">Transport Service</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="taxId">Tax ID Number</Label>
+                      <Input
+                        id="taxId"
+                        value={formData.taxId}
+                        onChange={(e) => setFormData(prev => ({ ...prev, taxId: e.target.value }))}
+                        placeholder="Tax identification number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessEmail">Business Email *</Label>
+                      <Input
+                        id="businessEmail"
+                        type="email"
+                        value={formData.businessEmail}
+                        onChange={(e) => setFormData(prev => ({ ...prev, businessEmail: e.target.value }))}
+                        placeholder="contact@business.com"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="businessPhone">Business Phone *</Label>
+                      <Input
+                        id="businessPhone"
+                        value={formData.businessPhone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, businessPhone: e.target.value }))}
+                        placeholder="+44 20 1234 5678"
+                        required
+                      />
                     </div>
                   </div>
-
-                  {/* Business Contact Details */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Phone className="w-5 h-5 mr-2" />
-                      Business Contact Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="businessEmail">Business Email *</Label>
-                        <Input
-                          id="businessEmail"
-                          type="email"
-                          value={formData.businessEmail}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessEmail: e.target.value }))}
-                          placeholder="contact@business.com"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="businessPhone">Business Phone *</Label>
-                        <Input
-                          id="businessPhone"
-                          type="tel"
-                          value={formData.businessPhone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessPhone: e.target.value }))}
-                          placeholder="+44 20 1234 5678"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="businessWebsite">Website URL</Label>
-                        <Input
-                          id="businessWebsite"
-                          type="url"
-                          value={formData.businessWebsite}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessWebsite: e.target.value }))}
-                          placeholder="https://www.yourbusiness.com"
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-4 mt-4">
-                      <div>
-                        <Label htmlFor="businessAddress">Business Address *</Label>
-                        <Input
-                          id="businessAddress"
-                          value={formData.businessAddress}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
-                          placeholder="Street address, building number"
-                          required
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                          <Label htmlFor="businessCountry">Country *</Label>
-                          <Select value={formData.businessCountry} onValueChange={(value) => setFormData(prev => ({ ...prev, businessCountry: value, businessState: '', businessCity: '' }))}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select country" />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-80 overflow-y-auto">
-                              {countries.map((country) => (
-                                <SelectItem key={country.name} value={country.name}>
-                                  {country.flag} {country.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="businessState">State/Province</Label>
-                          <Input
-                            id="businessState"
-                            value={formData.businessState}
-                            onChange={(e) => setFormData(prev => ({ ...prev, businessState: e.target.value }))}
-                            placeholder="State/Province"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="businessCity">City *</Label>
-                          <Input
-                            id="businessCity"
-                            value={formData.businessCity}
-                            onChange={(e) => setFormData(prev => ({ ...prev, businessCity: e.target.value }))}
-                            placeholder="City"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="businessPostalCode">Postal Code *</Label>
-                          <Input
-                            id="businessPostalCode"
-                            value={formData.businessPostalCode}
-                            onChange={(e) => setFormData(prev => ({ ...prev, businessPostalCode: e.target.value }))}
-                            placeholder="Postal code"
-                            required
-                          />
-                        </div>
-                      </div>
-                    </div>
+                  <div className="mt-4">
+                    <Label htmlFor="businessAddress">Business Address *</Label>
+                    <Textarea
+                      id="businessAddress"
+                      value={formData.businessAddress}
+                      onChange={(e) => setFormData(prev => ({ ...prev, businessAddress: e.target.value }))}
+                      placeholder="Complete business address with city and postal code"
+                      rows={2}
+                      required
+                    />
                   </div>
-
-                  {/* Owner/Representative Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <User className="w-5 h-5 mr-2" />
-                      Owner/Authorized Representative
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="ownerName">Full Name *</Label>
-                        <Input
-                          id="ownerName"
-                          value={formData.ownerName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ownerName: e.target.value }))}
-                          placeholder="Owner/Director full name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerPosition">Position/Title *</Label>
-                        <Input
-                          id="ownerPosition"
-                          value={formData.ownerPosition}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ownerPosition: e.target.value }))}
-                          placeholder="Owner, Director, Manager, etc."
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerEmail">Contact Email</Label>
-                        <Input
-                          id="ownerEmail"
-                          type="email"
-                          value={formData.ownerEmail}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ownerEmail: e.target.value }))}
-                          placeholder="owner@business.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ownerPhone">Contact Phone</Label>
-                        <Input
-                          id="ownerPhone"
-                          type="tel"
-                          value={formData.ownerPhone}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ownerPhone: e.target.value }))}
-                          placeholder="+44 7700 900000"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Service Details */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Star className="w-5 h-5 mr-2" />
-                      Service Details & Capacity
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="servicesOffered">Services Offered *</Label>
-                        <Textarea
-                          id="servicesOffered"
-                          value={formData.servicesOffered}
-                          onChange={(e) => setFormData(prev => ({ ...prev, servicesOffered: e.target.value }))}
-                          placeholder="e.g., Hotel rooms, Tour packages, Restaurant dining, etc."
-                          rows={3}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="serviceAreas">Service Areas/Locations</Label>
-                        <Textarea
-                          id="serviceAreas"
-                          value={formData.serviceAreas}
-                          onChange={(e) => setFormData(prev => ({ ...prev, serviceAreas: e.target.value }))}
-                          placeholder="Locations where you provide services"
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="propertyCount">Number of Properties/Units</Label>
-                        <Input
-                          id="propertyCount"
-                          type="number"
-                          value={formData.propertyCount}
-                          onChange={(e) => setFormData(prev => ({ ...prev, propertyCount: e.target.value }))}
-                          placeholder="e.g., Number of rooms, vehicles, etc."
-                          min="0"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="roomCapacity">Total Capacity</Label>
-                        <Input
-                          id="roomCapacity"
-                          type="number"
-                          value={formData.roomCapacity}
-                          onChange={(e) => setFormData(prev => ({ ...prev, roomCapacity: e.target.value }))}
-                          placeholder="Maximum guests/customers per day"
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Banking Information */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <CreditCard className="w-5 h-5 mr-2" />
-                      Banking Information (For Payouts)
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="bankName">Bank Name *</Label>
-                        <Input
-                          id="bankName"
-                          value={formData.bankName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, bankName: e.target.value }))}
-                          placeholder="Bank name"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="accountHolderName">Account Holder Name *</Label>
-                        <Input
-                          id="accountHolderName"
-                          value={formData.accountHolderName}
-                          onChange={(e) => setFormData(prev => ({ ...prev, accountHolderName: e.target.value }))}
-                          placeholder="Name on bank account"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="accountNumber">Account Number *</Label>
-                        <Input
-                          id="accountNumber"
-                          value={formData.accountNumber}
-                          onChange={(e) => setFormData(prev => ({ ...prev, accountNumber: e.target.value }))}
-                          placeholder="Bank account number"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="ibanSwift">IBAN / SWIFT Code</Label>
-                        <Input
-                          id="ibanSwift"
-                          value={formData.ibanSwift}
-                          onChange={(e) => setFormData(prev => ({ ...prev, ibanSwift: e.target.value }))}
-                          placeholder="For international transfers"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="bankBranch">Bank Branch/Sort Code</Label>
-                        <Input
-                          id="bankBranch"
-                          value={formData.bankBranch}
-                          onChange={(e) => setFormData(prev => ({ ...prev, bankBranch: e.target.value }))}
-                          placeholder="Branch code or sort code"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Legal & Compliance */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4 flex items-center">
-                      <Shield className="w-5 h-5 mr-2" />
-                      Legal & Compliance Information
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="businessLicense">Business License Number *</Label>
-                        <Input
-                          id="businessLicense"
-                          value={formData.businessLicense}
-                          onChange={(e) => setFormData(prev => ({ ...prev, businessLicense: e.target.value }))}
-                          placeholder="Operating license number"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="tourismLicense">Tourism/Trade License</Label>
-                        <Input
-                          id="tourismLicense"
-                          value={formData.tourismLicense}
-                          onChange={(e) => setFormData(prev => ({ ...prev, tourismLicense: e.target.value }))}
-                          placeholder="Tourism authority license (if applicable)"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="insuranceProvider">Insurance Provider</Label>
-                        <Input
-                          id="insuranceProvider"
-                          value={formData.insuranceProvider}
-                          onChange={(e) => setFormData(prev => ({ ...prev, insuranceProvider: e.target.value }))}
-                          placeholder="Business insurance company"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="insurancePolicyNumber">Insurance Policy Number</Label>
-                        <Input
-                          id="insurancePolicyNumber"
-                          value={formData.insurancePolicyNumber}
-                          onChange={(e) => setFormData(prev => ({ ...prev, insurancePolicyNumber: e.target.value }))}
-                          placeholder="Policy reference number"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </>
+                </div>
               )}
 
               {/* Account Security */}
