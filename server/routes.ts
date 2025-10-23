@@ -20,8 +20,9 @@ function isAuthenticated(req: any, res: any, next: any) {
 
 // Admin authentication middleware (completely separate from users)
 function isAdmin(req: any, res: any, next: any) {
-  if (req.session?.adminId) {
+  if (req.session?.adminId && req.session?.user) {
     req.admin = { id: req.session.adminId };
+    req.user = req.session.user; // Set user from session for route compatibility
     return next();
   }
   
@@ -667,12 +668,37 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         });
       }
       
-      // Create admin session (uses adminId, NOT userId)
+      // Also create/update linked user record in users table (for route compatibility)
+      let adminUser = await storage.getUserByEmail(adminEmail);
+      if (!adminUser) {
+        adminUser = await storage.upsertUser({
+          email: adminEmail,
+          username: 'admin',
+          displayName: 'System Administrator',
+          firstName: 'System',
+          lastName: 'Administrator',
+          role: 'admin',
+          plan: 'admin'
+        });
+      } else if (adminUser.role !== 'admin' && adminUser.role !== 'superadmin' && adminUser.role !== 'moderator') {
+        adminUser = await storage.updateUser(adminUser.id, {
+          role: 'admin',
+          plan: 'admin'
+        });
+      }
+      
+      // Create admin session (uses adminId for admin middleware)
       (req.session as any).adminId = admin.id;
       (req.session as any).admin = {
         id: admin.id,
         email: admin.email,
         name: admin.name
+      };
+      
+      // Also set user session for compatibility with existing admin routes
+      (req.session as any).userId = adminUser.id;
+      (req.session as any).user = {
+        claims: { sub: adminUser.id }
       };
       
       // Explicitly save session to database before responding
