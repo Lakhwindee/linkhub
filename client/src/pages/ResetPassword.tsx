@@ -75,15 +75,18 @@ export default function ResetPassword() {
       if (response.ok) {
         console.log('✅ Password reset successful:', result);
         setStatus('success');
-        setMessage(result.message || 'Password updated successfully!');
+        setMessage('Password updated successfully! Please login with your new password.');
         
         // Clear form
         setNewPassword('');
         setConfirmPassword('');
         
-        // Redirect to login after 3 seconds
+        // Clear any existing sessions and redirect to login page
         setTimeout(() => {
-          setLocation('/');
+          // Clear session storage
+          sessionStorage.clear();
+          // Force reload to Landing/Login page
+          window.location.href = '/';
         }, 3000);
       } else {
         setStatus('error');
