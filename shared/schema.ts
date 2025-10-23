@@ -83,6 +83,16 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Admins table (completely separate from users for maximum security)
+export const admins = pgTable("admins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").notNull(), // bcrypt hashed password
+  name: varchar("name").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Auth providers
 export const authProviders = pgTable("auth_providers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

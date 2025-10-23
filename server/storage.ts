@@ -1,5 +1,6 @@
 import {
   users,
+  admins,
   connectRequests,
   conversations,
   messages,
@@ -370,6 +371,25 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Admin operations (completely separate from users for maximum security)
+  async getAdminByEmail(email: string) {
+    const [admin] = await db.select().from(admins).where(eq(admins.email, email));
+    return admin;
+  }
+
+  async createAdmin(adminData: { email: string; password: string; name: string }) {
+    const [admin] = await db
+      .insert(admins)
+      .values(adminData)
+      .returning();
+    return admin;
+  }
+
+  async getAdminById(id: string) {
+    const [admin] = await db.select().from(admins).where(eq(admins.id, id));
+    return admin;
   }
 
   // Discovery operations
