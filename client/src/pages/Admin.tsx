@@ -468,6 +468,28 @@ export default function Admin() {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest("DELETE", `/api/admin/users/${userId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "User Deleted",
+        description: "User has been permanently deleted from the system.",
+      });
+      setUserActionsOpen(null);
+      // Refetch users to show updated data
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete user.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const bulkActionMutation = useMutation({
     mutationFn: async (data: { action: string; userIds: string[] }) => {
       return await apiRequest("POST", "/api/admin/users/bulk", data);
@@ -533,6 +555,11 @@ export default function Admin() {
           userId,
           updates: { role: 'Free' }
         });
+        break;
+      case 'delete':
+        if (confirm(`Are you sure you want to permanently delete this user? This action cannot be undone.`)) {
+          deleteUserMutation.mutate(userId);
+        }
         break;
       default:
         toast({
@@ -3269,6 +3296,13 @@ export default function Admin() {
                                           className="block w-full text-left px-3 py-2 text-sm hover:bg-muted"
                                         >
                                           Demote
+                                        </button>
+                                        <div className="border-t border-border my-1"></div>
+                                        <button
+                                          onClick={() => handleUserAction(user.id, 'delete')}
+                                          className="block w-full text-left px-3 py-2 text-sm hover:bg-destructive hover:text-destructive-foreground text-destructive font-medium"
+                                        >
+                                          Delete User
                                         </button>
                                       </div>
                                     </div>

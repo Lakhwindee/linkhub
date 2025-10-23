@@ -93,6 +93,7 @@ export interface IStorage {
   getUserByResetToken(token: string): Promise<User | undefined>;
   updateUser(id: string, data: Partial<User>): Promise<User>;
   updateUserProfile(id: string, data: Partial<User>): Promise<User>;
+  deleteUser(id: string): Promise<void>;
   updateStripeCustomerId(id: string, customerId: string): Promise<User>;
   updateUserStripeInfo(id: string, data: { customerId: string; subscriptionId: string }): Promise<User>;
   
@@ -378,6 +379,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
   }
 
   // Admin operations (completely separate from users for maximum security)

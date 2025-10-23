@@ -4232,6 +4232,52 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  app.delete('/api/admin/users/:userId', isAdmin, async (req: any, res) => {
+    try {
+      const adminId = req.user.claims.sub;
+      
+      // Get admin user for operations  
+      const adminUser = await storage.getUser(adminId);
+      
+      if (!['admin', 'superadmin'].includes(adminUser?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { userId } = req.params;
+      
+      // Prevent admin from deleting themselves
+      if (userId === adminId) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+      
+      // Get user info before deletion for audit log
+      const userToDelete = await storage.getUser(userId);
+      if (!userToDelete) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Delete user from database
+      await storage.deleteUser(userId);
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: adminId,
+        action: 'delete_user',
+        targetType: 'user',
+        targetId: userId,
+        metaJson: { email: userToDelete.email, deletedAt: new Date() }
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "User deleted successfully"
+      });
+    } catch (error) {
+      console.error('Delete user error:', error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Discount Code APIs
   app.post('/api/admin/discount-codes', isAdmin, async (req: any, res) => {
     try {
