@@ -18,6 +18,16 @@ function isAuthenticated(req: any, res: any, next: any) {
   return res.status(401).json({ message: 'Not authenticated' });
 }
 
+// Admin authentication middleware (completely separate from users)
+function isAdmin(req: any, res: any, next: any) {
+  if (req.session?.adminId) {
+    req.admin = { id: req.session.adminId };
+    return next();
+  }
+  
+  return res.status(401).json({ message: 'Admin authentication required' });
+}
+
 // Initialize Google OAuth client (optional - only if credentials are provided)
 const googleOAuthClient = (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) 
   ? new OAuth2Client(
@@ -593,7 +603,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   // Rate limiting store for admin login attempts
   const adminLoginAttempts = new Map<string, { count: number; lastAttempt: number }>();
   
-  // Admin login endpoint with rate limiting
+  // Admin login endpoint with rate limiting (COMPLETELY SEPARATE from users)
   app.post('/api/admin-login', async (req: any, res) => {
     try {
       const { email, password } = req.body;
@@ -621,7 +631,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required for production');
       }
       
-      // Verify admin credentials
+      // Verify admin credentials against environment variables
       if (email !== adminEmail || password !== adminPassword) {
         // Update rate limiting
         if (attempt && now - attempt.lastAttempt < 900000) {
@@ -636,47 +646,33 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Clear rate limiting on successful login
       adminLoginAttempts.delete(clientKey);
       
-      // IMPORTANT: Clear any existing session first (in case regular user is logged in)
+      // IMPORTANT: Clear any existing user session (admin and user sessions are separate)
       if (req.session) {
         req.session.userId = null;
         req.session.user = null;
       }
       
-      // Check if admin user exists in database, if not create one
-      let adminUser = await storage.getUserByEmail(adminEmail);
-      if (!adminUser) {
-        // Create admin user if doesn't exist
-        adminUser = await storage.upsertUser({
+      // Check if admin exists in ADMINS table (NOT users table!)
+      let admin = await storage.getAdminByEmail(adminEmail);
+      
+      if (!admin) {
+        // Create admin in admins table if doesn't exist
+        const bcrypt = await import('bcrypt');
+        const hashedPassword = await bcrypt.hash(adminPassword, 12);
+        
+        admin = await storage.createAdmin({
           email: adminEmail,
-          username: 'admin',
-          displayName: 'System Administrator',
-          firstName: 'System',
-          lastName: 'Administrator',
-          role: 'admin',
-          plan: 'admin'
+          password: hashedPassword,
+          name: 'System Administrator'
         });
-      } else {
-        // IMPORTANT: If user exists but is NOT admin, upgrade them to admin
-        if (adminUser.role !== 'admin' && adminUser.role !== 'superadmin' && adminUser.role !== 'moderator') {
-          adminUser = await storage.updateUser(adminUser.id, {
-            role: 'admin',
-            plan: 'admin'
-          });
-        }
       }
       
-      // Create admin session
-      (req.session as any).userId = adminUser.id;
-      (req.session as any).user = {
-        id: adminUser.id,
-        email: adminUser.email,
-        role: adminUser.role,
-        firstName: adminUser.firstName,
-        lastName: adminUser.lastName,
-        displayName: adminUser.displayName,
-        username: adminUser.username,
-        profileImageUrl: adminUser.profileImageUrl,
-        plan: adminUser.plan
+      // Create admin session (uses adminId, NOT userId)
+      (req.session as any).adminId = admin.id;
+      (req.session as any).admin = {
+        id: admin.id,
+        email: admin.email,
+        name: admin.name
       };
       
       // Explicitly save session to database before responding
@@ -689,19 +685,14 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       
       res.json({ 
         message: 'Admin login successful',
-        user: {
-          id: adminUser.id,
-          email: adminUser.email,
-          role: adminUser.role,
-          firstName: adminUser.firstName,
-          lastName: adminUser.lastName,
-          displayName: adminUser.displayName,
-          username: adminUser.username,
-          profileImageUrl: adminUser.profileImageUrl,
-          plan: adminUser.plan
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name
         }
       });
     } catch (error) {
+      console.error('Admin login error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
   });
@@ -3911,7 +3902,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Admin routes
-  app.get('/api/admin/dashboard', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/dashboard', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -3936,7 +3927,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
 
   // Plan Pricing Management API
-  app.get('/api/admin/plans', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/plans', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -3999,7 +3990,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/plans/:planId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/plans/:planId', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4038,7 +4029,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Website Content Management API
-  app.get('/api/admin/content', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/content', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4090,7 +4081,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/content/:section', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/content/:section', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4127,7 +4118,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // User Management APIs
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/users', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4155,7 +4146,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/users/:userId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/users/:userId', isAdmin, async (req: any, res) => {
     try {
       const adminId = req.user.claims.sub;
       
@@ -4192,7 +4183,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Discount Code APIs
-  app.get('/api/admin/discount-codes', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/discount-codes', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4276,7 +4267,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/discount-codes', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/discount-codes', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4313,7 +4304,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Site Settings/Branding APIs
-  app.get('/api/admin/site-settings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/site-settings', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4353,7 +4344,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/site-settings/:category', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/site-settings/:category', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4390,7 +4381,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // API Settings Management APIs
-  app.get('/api/admin/api-settings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/api-settings', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4449,7 +4440,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/api-settings/:service', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/api-settings/:service', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4528,7 +4519,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/api-settings/test/:service', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/api-settings/test/:service', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4692,7 +4683,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Payment Accounts Management APIs
-  app.get('/api/admin/payment-accounts', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/payment-accounts', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4730,7 +4721,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/payment-accounts/:provider', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/payment-accounts/:provider', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4767,7 +4758,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Email Management APIs
-  app.get('/api/admin/email-settings', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/email-settings', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4808,7 +4799,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/email/send-campaign', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/email/send-campaign', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4845,7 +4836,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/email/template/:templateId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/email/template/:templateId', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -4882,7 +4873,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Trial System APIs
-  app.post('/api/admin/coupon/apply-trial', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/coupon/apply-trial', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { couponCode } = req.body;
@@ -4945,7 +4936,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.get('/api/admin/user-trials', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/user-trials', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -5004,7 +4995,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/trial/cancel/:trialId', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/trial/cancel/:trialId', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -5039,7 +5030,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.get('/api/admin/submissions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/submissions', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -5058,7 +5049,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/submissions/:id/review', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/submissions/:id/review', isAdmin, async (req: any, res) => {
     try {
       const reviewerId = req.user.claims.sub;
       const user = await storage.getUser(reviewerId);
@@ -5141,7 +5132,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/ads', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/ads', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
@@ -5911,7 +5902,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   });
 
   // Tax Management Routes (Admin Only)
-  app.get('/api/admin/tax/configurations', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/tax/configurations', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
@@ -5926,7 +5917,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post('/api/admin/tax/configurations', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/tax/configurations', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
@@ -5952,7 +5943,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.put('/api/admin/tax/configurations/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/admin/tax/configurations/:id', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
@@ -5978,7 +5969,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.get('/api/admin/tax/records', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/tax/records', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
       if (!['admin', 'superadmin'].includes(user?.role || '')) {
