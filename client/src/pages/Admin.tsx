@@ -244,7 +244,7 @@ export default function Admin() {
         description: ''
       });
       setActiveForm(null);
-      refetchDiscountCodes();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/discount-codes"] });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -280,7 +280,7 @@ export default function Admin() {
         description: ''
       });
       setActiveForm(null);
-      refetchDiscountCodes();
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/discount-codes"] });
     } catch (error: any) {
       toast({
         title: "Error",
