@@ -514,7 +514,7 @@ export default function ProfessionalSignup() {
               {/* Account Security */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
+                  <User className="w-5 h-5 mr-2" />
                   Account Security
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
