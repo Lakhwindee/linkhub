@@ -671,15 +671,30 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Also create/update linked user record in users table (for route compatibility)
       let adminUser = await storage.getUserByEmail(adminEmail);
       if (!adminUser) {
-        adminUser = await storage.upsertUser({
-          email: adminEmail,
-          username: 'admin',
-          displayName: 'System Administrator',
-          firstName: 'System',
-          lastName: 'Administrator',
-          role: 'admin',
-          plan: 'admin'
-        });
+        // Check if username 'admin' exists for a different email
+        const existingAdminUsername = await storage.getUserByUsername('admin');
+        if (existingAdminUsername) {
+          // Update the existing user with this username
+          adminUser = await storage.updateUser(existingAdminUsername.id, {
+            email: adminEmail,
+            displayName: 'System Administrator',
+            firstName: 'System',
+            lastName: 'Administrator',
+            role: 'admin',
+            plan: 'admin'
+          });
+        } else {
+          // Create new admin user
+          adminUser = await storage.upsertUser({
+            email: adminEmail,
+            username: 'admin',
+            displayName: 'System Administrator',
+            firstName: 'System',
+            lastName: 'Administrator',
+            role: 'admin',
+            plan: 'admin'
+          });
+        }
       } else if (adminUser.role !== 'admin' && adminUser.role !== 'superadmin' && adminUser.role !== 'moderator') {
         adminUser = await storage.updateUser(adminUser.id, {
           role: 'admin',
