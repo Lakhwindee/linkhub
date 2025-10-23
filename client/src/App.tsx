@@ -55,14 +55,13 @@ function Router() {
 
   // Remove demo login requirement - show normal pages
   
-  // Check if we're on admin route OR user is admin - don't show Navigation
+  // Hide Navigation ONLY on /admin route (admin panel has its own sidebar)
   const isAdminRoute = location === '/admin';
-  const isAdminUser = user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'moderator';
 
   return (
     <div className="min-h-screen bg-background">
-      {!isAdminRoute && !isAdminUser && <Navigation isAuthenticated={isAuthenticated} />}
-      <main className={isAuthenticated && !isAdminRoute && !isAdminUser ? "pt-16" : ""}>
+      {!isAdminRoute && <Navigation isAuthenticated={isAuthenticated} />}
+      <main className={isAuthenticated && !isAdminRoute ? "pt-16" : ""}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
           <Route path="/admin" component={Admin} />
