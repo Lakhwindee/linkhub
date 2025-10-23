@@ -253,7 +253,7 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                       Billing
                     </Link>
                   </DropdownMenuItem>
-                ) : user?.plan === 'free' ? (
+                ) : user?.plan === 'free' && user?.role !== 'publisher' ? (
                   <DropdownMenuItem asChild>
                     <Link href="/subscribe" data-testid="link-upgrade">
                       <Crown className="mr-2 h-4 w-4 text-orange-500" />
