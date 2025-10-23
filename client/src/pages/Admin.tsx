@@ -1719,7 +1719,7 @@ export default function Admin() {
                   <CardContent>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-blue-600">{submissions.length}</div>
+                        <div className="text-2xl font-bold text-blue-600">{typedSubmissions.length}</div>
                         <div className="text-sm text-muted-foreground">Total Submissions</div>
                       </div>
                       <div className="text-center">
@@ -1727,11 +1727,11 @@ export default function Admin() {
                         <div className="text-sm text-muted-foreground">Pending Review</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-green-600">{submissions.filter((s: AdSubmission) => s.status === 'approved').length}</div>
+                        <div className="text-2xl font-bold text-green-600">{typedSubmissions.filter((s: AdSubmission) => s.status === 'approved').length}</div>
                         <div className="text-sm text-muted-foreground">Approved</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-red-600">{submissions.filter((s: AdSubmission) => s.status === 'rejected').length}</div>
+                        <div className="text-2xl font-bold text-red-600">{typedSubmissions.filter((s: AdSubmission) => s.status === 'rejected').length}</div>
                         <div className="text-sm text-muted-foreground">Rejected</div>
                       </div>
                     </div>
