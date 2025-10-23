@@ -101,17 +101,7 @@ export default function Admin() {
   });
 
   // Show login screen if not authenticated instead of redirecting
-
-  // Check admin access
-  useEffect(() => {
-    if (user && !['admin', 'superadmin', 'moderator'].includes(user.role || '')) {
-      toast({
-        title: "Access Denied",
-        description: "You don't have permission to access the admin panel.",
-        variant: "destructive",
-      });
-    }
-  }, [user, toast]);
+  // Note: No access denied toast here - we show the login form instead
 
   // Fetch dashboard data
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
