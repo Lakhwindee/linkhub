@@ -58,7 +58,7 @@ type ApiSettings = {
   stripe?: { publishableKey?: string; secretKey?: string; webhookSecret?: string };
   youtube?: { projectId?: string; status?: string; monthlyRequests?: number; lastTested?: string };
   maps?: { apiKey?: string; enableAdvancedFeatures?: boolean; status?: string; monthlyRequests?: number; lastTested?: string };
-  email?: { service?: string; host?: string; port?: string; secure?: boolean; username?: string; password?: string };
+  email?: { service?: string; host?: string; port?: string; secure?: boolean; username?: string; password?: string; provider?: string; email?: string; appPassword?: string; note?: string; status?: string };
 };
 
 type ApiFormData = {
