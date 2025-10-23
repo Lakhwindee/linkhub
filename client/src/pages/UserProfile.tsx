@@ -43,35 +43,18 @@ export default function UserProfile({ params }: UserProfileProps) {
 
   const fetchUserProfile = async () => {
     try {
-      // Mock user data for now - replace with actual API call
-      const mockUser: User = {
-        id: userId,
-        email: `${userId}@hublink.com`,
-        firstName: "Travel",
-        lastName: "Explorer",
-        username: userId,
-        displayName: userId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        profileImageUrl: `https://images.unsplash.com/photo-${Math.random() > 0.5 ? '1494790108755-2616b612b786' : '1472099645785-5658abf4ff4e'}?w=150&h=150&fit=crop&crop=face`,
-        bio: "Travel enthusiast 🌍 | Photography lover 📸 | Sharing my adventures around the world ✈️",
-        country: "India",
-        city: "Mumbai",
-        lat: null,
-        lng: null,
-        showOnMap: true,
-        locationRadius: 5,
-        languages: ["English", "Hindi"],
-        interests: ["photography", "travel", "culture"],
-        youtubeUrl: Math.random() > 0.5 ? "https://youtube.com/@travelexplorer" : null,
-        instagramUrl: Math.random() > 0.5 ? "https://instagram.com/travelexplorer" : null,
-        role: "user",
-        plan: "traveler",
-        createdAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-        canDmMe: "all"
-      } as User;
+      const response = await fetch(`/api/users/${userId}`, {
+        credentials: 'include'
+      });
       
-      setProfileUser(mockUser);
-      setFollowerCount(Math.floor(Math.random() * 1000) + 50);
-      setFollowingCount(Math.floor(Math.random() * 500) + 20);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+      
+      const data = await response.json();
+      setProfileUser(data.user);
+      setFollowerCount(data.followerCount || 0);
+      setFollowingCount(data.followingCount || 0);
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -80,38 +63,17 @@ export default function UserProfile({ params }: UserProfileProps) {
   const fetchUserPosts = async () => {
     try {
       setIsLoading(true);
-      // Mock posts data - replace with actual API call
-      const mockPosts: Post[] = Array.from({ length: Math.floor(Math.random() * 12) + 6 }, (_, i) => ({
-        id: `post-${userId}-${i}`,
-        userId: userId,
-        body: [
-          "Just discovered this amazing hidden gem! 🌟 The views here are absolutely breathtaking and totally worth the hike.",
-          "Trying local street food is always an adventure! This dish was incredible 🍜",
-          "Sunset at the beach never gets old. Feeling grateful for moments like these 🌅",
-          "Getting lost in the local markets - so much culture and energy here! 🏪",
-          "Met some amazing travelers today. Love how travel brings people together 🤝",
-          "This architecture is mind-blowing! The details and craftsmanship are incredible 🏛️",
-          "Early morning coffee with this view. Life is good ☕️",
-          "Adventure time! Sometimes the best experiences come from saying yes to spontaneous plans 🎒"
-        ][Math.floor(Math.random() * 8)],
-        mediaUrls: Math.random() > 0.3 ? [`https://images.unsplash.com/photo-${[
-          '1506905925346-21bea4d5618d',
-          '1488646953014-e52207ff888f',
-          '1507003211169-0a1dd7ef0a96',
-          '1517248135467-4c7edcad34c4',
-          '1490750967868-88aa4486c946',
-          '1504893524553-b855bce32c67'
-        ][Math.floor(Math.random() * 6)]}?w=500&h=500&fit=crop`] : [],
-        mediaType: Math.random() > 0.7 ? "video" : "image",
-        visibility: "public",
-        country: ["India", "Thailand", "Japan", "Italy", "France"][Math.floor(Math.random() * 5)],
-        city: ["Mumbai", "Bangkok", "Tokyo", "Rome", "Paris"][Math.floor(Math.random() * 5)],
-        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
-      }));
+      const response = await fetch(`/api/users/${userId}/posts`, {
+        credentials: 'include'
+      });
       
-      setUserPosts(mockPosts);
-      setPostCount(mockPosts.length);
+      if (!response.ok) {
+        throw new Error('Failed to fetch user posts');
+      }
+      
+      const posts = await response.json();
+      setUserPosts(posts);
+      setPostCount(posts.length);
     } catch (error) {
       console.error("Error fetching user posts:", error);
     } finally {
@@ -121,8 +83,17 @@ export default function UserProfile({ params }: UserProfileProps) {
 
   const fetchFollowStatus = async () => {
     try {
-      // Mock follow status - replace with actual API call
-      setIsFollowing(Math.random() > 0.5);
+      if (!currentUser) return;
+      
+      const response = await fetch(`/api/followers/${userId}`, {
+        credentials: 'include'
+      });
+      
+      if (!response.ok) return;
+      
+      const followers = await response.json();
+      const isCurrentlyFollowing = followers.some((f: any) => f.followerId === currentUser.id);
+      setIsFollowing(isCurrentlyFollowing);
     } catch (error) {
       console.error("Error fetching follow status:", error);
     }
@@ -340,11 +311,9 @@ export default function UserProfile({ params }: UserProfileProps) {
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-4 text-white">
                       <div className="flex items-center space-x-1">
                         <Heart className="w-4 h-4" />
-                        <span className="text-sm">{Math.floor(Math.random() * 50) + 5}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <MessageCircle className="w-4 h-4" />
-                        <span className="text-sm">{Math.floor(Math.random() * 20) + 2}</span>
                       </div>
                     </div>
                   </div>
