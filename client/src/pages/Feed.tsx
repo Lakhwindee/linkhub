@@ -20,7 +20,7 @@ import { insertPostSchema } from "@shared/schema";
 import { z } from "zod";
 import type { Post } from "@shared/schema";
 import { Link } from "wouter";
-import { worldCountries } from "@/data/locationData";
+import { worldCountries, citiesByCountry } from "@/data/locationData";
 
 type CreatePostData = z.infer<typeof insertPostSchema>;
 
@@ -58,6 +58,12 @@ export default function Feed() {
       city: undefined,
     }
   });
+  
+  // Watch country to filter cities
+  const selectedCountry = watch("country");
+  const availableCities = selectedCountry && citiesByCountry[selectedCountry] 
+    ? citiesByCountry[selectedCountry].slice(0, 100) // Limit to 100 cities
+    : [];
 
   // Fetch posts
   const { data: posts = [], isLoading: postsLoading, error: postsError } = useQuery({
@@ -284,19 +290,18 @@ export default function Feed() {
                 <Select
                   value={watchedValues.city || ""}
                   onValueChange={(value) => setValue("city", value)}
+                  disabled={!selectedCountry}
                 >
                   <SelectTrigger data-testid="select-post-city">
-                    <SelectValue placeholder="City" />
+                    <SelectValue placeholder={selectedCountry ? "Select City" : "Select Country First"} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No City</SelectItem>
-                    <SelectItem value="London">London</SelectItem>
-                    <SelectItem value="Mumbai">Mumbai</SelectItem>
-                    <SelectItem value="New York">New York</SelectItem>
-                    <SelectItem value="Paris">Paris</SelectItem>
-                    <SelectItem value="Berlin">Berlin</SelectItem>
-                    <SelectItem value="Tokyo">Tokyo</SelectItem>
-                    <SelectItem value="Sydney">Sydney</SelectItem>
+                    {availableCities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
