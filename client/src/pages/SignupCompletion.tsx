@@ -70,10 +70,15 @@ export default function SignupCompletion() {
             window.location.href = '/subscribe';
           }
         } else {
-          throw new Error('Signup completion failed');
+          const errorData = await response.json().catch(() => ({}));
+          console.error('❌ SignupCompletion: API Error:', response.status, errorData);
+          throw new Error(errorData.message || `Signup failed with status ${response.status}`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Signup completion error:', error);
+        
+        // Show detailed error message
+        const errorMessage = error?.message || 'Failed to complete signup. Please try signing up again.';
         
         // Clear signup data on error from localStorage
         localStorage.removeItem('hublink_signup_data');
@@ -81,12 +86,15 @@ export default function SignupCompletion() {
         
         toast({
           title: "Signup Error",
-          description: "Failed to complete signup. Please try signing up again.",
+          description: errorMessage,
           variant: "destructive",
+          duration: 10000,
         });
         
-        // Redirect to home page since /signup doesn't exist
-        window.location.href = '/';
+        // Don't auto-redirect - let user see the error
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 5000);
       } finally {
         setIsCompleting(false);
       }
