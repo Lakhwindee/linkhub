@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -43,6 +43,7 @@ const stripePromise = loadStripe('pk_test_51Hf6ZnKiG8GjZ0YhN2OU4ZqKwf9JhP8OjLnK6
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
 
   if (isLoading) {
     return (
@@ -53,11 +54,14 @@ function Router() {
   }
 
   // Remove demo login requirement - show normal pages
+  
+  // Check if we're on admin route - don't show Navigation
+  const isAdminRoute = location === '/admin';
 
   return (
     <div className="min-h-screen bg-background">
-      <Navigation isAuthenticated={isAuthenticated} />
-      <main className={isAuthenticated ? "pt-16" : ""}>
+      {!isAdminRoute && <Navigation isAuthenticated={isAuthenticated} />}
+      <main className={isAuthenticated && !isAdminRoute ? "pt-16" : ""}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
           <Route path="/admin" component={Admin} />
