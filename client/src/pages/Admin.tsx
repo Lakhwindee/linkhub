@@ -638,10 +638,6 @@ export default function Admin() {
                 <Shield className="w-4 h-4 mr-2" />
                 Login to Admin Panel
               </Button>
-              
-              <Button variant="outline" className="w-full mt-4" asChild>
-                <Link href="/">Back to Home</Link>
-              </Button>
             </CardContent>
           </Card>
         </div>
