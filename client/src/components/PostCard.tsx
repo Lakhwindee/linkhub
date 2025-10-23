@@ -131,18 +131,23 @@ export function PostCard({ post, compact = false }: PostCardProps) {
     }
   };
 
+  // Get display information
+  const displayName = (post as any).displayName || (post as any).username || 'Unknown User';
+  const username = (post as any).username || post.userId;
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+
   if (compact) {
     return (
       <div className="border-l-2 border-accent pl-4 space-y-2" data-testid={`post-compact-${post.id}`}>
         <div className="flex items-center space-x-2">
           <Avatar className="w-6 h-6">
             <AvatarFallback className="text-xs">
-              {post.userId?.charAt(0)?.toUpperCase() || 'U'}
+              {initials}
             </AvatarFallback>
           </Avatar>
           <Link href={`/profile/${post.userId}`}>
             <span className="text-sm font-medium hover:text-primary cursor-pointer transition-colors" data-testid={`text-post-author-${post.id}`}>
-              @{post.userId}
+              {displayName}
             </span>
           </Link>
           <span className="text-xs text-muted-foreground" data-testid={`text-post-time-${post.id}`}>
@@ -171,14 +176,14 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           <div className="flex items-center space-x-3">
             <Avatar>
               <AvatarFallback data-testid={`text-post-author-initials-${post.id}`}>
-                {post.userId?.charAt(0)?.toUpperCase() || 'U'}
+                {initials}
               </AvatarFallback>
             </Avatar>
             <div>
               <div className="flex items-center space-x-2">
                 <Link href={`/profile/${post.userId}`}>
                   <span className="font-semibold text-card-foreground hover:text-primary cursor-pointer transition-colors" data-testid={`text-post-author-name-${post.id}`}>
-                    @{post.userId}
+                    {displayName}
                   </span>
                 </Link>
                 <Badge variant="outline" className="text-xs flex items-center space-x-1">
@@ -208,7 +213,7 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           <div className="flex items-center gap-2">
             <FollowButton 
               userId={post.userId!} 
-              username={(post as any).username || post.userId!} 
+              username={username} 
               size="sm" 
               variant="outline"
               showIcon={false}
