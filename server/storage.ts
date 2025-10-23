@@ -406,16 +406,12 @@ export class DatabaseStorage implements IStorage {
 
   // Discovery operations
   async getUsersNearby(lat: number, lng: number, radiusKm: number, filters?: any): Promise<User[]> {
-    // Return test users for demo purposes with proper User structure
-    return testUsers.map(user => ({
-      ...user,
-      currentCity: user.city,
-      currentCountry: user.country,
-      city: user.city,
-      country: user.country,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })) as User[];
+    // Return real users from database only
+    return await db
+      .select()
+      .from(users)
+      .where(sql`${users.lat} IS NOT NULL AND ${users.lng} IS NOT NULL`)
+      .limit(50);
   }
 
   async searchUsers(query: string, filters?: any): Promise<User[]> {
@@ -1344,99 +1340,36 @@ export class DatabaseStorage implements IStorage {
     return result.map(r => r.user);
   }
 
-  async searchUsers(query: string): Promise<User[]> {
-    // Return test users for demo that match the search query
-    const searchQuery = query.toLowerCase();
-    
-    // Add demo user to test users for search
-    const allTestUsers = [
-      {
-        id: 'demo-user-1',
-        username: 'demo_user',
-        displayName: 'Demo User',
-        firstName: 'Demo',
-        lastName: 'User',
-        email: 'demo@hublink.com',
-        profileImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        country: 'United Kingdom',
-        city: 'London',
-        plan: 'creator',
-        role: 'traveler',
-        interests: ['travel', 'photography', 'food'],
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      ...testUsers
-    ];
-    
-    const matchedUsers = allTestUsers.filter(user => 
-      user.username?.toLowerCase().includes(searchQuery) ||
-      user.displayName?.toLowerCase().includes(searchQuery) ||
-      user.firstName?.toLowerCase().includes(searchQuery) ||
-      user.lastName?.toLowerCase().includes(searchQuery)
-    );
-    
-    return matchedUsers.slice(0, 20); // Limit to 20 results
-  }
+  // searchUsers already defined above - removing duplicate
   
   // Stays implementation
   async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]> {
-    // For demo purposes, return test stays first, then database stays
-    let filteredStays = [...testStays];
+    // Return real database stays only
+    const limit = filters?.limit || 50;
+    const conditions = [eq(stays.status, 'active')];
     
-    // Apply filters to test data
     if (filters?.country) {
-      filteredStays = filteredStays.filter(stay => stay.country === filters.country);
+      conditions.push(eq(stays.country, filters.country));
     }
     if (filters?.city) {
-      filteredStays = filteredStays.filter(stay => stay.city === filters.city);
+      conditions.push(eq(stays.city, filters.city));
     }
     if (filters?.type) {
-      filteredStays = filteredStays.filter(stay => stay.type === filters.type);
+      conditions.push(eq(stays.type, filters.type));
     }
     if (filters?.guests) {
-      filteredStays = filteredStays.filter(stay => stay.maxGuests >= filters.guests);
+      conditions.push(sql`${stays.maxGuests} >= ${filters.guests}`);
     }
     if (filters?.minPrice) {
-      filteredStays = filteredStays.filter(stay => stay.pricePerNight >= filters.minPrice!);
+      conditions.push(sql`${stays.pricePerNight} >= ${filters.minPrice}`);
     }
     if (filters?.maxPrice) {
-      filteredStays = filteredStays.filter(stay => stay.pricePerNight <= filters.maxPrice!);
+      conditions.push(sql`${stays.pricePerNight} <= ${filters.maxPrice}`);
     }
     
-    // Limit results
-    const limit = filters?.limit || 20;
-    filteredStays = filteredStays.slice(0, limit);
-    
-    console.log('Returning test stays:', filteredStays.length);
-    
-    // Also try to get from database
-    try {
-      const conditions = [eq(stays.status, 'active')];
-      
-      if (filters?.country) {
-        conditions.push(eq(stays.country, filters.country));
-      }
-      if (filters?.city) {
-        conditions.push(eq(stays.city, filters.city));
-      }
-      if (filters?.type) {
-        conditions.push(eq(stays.type, filters.type));
-      }
-      if (filters?.guests) {
-        conditions.push(sql`${stays.maxGuests} >= ${filters.guests}`);
-      }
-      
-      const dbStays = await db.select().from(stays)
-        .where(and(...conditions))
-        .limit(Math.max(0, limit - filteredStays.length));
-      
-      // Combine test data with database data
-      return [...filteredStays, ...dbStays];
-    } catch (error) {
-      console.log('Database error, returning test stays only:', error);
-      return filteredStays;
-    }
+    return await db.select().from(stays)
+      .where(and(...conditions))
+      .limit(limit);
   }
   
   async getStayById(id: string): Promise<Stay | undefined> {

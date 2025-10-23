@@ -1606,20 +1606,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Ensure user exists in database first
       let user = await storage.getUser(userId);
       if (!user) {
-        // Create user in database if it doesn't exist (for demo user)
-        user = await storage.upsertUser({
-          id: userId,
-          email: userId === 'demo-user-1' ? 'demo@hublink.com' : 'unknown@example.com',
-          firstName: userId === 'demo-user-1' ? 'Demo' : 'Unknown',
-          lastName: userId === 'demo-user-1' ? 'User' : 'User',
-          profileImageUrl: userId === 'demo-user-1' ? 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face' : '',
-          username: userId === 'demo-user-1' ? 'demo_user' : `user_${userId.slice(-6)}`, // Add required username field
-          displayName: userId === 'demo-user-1' ? 'Demo User' : 'Unknown User',
-          country: detectedCountry || (userId === 'demo-user-1' ? 'United Kingdom' : undefined),
-          city: userId === 'demo-user-1' ? 'London' : undefined,
-          plan: userId === 'demo-user-1' ? 'standard' : 'free',
-          role: userId === 'demo-user-1' ? 'creator' : 'user',
-        });
+        return res.status(404).json({ message: "User not found" });
       }
 
       // Update user with YouTube data AND detected country (not verified yet)
@@ -1714,25 +1701,6 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   app.post('/api/youtube/disconnect', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      
-      // For demo user, actually clear the YouTube data
-      if (userId === 'demo-user-1') {
-        await storage.updateUserProfile(userId, {
-          youtubeChannelId: null,
-          youtubeSubscribers: null,
-          youtubeTier: null,
-          youtubeVerified: false,
-          youtubeVerificationCode: null,
-          youtubeVerificationAttempts: 0,
-          youtubeUrl: null,
-          youtubeLastUpdated: null
-        });
-        
-        return res.json({ 
-          message: "YouTube channel successfully disconnected",
-          user: { id: 'demo-user-1', youtubeVerified: false }
-        });
-      }
       
       // Clear all YouTube-related data from user profile
       const updatedUser = await storage.updateUserProfile(userId, {

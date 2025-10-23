@@ -223,43 +223,10 @@ export default function Dashboard() {
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Sample Posts with Enhanced Features */}
-                    <PostCard 
-                      post={{
-                        id: 'demo-post-1',
-                        userId: 'test-user-1',
-                        body: 'Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 🌅',
-                        city: 'London',
-                        country: 'United Kingdom',
-                        visibility: 'public',
-                        createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-                        mediaUrls: ['https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=500&h=500&fit=crop'],
-                        mediaType: 'image',
-                        status: 'active'
-                      } as Post}
-                      compact={false}
-                    />
-                    
-                    <PostCard 
-                      post={{
-                        id: 'demo-post-2', 
-                        userId: 'travel_explorer',
-                        body: 'Beautiful sunset at Santorini! Greece never disappoints 🇬🇷✨ #TravelLife #Greece',
-                        city: 'Santorini',
-                        country: 'Greece',
-                        visibility: 'public',
-                        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-                        mediaUrls: ['https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=500&h=500&fit=crop'],
-                        mediaType: 'image',
-                        status: 'active'
-                      } as Post}
-                      compact={false}
-                    />
-                    
-                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-posts">
-                      View All
-                    </Button>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Globe className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="text-sm">No posts to show yet</p>
+                    <p className="text-xs mt-2">Follow other users or create your first post!</p>
                   </div>
                 )}
               </CardContent>

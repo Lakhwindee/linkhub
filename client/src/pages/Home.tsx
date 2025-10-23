@@ -247,31 +247,9 @@ export default function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Sample Post */}
-                    <div className="border rounded-lg p-4">
-                      <div className="flex items-center space-x-3 mb-3">
-                        <img 
-                          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face" 
-                          alt="test-user-1" 
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div>
-                          <div className="font-medium text-sm">@test-user-1</div>
-                          <div className="text-xs text-muted-foreground">about 1 year ago</div>
-                        </div>
-                      </div>
-                      <p className="text-sm mb-3">
-                        Amazing sunrise over London this morning! The city never fails to surprise me with its hidden beauty spots. 🌅
-                      </p>
-                      <div className="text-xs text-muted-foreground">
-                        📍 London, United Kingdom
-                      </div>
-                    </div>
-                    
-                    <Button variant="outline" size="sm" className="w-full" data-testid="button-view-all-posts">
-                      View All
-                    </Button>
+                  <div className="text-center py-12 text-muted-foreground">
+                    <p className="text-sm">No posts to show yet</p>
+                    <p className="text-xs mt-2">Follow other users or create your first post!</p>
                   </div>
                 )}
               </CardContent>
