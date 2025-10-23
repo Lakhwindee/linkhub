@@ -1965,6 +1965,41 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // User profile routes
+  app.get('/api/users/:userId', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const followers = await storage.getFollowers(userId);
+      const following = await storage.getFollowing(userId);
+      
+      res.json({
+        user,
+        followerCount: followers.length,
+        followingCount: following.length
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.get('/api/users/:userId/posts', async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const posts = await storage.getUserPosts(userId);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching user posts:", error);
+      res.status(500).json({ message: "Failed to fetch user posts" });
+    }
+  });
+
   // Conversations routes
   app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {

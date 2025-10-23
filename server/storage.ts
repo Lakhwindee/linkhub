@@ -735,12 +735,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserPosts(userId: string, limit = 20): Promise<Post[]> {
-    return await db
-      .select()
+    const result = await db
+      .select({
+        post: posts,
+        user: {
+          username: users.username,
+          displayName: users.displayName,
+          profileImageUrl: users.profileImageUrl,
+          avatarUrl: users.avatarUrl
+        }
+      })
       .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
       .where(eq(posts.userId, userId))
       .orderBy(desc(posts.createdAt))
       .limit(limit);
+    
+    return result.map(r => ({
+      ...r.post,
+      username: r.user.username || 'unknown',
+      displayName: r.user.displayName || 'Unknown User',
+      profileImageUrl: r.user.profileImageUrl || r.user.avatarUrl || '',
+    })) as Post[];
   }
 
   // Events
