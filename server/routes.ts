@@ -1969,14 +1969,18 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   app.get('/api/users/:userId', async (req, res) => {
     try {
       const { userId } = req.params;
+      console.log(`📝 Fetching user profile for userId: ${userId}`);
       
       const user = await storage.getUser(userId);
+      console.log(`📝 User found:`, user ? 'YES' : 'NO', user ? { username: user.username, displayName: user.displayName } : null);
+      
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
       const followers = await storage.getFollowers(userId);
       const following = await storage.getFollowing(userId);
+      console.log(`📝 Followers: ${followers.length}, Following: ${following.length}`);
       
       res.json({
         user,
