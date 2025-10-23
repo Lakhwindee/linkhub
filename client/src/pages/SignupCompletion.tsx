@@ -84,17 +84,31 @@ export default function SignupCompletion() {
         localStorage.removeItem('hublink_signup_data');
         localStorage.removeItem('hublink_signup_type');
         
-        toast({
-          title: "Signup Error",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 10000,
-        });
-        
-        // Don't auto-redirect - let user see the error
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 5000);
+        // Check if user already exists - redirect to homepage with login prompt
+        if (errorMessage.toLowerCase().includes('already exists')) {
+          toast({
+            title: "Account Already Exists",
+            description: "This email is already registered. Redirecting you to login...",
+            variant: "default",
+            duration: 3000,
+          });
+          
+          setTimeout(() => {
+            window.location.href = '/?login=account_exists';
+          }, 2000);
+        } else {
+          // Other errors - show error and redirect to home
+          toast({
+            title: "Signup Error",
+            description: errorMessage,
+            variant: "destructive",
+            duration: 10000,
+          });
+          
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 5000);
+        }
       } finally {
         setIsCompleting(false);
       }

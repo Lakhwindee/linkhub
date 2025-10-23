@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/components/ThemeProvider";
@@ -8,13 +8,37 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Radar, MessageCircle, Users, Calendar, DollarSign, Settings, LogOut, Moon, Sun, Menu, TrendingUp, Home, Globe, Plane, Package, Crown, Lock, CreditCard, UserCheck, History, Zap } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LoginModal } from "@/components/auth/LoginModal";
+import { useToast } from "@/hooks/use-toast";
 
 export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { user, isLoading } = useAuth();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const { toast } = useToast();
   
   const { theme, setTheme } = useTheme();
   const [location] = useLocation();
+
+  // Check for login redirect from signup (when user already exists)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const loginParam = params.get('login');
+    
+    if (loginParam === 'account_exists' && !isAuthenticated) {
+      // Open login modal
+      setLoginModalOpen(true);
+      
+      // Show toast message
+      toast({
+        title: "Account Already Registered",
+        description: "This email is already registered. Please log in instead.",
+        variant: "default",
+        duration: 5000,
+      });
+      
+      // Clean URL without reloading
+      window.history.replaceState({}, '', '/');
+    }
+  }, [isAuthenticated, toast]);
 
   const handleSignIn = () => {
     setLoginModalOpen(true);
