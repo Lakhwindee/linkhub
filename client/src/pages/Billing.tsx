@@ -117,31 +117,15 @@ export default function Billing() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-green-600">$1,247.50</h3>
-                      <p className="text-sm text-muted-foreground">Total Earnings</p>
-                    </div>
-                    <div className="text-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-blue-600">$892.30</h3>
-                      <p className="text-sm text-muted-foreground">Available for Payout</p>
-                    </div>
-                    <div className="text-center p-4 bg-orange-50 dark:bg-orange-950 rounded-lg">
-                      <h3 className="text-2xl font-bold text-orange-600">$355.20</h3>
-                      <p className="text-sm text-muted-foreground">Pending</p>
-                    </div>
-                  </div>
-                  <div className="mt-6 flex space-x-4">
-                    <Button 
-                      className="flex-1 bg-green-500 hover:bg-green-600"
-                      onClick={() => setShowPayoutDialog(true)}
-                    >
-                      <Download className="w-4 h-4 mr-2" />
-                      Request Payout
-                    </Button>
-                    <Button variant="outline" className="flex-1">
+                  <div className="text-center py-8">
+                    <DollarSign className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">No earnings yet</h3>
+                    <p className="text-muted-foreground text-sm mb-6">
+                      Start creating content or listing stays to earn revenue.
+                    </p>
+                    <Button variant="outline">
                       <Calendar className="w-4 h-4 mr-2" />
-                      View History
+                      View Earning Opportunities
                     </Button>
                   </div>
                 </CardContent>
@@ -153,51 +137,13 @@ export default function Billing() {
                   <CardTitle>Recent Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>{format(new Date(), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>Ad Campaign Payment</TableCell>
-                        <TableCell className="font-semibold text-green-600">+$45.50</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Completed
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>{format(new Date(Date.now() - 86400000), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>Stay Booking Commission</TableCell>
-                        <TableCell className="font-semibold text-green-600">+$12.75</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
-                            <CheckCircle className="w-3 h-3 mr-1" />
-                            Completed
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>{format(new Date(Date.now() - 172800000), 'MMM dd, yyyy')}</TableCell>
-                        <TableCell>Payout to Bank</TableCell>
-                        <TableCell className="font-semibold text-red-600">-$250.00</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                            <AlertCircle className="w-3 h-3 mr-1" />
-                            Processing
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                    <h3 className="font-semibold text-foreground mb-2">No transaction history yet</h3>
+                    <p className="text-muted-foreground text-sm">
+                      Your transaction history will appear here once you start earning.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -269,7 +215,7 @@ export default function Billing() {
           <PayoutDialog
             open={showPayoutDialog}
             onOpenChange={setShowPayoutDialog}
-            availableBalance={892.30}
+            availableBalance={0}
             onPayoutRequested={() => {
               toast({
                 title: "Payout Requested",

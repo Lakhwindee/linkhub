@@ -74,52 +74,9 @@ export default function Messages() {
     refetchInterval: 5000,
   });
 
-  // Get test user data
+  // Get user data fallback
   const getUserData = (userId: string) => {
-    const testUsers = [
-      {
-        id: "test-user-1",
-        username: "alex_traveler",
-        displayName: "Alex Johnson",
-        email: "alex@example.com",
-        firstName: "Alex",
-        lastName: "Johnson",
-        plan: "traveler",
-        city: "London",
-        country: "United Kingdom",
-        lat: 51.5074,
-        lng: -0.1278,
-        showOnMap: true,
-        interests: ["photography", "food"],
-        profileImageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-        currentCity: "London",
-        currentCountry: "United Kingdom",
-        createdAt: "2025-09-02T21:51:12.993Z",
-        updatedAt: "2025-09-02T21:51:12.993Z"
-      },
-      {
-        id: "test-user-2", 
-        username: "maria_creator",
-        displayName: "Maria Santos",
-        email: "maria@example.com",
-        firstName: "Maria",
-        lastName: "Santos",
-        plan: "creator",
-        city: "Barcelona",
-        country: "Spain",
-        lat: 41.3851,
-        lng: 2.1734,
-        showOnMap: true,
-        interests: ["culture", "nightlife"],
-        profileImageUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-        currentCity: "Barcelona",
-        currentCountry: "Spain",
-        createdAt: "2025-09-02T21:51:12.993Z",
-        updatedAt: "2025-09-02T21:51:12.993Z"
-      }
-    ];
-
-    return testUsers.find(u => u.id === userId) || {
+    return {
       id: userId,
       displayName: "Unknown User",
       profileImageUrl: "",
