@@ -61,14 +61,11 @@ export default function SignupCompletion() {
             description: "Your account has been created and verified successfully. Welcome to HubLink!",
           });
           
-          // Redirect based on signup type
-          if (signupType === 'document') {
-            // Document users need to login first, redirect to home with success message
-            window.location.href = '/?signup=success';
-          } else {
-            // Professional signup goes to subscription
-            window.location.href = '/subscribe';
-          }
+          // Redirect to home page with success message
+          // User is now logged in with active session
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1500);
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error('❌ SignupCompletion: API Error:', response.status, errorData);
