@@ -1031,7 +1031,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(adReservations.userId, users.id))
       .where(
         and(
-          eq(ads.userId, publisherId),
+          eq(ads.publisherId, publisherId),
           eq(adSubmissions.status, 'approved')
         )
       )
