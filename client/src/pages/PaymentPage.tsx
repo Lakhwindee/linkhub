@@ -3,7 +3,7 @@ import { useParams, useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, CreditCard, CheckCircle, DollarSign, Users, Target, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, CheckCircle, DollarSign, Users, Target } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useMutation } from '@tanstack/react-query';
 
@@ -17,11 +17,6 @@ export default function PaymentPage() {
   const { data: campaign, isLoading } = useQuery({
     queryKey: [`/api/campaigns/${campaignId}`],
     enabled: !!campaignId,
-  });
-
-  // Fetch publisher payout status
-  const { data: payoutStatus, isLoading: payoutLoading } = useQuery({
-    queryKey: ['/api/publishers/me/payout-status'],
   });
 
   // Default campaign structure for TypeScript
@@ -210,46 +205,21 @@ export default function PaymentPage() {
               </div>
 
               <div className="space-y-3">
-                {!payoutLoading && (
-                  <div className={`p-4 rounded-lg ${payoutStatus?.connected 
-                    ? 'bg-green-50 dark:bg-green-950' 
-                    : 'bg-red-50 dark:bg-red-950'
-                  }`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      {payoutStatus?.connected ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-medium text-green-700 dark:text-green-300">Payment Account Connected</span>
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="w-4 h-4 text-red-600" />
-                          <span className="text-sm font-medium text-red-700 dark:text-red-300">Payment Account Required</span>
-                        </>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {payoutStatus?.connected 
-                        ? "💡 Your campaign will be live immediately after payment and visible to all creators in your target tier."
-                        : "⚠️ Please upgrade to a premium plan to process payments and create campaigns."
-                      }
-                    </p>
+                {/* Info message for publishers */}
+                <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Ready to Launch</span>
                   </div>
-                )}
+                  <p className="text-sm text-muted-foreground">
+                    💡 Your campaign will be live immediately after payment and visible to all creators in your target tier.
+                  </p>
+                </div>
 
                 {campaignData.status === 'active' ? (
                   <Button disabled className="w-full text-lg py-6" size="lg">
                     <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
                     Campaign Already Active
-                  </Button>
-                ) : !payoutStatus?.connected ? (
-                  <Button 
-                    onClick={() => navigate('/billing')}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
-                    size="lg"
-                  >
-                    <CreditCard className="w-5 h-5 mr-2" />
-                    Connect Payment Account
                   </Button>
                 ) : (
                   <Button 
