@@ -56,7 +56,7 @@ export default function PaymentSuccess() {
           <Card>
             <CardContent className="p-12 text-center">
               <h2 className="text-2xl font-bold mb-4">Campaign Not Found</h2>
-              <Button onClick={() => navigate('/publisher-ads')}>
+              <Button onClick={() => navigate('/ads')}>
                 Back to Campaigns
               </Button>
             </CardContent>
@@ -163,7 +163,7 @@ export default function PaymentSuccess() {
 
               <div className="pt-4 space-y-3">
                 <Button 
-                  onClick={() => navigate('/publisher-ads')} 
+                  onClick={() => navigate('/ads')} 
                   className="w-full"
                   size="lg"
                 >

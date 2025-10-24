@@ -91,7 +91,7 @@ export default function PaymentPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <h2 className="text-2xl font-bold mb-4">Campaign Not Found</h2>
-              <Button onClick={() => navigate('/publisher/ads')}>
+              <Button onClick={() => navigate('/ads')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Campaigns
               </Button>
@@ -108,7 +108,7 @@ export default function PaymentPage() {
         <div className="mb-6">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/publisher-ads')}
+            onClick={() => navigate('/ads')}
             className="mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
