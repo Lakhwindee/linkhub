@@ -61,20 +61,8 @@ export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, isLoading, toast]);
+  // Allow unauthenticated users to view the subscription page
+  // Authentication will be required when they try to subscribe
 
   const plans = [
     {
@@ -104,6 +92,18 @@ export default function Subscribe() {
   ];
 
   const handleSelectPlan = async (planId: string) => {
+    // Redirect to login if not authenticated
+    if (!isAuthenticated) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to subscribe to a plan",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+
     setSelectedPlan(planId);
     setIsProcessing(true);
 
@@ -148,12 +148,8 @@ export default function Subscribe() {
     );
   }
 
-  if (!user) {
-    return null;
-  }
-
   // If user already has a paid plan
-  if (user.plan && user.plan !== 'free') {
+  if (user && user.plan && user.plan !== 'free') {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -222,11 +218,13 @@ export default function Subscribe() {
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto" data-testid="text-subscribe-description">
             Choose the perfect plan to unlock premium features and start earning from your travel content
           </p>
-          <div className="flex items-center justify-center space-x-2">
-            <Badge variant="secondary" data-testid="badge-current-plan">
-              Currently: {user.plan} Plan
-            </Badge>
-          </div>
+          {user && (
+            <div className="flex items-center justify-center space-x-2">
+              <Badge variant="secondary" data-testid="badge-current-plan">
+                Currently: {user.plan} Plan
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Current Plan Benefits */}
