@@ -273,13 +273,19 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
       console.log('✅ Google user authenticated:', payload.email);
 
+      // Generate username from email (take part before @)
+      const emailUsername = payload.email!.split('@')[0];
+      const timestamp = Date.now().toString().slice(-4);
+      const generatedUsername = `${emailUsername}_${timestamp}`;
+
       // Create or update user in database
       const userData = {
         id: payload.sub,
         email: payload.email!,
         firstName: payload.given_name || '',
         lastName: payload.family_name || '',
-        profileImageUrl: payload.picture || ''
+        profileImageUrl: payload.picture || '',
+        username: generatedUsername
       };
 
       console.log('📍 Upserting user to database...');
