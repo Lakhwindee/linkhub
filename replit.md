@@ -48,7 +48,7 @@ Preferred communication style: Simple, everyday language.
 - Tab-based navigation for integrated booking management within service pages (Stays, Tour Packages).
 - Plan-specific feature differentiation and upgrade prompts for free users.
 - Consistent platform fee breakdown and booking confirmation components.
-- **Landing Page Navigation**: Premium plan "Start Free Trial" button redirects to /subscribe (creator subscription), Free plan "Sign Up" redirects to /document-signup (publisher registration).
+- **Landing Page Navigation**: Only displays Free plan with "Sign Up Free" button redirecting to /document-signup (publisher registration). Premium upgrades are available after authentication via /subscribe page.
 - **Public Subscribe Page**: The /subscribe page is publicly accessible to non-authenticated users, with authentication required only when attempting to purchase a plan.
 
 ## Technical Implementations
