@@ -227,32 +227,6 @@ export default function Subscribe() {
           )}
         </div>
 
-        {/* Current Plan Benefits */}
-        <Card className="border-muted bg-muted/30" data-testid="card-current-plan">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="w-5 h-5" />
-              <span>Your Current Plan: Free</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center space-x-2">
-                <CheckIcon className="w-4 h-4 text-green-500" />
-                <span>View global feed</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckIcon className="w-4 h-4 text-green-500" />
-                <span>Limited map preview</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <CheckIcon className="w-4 h-4 text-green-500" />
-                <span>Basic profile</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Subscription Plans */}
         <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan) => (
