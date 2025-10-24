@@ -337,7 +337,7 @@ export default function Landing() {
                     variant={plan.popular ? "default" : "outline"}
                     asChild
                                       >
-                    <a href="/document-signup">
+                    <a href={plan.name === 'Premium' ? '/subscribe' : '/document-signup'}>
                       {plan.name === 'Free' ? 'Sign Up' : 'Start Free Trial'}
                     </a>
                   </Button>
