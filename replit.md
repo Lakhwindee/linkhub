@@ -69,6 +69,12 @@ Preferred communication style: Simple, everyday language.
 - Standardized location data using real-world country/city information.
 - Enhanced financial management in admin panel including revenue overview, service breakdown, payout management, and tax reporting.
 - Complete removal of OpenAI/ChatGPT and PayPal integrations to streamline functionality and standardize on Stripe.
+- **YouTube Creator Tier System** (Updated October 2025):
+  - 15 tier levels spanning from 30K to 10M+ subscribers
+  - Reduced pricing structure for better creator competitiveness
+  - Tier ranges: Level 1 (30K-70K) at $100 to Level 15 (10M+) at $1,150
+  - Notable tiers: 2M-3M at $650, 5M-6.5M at $880, 10M+ at $1,150
+  - Automatic tier assignment based on verified YouTube subscriber count
 
 # External Dependencies
 
