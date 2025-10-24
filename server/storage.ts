@@ -154,6 +154,7 @@ export interface IStorage {
     verificationNotes?: string;
   }): Promise<AdSubmission>;
   getAdSubmissions(filters?: any): Promise<AdSubmission[]>;
+  getPublisherSubmissions(publisherId: string): Promise<any[]>;
   updateAdSubmissionStatus(id: string, status: string, reviewedBy: string, reviewNotes?: string): Promise<AdSubmission>;
   
   // Boosted Posts for Feed Ads
@@ -1001,6 +1002,42 @@ export class DatabaseStorage implements IStorage {
       .from(adSubmissions)
       .orderBy(desc(adSubmissions.createdAt))
       .limit(50);
+  }
+
+  async getPublisherSubmissions(publisherId: string): Promise<any[]> {
+    // Get all approved submissions for this publisher's campaigns
+    const submissions = await db
+      .select({
+        id: adSubmissions.id,
+        clipUrl: adSubmissions.clipUrl,
+        contentLink: adSubmissions.contentLink,
+        originalVideoUrl: adSubmissions.originalVideoUrl,
+        status: adSubmissions.status,
+        reviewNotes: adSubmissions.reviewNotes,
+        createdAt: adSubmissions.createdAt,
+        reviewedAt: adSubmissions.reviewedAt,
+        campaignId: ads.id,
+        campaignTitle: ads.title,
+        creatorId: users.id,
+        creatorName: users.fullName,
+        creatorUsername: users.username,
+        creatorEmail: users.email,
+        creatorChannelName: users.youtubeChannelName,
+        creatorSubscribers: users.youtubeSubscribers,
+      })
+      .from(adSubmissions)
+      .innerJoin(adReservations, eq(adSubmissions.reservationId, adReservations.id))
+      .innerJoin(ads, eq(adReservations.adId, ads.id))
+      .innerJoin(users, eq(adReservations.userId, users.id))
+      .where(
+        and(
+          eq(ads.userId, publisherId),
+          eq(adSubmissions.status, 'approved')
+        )
+      )
+      .orderBy(desc(adSubmissions.reviewedAt));
+    
+    return submissions;
   }
 
   async updateAdSubmissionStatus(id: string, status: string, reviewedBy: string, reviewNotes?: string): Promise<AdSubmission> {

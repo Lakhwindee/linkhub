@@ -31,6 +31,7 @@ import BoostedPosts from "@/pages/BoostedPosts";
 import Map from "@/pages/Map";
 import PaymentPage from "@/pages/PaymentPage";
 import PaymentSuccess from "@/pages/PaymentSuccess";
+import PublisherDashboard from "@/pages/PublisherDashboard";
 import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
@@ -108,6 +109,7 @@ function Router() {
               <Route path="/earn" component={AdsWrapper} />
               <Route path="/payment/:campaignId" component={PaymentPage} />
               <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
+              <Route path="/publisher/submissions" component={PublisherDashboard} />
               <Route path="/messages" component={Messages} />
               <Route path="/subscribe" component={Subscribe} />
               <Route path="/events" component={Events} />

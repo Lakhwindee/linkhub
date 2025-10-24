@@ -3779,6 +3779,18 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Get publisher submissions (approved clips and links for publisher's campaigns)
+  app.get('/api/publisher/submissions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const submissions = await storage.getPublisherSubmissions(userId);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching publisher submissions:", error);
+      res.status(500).json({ message: "Failed to fetch submissions" });
+    }
+  });
+
   // Object storage routes
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
