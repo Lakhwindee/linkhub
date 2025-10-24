@@ -105,21 +105,6 @@ export default function Landing() {
       limitations: [
         "Cannot earn money from ads"
       ]
-    },
-    {
-      name: "Premium",
-      description: "Full access & earn money",
-      price: "$45", 
-      period: "per month",
-      popular: true,
-      features: [
-        "Everything in Free",
-        "Ad Marketplace access",
-        "Apply to brand campaigns",
-        "Earnings dashboard",
-        "Creator monetization",
-        "Priority support"
-      ]
     }
   ];
 
@@ -307,9 +292,9 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="flex justify-center max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative ${plan.popular ? 'border-accent' : ''}`} >
+              <Card key={index} className={`relative max-w-md w-full ${plan.popular ? 'border-accent' : ''}`} >
                 {plan.popular && (
                   <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 text-xs font-medium rounded-full">
                     Most Popular
@@ -333,12 +318,12 @@ export default function Landing() {
                     </div>
                   </div>
                   <Button 
-                    className={`w-full ${plan.popular ? 'bg-accent hover:bg-accent/90' : ''}`}
-                    variant={plan.popular ? "default" : "outline"}
+                    className="w-full"
+                    variant="outline"
                     asChild
                                       >
-                    <a href={plan.name === 'Premium' ? '/subscribe' : '/document-signup'}>
-                      {plan.name === 'Free' ? 'Sign Up' : 'Start Free Trial'}
+                    <a href="/document-signup">
+                      Sign Up Free
                     </a>
                   </Button>
                   <div className="space-y-3">
