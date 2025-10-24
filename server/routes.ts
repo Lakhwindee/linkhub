@@ -273,28 +273,43 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
       console.log('✅ Google user authenticated:', payload.email);
 
-      // Generate username from email (take part before @)
-      const emailUsername = payload.email!.split('@')[0];
-      const timestamp = Date.now().toString().slice(-4);
-      const generatedUsername = `${emailUsername}_${timestamp}`;
+      // Check if user already exists by email
+      let user = await storage.getUserByEmail(payload.email!);
+      
+      if (user) {
+        // User exists - update their info with Google data
+        console.log('📍 Updating existing user with Google data...');
+        user = await storage.updateUser(user.id, {
+          firstName: payload.given_name || user.firstName,
+          lastName: payload.family_name || user.lastName,
+          profileImageUrl: payload.picture || user.profileImageUrl,
+        });
+        console.log('✅ Existing user updated');
+      } else {
+        // New user - create with Google data
+        console.log('📍 Creating new user from Google...');
+        
+        // Generate username from email (take part before @)
+        const emailUsername = payload.email!.split('@')[0];
+        const timestamp = Date.now().toString().slice(-4);
+        const generatedUsername = `${emailUsername}_${timestamp}`;
 
-      // Create or update user in database
-      const userData = {
-        id: payload.sub,
-        email: payload.email!,
-        firstName: payload.given_name || '',
-        lastName: payload.family_name || '',
-        profileImageUrl: payload.picture || '',
-        username: generatedUsername
-      };
+        const userData = {
+          id: payload.sub,
+          email: payload.email!,
+          firstName: payload.given_name || '',
+          lastName: payload.family_name || '',
+          profileImageUrl: payload.picture || '',
+          username: generatedUsername
+        };
 
-      console.log('📍 Upserting user to database...');
-      await storage.upsertUser(userData);
-      console.log('✅ User upserted successfully');
+        user = await storage.upsertUser(userData);
+        console.log('✅ New user created');
+      }
 
-      // Set session
-      (req.session as any).userId = payload.sub;
-      (req.session as any).user = userData;
+      // Set session with the user data
+      (req.session as any).userId = user.id;
+      (req.session as any).user = user;
 
       console.log('📍 Saving session...');
       // Save session before redirect to ensure it persists
