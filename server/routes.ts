@@ -53,6 +53,7 @@ import { isCountryTargeted, logGeoTargeting } from "@shared/countryUtils";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { ZodError } from "zod";
+import { getTierByLevel } from "@shared/tierConfig";
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import { computeTierFromSubscribers } from "@shared/tierConfig";
@@ -5322,11 +5323,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         const data = insertPublisherAdSchema.parse(req.body);
         
         // Calculate max influencers based on tier and budget
-        const tierPrices = { 
-          1: 125, 2: 250, 3: 440, 4: 625, 5: 875, 
-          6: 1125, 7: 1500, 8: 1875, 9: 2250, 10: 2500 
-        };
-        const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
+        const tier = getTierByLevel(data.tierLevel);
+        if (!tier) {
+          return res.status(400).json({ message: `Invalid tier level: ${data.tierLevel}` });
+        }
+        const tierPrice = tier.price;
         const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
         
         const adData = {
@@ -5352,11 +5353,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const data = insertPublisherAdSchema.parse(req.body);
       
       // Calculate max influencers based on tier and budget
-      const tierPrices = { 
-        1: 125, 2: 250, 3: 440, 4: 625, 5: 875, 
-        6: 1125, 7: 1500, 8: 1875, 9: 2250, 10: 2500 
-      };
-      const tierPrice = tierPrices[data.tierLevel as keyof typeof tierPrices];
+      const tier = getTierByLevel(data.tierLevel);
+      if (!tier) {
+        return res.status(400).json({ message: `Invalid tier level: ${data.tierLevel}` });
+      }
+      const tierPrice = tier.price;
       const maxInfluencers = Math.floor(data.totalBudget / tierPrice);
       
       const adData = {
