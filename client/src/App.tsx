@@ -37,6 +37,15 @@ import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
 import ResetPassword from "@/pages/ResetPassword";
+import HelpCenter from "@/pages/HelpCenter";
+import CommunityGuidelines from "@/pages/CommunityGuidelines";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import AboutUs from "@/pages/AboutUs";
+import Careers from "@/pages/Careers";
+import Press from "@/pages/Press";
+import Contact from "@/pages/Contact";
+import MobileApp from "@/pages/MobileApp";
 
 // Initialize Stripe with a test key for demo purposes
 // In production, this would be loaded from environment variables
@@ -122,6 +131,15 @@ function Router() {
           )}
           {/* Public routes (accessible to everyone) */}
           <Route path="/reset-password" component={ResetPassword} />
+          <Route path="/help-center" component={HelpCenter} />
+          <Route path="/community-guidelines" component={CommunityGuidelines} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms-of-service" component={TermsOfService} />
+          <Route path="/about-us" component={AboutUs} />
+          <Route path="/careers" component={Careers} />
+          <Route path="/press" component={Press} />
+          <Route path="/contact" component={Contact} />
+          <Route path="/mobile-app" component={MobileApp} />
           <Route component={NotFound} />
         </Switch>
       </main>

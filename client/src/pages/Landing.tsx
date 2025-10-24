@@ -425,28 +425,28 @@ export default function Landing() {
               <ul className="space-y-2 text-primary-foreground/80">
                 <li><a href="#features" className="hover:text-primary-foreground">Features</a></li>
                 <li><a href="#pricing" className="hover:text-primary-foreground">Pricing</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Ad Marketplace</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Mobile App</a></li>
+                <li><a href="/ads" className="hover:text-primary-foreground">Ad Marketplace</a></li>
+                <li><a href="/mobile-app" className="hover:text-primary-foreground">Mobile App</a></li>
               </ul>
             </div>
 
             <div className="space-y-4">
               <h4 className="font-semibold">Support</h4>
               <ul className="space-y-2 text-primary-foreground/80">
-                <li><a href="#" className="hover:text-primary-foreground">Help Center</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Community Guidelines</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Terms of Service</a></li>
+                <li><a href="/help-center" className="hover:text-primary-foreground">Help Center</a></li>
+                <li><a href="/community-guidelines" className="hover:text-primary-foreground">Community Guidelines</a></li>
+                <li><a href="/privacy-policy" className="hover:text-primary-foreground">Privacy Policy</a></li>
+                <li><a href="/terms-of-service" className="hover:text-primary-foreground">Terms of Service</a></li>
               </ul>
             </div>
 
             <div className="space-y-4">
               <h4 className="font-semibold">Company</h4>
               <ul className="space-y-2 text-primary-foreground/80">
-                <li><a href="#" className="hover:text-primary-foreground">About Us</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Careers</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Press</a></li>
-                <li><a href="#" className="hover:text-primary-foreground">Contact</a></li>
+                <li><a href="/about-us" className="hover:text-primary-foreground">About Us</a></li>
+                <li><a href="/careers" className="hover:text-primary-foreground">Careers</a></li>
+                <li><a href="/press" className="hover:text-primary-foreground">Press</a></li>
+                <li><a href="/contact" className="hover:text-primary-foreground">Contact</a></li>
               </ul>
             </div>
           </div>
