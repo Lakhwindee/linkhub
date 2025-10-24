@@ -885,6 +885,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation> {
+    // Check if user already has an active reservation for this campaign
+    const existingReservations = await this.getUserActiveReservations(userId);
+    const hasExistingReservation = existingReservations.some(r => r.adId === adId);
+    
+    if (hasExistingReservation) {
+      throw new Error('You have already reserved this campaign');
+    }
+
     // Check if it's a test ad
     const testAd = testAds.find(ad => ad.id === adId);
     if (testAd) {
@@ -908,11 +916,20 @@ export class DatabaseStorage implements IStorage {
       return mockReservation;
     }
 
-    const [reservation] = await db
-      .insert(adReservations)
-      .values({ adId, userId, expiresAt })
-      .returning();
-    return reservation;
+    try {
+      const [reservation] = await db
+        .insert(adReservations)
+        .values({ adId, userId, expiresAt })
+        .returning();
+      return reservation;
+    } catch (error: any) {
+      // Handle unique constraint violation (PostgreSQL error code 23505)
+      if (error.code === '23505' && error.constraint === 'unique_user_ad_active_reservation') {
+        throw new Error('You have already reserved this campaign');
+      }
+      // Re-throw other database errors
+      throw error;
+    }
   }
 
   async getUserActiveReservations(userId: string): Promise<AdReservation[]> {

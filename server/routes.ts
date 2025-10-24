@@ -3337,6 +3337,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       res.json(reservation);
     } catch (error) {
       console.error("Error reserving ad:", error);
+      
+      // Check if it's a duplicate reservation error
+      if (error instanceof Error && error.message === 'You have already reserved this campaign') {
+        return res.status(400).json({ message: error.message });
+      }
+      
       res.status(500).json({ message: "Failed to reserve ad" });
     }
   });

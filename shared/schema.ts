@@ -11,6 +11,7 @@ import {
   boolean,
   real,
   primaryKey,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -264,7 +265,10 @@ export const adReservations = pgTable("ad_reservations", {
   expiresAt: timestamp("expires_at").notNull(),
   status: varchar("status").default("active"), // active, expired, submitted, cancelled
   createdAt: timestamp("created_at").defaultNow(),
-});
+}, (table) => ({
+  // Unique constraint to prevent duplicate active reservations by same user for same campaign
+  uniqueUserAdReservation: uniqueIndex("unique_user_ad_active_reservation").on(table.userId, table.adId).where(sql`status = 'active'`),
+}));
 
 // Ad submissions
 export const adSubmissions = pgTable("ad_submissions", {
