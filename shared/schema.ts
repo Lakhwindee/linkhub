@@ -276,6 +276,7 @@ export const adSubmissions = pgTable("ad_submissions", {
   reservationId: varchar("reservation_id").references(() => adReservations.id, { onDelete: "cascade" }),
   postId: varchar("post_id").references(() => posts.id),
   rawFileUrl: varchar("raw_file_url"),
+  contentLink: varchar("content_link"), // Direct link to creator's content (e.g., YouTube video, Instagram post)
   // Video verification fields
   originalVideoUrl: varchar("original_video_url"), // Creator's full video URL
   clipUrl: varchar("clip_url"), // Extracted clip URL showing the promotion

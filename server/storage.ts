@@ -1022,7 +1022,7 @@ export class DatabaseStorage implements IStorage {
         creatorName: users.fullName,
         creatorUsername: users.username,
         creatorEmail: users.email,
-        creatorChannelName: users.youtubeChannelName,
+        creatorChannelName: users.displayName,
         creatorSubscribers: users.youtubeSubscribers,
       })
       .from(adSubmissions)
