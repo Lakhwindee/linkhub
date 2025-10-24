@@ -34,10 +34,13 @@ Preferred communication style: Simple, everyday language.
 - **Tax Management**: tax_configuration (country tax rates) and tax_records (complete audit trail) tables
 
 ## Authentication & Authorization
-- **Provider**: Replit OpenID Connect
+- **Provider**: Google OAuth 2.0 (primary) + Replit OpenID Connect (fallback)
 - **Session Management**: Express sessions with PostgreSQL storage
 - **Authorization**: Role-based access control (admin, superadmin, moderator, user)
 - **Plan-based Features**: Free, Traveler, Creator subscription tiers
+- **Google OAuth Configuration**: Uses GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI from Replit Secrets
+- **Username Auto-generation**: Usernames automatically generated from email during OAuth (e.g., emailpart_timestamp)
+- **Duplicate Email Handling**: Existing users with same email are updated rather than creating duplicates during OAuth
 
 ## UI/UX Decisions
 - Modern, professional interface with comprehensive admin panel.
@@ -45,6 +48,7 @@ Preferred communication style: Simple, everyday language.
 - Tab-based navigation for integrated booking management within service pages (Stays, Tour Packages).
 - Plan-specific feature differentiation and upgrade prompts for free users.
 - Consistent platform fee breakdown and booking confirmation components.
+- **Landing Page Navigation**: Premium plan "Start Free Trial" button redirects to /subscribe (creator subscription), Free plan "Sign Up" redirects to /document-signup (publisher registration).
 
 ## Technical Implementations
 - 10% platform fee applied across all booking services.
