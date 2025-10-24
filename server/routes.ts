@@ -228,28 +228,38 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
   app.get('/api/auth/google/callback', async (req, res) => {
     try {
+      console.log('📍 Google OAuth callback received');
+      
       if (!googleOAuthClient) {
+        console.error('❌ Google OAuth client not configured');
         return res.redirect('/?error=oauth_not_configured');
       }
       
       const { code, state } = req.query;
+      console.log('📍 Callback params:', { hasCode: !!code, hasState: !!state });
       
       if (!code) {
+        console.error('❌ No authorization code received');
         return res.redirect('/?error=no_code');
       }
 
       // Verify state parameter for CSRF protection
-      if (!state || state !== (req.session as any)?.oauth_state) {
+      const sessionState = (req.session as any)?.oauth_state;
+      console.log('📍 State verification:', { received: state, expected: sessionState });
+      
+      if (!state || state !== sessionState) {
+        console.error('❌ Invalid state parameter - CSRF protection failed');
         return res.redirect('/?error=invalid_state');
       }
       
       // Clear the state from session
       delete (req.session as any).oauth_state;
 
+      console.log('📍 Exchanging code for tokens...');
       const { tokens } = await googleOAuthClient.getToken(code as string);
       googleOAuthClient.setCredentials(tokens);
 
-      // Get user info from Google
+      console.log('📍 Verifying ID token...');
       const ticket = await googleOAuthClient.verifyIdToken({
         idToken: tokens.id_token!,
         audience: process.env.GOOGLE_CLIENT_ID,
@@ -257,8 +267,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
       const payload = ticket.getPayload();
       if (!payload) {
+        console.error('❌ Invalid token payload');
         return res.redirect('/?error=invalid_token');
       }
+
+      console.log('✅ Google user authenticated:', payload.email);
 
       // Create or update user in database
       const userData = {
@@ -269,14 +282,32 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         profileImageUrl: payload.picture || ''
       };
 
+      console.log('📍 Upserting user to database...');
       await storage.upsertUser(userData);
+      console.log('✅ User upserted successfully');
 
       // Set session
       (req.session as any).userId = payload.sub;
       (req.session as any).user = userData;
 
+      console.log('📍 Saving session...');
+      // Save session before redirect to ensure it persists
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error('❌ Session save error:', err);
+            reject(err);
+          } else {
+            console.log('✅ Session saved successfully');
+            resolve();
+          }
+        });
+      });
+
+      console.log('📍 Redirecting to home page...');
       res.redirect('/');
     } catch (error) {
+      console.error('❌ Google OAuth callback error:', error);
       res.redirect('/?error=oauth_failed');
     }
   });
