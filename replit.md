@@ -48,7 +48,10 @@ Preferred communication style: Simple, everyday language.
 - Tab-based navigation for integrated booking management within service pages (Stays, Tour Packages).
 - Plan-specific feature differentiation and upgrade prompts for free users.
 - Consistent platform fee breakdown and booking confirmation components.
-- **Landing Page Navigation**: Only displays Free plan with "Sign Up Free" button redirecting to /document-signup (publisher registration). Premium upgrades are available after authentication via /subscribe page.
+- **Landing Page Navigation**: Clean navigation with "For Business" button in top nav leading to publisher signup (/document-signup). Regular users click "Get Started" for creator signup (/professional-signup).
+- **Separate Signup Flows**: 
+  - Regular Users/Creators: "Get Started" button → /professional-signup (creator-only registration)
+  - Publishers/Businesses: "For Business" button → /document-signup (business registration with form fields only)
 - **Public Subscribe Page**: The /subscribe page is publicly accessible to non-authenticated users, with authentication required only when attempting to purchase a plan.
 
 ## Technical Implementations

@@ -253,13 +253,6 @@ export default function Signup() {
               Sign in
             </Link>
           </div>
-
-          <div className="text-center text-sm text-muted-foreground">
-            Are you a business/publisher?{" "}
-            <Link href="/document-signup" className="text-accent hover:underline">
-              Register here
-            </Link>
-          </div>
         </CardContent>
       </Card>
     </div>
