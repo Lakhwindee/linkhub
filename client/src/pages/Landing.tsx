@@ -110,7 +110,7 @@ export default function Landing() {
       ],
       popular: false,
       cta: "Sign Up Free",
-      ctaLink: "/signup"
+      ctaLink: "/professional-signup"
     },
     {
       name: "Premium",
@@ -131,7 +131,7 @@ export default function Landing() {
       limitations: [],
       popular: true,
       cta: "Upgrade to Premium",
-      ctaLink: "/signup?redirect=/subscribe"
+      ctaLink: "/professional-signup?redirect=/subscribe"
     }
   ];
 
@@ -428,7 +428,7 @@ export default function Landing() {
               </div>
 
               <Button size="lg" className="px-8 py-4" asChild >
-                <Link href="/signup">Join HubLink Today</Link>
+                <Link href="/professional-signup">Join HubLink Today</Link>
               </Button>
             </div>
           </div>

@@ -50,8 +50,9 @@ Preferred communication style: Simple, everyday language.
 - Consistent platform fee breakdown and booking confirmation components.
 - **Landing Page Navigation**: Clean navigation with "For Business" button in top nav leading to publisher signup (/document-signup). Regular users click "Get Started" for creator signup (/professional-signup).
 - **Separate Signup Flows**: 
-  - Regular Users/Creators: "Get Started" button → /professional-signup (creator-only registration)
+  - Regular Users/Creators: "Get Started" button → /professional-signup (creator-only registration with detailed professional form)
   - Publishers/Businesses: "For Business" button → /document-signup (business registration with form fields only)
+  - Legacy /signup route automatically redirects to /professional-signup to avoid duplication
 - **Public Subscribe Page**: The /subscribe page is publicly accessible to non-authenticated users, with authentication required only when attempting to purchase a plan.
 
 ## Technical Implementations
