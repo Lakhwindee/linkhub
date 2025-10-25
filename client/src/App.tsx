@@ -79,7 +79,6 @@ function Router() {
           {!isAuthenticated ? (
             <>
               <Route path="/" component={Landing} />
-              <Route path="/subscribe" component={Subscribe} />
               <Route path="/document-signup" component={DocumentSignup} />
               <Route path="/professional-signup" component={ProfessionalSignup} />
               <Route path="/signup-completion" component={SignupCompletion} />
@@ -120,7 +119,6 @@ function Router() {
               <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
               <Route path="/publisher/submissions" component={PublisherDashboard} />
               <Route path="/messages" component={Messages} />
-              <Route path="/subscribe" component={Subscribe} />
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
               <Route path="/document-signup" component={DocumentSignup} />
@@ -130,6 +128,7 @@ function Router() {
             </>
           )}
           {/* Public routes (accessible to everyone) */}
+          <Route path="/subscribe" component={Subscribe} />
           <Route path="/reset-password" component={ResetPassword} />
           <Route path="/help-center" component={HelpCenter} />
           <Route path="/community-guidelines" component={CommunityGuidelines} />
