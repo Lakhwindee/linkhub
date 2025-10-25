@@ -89,6 +89,9 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               >
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </Button>
+              <Button variant="ghost" asChild>
+                <Link href="/document-signup">For Business</Link>
+              </Button>
               <Button variant="ghost" onClick={handleSignIn} data-testid="button-sign-in">
                 Sign In
               </Button>
