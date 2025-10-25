@@ -32,6 +32,7 @@ import Map from "@/pages/Map";
 import PaymentPage from "@/pages/PaymentPage";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PublisherDashboard from "@/pages/PublisherDashboard";
+import Signup from "@/pages/Signup";
 import DocumentSignup from "@/pages/DocumentSignup";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
@@ -76,13 +77,16 @@ function Router() {
           {/* Admin route accessible to everyone - handles its own auth */}
           <Route path="/admin" component={Admin} />
           
+          {/* Public routes - always accessible */}
+          <Route path="/signup" component={Signup} />
+          <Route path="/document-signup" component={DocumentSignup} />
+          <Route path="/professional-signup" component={ProfessionalSignup} />
+          <Route path="/signup-completion" component={SignupCompletion} />
+          <Route path="/verify-otp" component={OTPVerification} />
+          
           {!isAuthenticated ? (
             <>
               <Route path="/" component={Landing} />
-              <Route path="/document-signup" component={DocumentSignup} />
-              <Route path="/professional-signup" component={ProfessionalSignup} />
-              <Route path="/signup-completion" component={SignupCompletion} />
-              <Route path="/verify-otp" component={OTPVerification} />
             </>
           ) : (
             <>
@@ -121,10 +125,6 @@ function Router() {
               <Route path="/messages" component={Messages} />
               <Route path="/events" component={Events} />
               <Route path="/billing" component={Billing} />
-              <Route path="/document-signup" component={DocumentSignup} />
-              <Route path="/professional-signup" component={ProfessionalSignup} />
-              <Route path="/signup-completion" component={SignupCompletion} />
-              <Route path="/verify-otp" component={OTPVerification} />
             </>
           )}
           {/* Public routes (accessible to everyone) */}

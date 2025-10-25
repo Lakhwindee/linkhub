@@ -353,6 +353,60 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Signup endpoint
+  app.post('/api/auth/signup', async (req, res) => {
+    try {
+      const { email, password, firstName, lastName, username } = req.body;
+
+      if (!email || !password || !firstName || !lastName || !username) {
+        return res.status(400).json({ message: 'All fields are required' });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create user with generated ID
+      const userId = `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const userData = {
+        id: userId,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        username,
+        plan: 'free', // Default to free plan
+        profileImageUrl: ''
+      };
+
+      const user = await storage.upsertUser(userData);
+
+      res.json({ 
+        message: 'Account created successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username
+        }
+      });
+    } catch (error) {
+      console.error('Signup error:', error);
+      res.status(500).json({ message: 'Failed to create account' });
+    }
+  });
+
   // Traditional login endpoint
   app.post('/api/auth/login', async (req, res) => {
     try {
