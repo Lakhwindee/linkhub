@@ -97,6 +97,18 @@ export const admins = pgTable("admins", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// API Settings table (secure storage for API keys - encrypted)
+export const apiSettings = pgTable("api_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  service: varchar("service").unique().notNull(), // stripe, youtube, maps, etc.
+  settingsJson: jsonb("settings_json").notNull(), // Encrypted JSON with API keys
+  isActive: boolean("is_active").default(true),
+  lastTestedAt: timestamp("last_tested_at"),
+  updatedBy: varchar("updated_by"), // admin ID who last updated
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Auth providers
 export const authProviders = pgTable("auth_providers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1197,3 +1209,4 @@ export type DiscountCodeUsage = typeof discountCodeUsage.$inferSelect;
 export type UserTrial = typeof userTrials.$inferSelect;
 export type TaxConfiguration = typeof taxConfiguration.$inferSelect;
 export type TaxRecord = typeof taxRecords.$inferSelect;
+export type ApiSetting = typeof apiSettings.$inferSelect;

@@ -1,6 +1,7 @@
 import {
   users,
   admins,
+  apiSettings,
   connectRequests,
   conversations,
   messages,
@@ -71,6 +72,7 @@ import {
   type TripParticipant,
   type TaxConfiguration,
   type TaxRecord,
+  type ApiSetting,
   insertStaySchema,
   insertStayBookingSchema,
   insertStayReviewSchema,
@@ -190,6 +192,12 @@ export interface IStorage {
   getAllDiscountCodes(): Promise<any[]>;
   getDiscountCodeByCode(code: string): Promise<any | undefined>;
   updateDiscountCode(id: string, data: Partial<any>): Promise<any>;
+  
+  // API Settings (Secure admin-managed API keys)
+  getApiSetting(service: string): Promise<ApiSetting | undefined>;
+  getAllApiSettings(): Promise<ApiSetting[]>;
+  upsertApiSetting(data: { service: string; settingsJson: any; updatedBy?: string }): Promise<ApiSetting>;
+  updateApiSettingTestStatus(service: string, lastTestedAt: Date): Promise<ApiSetting>;
   
   // Subscriptions
   createSubscription(data: any): Promise<Subscription>;
@@ -1987,6 +1995,61 @@ export class DatabaseStorage implements IStorage {
       .where(eq(discountCodes.id, id))
       .returning();
     return code;
+  }
+
+  // API Settings (Secure admin-managed API keys)
+  async getApiSetting(service: string): Promise<ApiSetting | undefined> {
+    const [setting] = await db
+      .select()
+      .from(apiSettings)
+      .where(eq(apiSettings.service, service));
+    return setting;
+  }
+
+  async getAllApiSettings(): Promise<ApiSetting[]> {
+    return await db
+      .select()
+      .from(apiSettings)
+      .orderBy(asc(apiSettings.service));
+  }
+
+  async upsertApiSetting(data: { service: string; settingsJson: any; updatedBy?: string }): Promise<ApiSetting> {
+    const existing = await this.getApiSetting(data.service);
+    
+    if (existing) {
+      // Update existing
+      const [updated] = await db
+        .update(apiSettings)
+        .set({
+          settingsJson: data.settingsJson,
+          updatedBy: data.updatedBy,
+          updatedAt: new Date(),
+        })
+        .where(eq(apiSettings.service, data.service))
+        .returning();
+      return updated;
+    } else {
+      // Insert new
+      const [inserted] = await db
+        .insert(apiSettings)
+        .values({
+          service: data.service,
+          settingsJson: data.settingsJson,
+          updatedBy: data.updatedBy,
+          isActive: true,
+        })
+        .returning();
+      return inserted;
+    }
+  }
+
+  async updateApiSettingTestStatus(service: string, lastTestedAt: Date): Promise<ApiSetting> {
+    const [updated] = await db
+      .update(apiSettings)
+      .set({ lastTestedAt })
+      .where(eq(apiSettings.service, service))
+      .returning();
+    return updated;
   }
 }
 

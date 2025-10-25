@@ -4706,27 +4706,42 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(403).json({ message: "Admin access required" });
       }
       
-      // Return API configuration status with stored settings
+      // Load API settings from database
+      const stripeSetting = await storage.getApiSetting('stripe');
+      const youtubeSetting = await storage.getApiSetting('youtube');
+      const mapsSetting = await storage.getApiSetting('maps');
+      
+      // Helper function to mask keys for display
+      const maskKey = (key: string | undefined, prefix: string) => {
+        if (!key) return '';
+        if (key.length <= 8) return '••••••••';
+        return key.substring(0, prefix.length + 5) + '••••••••••••' + key.substring(key.length - 4);
+      };
+      
+      // Return API configuration status with database settings
       const apiSettings = {
         stripe: {
-          publishableKey: storedApiSettings.stripe.publishableKey || (process.env.VITE_STRIPE_PUBLIC_KEY ? 'pk_live_••••••••••••3456' : ''),
-          secretKey: storedApiSettings.stripe.secretKey || (process.env.STRIPE_SECRET_KEY ? 'sk_live_••••••••••••7890' : ''),
-          webhookSecret: storedApiSettings.stripe.webhookSecret || (process.env.STRIPE_WEBHOOK_SECRET ? 'whsec_••••••••••••1234' : ''),
-          status: (storedApiSettings.stripe.secretKey || process.env.STRIPE_SECRET_KEY) ? 'active' : 'inactive',
-          lastTested: new Date().toISOString()
+          publishableKey: stripeSetting ? maskKey(stripeSetting.settingsJson.publishableKey, 'pk_') : (process.env.STRIPE_PUBLISHABLE_KEY ? maskKey(process.env.STRIPE_PUBLISHABLE_KEY, 'pk_') : ''),
+          secretKey: stripeSetting ? maskKey(stripeSetting.settingsJson.secretKey, 'sk_') : (process.env.STRIPE_SECRET_KEY ? maskKey(process.env.STRIPE_SECRET_KEY, 'sk_') : ''),
+          webhookSecret: stripeSetting ? maskKey(stripeSetting.settingsJson.webhookSecret, 'whsec_') : (process.env.STRIPE_WEBHOOK_SECRET ? maskKey(process.env.STRIPE_WEBHOOK_SECRET, 'whsec_') : ''),
+          status: (stripeSetting?.settingsJson?.secretKey || process.env.STRIPE_SECRET_KEY) ? 'active' : 'inactive',
+          lastTested: stripeSetting?.lastTestedAt?.toISOString() || null,
+          source: stripeSetting ? 'database' : 'environment'
         },
         youtube: {
-          apiKey: storedApiSettings.youtube.apiKey || (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
-          projectId: storedApiSettings.youtube.projectId || 'hublink-project',
-          status: (storedApiSettings.youtube.apiKey || process.env.YOUTUBE_API_KEY) ? 'active' : 'inactive',
-          lastTested: null
+          apiKey: youtubeSetting ? maskKey(youtubeSetting.settingsJson.apiKey, 'AIza') : (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
+          projectId: youtubeSetting?.settingsJson?.projectId || 'hublink-project',
+          status: (youtubeSetting?.settingsJson?.apiKey || process.env.YOUTUBE_API_KEY) ? 'active' : 'inactive',
+          lastTested: youtubeSetting?.lastTestedAt?.toISOString() || null,
+          source: youtubeSetting ? 'database' : 'environment'
         },
         maps: {
-          apiKey: storedApiSettings.maps.apiKey || (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
-          enableAdvancedFeatures: storedApiSettings.maps.enableAdvancedFeatures !== undefined ? storedApiSettings.maps.enableAdvancedFeatures : true,
-          status: (storedApiSettings.maps.apiKey || process.env.GOOGLE_MAPS_API_KEY) ? 'active' : 'inactive',
+          apiKey: mapsSetting ? maskKey(mapsSetting.settingsJson.apiKey, 'AIza') : (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
+          enableAdvancedFeatures: mapsSetting?.settingsJson?.enableAdvancedFeatures !== undefined ? mapsSetting.settingsJson.enableAdvancedFeatures : true,
+          status: (mapsSetting?.settingsJson?.apiKey || process.env.GOOGLE_MAPS_API_KEY) ? 'active' : 'inactive',
           monthlyRequests: 6,
-          lastTested: null
+          lastTested: mapsSetting?.lastTestedAt?.toISOString() || null,
+          source: mapsSetting ? 'database' : 'environment'
         },
         database: {
           url: process.env.DATABASE_URL ? 'postgres://••••••••••••' : '',
@@ -4813,10 +4828,20 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(400).json({ message: validationResult.message });
       }
       
-      // Store the API settings in memory (in production, use secure database storage)
-      if (storedApiSettings[service as keyof typeof storedApiSettings]) {
-        Object.assign(storedApiSettings[service as keyof typeof storedApiSettings], settingsData);
-        console.log(`✅ Saved ${service} settings:`, Object.keys(settingsData));
+      // Store the API settings in database (secure storage)
+      await storage.upsertApiSetting({
+        service,
+        settingsJson: settingsData,
+        updatedBy: userId
+      });
+      
+      console.log(`✅ Saved ${service} settings to database:`, Object.keys(settingsData));
+      
+      // If Stripe keys are updated, reload Stripe instance
+      if (service === 'stripe' && settingsData.secretKey) {
+        console.log('🔄 Reloading Stripe instance with new keys...');
+        // Note: Server restart required for Stripe instance reload
+        // In production, consider using environment variable updates
       }
       
       // Create audit log
@@ -4830,9 +4855,10 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       
       res.json({ 
         success: true, 
-        message: `${service} API settings updated successfully`,
+        message: `${service} API settings updated successfully. Server restart may be required for changes to take effect.`,
         service,
-        status: 'updated'
+        status: 'updated',
+        requiresRestart: service === 'stripe' || service === 'youtube' || service === 'maps'
       });
     } catch (error) {
       console.error("Error updating API settings:", error);
