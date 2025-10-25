@@ -80,7 +80,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               </div>
             </Link>
 
-            <div className="flex items-center space-x-4">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
               <Button
                 variant="ghost"
                 size="icon"
@@ -98,6 +99,37 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
               <Button onClick={handleGetStarted} data-testid="button-get-started">
                 Get Started
               </Button>
+            </div>
+
+            {/* Mobile Navigation */}
+            <div className="flex md:hidden items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              >
+                {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </Button>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <div className="flex flex-col space-y-4 mt-8">
+                    <Button variant="outline" asChild className="w-full justify-start">
+                      <Link href="/document-signup">For Business</Link>
+                    </Button>
+                    <Button variant="outline" onClick={handleSignIn} className="w-full justify-start">
+                      Sign In
+                    </Button>
+                    <Button onClick={handleGetStarted} className="w-full">
+                      Get Started
+                    </Button>
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </div>
