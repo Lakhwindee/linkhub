@@ -353,7 +353,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  // Signup endpoint
+  // Regular user signup endpoint
   app.post('/api/auth/signup', async (req, res) => {
     try {
       const { email, password, firstName, lastName, username } = req.body;
@@ -404,6 +404,82 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     } catch (error) {
       console.error('Signup error:', error);
       res.status(500).json({ message: 'Failed to create account' });
+    }
+  });
+
+  // Publisher signup endpoint
+  app.post('/api/auth/publisher-signup', async (req, res) => {
+    try {
+      const { 
+        email, password, firstName, lastName,
+        businessName, businessType, taxId, businessDescription,
+        country, state, city, address, postalCode, phoneNumber
+      } = req.body;
+
+      // Required fields validation
+      if (!email || !password || !firstName || !lastName || !businessName || !businessType) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ message: 'Password must be at least 6 characters' });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already registered' });
+      }
+
+      // Hash password
+      const bcrypt = await import('bcrypt');
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create publisher user with generated ID
+      const userId = `publisher-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const username = `${businessName.toLowerCase().replace(/\s+/g, '_')}_${Date.now().toString().slice(-4)}`;
+      
+      const userData = {
+        id: userId,
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        username,
+        role: 'publisher',
+        plan: 'free', // Publishers don't need paid plans
+        profileImageUrl: '',
+        // Publisher-specific data stored in bio for now
+        bio: JSON.stringify({
+          businessName,
+          businessType,
+          taxId,
+          businessDescription,
+          country,
+          state,
+          city,
+          address,
+          postalCode,
+          phoneNumber
+        })
+      };
+
+      const user = await storage.upsertUser(userData);
+
+      res.json({ 
+        message: 'Publisher account created successfully',
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          username: user.username,
+          role: user.role
+        }
+      });
+    } catch (error) {
+      console.error('Publisher signup error:', error);
+      res.status(500).json({ message: 'Failed to create publisher account' });
     }
   });
 

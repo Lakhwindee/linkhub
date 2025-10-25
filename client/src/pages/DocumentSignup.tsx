@@ -1,588 +1,473 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Upload, CheckCircle, AlertCircle, Clock, User, MapPin, Calendar, Loader2 } from "lucide-react";
+import { Building2, Loader2, CheckCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { countries, statesByCountry, getCitiesForState } from "@/data/locationData";
-
-interface ExtractedInfo {
-  documentNumber?: string;
-  fullName?: string;
-  dateOfBirth?: string;
-  nationality?: string;
-  expiryDate?: string;
-}
+import { apiRequest } from "@/lib/queryClient";
 
 export default function DocumentSignup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  const [step, setStep] = useState(1);
-  const [documentType, setDocumentType] = useState<'passport' | 'driving_license' | null>(null);
-  const [documentUrl, setDocumentUrl] = useState<string>('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'verified' | 'failed'>('pending');
-  const [extractedInfo, setExtractedInfo] = useState<ExtractedInfo>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
   const [formData, setFormData] = useState({
+    // Personal Account Info
     email: '',
     password: '',
     confirmPassword: '',
-    username: '',
     firstName: '',
     lastName: '',
-    bio: '',
+    
+    // Business Information
+    businessName: '',
+    businessType: '',
+    taxId: '',
+    businessDescription: '',
+    
+    // Address
     country: '',
+    state: '',
     city: '',
+    address: '',
+    postalCode: '',
+    
+    // Contact
+    phoneNumber: '',
   });
 
+  const businessTypes = [
+    'Hotel',
+    'Tour Operator',
+    'Travel Agency',
+    'Restaurant',
+    'Transportation Service',
+    'Adventure Activities',
+    'Event Organizer',
+    'Other'
+  ];
 
-  const handleDocumentUpload = async (url: string) => {
-    setDocumentUrl(url);
-    setIsVerifying(true);
-    
-    try {
-      // Simulate AI document verification
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Mock extracted information based on document type
-      const mockExtractedInfo: ExtractedInfo = {
-        documentNumber: documentType === 'passport' ? 'P1234567' : 'DL987654321',
-        fullName: 'John Smith',
-        dateOfBirth: '1990-05-15',
-        nationality: documentType === 'passport' ? 'British' : 'UK',
-        expiryDate: '2030-12-31'
-      };
-      
-      setExtractedInfo(mockExtractedInfo);
-      setFormData(prev => ({
-        ...prev,
-        firstName: mockExtractedInfo.fullName?.split(' ')[0] || '',
-        lastName: mockExtractedInfo.fullName?.split(' ').slice(1).join(' ') || ''
-      }));
-      
-      setVerificationStatus('verified');
-      setStep(3);
-      
-      toast({
-        title: "Document Verified!",
-        description: "Your document has been successfully verified. Please complete your profile.",
-      });
-    } catch (error) {
-      setVerificationStatus('failed');
-      toast({
-        title: "Verification Failed",
-        description: "Unable to verify your document. Please try again or contact support.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsVerifying(false);
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Reset dependent fields when parent changes
+    if (field === 'country') {
+      setFormData(prev => ({ ...prev, state: '', city: '' }));
+    } else if (field === 'state') {
+      setFormData(prev => ({ ...prev, city: '' }));
     }
   };
 
-  const handleSubmit = async () => {
-    // Validate required fields
-    if (!formData.email || !formData.password || !formData.firstName || !formData.lastName) {
+  const validateForm = () => {
+    // Required fields validation
+    if (!formData.email || !formData.password || !formData.confirmPassword) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields (email, password, name).",
+        description: "Please fill in email and password fields.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    // Validate password match
+    if (!formData.firstName || !formData.lastName) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide your first and last name.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.businessName || !formData.businessType) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide business name and type.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Password validation
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Passwords Don't Match",
         description: "Please make sure your passwords match.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    // Validate password strength
     if (formData.password.length < 6) {
       toast({
         title: "Weak Password",
         description: "Password must be at least 6 characters long.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
     setIsSubmitting(true);
-    setSuccessStage('creating');
 
     try {
-      // Simulate account creation process with realistic timing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const signupData = {
-        ...formData,
-        documentType,
-        documentUrl,
-        ...extractedInfo,
-        verificationStatus,
-      };
+      // Create publisher account
+      const response = await apiRequest("POST", "/api/auth/publisher-signup", {
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        businessName: formData.businessName,
+        businessType: formData.businessType,
+        taxId: formData.taxId,
+        businessDescription: formData.businessDescription,
+        country: formData.country,
+        state: formData.state,
+        city: formData.city,
+        address: formData.address,
+        postalCode: formData.postalCode,
+        phoneNumber: formData.phoneNumber,
+      });
 
-      // Store signup data for completion process (including password for later)
-      // IMPORTANT: Use localStorage instead of sessionStorage to persist across redirects
-      localStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
-      localStorage.setItem('hublink_signup_type', 'document');
-      
-      // Store OTP verification data
-      localStorage.setItem('signup_email', formData.email);
-      localStorage.setItem('verification_type', 'email');
-      
-      // Immediately redirect to OTP verification - don't show success yet
-      // User will see success message after OTP verification is complete
-      window.location.href = `/verify-otp?email=${encodeURIComponent(formData.email)}&type=email`;
-      
+      if (response.ok) {
+        toast({
+          title: "Account Created!",
+          description: "Your publisher account has been created successfully.",
+        });
+
+        // Auto login
+        const loginResponse = await apiRequest("POST", "/api/auth/login", {
+          email: formData.email,
+          password: formData.password
+        });
+
+        if (loginResponse.ok) {
+          // Redirect to publisher dashboard
+          setTimeout(() => {
+            window.location.href = '/publisher/submissions';
+          }, 1000);
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Registration Failed",
+          description: error.message || "Could not create publisher account",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
-      setIsSubmitting(false);
-      setSuccessStage('none');
       toast({
         title: "Error",
-        description: "Failed to complete signup. Please try again.",
+        description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      <div className="flex items-center space-x-4">
-        {[1, 2, 3].map((stepNumber) => (
-          <div key={stepNumber} className="flex items-center">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-              stepNumber <= step 
-                ? 'bg-primary text-primary-foreground' 
-                : 'bg-muted text-muted-foreground'
-            }`}>
-              {stepNumber}
-            </div>
-            {stepNumber < 3 && (
-              <div className={`w-20 h-1 mx-2 ${
-                stepNumber < step ? 'bg-primary' : 'bg-muted'
-              }`} />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const availableStates = formData.country ? statesByCountry[formData.country] || [] : [];
+  const availableCities = formData.state ? getCitiesForState(formData.country, formData.state) : [];
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-background py-12 px-4">
+      <div className="max-w-3xl mx-auto">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center">
+              <Building2 className="w-8 h-8 text-accent" />
+            </div>
+          </div>
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Complete Your Account Setup
+            Publisher Registration
           </h1>
           <p className="text-muted-foreground">
-            Verify your identity with your passport or driving license for enhanced security
+            Register your business to create campaigns and reach travel creators
           </p>
         </div>
 
-        {renderStepIndicator()}
-
-        {/* Step 1: Document Type Selection */}
-        {step === 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <FileText className="w-5 h-5" />
-                <span>Choose Document Type</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => {
-                    setDocumentType('passport');
-                    setStep(2);
-                  }}
-                  className={`p-6 border-2 rounded-lg text-left transition-colors ${
-                    documentType === 'passport'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Passport</h3>
-                      <p className="text-sm text-muted-foreground">International travel document</p>
-                    </div>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setDocumentType('driving_license');
-                    setStep(2);
-                  }}
-                  className={`p-6 border-2 rounded-lg text-left transition-colors ${
-                    documentType === 'driving_license'
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <FileText className="w-6 h-6 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">Driving License</h3>
-                      <p className="text-sm text-muted-foreground">Government issued ID</p>
-                    </div>
-                  </div>
-                </button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 2: Document Upload */}
-        {step === 2 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Upload className="w-5 h-5" />
-                <span>Upload Your {documentType === 'passport' ? 'Passport' : 'Driving License'}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="text-center">
-                <Badge variant="outline" className="mb-4">
-                  {documentType === 'passport' ? 'Passport' : 'Driving License'} Selected
-                </Badge>
-                
-                {!documentUrl ? (
-                  <ObjectUploader
-                    onGetUploadParameters={() => Promise.resolve({ method: "PUT" as const, url: "/api/upload-demo" })}
-                    onComplete={(result) => {
-                      if (result.successful && result.successful.length > 0) {
-                        handleDocumentUpload(result.successful[0].uploadURL);
-                      }
-                    }}
-                    maxFileSize={10 * 1024 * 1024} // 10MB
-                    buttonClassName="border-2 border-dashed border-primary/20 p-8 rounded-lg w-full"
-                  >
-                    <div className="text-center">
-                      <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">
-                        Upload {documentType === 'passport' ? 'Passport' : 'Driving License'}
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        Drag and drop or click to select your document
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Supported formats: JPEG, PNG, PDF (Max 10MB)
-                      </p>
-                    </div>
-                  </ObjectUploader>
-                ) : (
-                  <div className="space-y-4">
-                    {isVerifying ? (
-                      <div className="text-center p-8">
-                        <Clock className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
-                        <h3 className="text-lg font-semibold mb-2">Verifying Document...</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Our AI is analyzing your document. This may take a few moments.
-                        </p>
-                        <Progress value={66} className="w-full max-w-xs mx-auto" />
-                      </div>
-                    ) : (
-                      <div className="text-center p-8">
-                        {verificationStatus === 'verified' ? (
-                          <CheckCircle className="w-12 h-12 text-green-600 mx-auto mb-4" />
-                        ) : (
-                          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
-                        )}
-                        <h3 className="text-lg font-semibold mb-2">
-                          {verificationStatus === 'verified' ? 'Document Verified!' : 'Verification Failed'}
-                        </h3>
-                        {verificationStatus === 'failed' && (
-                          <Button 
-                            variant="outline" 
-                            onClick={() => {
-                              setDocumentUrl('');
-                              setVerificationStatus('pending');
-                            }}
-                          >
-                            Try Again
-                          </Button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={() => setStep(1)}>
-                  Back
-                </Button>
-                {verificationStatus === 'verified' && (
-                  <Button onClick={() => setStep(3)}>
-                    Continue
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 3: Complete Profile */}
-        {step === 3 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="w-5 h-5" />
-                <span>Complete Your Profile</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Extracted Information Display */}
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-3 flex items-center">
-                  <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                  Verified Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <Label className="text-muted-foreground">Full Name</Label>
-                    <p className="font-medium">{extractedInfo.fullName}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Document Number</Label>
-                    <p className="font-medium">{extractedInfo.documentNumber}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Date of Birth</Label>
-                    <p className="font-medium">{extractedInfo.dateOfBirth}</p>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground">Nationality</Label>
-                    <p className="font-medium">{extractedInfo.nationality}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Profile Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Business Information</CardTitle>
+            <CardDescription>
+              Provide your business details to get started
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Personal Account Information */}
               <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-foreground">Account Details</h3>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="email">Email</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name *</Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Enter your email"
+                      id="firstName"
+                      value={formData.firstName}
+                      onChange={(e) => handleChange('firstName', e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="username">Username</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name *</Label>
                     <Input
-                      id="username"
-                      value={formData.username}
-                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                      placeholder="Enter your username"
+                      id="lastName"
+                      value={formData.lastName}
+                      onChange={(e) => handleChange('lastName', e.target.value)}
+                      required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleChange('email', e.target.value)}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="password">Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password *</Label>
                     <Input
                       id="password"
                       type="password"
                       value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      placeholder="Create a password"
+                      onChange={(e) => handleChange('password', e.target.value)}
                       required
+                      disabled={isSubmitting}
+                      placeholder="At least 6 characters"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={formData.confirmPassword}
-                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      placeholder="Confirm your password"
+                      onChange={(e) => handleChange('confirmPassword', e.target.value)}
                       required
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
+              </div>
 
+              {/* Business Information */}
+              <div className="space-y-4 pt-6 border-t">
+                <h3 className="text-lg font-semibold text-foreground">Business Information</h3>
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessName">Business Name *</Label>
                     <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                      placeholder="First name"
+                      id="businessName"
+                      value={formData.businessName}
+                      onChange={(e) => handleChange('businessName', e.target.value)}
+                      required
+                      disabled={isSubmitting}
+                      placeholder="Your company name"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                      placeholder="Last name"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, city: '' }))}>
+                  <div className="space-y-2">
+                    <Label htmlFor="businessType">Business Type *</Label>
+                    <Select
+                      value={formData.businessType}
+                      onValueChange={(value) => handleChange('businessType', value)}
+                      disabled={isSubmitting}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select country" />
+                        <SelectValue placeholder="Select type" />
                       </SelectTrigger>
-                      <SelectContent className="max-h-80 overflow-y-auto">
-                        {countries.map((country) => (
-                          <SelectItem key={country.name} value={country.name}>
-                            {country.flag} {country.name}
+                      <SelectContent>
+                        {businessTypes.map((type, idx) => (
+                          <SelectItem key={`business-type-${idx}`} value={type}>
+                            {type}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Select 
-                      value={formData.city} 
-                      onValueChange={(value) => setFormData(prev => ({ ...prev, city: value }))}
-                      disabled={!formData.country}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select city" />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-80 overflow-y-auto">
-                        {formData.country && statesByCountry[formData.country as keyof typeof statesByCountry] ? (
-                          statesByCountry[formData.country as keyof typeof statesByCountry].reduce((allCities: string[], state: string) => {
-                            const cities = getCitiesForState(formData.country, state);
-                            return [...allCities, ...cities];
-                          }, []).map((city) => (
-                            <SelectItem key={city} value={city}>
-                              {city}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-cities" disabled>
-                            Select country first
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="bio">Bio</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="taxId">Tax ID / Business Registration Number</Label>
+                  <Input
+                    id="taxId"
+                    value={formData.taxId}
+                    onChange={(e) => handleChange('taxId', e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Optional"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="businessDescription">Business Description</Label>
                   <Textarea
-                    id="bio"
-                    value={formData.bio}
-                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                    placeholder="Tell us about yourself..."
+                    id="businessDescription"
+                    value={formData.businessDescription}
+                    onChange={(e) => handleChange('businessDescription', e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Tell us about your business..."
                     rows={3}
                   />
                 </div>
               </div>
 
-              <div className="flex justify-between items-center">
-                <Button variant="outline" onClick={() => setStep(2)}>
-                  Back
-                </Button>
+              {/* Address Information */}
+              <div className="space-y-4 pt-6 border-t">
+                <h3 className="text-lg font-semibold text-foreground">Business Address</h3>
                 
-                <div className="flex gap-2">
-                  <Button 
-                    onClick={handleSubmit}
-                    disabled={isSubmitting || !formData.username || !formData.email}
-                    className="min-w-[140px]"
-                  >
-                    {isSubmitting ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {successStage === 'creating' && 'Creating Account...'}
-                        {successStage === 'success' && 'Account Created!'}
-                        {successStage === 'redirecting' && 'Redirecting...'}
-                      </div>
-                    ) : (
-                      'Complete Signup'
-                    )}
-                  </Button>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Select
+                      value={formData.country}
+                      onValueChange={(value) => handleChange('country', value)}
+                      disabled={isSubmitting}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map(country => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="state">State/Province</Label>
+                    <Select
+                      value={formData.state}
+                      onValueChange={(value) => handleChange('state', value)}
+                      disabled={isSubmitting || !formData.country}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableStates.map(state => (
+                          <SelectItem key={state} value={state}>
+                            {state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city">City</Label>
+                    <Select
+                      value={formData.city}
+                      onValueChange={(value) => handleChange('city', value)}
+                      disabled={isSubmitting || !formData.state}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableCities.map(city => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address">Street Address</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => handleChange('address', e.target.value)}
+                    disabled={isSubmitting}
+                    placeholder="Street address"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postal Code</Label>
+                    <Input
+                      id="postalCode"
+                      value={formData.postalCode}
+                      onChange={(e) => handleChange('postalCode', e.target.value)}
+                      disabled={isSubmitting}
+                      placeholder="Postal/ZIP code"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phoneNumber">Phone Number</Label>
+                    <Input
+                      id="phoneNumber"
+                      type="tel"
+                      value={formData.phoneNumber}
+                      onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                      disabled={isSubmitting}
+                      placeholder="+1 234 567 8900"
+                    />
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+
+              <div className="pt-6 border-t">
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Create Publisher Account
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <p className="text-sm text-center text-muted-foreground">
+                Already have an account?{" "}
+                <a href="/api/login" className="text-accent hover:underline">
+                  Sign in
+                </a>
+              </p>
+            </form>
+          </CardContent>
+        </Card>
       </div>
-      
-      {/* Success Overlay */}
-      {successStage !== 'none' && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 transition-all duration-300">
-          <Card className="w-[400px] mx-4">
-            <CardContent className="p-8 text-center">
-              {successStage === 'creating' && (
-                <div className="space-y-4">
-                  <div className="flex justify-center">
-                    <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                  </div>
-                  <h3 className="text-xl font-semibold">Creating Your Account</h3>
-                  <p className="text-muted-foreground">Please wait while we set up your HubLink profile...</p>
-                </div>
-              )}
-              
-              {successStage === 'success' && (
-                <div className="space-y-4">
-                  <div className="flex justify-center">
-                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center animate-pulse">
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-green-600">Account Created Successfully!</h3>
-                  <p className="text-muted-foreground">Welcome to HubLink! Your account is ready.</p>
-                </div>
-              )}
-              
-              {successStage === 'redirecting' && (
-                <div className="space-y-4">
-                  <div className="flex justify-center">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                    </div>
-                  </div>
-                  <h3 className="text-xl font-semibold text-blue-600">Redirecting...</h3>
-                  <p className="text-muted-foreground">Taking you to your dashboard...</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }
