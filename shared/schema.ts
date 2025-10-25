@@ -65,6 +65,9 @@ export const users = pgTable("users", {
   plan: varchar("plan").default("free"), // free, standard, premium
   stripeCustomerId: varchar("stripe_customer_id"),
   stripeSubscriptionId: varchar("stripe_subscription_id"),
+  stripeConnectAccountId: varchar("stripe_connect_account_id"), // For holding payments until bank account connected
+  stripeBankAccountStatus: varchar("stripe_bank_account_status").default("not_connected"), // not_connected, pending, connected
+  stripePayoutsEnabled: boolean("stripe_payouts_enabled").default(false),
   canDmMe: varchar("can_dm_me").default("all"), // all, followers, none
   // Document verification fields
   verificationStatus: varchar("verification_status").default("pending"), // pending, verified, rejected
