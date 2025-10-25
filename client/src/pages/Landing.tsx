@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, MessageCircle, Users, Calendar, DollarSign, Shield, CheckIcon, CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 
 export default function Landing() {
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
@@ -366,16 +367,15 @@ export default function Landing() {
                     )}
                   </div>
                   
-                  <Button 
-                    className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
-                    variant={plan.popular ? "default" : "outline"}
-                    size="lg"
-                    asChild
-                  >
-                    <a href={plan.ctaLink}>
+                  <Link href={plan.ctaLink}>
+                    <Button 
+                      className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
+                      variant={plan.popular ? "default" : "outline"}
+                      size="lg"
+                    >
                       {plan.cta}
-                    </a>
-                  </Button>
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
