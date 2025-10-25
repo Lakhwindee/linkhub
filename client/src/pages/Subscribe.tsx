@@ -273,24 +273,15 @@ export default function Subscribe() {
                 {!isAuthenticated && showLoginPrompt ? (
                   <div className="space-y-3">
                     <p className="text-sm text-center text-muted-foreground">
-                      Sign in to subscribe to Premium
+                      Sign in with Google to subscribe to Premium
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        onClick={() => window.location.href = "/api/login"}
-                        variant="default"
-                        className="w-full bg-accent hover:bg-accent/90"
-                      >
-                        Sign In
-                      </Button>
-                      <Button
-                        asChild
-                        variant="outline"
-                        className="w-full"
-                      >
-                        <Link href="/document-signup">Sign Up</Link>
-                      </Button>
-                    </div>
+                    <Button
+                      onClick={() => window.location.href = "/api/login"}
+                      variant="default"
+                      className="w-full bg-accent hover:bg-accent/90"
+                    >
+                      Sign In with Google
+                    </Button>
                   </div>
                 ) : (
                   <Button 
