@@ -60,6 +60,7 @@ export default function Subscribe() {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [clientSecret, setClientSecret] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // Allow unauthenticated users to view the subscription page
   // Authentication will be required when they try to subscribe
@@ -92,15 +93,14 @@ export default function Subscribe() {
   ];
 
   const handleSelectPlan = async (planId: string) => {
-    // Redirect to login if not authenticated
+    // Show message if not authenticated
     if (!isAuthenticated) {
+      setShowLoginPrompt(true);
       toast({
         title: "Sign in required",
-        description: "Please sign in to subscribe to a plan",
+        description: "Please sign in or create an account to subscribe to Premium",
+        variant: "default",
       });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
       return;
     }
 
@@ -270,23 +270,47 @@ export default function Subscribe() {
               </CardHeader>
 
               <CardContent className="space-y-6">
-                <Button 
-                  className={`w-full h-12 ${
-                    plan.popular 
-                      ? 'bg-accent hover:bg-accent/90' 
-                      : 'bg-primary hover:bg-primary/90'
-                  }`}
-                  onClick={() => handleSelectPlan(plan.id)}
-                  disabled={isProcessing}
-                  data-testid={`button-select-plan-${plan.id}`}
-                >
-                  {isProcessing && selectedPlan === plan.id ? (
-                    <div className="animate-spin w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
-                  ) : (
-                    <Zap className="w-5 h-5 mr-2" />
-                  )}
-                  Get Premium
-                </Button>
+                {!isAuthenticated && showLoginPrompt ? (
+                  <div className="space-y-3">
+                    <p className="text-sm text-center text-muted-foreground">
+                      Sign in to subscribe to Premium
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={() => window.location.href = "/api/login"}
+                        variant="default"
+                        className="w-full bg-accent hover:bg-accent/90"
+                      >
+                        Sign In
+                      </Button>
+                      <Button
+                        asChild
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Link href="/document-signup">Sign Up</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <Button 
+                    className={`w-full h-12 ${
+                      plan.popular 
+                        ? 'bg-accent hover:bg-accent/90' 
+                        : 'bg-primary hover:bg-primary/90'
+                    }`}
+                    onClick={() => handleSelectPlan(plan.id)}
+                    disabled={isProcessing}
+                    data-testid={`button-select-plan-${plan.id}`}
+                  >
+                    {isProcessing && selectedPlan === plan.id ? (
+                      <div className="animate-spin w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full mr-2" />
+                    ) : (
+                      <Zap className="w-5 h-5 mr-2" />
+                    )}
+                    Get Premium
+                  </Button>
+                )}
 
                 <div className="space-y-3">
                   <h4 className="font-semibold text-foreground">What's included:</h4>
