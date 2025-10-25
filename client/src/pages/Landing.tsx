@@ -103,8 +103,34 @@ export default function Landing() {
         "Basic profile"
       ],
       limitations: [
-        "Cannot earn money from ads"
-      ]
+        "Cannot earn money from ads",
+        "No YouTube verification",
+        "No creator payouts"
+      ],
+      popular: false,
+      cta: "Sign Up Free",
+      ctaLink: "/document-signup"
+    },
+    {
+      name: "Premium",
+      description: "For creators who want to earn",
+      price: "£45",
+      period: "per month",
+      features: [
+        "Everything in Free",
+        "Earn from brand campaigns",
+        "YouTube channel verification",
+        "Creator payout account",
+        "Reserve campaigns",
+        "Submit content for approval",
+        "15-tier creator system",
+        "Campaign earnings tracker",
+        "Priority support"
+      ],
+      limitations: [],
+      popular: true,
+      cta: "Upgrade to Premium",
+      ctaLink: "/subscribe"
     }
   ];
 
@@ -292,56 +318,64 @@ export default function Landing() {
             </p>
           </div>
 
-          <div className="flex justify-center max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {plans.map((plan, index) => (
-              <Card key={index} className={`relative max-w-md w-full ${plan.popular ? 'border-accent' : ''}`} >
+              <Card key={index} className={`relative ${plan.popular ? 'border-2 border-primary shadow-xl' : ''}`} >
                 {plan.popular && (
-                  <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-3 py-1 text-xs font-medium rounded-full">
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 text-sm font-semibold rounded-full">
                     Most Popular
                   </div>
                 )}
                 <CardContent className="p-8 space-y-6">
                   <div>
-                    <h3 className="text-xl font-semibold text-card-foreground" >
+                    <h3 className="text-2xl font-bold text-card-foreground" >
                       {plan.name}
                     </h3>
-                    <p className="text-muted-foreground" >
+                    <p className="text-muted-foreground mt-2" >
                       {plan.description}
                     </p>
                   </div>
                   <div className="space-y-2">
-                    <div className="text-3xl font-bold text-card-foreground" >
+                    <div className="text-4xl font-bold text-card-foreground" >
                       {plan.price}
                     </div>
                     <div className="text-sm text-muted-foreground" >
                       {plan.period}
                     </div>
                   </div>
+                  
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      {plan.features.map((feature, idx) => (
+                        <div key={idx} className="flex items-start space-x-3">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-card-foreground">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {plan.limitations && plan.limitations.length > 0 && (
+                      <div className="pt-4 border-t border-border">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2">Limitations:</p>
+                        {plan.limitations.map((limitation, idx) => (
+                          <div key={idx} className="flex items-start space-x-3">
+                            <span className="text-muted-foreground text-xs">• {limitation}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
                   <Button 
-                    className="w-full"
-                    variant="outline"
+                    className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
+                    variant={plan.popular ? "default" : "outline"}
+                    size="lg"
                     asChild
-                                      >
-                    <a href="/document-signup">
-                      Sign Up Free
+                  >
+                    <a href={plan.ctaLink}>
+                      {plan.cta}
                     </a>
                   </Button>
-                  <div className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center space-x-3" >
-                        <CheckIcon className="w-5 h-5 text-accent" />
-                        <span className="text-card-foreground">{feature}</span>
-                      </div>
-                    ))}
-                    {plan.limitations?.map((limitation, limitIndex) => (
-                      <div key={limitIndex} className="flex items-center space-x-3 opacity-50" >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
-                        <span className="text-muted-foreground">{limitation}</span>
-                      </div>
-                    ))}
-                  </div>
                 </CardContent>
               </Card>
             ))}
