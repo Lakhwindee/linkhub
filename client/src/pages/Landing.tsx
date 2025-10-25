@@ -131,7 +131,7 @@ export default function Landing() {
       limitations: [],
       popular: true,
       cta: "Upgrade to Premium",
-      ctaLink: "/subscribe"
+      ctaLink: "/api/login?redirect=/subscribe"
     }
   ];
 
@@ -367,15 +367,27 @@ export default function Landing() {
                     )}
                   </div>
                   
-                  <Link href={plan.ctaLink}>
-                    <Button 
-                      className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
-                      variant={plan.popular ? "default" : "outline"}
-                      size="lg"
-                    >
-                      {plan.cta}
-                    </Button>
-                  </Link>
+                  {plan.ctaLink.startsWith('/api/') ? (
+                    <a href={plan.ctaLink}>
+                      <Button 
+                        className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
+                        variant={plan.popular ? "default" : "outline"}
+                        size="lg"
+                      >
+                        {plan.cta}
+                      </Button>
+                    </a>
+                  ) : (
+                    <Link href={plan.ctaLink}>
+                      <Button 
+                        className={`w-full ${plan.popular ? 'bg-primary hover:bg-primary/90' : ''}`}
+                        variant={plan.popular ? "default" : "outline"}
+                        size="lg"
+                      >
+                        {plan.cta}
+                      </Button>
+                    </Link>
+                  )}
                 </CardContent>
               </Card>
             ))}

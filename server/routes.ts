@@ -202,6 +202,21 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
   // Authentication routes
   
+  // Login route - handles redirect parameter and initiates Google OAuth
+  app.get('/api/login', (req, res) => {
+    if (!googleOAuthClient) {
+      return res.status(503).json({ message: 'Google OAuth is not configured' });
+    }
+    
+    // Store redirect URL in session
+    const redirectUrl = req.query.redirect as string || '/';
+    (req.session as any).postLoginRedirect = redirectUrl;
+    console.log('📍 Storing post-login redirect:', redirectUrl);
+    
+    // Redirect to Google OAuth
+    res.redirect('/api/auth/google');
+  });
+
   // Google OAuth routes
   app.get('/api/auth/google', (req, res) => {
     if (!googleOAuthClient) {
@@ -326,8 +341,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         });
       });
 
-      console.log('📍 Redirecting to home page...');
-      res.redirect('/');
+      // Get redirect URL from session or default to home
+      const redirectUrl = (req.session as any).postLoginRedirect || '/';
+      delete (req.session as any).postLoginRedirect; // Clean up
+      
+      console.log('📍 Redirecting to:', redirectUrl);
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error('❌ Google OAuth callback error:', error);
       res.redirect('/?error=oauth_failed');
