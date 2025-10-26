@@ -58,6 +58,13 @@ Preferred communication style: Simple, everyday language.
 ## Technical Implementations
 - 10% platform fee applied across all booking services.
 - **Publisher Signup**: Simplified registration process - no document verification required. Publishers provide detailed business information through form fields only (business name, type, address, tax ID, etc.). Verification status managed by admin.
+- **Trial Code System** (October 2025): Complete promo code and free trial functionality
+  - User-facing promo code input on Subscribe page with real-time validation
+  - `/api/promo-code/validate` endpoint checks code validity, expiry, and usage limits
+  - Stripe integration automatically applies trial periods (e.g., 30-day, 60-day trials)
+  - Admin panel allows creation of trial codes and discount codes
+  - Database tracks: discount codes, code usage, and user trials
+  - Examples: TRIAL30 (30-day trial), TRIAL60 (60-day trial), TRIAL14 (14-day trial)
 - **Worldwide Tax System** (Implemented October 2025):
   - Automatic tax calculation and withholding for creator campaign earnings based on country of residence
   - Database: tax_configurations table for country tax rates, tax_records table for complete audit trail
