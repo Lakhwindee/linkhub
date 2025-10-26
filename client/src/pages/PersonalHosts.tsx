@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/lib/permissions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ interface PersonalHost {
 
 export default function PersonalHosts() {
   const { user } = useAuth();
+  const permissions = usePermissions(user);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -222,6 +224,15 @@ export default function PersonalHosts() {
               Book hosts for unique travel experiences
             </p>
           </div>
+          {permissions.canCreateStays && (
+            <Button 
+              onClick={() => setShowCreateDialog(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Become a Host
+            </Button>
+          )}
         </div>
 
         <Tabs defaultValue="browse" className="space-y-6">
