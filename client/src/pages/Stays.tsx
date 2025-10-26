@@ -193,7 +193,21 @@ export default function Stays() {
           
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-4">Stays</h1>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex-1"></div>
+              <h1 className="text-4xl font-bold text-foreground flex-1">Stays</h1>
+              <div className="flex-1 flex justify-end">
+                {permissions.canCreateStays && (
+                  <Button 
+                    onClick={handleAddListing}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    List Your Property
+                  </Button>
+                )}
+              </div>
+            </div>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Discover unique homestays and manage your bookings
             </p>

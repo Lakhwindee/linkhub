@@ -594,7 +594,21 @@ export default function TourPackages() {
       <div className="bg-gradient-to-br from-primary/10 via-accent/5 to-secondary/10 border-b">
         <div className="max-w-[1600px] mx-auto px-6 py-12">
           <div className="text-center space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight">Tour Packages</h1>
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex-1"></div>
+              <h1 className="text-4xl font-bold tracking-tight flex-1">Tour Packages</h1>
+              <div className="flex-1 flex justify-end">
+                {permissions.canCreateTourPackages && (
+                  <Button 
+                    onClick={() => setIsCreateModalOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Package
+                  </Button>
+                )}
+              </div>
+            </div>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Discover amazing travel experiences and manage your bookings
             </p>
