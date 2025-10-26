@@ -8,7 +8,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckIcon, DollarSign, Star, Heart, Users, MapPin, MessageCircle, Calendar, Crown, Zap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckIcon, DollarSign, Star, Heart, Users, MapPin, MessageCircle, Calendar, Crown, Zap, Tag } from "lucide-react";
 import { Link } from "wouter";
 
 // Load Stripe (only if key is available)
@@ -61,6 +62,9 @@ export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState<any>(null);
 
   // Allow unauthenticated users to view the subscription page
   // Authentication will be required when they try to subscribe
@@ -92,6 +96,50 @@ export default function Subscribe() {
     }
   ];
 
+  const handleValidatePromo = async () => {
+    if (!promoCode.trim()) {
+      toast({
+        title: "Enter promo code",
+        description: "Please enter a promo code to validate",
+        variant: "default",
+      });
+      return;
+    }
+
+    setIsValidatingPromo(true);
+    try {
+      const response = await apiRequest("POST", "/api/promo-code/validate", { 
+        code: promoCode.trim().toUpperCase() 
+      });
+      const data = await response.json();
+      
+      if (data.valid) {
+        setAppliedPromo(data.promoDetails);
+        toast({
+          title: "Promo code applied!",
+          description: data.promoDetails.discountType === 'trial' 
+            ? `${data.promoDetails.trialPeriodDays}-day free trial activated!`
+            : `${data.promoDetails.discountValue}% discount applied!`,
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Invalid code",
+          description: data.message || "This promo code is not valid",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Validation failed",
+        description: (error as Error).message || "Failed to validate promo code",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
+
   const handleSelectPlan = async (planId: string) => {
     // Show message if not authenticated
     if (!isAuthenticated) {
@@ -108,7 +156,12 @@ export default function Subscribe() {
     setIsProcessing(true);
 
     try {
-      const response = await apiRequest("POST", "/api/billing/checkout", { plan: planId });
+      const payload: any = { plan: planId };
+      if (appliedPromo) {
+        payload.promoCode = promoCode.trim().toUpperCase();
+      }
+      
+      const response = await apiRequest("POST", "/api/billing/checkout", payload);
       const data = await response.json();
       
       if (data.url) {
@@ -270,6 +323,53 @@ export default function Subscribe() {
               </CardHeader>
 
               <CardContent className="space-y-6">
+                {/* Promo Code Input */}
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Tag className="w-4 h-4 text-muted-foreground" />
+                    <label className="text-sm font-medium text-foreground">Have a promo code?</label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Enter code (e.g. TRIAL30)"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                      disabled={!!appliedPromo}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleValidatePromo}
+                      disabled={isValidatingPromo || !!appliedPromo || !promoCode.trim()}
+                      variant="outline"
+                      className="min-w-20"
+                    >
+                      {isValidatingPromo ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-accent border-t-transparent rounded-full" />
+                      ) : appliedPromo ? (
+                        "Applied"
+                      ) : (
+                        "Apply"
+                      )}
+                    </Button>
+                  </div>
+                  {appliedPromo && (
+                    <div className="bg-green-50 dark:bg-green-950 p-3 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center space-x-2">
+                        <CheckIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
+                        <span className="text-sm font-semibold text-green-800 dark:text-green-200">
+                          {appliedPromo.discountType === 'trial' 
+                            ? `${appliedPromo.trialPeriodDays}-Day Free Trial Applied!`
+                            : `${appliedPromo.discountValue}% Discount Applied!`
+                          }
+                        </span>
+                      </div>
+                      <p className="text-xs text-green-700 dark:text-green-300 mt-1 ml-6">
+                        {appliedPromo.description || 'Promo code activated successfully'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
                 {!isAuthenticated && showLoginPrompt ? (
                   <div className="space-y-3">
                     <p className="text-sm text-center text-muted-foreground">
@@ -299,7 +399,10 @@ export default function Subscribe() {
                     ) : (
                       <Zap className="w-5 h-5 mr-2" />
                     )}
-                    Get Premium
+                    {appliedPromo && appliedPromo.discountType === 'trial' 
+                      ? `Start ${appliedPromo.trialPeriodDays}-Day Free Trial`
+                      : 'Get Premium'
+                    }
                   </Button>
                 )}
 
