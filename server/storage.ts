@@ -1159,8 +1159,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getFeedAdsForUser(userId?: string, ipAddress?: string, country?: string): Promise<any[]> {
+    // 🎯 INSTAGRAM-STYLE: Only show boosted posts in feed, NOT campaign ads
+    // Campaign ads are shown in separate "Campaigns" section
+    
     // Get active boosted posts with post data
-    const boostedPostsQuery = db
+    const boostedPostsData = await db
       .select({
         id: boostedPosts.id,
         adType: sql<string>`'boosted_post'`,
@@ -1193,63 +1196,23 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(boostedPosts.createdAt))
-      .limit(5);
+      .limit(10); // Increased limit for more variety
 
-    // Get active campaign ads that might be shown in feed
-    const campaignAdsQuery = db
-      .select({
-        id: ads.id,
-        adType: sql<string>`'campaign'`,
-        brand: ads.brand,
-        title: ads.title,
-        briefMd: ads.briefMd,
-        countries: ads.countries,
-        adImageUrl: ads.adImageUrl,
-        payoutAmount: ads.payoutAmount,
-        createdAt: ads.createdAt,
-      })
-      .from(ads)
-      .where(
-        and(
-          eq(ads.status, 'active'),
-          // Check if campaign is still active
-          sql`${ads.deadlineAt} >= NOW()`
-        )
-      )
-      .orderBy(desc(ads.createdAt))
-      .limit(3);
-
-    // Execute both queries
-    const [boostedPostsData, campaignAdsData] = await Promise.all([
-      boostedPostsQuery,
-      campaignAdsQuery
-    ]);
-
-    // Combine and filter by targeting
-    const allAds = [
-      ...boostedPostsData.map(bp => ({
+    // Filter by targeting and format for feed display
+    const feedAds = boostedPostsData
+      .map(bp => ({
         ...bp,
         adType: 'boosted_post',
         // Filter by target countries if specified
         isTargeted: !bp.targetCountries?.length || 
                    (country && bp.targetCountries?.includes(country))
-      })),
-      ...campaignAdsData.map(ca => ({
-        ...ca,
-        adType: 'campaign', 
-        // Filter by target countries if specified
-        isTargeted: !ca.countries?.length ||
-                   (country && ca.countries?.includes(country))
       }))
-    ];
+      .filter(ad => ad.isTargeted) // Only show targeted ads
+      .sort(() => Math.random() - 0.5) // Randomize order
+      .slice(0, 5); // Max 5 boosted posts in feed
 
-    // Filter to only show targeted ads and randomize order
-    const targetedAds = allAds
-      .filter(ad => ad.isTargeted)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 3); // Max 3 ads in feed
-
-    return targetedAds;
+    console.log(`📱 Feed ads (Instagram-style): ${feedAds.length} boosted posts for country: ${country || 'all'}`);
+    return feedAds;
   }
 
   // Wallet and Payouts
