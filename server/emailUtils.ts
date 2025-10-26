@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
+import { sendEmailViaGmailAPI } from './gmailApi';
 
-// Create Gmail transporter
+// Create Gmail transporter (fallback - Gmail API is preferred)
 const createTransporter = () => {
   return nodemailer.createTransport({
     service: 'gmail',
@@ -11,9 +12,8 @@ const createTransporter = () => {
   });
 };
 
-// Send password reset email
+// Send password reset email using Gmail API (more reliable than SMTP)
 export const sendPasswordResetEmail = async (email: string, resetToken: string, userType: 'demo' | 'real') => {
-  const transporter = createTransporter();
   
   const resetUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/reset-password?token=${resetToken}`;
   
@@ -59,24 +59,54 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
     </div>
   `;
 
-  const mailOptions = {
-    from: `"HubLink Support" <${process.env.GMAIL_EMAIL}>`,
-    to: email,
-    subject: '🔐 Password Reset Request - HubLink',
-    html: htmlContent,
-  };
-
+  // Try Gmail API first (more reliable)
   try {
-    const result = await transporter.sendMail(mailOptions);
-    console.log('✅ Password reset email sent successfully:', { 
-      messageId: result.messageId, 
-      email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), // Mask email for logs
-      userType 
-    });
-    return { success: true, messageId: result.messageId };
-  } catch (error) {
-    console.error('❌ Failed to send password reset email:', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    console.log('📧 Attempting to send password reset email via Gmail API to:', email.replace(/(.{2}).*(@.*)/, '$1***$2'));
+    const result = await sendEmailViaGmailAPI(
+      email,
+      '🔐 Password Reset Request - HubLink',
+      htmlContent
+    );
+    
+    if (result.success) {
+      console.log('✅ Password reset email sent successfully via Gmail API:', { 
+        messageId: result.messageId, 
+        email: email.replace(/(.{2}).*(@.*)/, '$1***$2'),
+        userType,
+        method: 'Gmail API'
+      });
+      return { success: true, messageId: result.messageId };
+    }
+    
+    // If Gmail API fails, fall back to SMTP
+    console.log('⚠️ Gmail API failed, falling back to SMTP...');
+    throw new Error('Gmail API failed');
+    
+  } catch (gmailError) {
+    console.log('📧 Using SMTP fallback for password reset email');
+    
+    // Fallback to Nodemailer SMTP
+    try {
+      const transporter = createTransporter();
+      const mailOptions = {
+        from: `"HubLink Support" <${process.env.GMAIL_EMAIL}>`,
+        to: email,
+        subject: '🔐 Password Reset Request - HubLink',
+        html: htmlContent,
+      };
+      
+      const result = await transporter.sendMail(mailOptions);
+      console.log('✅ Password reset email sent successfully via SMTP:', { 
+        messageId: result.messageId, 
+        email: email.replace(/(.{2}).*(@.*)/, '$1***$2'),
+        userType,
+        method: 'SMTP Fallback'
+      });
+      return { success: true, messageId: result.messageId };
+    } catch (smtpError) {
+      console.error('❌ Failed to send password reset email (both Gmail API and SMTP):', smtpError);
+      return { success: false, error: smtpError instanceof Error ? smtpError.message : 'Unknown error' };
+    }
   }
 };
 
