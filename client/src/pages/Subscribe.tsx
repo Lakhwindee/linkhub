@@ -228,11 +228,11 @@ export default function Subscribe() {
         </div>
 
         {/* Subscription Plans */}
-        <div className="grid lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+        <div className="flex justify-center items-center">
           {plans.map((plan) => (
             <Card 
               key={plan.id} 
-              className={`relative border-2 transition-all duration-300 ${
+              className={`relative border-2 transition-all duration-300 w-full max-w-md ${
                 plan.popular 
                   ? 'border-accent shadow-lg scale-105' 
                   : 'border-border hover:border-accent/50'
