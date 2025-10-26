@@ -460,10 +460,24 @@ export default function PersonalHosts() {
         </Tabs>
       </div>
 
+      {/* Create Host Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Host Profile</DialogTitle>
+          </DialogHeader>
+          <HostProfileForm
+            onSubmit={handleCreateHost}
+            onCancel={() => setShowCreateDialog(false)}
+            isEditing={false}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Host Dialog */}
       {editingHost && (
         <Dialog open={!!editingHost} onOpenChange={() => setEditingHost(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh]">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Host Profile</DialogTitle>
             </DialogHeader>
