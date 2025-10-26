@@ -33,6 +33,7 @@ const CheckoutForm = ({ plan }: { plan: string }) => {
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/billing?success=true`,
+        cancel_url: `${window.location.origin}/billing?cancelled=true`,
       },
     });
 

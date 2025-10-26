@@ -2,6 +2,26 @@
 
 HubLink is a tourism-social platform that connects travelers and creators globally. It enables users to discover, follow, connect, chat, post to a global feed, plan events, and earn money through brand advertising campaigns. The platform supports a multi-tier role system, including various free and premium creator plans, with specific support for UK (£) and India (₹) markets. The business vision is to become a leading global platform for travel-focused social interaction and content monetization.
 
+# Recent Changes (October 26, 2025)
+
+## Complete Subscription Lifecycle System
+- **Post-Purchase Confirmation**: Success/cancelled messages on Billing page (/billing?success=true or ?cancelled=true)
+- **Email Automation**: Comprehensive email system for subscription lifecycle
+  - Welcome Email: Sent immediately after subscription (trial or direct activation)
+  - Trial Reminders: Automatic emails sent 7 days, 3 days, and 1 day before trial ends
+  - Payment Confirmation: Sent after successful recurring payment with invoice link
+  - Payment Failed: Sent when payment fails with retry instructions
+- **Stripe Webhook Integration**: Complete webhook handlers for all subscription events
+  - `checkout.session.completed`: Creates subscription, sends welcome email
+  - `customer.subscription.trial_will_end`: Sends trial ending reminder (3 days before by Stripe)
+  - `invoice.payment_succeeded`: Sends payment confirmation for renewals
+  - `invoice.payment_failed`: Sends payment failure notice with retry date
+  - `customer.subscription.updated`: Tracks subscription status changes
+- **Auto-Debit**: Stripe automatically charges users when trial period ends
+- **Trial Flow**: Day 0 (Welcome) → Day 23 (7-day warning) → Day 27 (3-day warning) → Day 29 (final reminder) → Day 30 (auto-debit + confirmation)
+- **Email Templates**: Professional HTML email templates with branded design, action buttons, and clear CTAs
+- **Gmail API Integration**: All emails sent via Gmail API for maximum deliverability
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
