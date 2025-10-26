@@ -3996,6 +3996,60 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Promo Code Validation (for users)
+  app.post('/api/promo-code/validate', async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).json({ valid: false, message: "Promo code is required" });
+      }
+
+      // Get promo code from database
+      const promoCode = await storage.getDiscountCodeByCode(code.trim().toUpperCase());
+      
+      if (!promoCode) {
+        return res.status(200).json({ valid: false, message: "Invalid promo code" });
+      }
+
+      // Check if code is active
+      if (!promoCode.isActive) {
+        return res.status(200).json({ valid: false, message: "This promo code is no longer active" });
+      }
+
+      // Check validity dates
+      const now = new Date();
+      if (promoCode.validFrom && new Date(promoCode.validFrom) > now) {
+        return res.status(200).json({ valid: false, message: "This promo code is not yet valid" });
+      }
+      if (promoCode.validUntil && new Date(promoCode.validUntil) < now) {
+        return res.status(200).json({ valid: false, message: "This promo code has expired" });
+      }
+
+      // Check max uses
+      if (promoCode.maxUses && promoCode.usedCount >= promoCode.maxUses) {
+        return res.status(200).json({ valid: false, message: "This promo code has reached its usage limit" });
+      }
+
+      // Return valid promo details
+      res.json({
+        valid: true,
+        promoDetails: {
+          code: promoCode.code,
+          description: promoCode.description,
+          discountType: promoCode.discountType,
+          discountValue: promoCode.discountValue,
+          trialPeriodDays: promoCode.trialPeriodDays,
+          trialPlanType: promoCode.trialPlanType,
+          autoDebitEnabled: promoCode.autoDebitEnabled,
+        }
+      });
+    } catch (error) {
+      console.error("Error validating promo code:", error);
+      res.status(500).json({ valid: false, message: "Failed to validate promo code" });
+    }
+  });
+
   // Billing routes
   app.post('/api/billing/checkout', isAuthenticated, async (req: any, res) => {
     try {
@@ -4004,7 +4058,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
 
       const userId = req.user.claims.sub;
-      const { plan } = req.body;
+      const { plan, promoCode } = req.body;
       
       if (!['standard', 'premium'].includes(plan)) {
         return res.status(400).json({ message: "Invalid plan" });
@@ -4013,6 +4067,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Validate promo code if provided
+      let promoDetails = null;
+      if (promoCode) {
+        const promo = await storage.getDiscountCodeByCode(promoCode.trim().toUpperCase());
+        if (promo && promo.isActive) {
+          promoDetails = promo;
+        }
       }
 
       // Create or get Stripe customer
@@ -4032,7 +4095,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         ? process.env.STRIPE_STANDARD_PRICE_ID 
         : process.env.STRIPE_PREMIUM_PRICE_ID;
 
-      const session = await stripe.checkout.sessions.create({
+      const sessionConfig: any = {
         customer: customerId,
         payment_method_types: ['card'],
         line_items: [{
@@ -4043,7 +4106,20 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         success_url: `${req.protocol}://${req.get('host')}/billing?success=true`,
         cancel_url: `${req.protocol}://${req.get('host')}/billing?cancelled=true`,
         metadata: { userId, plan }
-      });
+      };
+
+      // Apply trial period if promo code is for trial
+      if (promoDetails && promoDetails.discountType === 'trial' && promoDetails.trialPeriodDays) {
+        sessionConfig.subscription_data = {
+          trial_period_days: promoDetails.trialPeriodDays,
+        };
+        sessionConfig.metadata.promoCode = promoCode;
+        sessionConfig.metadata.trialDays = promoDetails.trialPeriodDays;
+
+        console.log(`✅ Applying ${promoDetails.trialPeriodDays}-day trial for user ${userId} with code ${promoCode}`);
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
 
       res.json({ url: session.url });
     } catch (error) {
