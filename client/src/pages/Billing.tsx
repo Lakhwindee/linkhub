@@ -20,6 +20,32 @@ export default function Billing() {
   const [showPaymentMethodDialog, setShowPaymentMethodDialog] = useState(false);
   const [showPayoutDialog, setShowPayoutDialog] = useState(false);
 
+  // Handle subscription success/cancel from URL params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+    const cancelled = params.get('cancelled');
+    
+    if (success === 'true') {
+      toast({
+        title: "🎉 Subscription Activated!",
+        description: "Welcome to Premium! A confirmation email has been sent to your inbox.",
+        duration: 8000,
+      });
+      // Clear URL params
+      window.history.replaceState({}, '', '/billing');
+    } else if (cancelled === 'true') {
+      toast({
+        title: "Subscription Cancelled",
+        description: "You can subscribe anytime from the Subscribe page.",
+        variant: "default",
+        duration: 5000,
+      });
+      // Clear URL params
+      window.history.replaceState({}, '', '/billing');
+    }
+  }, [toast]);
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

@@ -7,6 +7,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { OAuth2Client } from 'google-auth-library';
+import { sendSubscriptionWelcomeEmail, sendTrialEndingEmail, sendPaymentConfirmationEmail, sendPaymentFailedEmail } from "./emailUtils";
 
 // Session-based authentication middleware
 function isAuthenticated(req: any, res: any, next: any) {
@@ -4142,19 +4143,22 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         process.env.STRIPE_WEBHOOK_SECRET!
       );
 
+      console.log(`📥 Stripe webhook received: ${event.type}`);
+
       switch (event.type) {
-        case 'checkout.session.completed':
+        case 'checkout.session.completed': {
           const session = event.data.object as any;
           const userId = session.metadata.userId;
           const plan = session.metadata.plan;
+          const trialDays = session.metadata.trialDays ? parseInt(session.metadata.trialDays) : null;
           
           await storage.updateUserProfile(userId, { plan });
-          await storage.createSubscription({
+          const subscription = await storage.createSubscription({
             userId,
             plan,
             provider: 'stripe',
             providerSubscriptionId: session.subscription,
-            status: 'active',
+            status: trialDays ? 'trialing' : 'active',
             startedAt: new Date(),
           });
           
@@ -4165,7 +4169,114 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
               await storage.createWallet(userId);
             }
           }
+
+          // Send welcome email
+          const user = await storage.getUser(userId);
+          if (user?.email) {
+            await sendSubscriptionWelcomeEmail(
+              user.email,
+              user.displayName || user.username,
+              plan === 'premium' ? 'Premium' : 'Standard',
+              !!trialDays,
+              trialDays || undefined
+            );
+            console.log(`✅ Welcome email sent to user ${userId} (trial: ${!!trialDays})`);
+          }
           break;
+        }
+
+        case 'customer.subscription.trial_will_end': {
+          const subscription = event.data.object as any;
+          const stripeSubId = subscription.id;
+          
+          // Find user by Stripe subscription ID
+          const users = await storage.getAllUsers();
+          const user = users.find(u => u.stripeSubscriptionId === stripeSubId);
+          
+          if (user?.email) {
+            // Calculate days until trial ends
+            const trialEnd = new Date(subscription.trial_end * 1000);
+            const now = new Date();
+            const daysLeft = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+            
+            await sendTrialEndingEmail(
+              user.email,
+              user.displayName || user.username,
+              daysLeft,
+              'Premium',
+              45
+            );
+            console.log(`✅ Trial ending email sent to user ${user.id} (${daysLeft} days left)`);
+          }
+          break;
+        }
+
+        case 'invoice.payment_succeeded': {
+          const invoice = event.data.object as any;
+          const customerId = invoice.customer;
+          
+          // Find user by Stripe customer ID
+          const users = await storage.getAllUsers();
+          const user = users.find(u => u.stripeCustomerId === customerId);
+          
+          if (user?.email && invoice.billing_reason === 'subscription_cycle') {
+            // This is a renewal payment, not the first payment
+            const amount = (invoice.amount_paid / 100).toFixed(2);
+            const invoiceUrl = invoice.hosted_invoice_url || `https://dashboard.stripe.com/invoices/${invoice.id}`;
+            const nextBillingDate = new Date(invoice.period_end * 1000).toLocaleDateString();
+            
+            await sendPaymentConfirmationEmail(
+              user.email,
+              user.displayName || user.username,
+              parseFloat(amount),
+              invoiceUrl,
+              nextBillingDate
+            );
+            console.log(`✅ Payment confirmation email sent to user ${user.id} ($${amount})`);
+          }
+          break;
+        }
+
+        case 'invoice.payment_failed': {
+          const invoice = event.data.object as any;
+          const customerId = invoice.customer;
+          
+          // Find user by Stripe customer ID
+          const users = await storage.getAllUsers();
+          const user = users.find(u => u.stripeCustomerId === customerId);
+          
+          if (user?.email) {
+            const amount = (invoice.amount_due / 100).toFixed(2);
+            const retryDate = invoice.next_payment_attempt 
+              ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString()
+              : 'within 3 days';
+            
+            await sendPaymentFailedEmail(
+              user.email,
+              user.displayName || user.username,
+              parseFloat(amount),
+              retryDate
+            );
+            console.log(`✅ Payment failed email sent to user ${user.id} ($${amount})`);
+          }
+          break;
+        }
+
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object as any;
+          const stripeSubId = subscription.id;
+          
+          // Update subscription status in database
+          const users = await storage.getAllUsers();
+          const user = users.find(u => u.stripeSubscriptionId === stripeSubId);
+          
+          if (user) {
+            const newStatus = subscription.status; // trialing, active, canceled, etc.
+            console.log(`✅ Subscription updated for user ${user.id}: ${newStatus}`);
+            // You can update database status here if needed
+          }
+          break;
+        }
       }
 
       res.json({ received: true });
