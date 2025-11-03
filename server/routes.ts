@@ -5016,9 +5016,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
       
       // Store the API settings in database (secure storage)
+      // Add status field for active services
+      const settingsWithStatus = {
+        ...settingsData,
+        status: 'active'
+      };
+      
       await storage.upsertApiSetting({
         service,
-        settingsJson: settingsData,
+        settingsJson: settingsWithStatus,
         updatedBy: userId
       });
       
