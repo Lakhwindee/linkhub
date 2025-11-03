@@ -418,6 +418,13 @@ export default function Admin() {
       enableAdvancedFeatures: true
     }
   });
+
+  // Email form state
+  const [emailFormData, setEmailFormData] = useState({
+    provider: 'gmail_smtp',
+    email: '',
+    appPassword: ''
+  });
   
   // Track which service is currently being saved
   const [savingService, setSavingService] = useState<string | null>(null);
@@ -1414,12 +1421,14 @@ export default function Admin() {
                     <CardContent className="space-y-4">
                       <div>
                         <Label>Service Provider</Label>
-                        <Select value={apiSettings?.email?.provider || 'not_configured'} disabled>
+                        <Select 
+                          value={emailFormData.provider} 
+                          onValueChange={(value) => setEmailFormData({...emailFormData, provider: value})}
+                        >
                           <SelectTrigger className="mt-1">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="not_configured">Not Configured</SelectItem>
                             <SelectItem value="gmail_smtp">Gmail SMTP</SelectItem>
                             <SelectItem value="sendgrid">SendGrid</SelectItem>
                             <SelectItem value="mailgun">Mailgun</SelectItem>
@@ -1428,37 +1437,77 @@ export default function Admin() {
                         </Select>
                       </div>
                       
-                      {apiSettings?.email?.provider === 'gmail_smtp' && (
+                      {emailFormData.provider === 'gmail_smtp' && (
                         <>
                           <div>
                             <Label>Gmail Email</Label>
                             <Input 
-                              value={apiSettings?.email?.email || ''} 
-                              disabled
+                              type="email"
+                              value={emailFormData.email} 
+                              onChange={(e) => setEmailFormData({...emailFormData, email: e.target.value})}
+                              placeholder="your-email@gmail.com"
                               className="mt-1 font-mono text-sm"
                             />
                           </div>
                           <div>
-                            <Label>App Password</Label>
+                            <Label>Gmail App Password</Label>
                             <Input 
                               type="password"
-                              value={apiSettings?.email?.appPassword || ''} 
-                              disabled
+                              value={emailFormData.appPassword} 
+                              onChange={(e) => setEmailFormData({...emailFormData, appPassword: e.target.value})}
+                              placeholder="16-character app password"
                               className="mt-1 font-mono text-sm"
                             />
+                          </div>
+                          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 rounded-md">
+                            <p className="text-sm text-blue-800 dark:text-blue-200">
+                              ℹ️ Create app password at: <a href="https://myaccount.google.com/apppasswords" target="_blank" className="underline">Google App Passwords</a>
+                            </p>
                           </div>
                         </>
                       )}
                       
-                      {apiSettings?.email?.note && (
-                        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3 rounded-md">
-                          <p className="text-sm text-blue-800 dark:text-blue-200">
-                            ℹ️ {apiSettings.email.note}
-                          </p>
-                        </div>
-                      )}
-                      
                       <div className="flex space-x-2">
+                        <Button 
+                          size="sm"
+                          onClick={async () => {
+                            try {
+                              setSavingService('email');
+                              const response = await fetch('/api/admin/api-settings/email', {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify(emailFormData)
+                              });
+                              
+                              if (response.ok) {
+                                toast({
+                                  title: "Success",
+                                  description: "Email settings saved successfully!",
+                                });
+                                refetchApiSettings();
+                              } else {
+                                const error = await response.json();
+                                toast({
+                                  title: "Error",
+                                  description: error.message || "Failed to save email settings",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Network error occurred",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setSavingService(null);
+                            }
+                          }}
+                          disabled={savingService === 'email' || !emailFormData.email || !emailFormData.appPassword}
+                        >
+                          {savingService === 'email' ? 'Saving...' : 'Save Email Settings'}
+                        </Button>
                         <Button 
                           size="sm" 
                           variant="outline"
