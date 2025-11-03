@@ -969,14 +969,14 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  // Function to send OTP email using Gmail API
+  // Function to send OTP email using SMTP
   async function sendOTPEmail(email: string, otp: string) {
     try {
       console.log('📧 sendOTPEmail called for:', email);
       
-      // Try Gmail API integration first (Replit connector)
+      // Send email via SMTP using database credentials
       try {
-        const { sendEmailViaGmailAPI } = await import('./gmailApi.js');
+        const { sendEmailViaSMTP } = await import('./emailService.js');
         
         // Professional email template
         const emailContent = `
@@ -1019,8 +1019,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         </div>
       `;
 
-        // Send email via Gmail API
-        const result = await sendEmailViaGmailAPI(
+        // Send email via SMTP
+        const result = await sendEmailViaSMTP(
           email,
           '🔐 Your HubLink Verification Code',
           emailContent
@@ -1032,12 +1032,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           throw new Error(result.error || 'Gmail API failed');
         }
         
-      } catch (gmailApiError: any) {
-        console.error('❌ Gmail API failed:', gmailApiError.message);
-        console.log('⚠️ Falling back to development mode simulation');
+      } catch (emailError: any) {
+        console.error('❌ SMTP email failed:', emailError.message);
+        console.log('⚠️ Email service not configured - falling back to development mode');
         
-        // Fallback to development mode simulation
-        return { success: false, messageId: `simulated_${Date.now()}`, simulated: true, error: gmailApiError.message };
+        // Fallback to development mode simulation (shows OTP on screen)
+        return { success: false, messageId: `simulated_${Date.now()}`, simulated: true, error: emailError.message };
       }
       
     } catch (error: any) {
