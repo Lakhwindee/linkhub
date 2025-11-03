@@ -395,7 +395,12 @@ export default function OTPVerification() {
           <div className="text-center">
             <Button 
               variant="ghost" 
-              onClick={() => setLocation('/document-signup')}
+              onClick={() => {
+                // Get signup type from localStorage to navigate back to correct page
+                const signupType = localStorage.getItem('hublink_signup_type');
+                const signupPage = signupType === 'business' ? '/document-signup' : '/professional-signup';
+                setLocation(signupPage);
+              }}
               className="text-sm text-gray-600"
             >
               ← Back to Signup
