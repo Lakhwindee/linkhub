@@ -4897,6 +4897,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const stripeSetting = await storage.getApiSetting('stripe');
       const youtubeSetting = await storage.getApiSetting('youtube');
       const mapsSetting = await storage.getApiSetting('maps');
+      const emailSetting = await storage.getApiSetting('email');
+      const storageSetting = await storage.getApiSetting('storage');
       
       // Helper function to mask keys for display
       const maskKey = (key: string | undefined, prefix: string) => {
@@ -4937,17 +4939,17 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           lastTested: new Date().toISOString()
         },
         storage: {
-          bucketName: 'hublink-storage',
-          status: 'active',
-          lastTested: new Date().toISOString()
+          bucketName: storageSetting?.settingsJson?.bucketName || 'hublink-storage',
+          serviceAccountKey: storageSetting?.settingsJson?.serviceAccountKey ? '••••••••••••' : '',
+          status: storageSetting?.settingsJson?.status || 'active',
+          lastTested: storageSetting?.lastTestedAt?.toISOString() || new Date().toISOString()
         },
         email: {
-          provider: process.env.GMAIL_EMAIL ? 'gmail_smtp' : (storedApiSettings.email.provider || 'not_configured'),
-          email: process.env.GMAIL_EMAIL ? process.env.GMAIL_EMAIL.replace(/(.{2}).*(@.*)/, '$1***$2') : '',
-          appPassword: process.env.GMAIL_APP_PASSWORD ? '••••••••••••••••' : '',
-          status: (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) ? 'active' : 'inactive',
-          lastTested: null,
-          note: (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) ? 'Gmail SMTP configured via environment variables' : 'Configure Gmail App Password in Replit Secrets'
+          provider: emailSetting?.settingsJson?.provider || 'gmail_smtp',
+          email: emailSetting?.settingsJson?.email || '',
+          appPassword: emailSetting?.settingsJson?.appPassword ? '••••••••••••••••' : '',
+          status: emailSetting?.settingsJson?.status || 'inactive',
+          lastTested: emailSetting?.lastTestedAt?.toISOString() || null
         },
         usage: {
           stripe: { calls: 2456, period: '30_days' },
