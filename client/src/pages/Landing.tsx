@@ -201,31 +201,7 @@ export default function Landing() {
                 src="https://images.unsplash.com/photo-1519302959554-a75be0afc82a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=600" 
                 alt="World map with location pins" 
                 className="rounded-2xl shadow-2xl w-full h-auto"
-                              />
-              
-              <div className="absolute top-4 right-4 bg-card border border-border rounded-xl p-4 shadow-lg glass-effect animate-bounce-slow">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-accent-foreground">JS</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-card-foreground">@hublink/UK/000123</div>
-                    <div className="text-xs text-muted-foreground">London, UK • Online</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute bottom-4 left-4 bg-card border border-border rounded-xl p-4 shadow-lg glass-effect">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-chart-2 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-primary">AR</span>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-card-foreground">@hublink/IN/000456</div>
-                    <div className="text-xs text-muted-foreground">Mumbai, India • Creating</div>
-                  </div>
-                </div>
-              </div>
+              />
             </div>
           </div>
         </div>
