@@ -151,7 +151,13 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
               </Button>
               <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                 Don't have an account? 
-                <span className="text-blue-600 hover:underline cursor-pointer ml-1">
+                <span 
+                  onClick={() => {
+                    onOpenChange(false);
+                    window.location.href = '/professional-signup';
+                  }}
+                  className="text-blue-600 hover:underline cursor-pointer ml-1"
+                >
                   Sign up here
                 </span>
               </div>
