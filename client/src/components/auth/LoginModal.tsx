@@ -81,10 +81,10 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
             </DialogDescription>
           </DialogHeader>
         
-        <Tabs defaultValue="google" className="w-full">
+        <Tabs defaultValue="email" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="google">Google</TabsTrigger>
             <TabsTrigger value="email">Email</TabsTrigger>
+            <TabsTrigger value="google">Google</TabsTrigger>
           </TabsList>
           
           <TabsContent value="google" className="space-y-4">
