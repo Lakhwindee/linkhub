@@ -82,6 +82,9 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-4">
+              <Button variant="ghost" asChild>
+                <Link href="/">Home</Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -118,6 +121,9 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                 </SheetTrigger>
                 <SheetContent>
                   <div className="flex flex-col space-y-4 mt-8">
+                    <Button variant="outline" asChild className="w-full justify-start">
+                      <Link href="/">Home</Link>
+                    </Button>
                     <Button variant="outline" asChild className="w-full justify-start">
                       <Link href="/document-signup">For Business</Link>
                     </Button>
