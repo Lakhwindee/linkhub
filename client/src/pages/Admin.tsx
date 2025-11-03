@@ -761,11 +761,9 @@ export default function Admin() {
                         title: "Login Successful",
                         description: "Welcome to HubLink Admin Panel",
                       });
-                      // Trigger auth update event for useAuth hook
-                      window.dispatchEvent(new CustomEvent('authUpdate'));
-                      // Redirect to admin panel (stay on same page, just reload auth)
+                      // Full page reload to properly load the session
                       setTimeout(() => {
-                        window.location.href = '/admin';
+                        window.location.reload();
                       }, 500);
                     } else {
                       toast({
