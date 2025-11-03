@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -6,9 +6,9 @@ hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 channel = "stable-25_05"
 
 [deployment]
-deploymentTarget = "cloudrun"
-run = ["npm", "start"]
-build = ["sh", "-c", "npm run build"]
+deploymentTarget = "autoscale"
+run = ["npm", "run", "start"]
+build = ["npm", "run", "build"]
 
 [env]
 PORT = "5000"
@@ -44,10 +44,6 @@ integrations = ["google-mail:1.0.0"]
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 5000
 
 [[ports]]
 localPort = 5002
@@ -88,6 +84,10 @@ externalPort = 8080
 [[ports]]
 localPort = 42403
 externalPort = 8099
+
+[[ports]]
+localPort = 44301
+externalPort = 5000
 
 [[ports]]
 localPort = 44825
