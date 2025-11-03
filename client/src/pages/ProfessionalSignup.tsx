@@ -186,7 +186,7 @@ export default function ProfessionalSignup() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4 pt-20 sm:pt-24">
       <div className="max-w-4xl mx-auto px-2 sm:px-4">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
