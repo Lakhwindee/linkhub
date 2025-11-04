@@ -1752,6 +1752,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(400).json({ message: "YouTube URL is required" });
       }
 
+      // Check if YouTube API key is configured
+      if (!process.env.YOUTUBE_API_KEY) {
+        console.error('❌ YouTube API key not configured');
+        return res.status(503).json({ 
+          message: "YouTube API not configured. Please contact admin to add YouTube API key in settings.",
+          configRequired: true
+        });
+      }
+
       // Extract channel ID from YouTube URL
       let channelId = '';
       if (youtubeUrl.includes('/channel/')) {
@@ -1760,13 +1769,20 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         // Handle @username format - we'll need to convert it
         const username = youtubeUrl.split('/@')[1].split('/')[0].split('?')[0];
         
+        console.log(`🔍 Looking up YouTube channel by handle: @${username}`);
+        
         // Use YouTube API to get channel info by username
         const searchResponse = await fetch(
           `https://www.googleapis.com/youtube/v3/channels?part=id,statistics&forHandle=${username}&key=${process.env.YOUTUBE_API_KEY}`
         );
         
         if (!searchResponse.ok) {
-          return res.status(400).json({ message: "Invalid YouTube channel" });
+          const errorText = await searchResponse.text();
+          console.error('❌ YouTube API error:', searchResponse.status, errorText);
+          return res.status(400).json({ 
+            message: "Failed to lookup YouTube channel. Please check the URL or try again later.",
+            apiError: true
+          });
         }
         
         const searchData = await searchResponse.json();
@@ -1784,12 +1800,19 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           customName = youtubeUrl.split('/user/')[1].split('/')[0].split('?')[0];
         }
         
+        console.log(`🔍 Searching for YouTube channel: ${customName}`);
+        
         const searchResponse = await fetch(
           `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${customName}&key=${process.env.YOUTUBE_API_KEY}&maxResults=1`
         );
         
         if (!searchResponse.ok) {
-          return res.status(400).json({ message: "Invalid YouTube channel" });
+          const errorText = await searchResponse.text();
+          console.error('❌ YouTube search error:', searchResponse.status, errorText);
+          return res.status(400).json({ 
+            message: "Failed to search YouTube channel. Please try again later.",
+            apiError: true
+          });
         }
         
         const searchData = await searchResponse.json() as YTSearchResponse;
