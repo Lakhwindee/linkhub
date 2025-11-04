@@ -286,61 +286,23 @@ export default function Billing() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {user.plan === 'free' ? (
-                  <div className="space-y-4">
-                    <p className="text-muted-foreground">
-                      You're currently on the free plan. Upgrade to unlock premium features!
-                    </p>
+                <div className="space-y-4">
+                  <p className="text-muted-foreground">
+                    {user.plan === 'free' 
+                      ? "You're currently on the free plan. Upgrade to unlock premium features!"
+                      : "You're subscribed to the premium plan. Enjoy all features!"}
+                  </p>
+                  {user.plan === 'free' && (
                     <div className="grid md:grid-cols-2 gap-4">
-                      <Button asChild className="bg-blue-500 hover:bg-blue-600" data-testid="button-upgrade-traveler">
+                      <Button asChild className="bg-blue-500 hover:bg-blue-600" data-testid="button-upgrade-standard">
                         <Link href="/subscribe">
                           <Heart className="w-4 h-4 mr-2" />
-                          Upgrade to Traveler
-                        </Link>
-                      </Button>
-                      <Button asChild className="bg-chart-2 hover:bg-chart-2/90" data-testid="button-upgrade-creator">
-                        <Link href="/subscribe">
-                          <Star className="w-4 h-4 mr-2" />
-                          Upgrade to Creator
+                          Upgrade to Premium
                         </Link>
                       </Button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-2xl font-bold text-foreground" data-testid="text-plan-price">
-                          £{user.plan === 'traveler' ? '25' : '45'}
-                        </div>
-                        <div className="text-sm text-muted-foreground">per month</div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-muted-foreground">Status</div>
-                        <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" data-testid="badge-subscription-status">
-                          <CheckCircle className="w-3 h-3 mr-1" />
-                          Active
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="text-sm text-muted-foreground">Next billing date</div>
-                      <div className="font-medium" data-testid="text-next-billing">
-                        {format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'MMMM d, yyyy')}
-                      </div>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <Button variant="outline" data-testid="button-manage-subscription">
-                        Manage Subscription
-                      </Button>
-                      <Button variant="outline" data-testid="button-cancel-subscription">
-                        Cancel Plan
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
 
