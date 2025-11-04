@@ -419,6 +419,33 @@ export default function Admin() {
     }
   });
 
+  // Populate form with loaded API settings
+  useEffect(() => {
+    if (apiSettings) {
+      setApiFormData(prev => ({
+        stripe: {
+          publishableKey: apiSettings.stripe?.publishableKey || prev.stripe.publishableKey,
+          secretKey: apiSettings.stripe?.secretKey || prev.stripe.secretKey,
+          webhookSecret: apiSettings.stripe?.webhookSecret || prev.stripe.webhookSecret,
+        },
+        youtube: {
+          apiKey: apiSettings.youtube?.apiKey || prev.youtube.apiKey,
+          projectId: apiSettings.youtube?.projectId || prev.youtube.projectId,
+        },
+        maps: {
+          apiKey: apiSettings.maps?.apiKey || prev.maps.apiKey,
+          enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? prev.maps.enableAdvancedFeatures,
+        },
+      }));
+      
+      setEmailFormData(prev => ({
+        provider: apiSettings.email?.provider || prev.provider,
+        email: apiSettings.email?.email || prev.email,
+        appPassword: apiSettings.email?.appPassword || prev.appPassword,
+      }));
+    }
+  }, [apiSettings]);
+
   // Email form state
   const [emailFormData, setEmailFormData] = useState({
     provider: 'gmail_smtp',
