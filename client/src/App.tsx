@@ -66,12 +66,13 @@ function Router() {
 
   // Remove demo login requirement - show normal pages
   
-  // Hide Navigation ONLY on /admin route (admin panel has its own sidebar)
+  // Hide Navigation on /admin route OR for admin/superadmin users
   const isAdminRoute = location === '/admin';
+  const isAdminUser = user?.role === 'admin' || user?.role === 'superadmin';
 
   return (
     <div className="min-h-screen bg-background">
-      {!isAdminRoute && <Navigation isAuthenticated={isAuthenticated} />}
+      {!isAdminRoute && !isAdminUser && <Navigation isAuthenticated={isAuthenticated} />}
       <main className={isAuthenticated && !isAdminRoute ? "pt-16" : ""}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
@@ -91,7 +92,12 @@ function Router() {
           ) : (
             <>
               <Route path="/" component={() => {
-                // Publishers go to stays page (flat structure), others go to dashboard
+                // Admin/Superadmin go directly to admin panel only
+                if (user?.role === 'admin' || user?.role === 'superadmin') {
+                  window.location.href = '/admin';
+                  return null;
+                }
+                // Publishers go to stays page (flat structure)
                 if (user?.role === 'publisher') {
                   return <Stays />;
                 }
@@ -99,32 +105,42 @@ function Router() {
                 return <Dashboard />;
               }} />
               <Route path="/dashboard" component={() => {
+                // Admin/Superadmin - redirect to admin panel
+                if (user?.role === 'admin' || user?.role === 'superadmin') {
+                  window.location.href = '/admin';
+                  return null;
+                }
                 // Publishers shouldn't access dashboard - redirect to stays
                 if (user?.role === 'publisher') {
                   return <Stays />;
                 }
                 return <Dashboard />;
               }} />
-              <Route path="/discover" component={DiscoverTravelers} />
-              <Route path="/explore" component={Explore} />
-              <Route path="/stays" component={Stays} />
-              <Route path="/trips" component={Trips} />
-              <Route path="/tour-packages" component={TourPackages} />
-              <Route path="/my-bookings" component={MyBookings} />
-              <Route path="/personal-hosts" component={PersonalHosts} />
-              <Route path="/profile/:userId" component={UserProfile} />
-              <Route path="/map" component={Map} />
-              <Route path="/profile" component={Profile} />
-              <Route path="/feed" component={Feed} />
-              <Route path="/boosted-posts" component={BoostedPosts} />
-              <Route path="/ads" component={AdsWrapper} />
-              <Route path="/earn" component={AdsWrapper} />
-              <Route path="/payment/:campaignId" component={PaymentPage} />
-              <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
-              <Route path="/publisher/submissions" component={PublisherDashboard} />
-              <Route path="/messages" component={Messages} />
-              <Route path="/events" component={Events} />
-              <Route path="/billing" component={Billing} />
+              {/* Block all normal routes for admin/superadmin */}
+              {user?.role !== 'admin' && user?.role !== 'superadmin' && (
+                <>
+                  <Route path="/discover" component={DiscoverTravelers} />
+                  <Route path="/explore" component={Explore} />
+                  <Route path="/stays" component={Stays} />
+                  <Route path="/trips" component={Trips} />
+                  <Route path="/tour-packages" component={TourPackages} />
+                  <Route path="/my-bookings" component={MyBookings} />
+                  <Route path="/personal-hosts" component={PersonalHosts} />
+                  <Route path="/profile/:userId" component={UserProfile} />
+                  <Route path="/map" component={Map} />
+                  <Route path="/profile" component={Profile} />
+                  <Route path="/feed" component={Feed} />
+                  <Route path="/boosted-posts" component={BoostedPosts} />
+                  <Route path="/ads" component={AdsWrapper} />
+                  <Route path="/earn" component={AdsWrapper} />
+                  <Route path="/payment/:campaignId" component={PaymentPage} />
+                  <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
+                  <Route path="/publisher/submissions" component={PublisherDashboard} />
+                  <Route path="/messages" component={Messages} />
+                  <Route path="/events" component={Events} />
+                  <Route path="/billing" component={Billing} />
+                </>
+              )}
             </>
           )}
           {/* Public routes (accessible to everyone) */}
