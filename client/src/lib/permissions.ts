@@ -14,7 +14,7 @@ export const permissions = {
   // Stays permissions - Only Publishers can create, Creators can only view
   canCreateStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   canViewStays: (user: User | null): boolean => {
@@ -23,13 +23,13 @@ export const permissions = {
 
   canManageStays: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   // Tour Package permissions - Only Publishers can create, Creators can only view
   canCreateTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   canViewTourPackages: (user: User | null): boolean => {
@@ -38,13 +38,13 @@ export const permissions = {
 
   canManageTourPackages: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   // Promotional/Ads permissions - Only Publishers can create
   canCreateAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   canViewAds: (user: User | null): boolean => {
@@ -53,7 +53,7 @@ export const permissions = {
 
   canManageAds: (user: User | null): boolean => {
     if (!user?.role) return false;
-    return ['publisher', 'admin', 'superadmin'].includes(user.role as string);
+    return user.role === 'publisher';
   },
 
   // Trip permissions
