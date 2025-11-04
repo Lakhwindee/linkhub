@@ -19,7 +19,7 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp, Receipt
+  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp, Receipt, LogOut
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
@@ -953,8 +953,8 @@ export default function Admin() {
     <div className="min-h-screen bg-background">
       <div className="flex">
         {/* Sidebar Navigation */}
-        <div className="w-64 bg-card border-r border-border min-h-screen">
-          <div className="p-6">
+        <div className="w-64 bg-card border-r border-border min-h-screen flex flex-col">
+          <div className="p-6 flex-1 flex flex-col">
             <div className="flex items-center space-x-2 mb-8">
               <Shield className="w-8 h-8 text-accent" />
               <div>
@@ -963,7 +963,7 @@ export default function Admin() {
               </div>
             </div>
 
-            <nav className="space-y-2">
+            <nav className="space-y-2 flex-1 overflow-y-auto">
               {navigationItems.map((item) => (
                 <button
                   key={item.id}
@@ -982,6 +982,25 @@ export default function Admin() {
                 </button>
               ))}
             </nav>
+            
+            {/* Logout Button - Sticks to bottom */}
+            <div className="pt-6 border-t border-border mt-auto">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center space-x-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={async () => {
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+                    window.location.href = '/';
+                  } catch (error) {
+                    console.error('Logout error:', error);
+                  }
+                }}
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </Button>
+            </div>
           </div>
         </div>
 
