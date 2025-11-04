@@ -4221,7 +4221,9 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           
           // Mark promo code as used
           if (promoDetails.id) {
-            await storage.incrementDiscountCodeUsage(promoDetails.id);
+            await storage.updateDiscountCode(promoDetails.id, {
+              usedCount: (promoDetails.usedCount || 0) + 1
+            });
           }
           
           console.log(`✅ Applied ${promoDetails.trialPeriodDays}-day trial (no auto-debit) for user ${userId}`);
