@@ -210,25 +210,41 @@ export class ObjectStorageService {
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
-    const bucket = objectStorageClient.bucket(bucketName);
-    const file = bucket.file(objectName);
+    console.log(`📤 Uploading to bucket: ${bucketName}, object: ${objectName}`);
 
-    // Upload the file
-    await file.save(fileBuffer, {
-      contentType,
-      metadata: {
-        contentType,
-      },
-    });
+    try {
+      const bucket = objectStorageClient.bucket(bucketName);
+      
+      // Create temporary file path
+      const tempFilePath = `/tmp/${objectId}`;
+      const fs = await import('fs');
+      await fs.promises.writeFile(tempFilePath, fileBuffer);
 
-    // Set ACL policy for the uploaded file
-    await setObjectAclPolicy(file, {
-      owner: userId,
-      visibility: "private",
-    });
+      // Upload using bucket.upload()
+      const [file] = await bucket.upload(tempFilePath, {
+        destination: objectName,
+        metadata: {
+          contentType,
+        },
+      });
 
-    // Return the object path in the format /objects/<bucket>/<object>
-    return `/objects/${bucketName}/${objectName}`;
+      // Clean up temp file
+      await fs.promises.unlink(tempFilePath);
+
+      console.log(`✅ Upload successful: ${file.name}`);
+
+      // Set ACL policy for the uploaded file
+      await setObjectAclPolicy(file, {
+        owner: userId,
+        visibility: "private",
+      });
+
+      // Return the object path in the format /objects/<bucket>/<object>
+      return `/objects/${bucketName}/${objectName}`;
+    } catch (error) {
+      console.error(`❌ Upload error for bucket ${bucketName}:`, error);
+      throw error;
+    }
   }
 
   // Gets the object entity file from the object path.
