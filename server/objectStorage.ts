@@ -145,18 +145,53 @@ export class ObjectStorageService {
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 
-    // Use Google Cloud Storage SDK directly
-    const bucket = objectStorageClient.bucket(bucketName);
-    const file = bucket.file(objectName);
-    
-    const [signedUrl] = await file.getSignedUrl({
-      version: 'v4',
-      action: 'write',
-      expires: Date.now() + 15 * 60 * 1000, // 15 minutes
-      contentType: 'application/octet-stream',
-    });
+    try {
+      // Get credential from Replit sidecar
+      const credentialResponse = await fetch(
+        `${REPLIT_SIDECAR_ENDPOINT}/credential`
+      );
+      
+      if (!credentialResponse.ok) {
+        throw new Error(
+          `Failed to get credential from sidecar: ${credentialResponse.status}`
+        );
+      }
+      
+      const { access_token } = await credentialResponse.json();
 
-    return signedUrl;
+      // Request signed URL from sidecar
+      const request = {
+        bucket_name: bucketName,
+        object_name: objectName,
+        method: "PUT",
+        expires_at: new Date(Date.now() + 900 * 1000).toISOString(), // 15 minutes
+      };
+      
+      const response = await fetch(
+        `${REPLIT_SIDECAR_ENDPOINT}/object-storage/signed-object-url`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access_token}`,
+          },
+          body: JSON.stringify(request),
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to sign object URL: ${response.status} - ${errorText}`
+        );
+      }
+
+      const { signed_url: signedURL } = await response.json();
+      return signedURL;
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      throw error;
+    }
   }
 
   // Gets the object entity file from the object path.
