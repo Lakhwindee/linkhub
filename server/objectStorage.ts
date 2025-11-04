@@ -320,16 +320,19 @@ function parseObjectPath(path: string): {
   bucketName: string;
   objectName: string;
 } {
-  if (!path.startsWith("/")) {
-    path = `/${path}`;
+  // Remove gs:// prefix if present
+  if (path.startsWith("gs://")) {
+    path = path.substring(5); // Remove "gs://"
   }
+  
+  // Now path should be like: hublink-media/private/uploads/abc123
   const pathParts = path.split("/");
-  if (pathParts.length < 3) {
-    throw new Error("Invalid path: must contain at least a bucket name");
+  if (pathParts.length < 2) {
+    throw new Error("Invalid path: must contain at least a bucket name and object name");
   }
 
-  const bucketName = pathParts[1];
-  const objectName = pathParts.slice(2).join("/");
+  const bucketName = pathParts[0];
+  const objectName = pathParts.slice(1).join("/");
 
   return {
     bucketName,
