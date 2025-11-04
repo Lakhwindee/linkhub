@@ -100,22 +100,112 @@ export default function ProfessionalSignup() {
 
 
   const handleSubmit = async () => {
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords don't match!",
-        variant: "destructive",
-      });
+    // Required fields validation
+    if (!formData.email || !formData.email.trim()) {
+      toast({ title: "Error", description: "Email address is required", variant: "destructive" });
       return;
     }
     
+    if (!formData.firstName || !formData.firstName.trim()) {
+      toast({ title: "Error", description: "First name is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.lastName || !formData.lastName.trim()) {
+      toast({ title: "Error", description: "Last name is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.phone || !formData.phone.trim()) {
+      toast({ title: "Error", description: "Phone number is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.dateOfBirth) {
+      toast({ title: "Error", description: "Date of birth is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.address || !formData.address.trim()) {
+      toast({ title: "Error", description: "Street address is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.country) {
+      toast({ title: "Error", description: "Country is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.city) {
+      toast({ title: "Error", description: "City is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.username || !formData.username.trim()) {
+      toast({ title: "Error", description: "Username is required", variant: "destructive" });
+      return;
+    }
+    
+    if (!formData.password || !formData.password.trim()) {
+      toast({ title: "Error", description: "Password is required", variant: "destructive" });
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({ title: "Invalid Email", description: "Please enter a valid email address", variant: "destructive" });
+      return;
+    }
+
+    // Name validation (letters, spaces, hyphens only)
+    const nameRegex = /^[a-zA-Z\s-]+$/;
+    if (!nameRegex.test(formData.firstName)) {
+      toast({ title: "Invalid First Name", description: "First name can only contain letters, spaces, and hyphens", variant: "destructive" });
+      return;
+    }
+    
+    if (!nameRegex.test(formData.lastName)) {
+      toast({ title: "Invalid Last Name", description: "Last name can only contain letters, spaces, and hyphens", variant: "destructive" });
+      return;
+    }
+
+    // Phone number validation (digits only, 7-15 characters)
+    const phoneRegex = /^\d{7,15}$/;
+    const cleanPhone = formData.phone.replace(/[\s-]/g, '');
+    if (!phoneRegex.test(cleanPhone)) {
+      toast({ title: "Invalid Phone Number", description: "Phone number must be 7-15 digits only", variant: "destructive" });
+      return;
+    }
+
+    // Age validation (must be 18+)
+    const birthDate = new Date(formData.dateOfBirth);
+    const today = new Date();
+    const age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    const isBeforeBirthday = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate());
+    const actualAge = isBeforeBirthday ? age - 1 : age;
+    
+    if (actualAge < 18) {
+      toast({ title: "Age Restriction", description: "You must be at least 18 years old to sign up", variant: "destructive" });
+      return;
+    }
+
+    // Username validation (alphanumeric, underscore, hyphen only, 3-30 characters)
+    const usernameRegex = /^[a-zA-Z0-9_-]{3,30}$/;
+    if (!usernameRegex.test(formData.username)) {
+      toast({ title: "Invalid Username", description: "Username must be 3-30 characters (letters, numbers, underscore, hyphen only)", variant: "destructive" });
+      return;
+    }
+
+    // Password validation
     if (formData.password.length < 6) {
-      toast({
-        title: "Error", 
-        description: "Password must be at least 6 characters!",
-        variant: "destructive",
-      });
+      toast({ title: "Weak Password", description: "Password must be at least 6 characters long", variant: "destructive" });
+      return;
+    }
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({ title: "Password Mismatch", description: "Passwords don't match", variant: "destructive" });
       return;
     }
 
