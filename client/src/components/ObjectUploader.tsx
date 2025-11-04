@@ -5,10 +5,6 @@ import { Button } from "@/components/ui/button";
 interface ObjectUploaderProps {
   maxNumberOfFiles?: number;
   maxFileSize?: number;
-  onGetUploadParameters: () => Promise<{
-    method: "PUT";
-    url: string;
-  }>;
   onComplete?: (result: any) => void;
   buttonClassName?: string;
   children: ReactNode;
@@ -17,7 +13,6 @@ interface ObjectUploaderProps {
 export function ObjectUploader({
   maxNumberOfFiles = 1,
   maxFileSize = 10485760, // 10MB default
-  onGetUploadParameters,
   onComplete,
   buttonClassName,
   children,
@@ -84,21 +79,34 @@ export function ObjectUploader({
     setUploading(true);
 
     try {
-      // Get upload URL from server
-      const { method, url: uploadURL } = await onGetUploadParameters();
-      
-      // Upload file to the URL
-      const uploadResponse = await fetch(uploadURL, {
-        method: method,
-        body: file,
+      // Read file as base64
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(',')[1]; // Remove data:image/png;base64, prefix
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Upload file to server
+      const uploadResponse = await fetch('/api/objects/upload', {
+        method: 'POST',
         headers: {
-          'Content-Type': file.type,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          file: fileBase64,
+          contentType: file.type,
+        }),
       });
 
       if (!uploadResponse.ok) {
         throw new Error('Upload failed');
       }
+
+      const { objectPath } = await uploadResponse.json();
 
       // Call onComplete with successful result
       const result = {
@@ -108,7 +116,7 @@ export function ObjectUploader({
             name: file.name,
             type: file.type,
             size: file.size,
-            uploadURL: uploadURL, // Return the actual upload URL
+            uploadURL: objectPath, // Return the object path
           }
         ],
         failed: [],

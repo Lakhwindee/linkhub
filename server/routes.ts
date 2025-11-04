@@ -3950,10 +3950,30 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    res.json({ uploadURL });
+  app.post("/api/objects/upload", isAuthenticated, async (req: any, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const userId = req.user?.claims?.sub;
+      
+      if (!req.body.file || !req.body.contentType) {
+        return res.status(400).json({ error: "File data and contentType are required" });
+      }
+
+      // Decode base64 file data
+      const fileBuffer = Buffer.from(req.body.file, 'base64');
+      
+      // Upload directly to storage
+      const objectPath = await objectStorageService.uploadObjectEntity(
+        fileBuffer,
+        req.body.contentType,
+        userId
+      );
+
+      res.json({ objectPath });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Upload failed" });
+    }
   });
 
   app.put("/api/media", isAuthenticated, async (req: any, res) => {

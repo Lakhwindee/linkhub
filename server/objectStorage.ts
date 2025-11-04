@@ -194,6 +194,43 @@ export class ObjectStorageService {
     }
   }
 
+  // Uploads a file directly to object storage
+  async uploadObjectEntity(
+    fileBuffer: Buffer,
+    contentType: string,
+    userId: string
+  ): Promise<string> {
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
+      throw new Error("PRIVATE_OBJECT_DIR not set");
+    }
+
+    const objectId = randomUUID();
+    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
+
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+
+    // Upload the file
+    await file.save(fileBuffer, {
+      contentType,
+      metadata: {
+        contentType,
+      },
+    });
+
+    // Set ACL policy for the uploaded file
+    await setObjectAclPolicy(file, {
+      owner: userId,
+      visibility: "private",
+    });
+
+    // Return the object path in the format /objects/<bucket>/<object>
+    return `/objects/${bucketName}/${objectName}`;
+  }
+
   // Gets the object entity file from the object path.
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {

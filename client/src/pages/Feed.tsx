@@ -161,29 +161,15 @@ export default function Feed() {
     },
   });
 
-  const handleMediaUpload = async () => {
-    try {
-      const response = await apiRequest("POST", "/api/objects/upload");
-      const { uploadURL } = await response.json();
-      return { method: "PUT" as const, url: uploadURL };
-    } catch (error) {
-      toast({
-        title: "Upload Failed",
-        description: "Failed to get upload URL. Please try again.",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
   const handleMediaComplete = async (result: any) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFiles = result.successful;
       try {
         const mediaUrls = [];
         for (const file of uploadedFiles) {
+          // Upload already returned the objectPath, now set it to public
           const response = await apiRequest("PUT", "/api/media", {
-            mediaUrl: file.uploadURL
+            mediaUrl: file.uploadURL // This is actually objectPath now
           });
           const { objectPath } = await response.json();
           mediaUrls.push(objectPath);
@@ -317,7 +303,6 @@ export default function Feed() {
                   <ObjectUploader
                     maxNumberOfFiles={4}
                     maxFileSize={10 * 1024 * 1024} // 10MB
-                    onGetUploadParameters={handleMediaUpload}
                     onComplete={handleMediaComplete}
                     buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
                   >
@@ -328,7 +313,6 @@ export default function Feed() {
                   <ObjectUploader
                     maxNumberOfFiles={1}
                     maxFileSize={50 * 1024 * 1024} // 50MB
-                    onGetUploadParameters={handleMediaUpload}
                     onComplete={handleMediaComplete}
                     buttonClassName="bg-muted hover:bg-muted/80 text-muted-foreground"
                   >
