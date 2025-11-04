@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, Crown, Star, Heart } from "lucide-react";
+import { CreditCard, Download, DollarSign, Calendar, CheckCircle, AlertCircle, Crown, Star, Heart, Clock, Gift } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import type { Subscription, Invoice } from "@shared/schema";
@@ -278,11 +278,96 @@ export default function Billing() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Current Plan */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Trial Status Card - Show if trial is active */}
+            {user.trialActive && user.trialEndDate && (
+              <Card className="border-2 border-orange-400 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950" data-testid="card-trial-status">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2 text-orange-800 dark:text-orange-200">
+                    <Gift className="w-5 h-5" />
+                    <span>🎉 Trial Active</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="flex items-center space-x-2">
+                        <Clock className="w-5 h-5 text-orange-600" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Trial Ends</p>
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(user.trialEndDate), 'PPP')}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
+                        {Math.ceil((new Date(user.trialEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days left
+                      </Badge>
+                    </div>
+
+                    <div className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Auto-Debit Status</p>
+                          <p className="text-xs text-muted-foreground">
+                            {user.autoDebitEnabled 
+                              ? 'Will auto-renew after trial ends' 
+                              : 'No auto-renewal - trial will simply expire'}
+                          </p>
+                        </div>
+                        <Badge variant={user.autoDebitEnabled ? "default" : "secondary"}>
+                          {user.autoDebitEnabled ? 'Auto-Debit ON' : 'Auto-Debit OFF'}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {!user.autoDebitEnabled && (
+                      <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-start space-x-2">
+                          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                              No payment required
+                            </p>
+                            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                              Your trial will automatically end on {format(new Date(user.trialEndDate), 'PP')}. 
+                              To continue using premium features, subscribe before the trial ends.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {user.autoDebitEnabled && (
+                      <div className="p-3 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                        <div className="flex items-start space-x-2">
+                          <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-900 dark:text-green-100">
+                              Seamless transition
+                            </p>
+                            <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                              Your subscription will automatically start after the trial period. 
+                              You can cancel anytime before {format(new Date(user.trialEndDate), 'PP')}.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className={`border-2 ${getPlanColor(user.plan || 'free')}`} data-testid="card-current-subscription">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   {getPlanIcon(user.plan || 'free')}
                   <span>Current Plan: {user.plan}</span>
+                  {user.trialActive && (
+                    <Badge variant="secondary" className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100">
+                      Trial
+                    </Badge>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -290,6 +375,8 @@ export default function Billing() {
                   <p className="text-muted-foreground">
                     {user.plan === 'free' 
                       ? "You're currently on the free plan. Upgrade to unlock premium features!"
+                      : user.trialActive
+                      ? "You're enjoying a trial of the premium plan. Explore all the features!"
                       : "You're subscribed to the premium plan. Enjoy all features!"}
                   </p>
                   {user.plan === 'free' && (
