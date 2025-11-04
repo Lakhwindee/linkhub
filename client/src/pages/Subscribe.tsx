@@ -165,7 +165,18 @@ export default function Subscribe() {
       const response = await apiRequest("POST", "/api/billing/checkout", payload);
       const data = await response.json();
       
-      if (data.url) {
+      if (data.success && data.autoDebitEnabled === false) {
+        // Direct trial activation without payment
+        toast({
+          title: "Trial Activated! 🎉",
+          description: data.message || "Your trial has been activated successfully!",
+          variant: "default",
+        });
+        // Redirect to dashboard after brief delay
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      } else if (data.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else if (data.clientSecret) {

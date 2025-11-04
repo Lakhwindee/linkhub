@@ -135,6 +135,40 @@ setInterval(() => {
   otpStore.cleanup();
 }, 5 * 60 * 1000);
 
+// Check and expire trials every hour
+setInterval(async () => {
+  try {
+    const users = await storage.getAllUsers();
+    const now = new Date();
+    
+    for (const user of users) {
+      // Check if user has active trial without auto-debit
+      if (user.trialActive && user.autoDebitEnabled === false && user.trialEndDate) {
+        const trialEnd = new Date(user.trialEndDate);
+        
+        // If trial has expired, downgrade to free
+        if (trialEnd < now) {
+          console.log(`⏰ Trial expired for user ${user.id} - downgrading to free plan`);
+          
+          await storage.updateUserProfile(user.id, {
+            plan: 'free',
+            trialActive: false,
+            trialEndDate: null,
+            autoDebitEnabled: null
+          });
+          
+          // Optionally send expiry notification email
+          if (user.email) {
+            console.log(`📧 Trial expiry notification sent to ${user.email.replace(/(.{2}).*(@.*)/, '$1***$2')}`);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Error checking trial expiry:', error);
+  }
+}, 60 * 60 * 1000); // Run every hour
+
 // Helper for safe auth claims access
 function getAuthSub(req: any): string | undefined {
   return req.user?.claims?.sub ?? req.session?.userId;
@@ -4171,13 +4205,45 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
       // Apply trial period if promo code is for trial
       if (promoDetails && promoDetails.discountType === 'trial' && promoDetails.trialPeriodDays) {
+        // Check if auto-debit is disabled - if so, don't use Stripe
+        if (promoDetails.autoDebitEnabled === false) {
+          // Direct trial activation without Stripe payment
+          const trialEndDate = new Date();
+          trialEndDate.setDate(trialEndDate.getDate() + promoDetails.trialPeriodDays);
+          
+          // Update user plan temporarily
+          await storage.updateUserProfile(userId, { 
+            plan: promoDetails.trialPlanType || plan,
+            trialEndDate: trialEndDate,
+            trialActive: true,
+            autoDebitEnabled: false
+          });
+          
+          // Mark promo code as used
+          if (promoDetails.id) {
+            await storage.incrementDiscountCodeUsage(promoDetails.id);
+          }
+          
+          console.log(`✅ Applied ${promoDetails.trialPeriodDays}-day trial (no auto-debit) for user ${userId}`);
+          
+          // Return success without Stripe checkout
+          return res.json({ 
+            success: true,
+            message: `${promoDetails.trialPeriodDays}-day trial activated! No payment required.`,
+            trialEndDate,
+            autoDebitEnabled: false
+          });
+        }
+        
+        // Normal trial with auto-debit enabled - use Stripe
         sessionConfig.subscription_data = {
           trial_period_days: promoDetails.trialPeriodDays,
         };
         sessionConfig.metadata.promoCode = promoCode;
         sessionConfig.metadata.trialDays = promoDetails.trialPeriodDays;
+        sessionConfig.metadata.autoDebitEnabled = 'true';
 
-        console.log(`✅ Applying ${promoDetails.trialPeriodDays}-day trial for user ${userId} with code ${promoCode}`);
+        console.log(`✅ Applying ${promoDetails.trialPeriodDays}-day trial (with auto-debit) for user ${userId} with code ${promoCode}`);
       }
 
       const session = await stripe.checkout.sessions.create(sessionConfig);

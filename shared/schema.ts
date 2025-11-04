@@ -68,6 +68,10 @@ export const users = pgTable("users", {
   stripeConnectAccountId: varchar("stripe_connect_account_id"), // For holding payments until bank account connected
   stripeBankAccountStatus: varchar("stripe_bank_account_status").default("not_connected"), // not_connected, pending, connected
   stripePayoutsEnabled: boolean("stripe_payouts_enabled").default(false),
+  // Trial fields (for no-payment trials)
+  trialActive: boolean("trial_active").default(false),
+  trialEndDate: timestamp("trial_end_date"),
+  autoDebitEnabled: boolean("auto_debit_enabled"),
   canDmMe: varchar("can_dm_me").default("all"), // all, followers, none
   // Document verification fields
   verificationStatus: varchar("verification_status").default("pending"), // pending, verified, rejected
