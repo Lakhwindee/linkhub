@@ -3596,20 +3596,6 @@ export default function Admin() {
                           </div>
                         </div>
                         <div>
-                          <label className="text-sm font-medium">Role</label>
-                          <select 
-                            value={selectedUser.role || 'user'}
-                            onChange={(e) => setSelectedUser({...selectedUser, role: e.target.value})}
-                            className="w-full p-2 border rounded-md"
-                          >
-                            <option value="user">User</option>
-                            <option value="creator">Creator</option>
-                            <option value="publisher">Publisher</option>
-                            <option value="moderator">Moderator</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        </div>
-                        <div>
                           <label className="text-sm font-medium">Plan</label>
                           <select 
                             value={selectedUser.plan || 'free'}
@@ -3617,7 +3603,6 @@ export default function Admin() {
                             className="w-full p-2 border rounded-md"
                           >
                             <option value="free">Free</option>
-                            <option value="standard">Standard</option>
                             <option value="premium">Premium</option>
                           </select>
                         </div>
@@ -3629,7 +3614,6 @@ export default function Admin() {
                                 updates: {
                                   firstName: selectedUser.firstName,
                                   lastName: selectedUser.lastName,
-                                  role: selectedUser.role,
                                   plan: selectedUser.plan,
                                 }
                               });
