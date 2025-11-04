@@ -271,6 +271,16 @@ async function signObjectURL({
   method: "GET" | "PUT" | "DELETE" | "HEAD";
   ttlSec: number;
 }): Promise<string> {
+  const credentialResponse = await fetch(
+    `${REPLIT_SIDECAR_ENDPOINT}/credential`
+  );
+  if (!credentialResponse.ok) {
+    throw new Error(
+      `Failed to get credential from sidecar, errorcode: ${credentialResponse.status}`
+    );
+  }
+  const { access_token } = await credentialResponse.json();
+
   const request = {
     bucket_name: bucketName,
     object_name: objectName,
@@ -283,6 +293,7 @@ async function signObjectURL({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${access_token}`,
       },
       body: JSON.stringify(request),
     }
