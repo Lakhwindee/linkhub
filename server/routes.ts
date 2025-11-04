@@ -3929,8 +3929,41 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   // Object storage routes
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.claims?.sub;
-    const objectStorageService = new ObjectStorageService();
+    
     try {
+      // Handle local file system storage
+      if (req.path.startsWith("/objects/local/")) {
+        const fs = await import('fs');
+        const path = await import('path');
+        
+        const filename = req.path.replace("/objects/local/", "");
+        const filePath = path.join('/tmp/uploads', filename);
+        const metadataPath = path.join('/tmp/uploads', filename.replace(/\.[^.]+$/, '.meta.json'));
+        
+        // Check if file exists
+        if (!fs.existsSync(filePath)) {
+          return res.sendStatus(404);
+        }
+        
+        // Read metadata to check permissions
+        let metadata: any = { visibility: 'private', userId: null, contentType: 'application/octet-stream' };
+        if (fs.existsSync(metadataPath)) {
+          const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+          metadata = JSON.parse(metadataContent);
+        }
+        
+        // Check access permissions
+        if (metadata.visibility === 'private' && metadata.userId !== userId) {
+          return res.sendStatus(401);
+        }
+        
+        // Serve the file
+        res.set('Content-Type', metadata.contentType);
+        return res.sendFile(filePath);
+      }
+      
+      // Handle Google Cloud Storage (old approach)
+      const objectStorageService = new ObjectStorageService();
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
@@ -3984,6 +4017,28 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     const userId = req.user?.claims?.sub;
 
     try {
+      // Handle local file system storage
+      if (req.body.mediaUrl.startsWith("/objects/local/")) {
+        const fs = await import('fs');
+        const path = await import('path');
+        
+        const filename = req.body.mediaUrl.replace("/objects/local/", "");
+        const metadataPath = path.join('/tmp/uploads', filename.replace(/\.[^.]+$/, '.meta.json'));
+        
+        // Update metadata to make it public
+        if (fs.existsSync(metadataPath)) {
+          const metadataContent = await fs.promises.readFile(metadataPath, 'utf-8');
+          const metadata = JSON.parse(metadataContent);
+          metadata.visibility = "public";
+          await fs.promises.writeFile(metadataPath, JSON.stringify(metadata));
+        }
+        
+        return res.status(200).json({
+          objectPath: req.body.mediaUrl,
+        });
+      }
+      
+      // Handle Google Cloud Storage (old approach)
       const objectStorageService = new ObjectStorageService();
       const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         req.body.mediaUrl,

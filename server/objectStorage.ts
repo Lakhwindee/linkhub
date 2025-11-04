@@ -194,55 +194,50 @@ export class ObjectStorageService {
     }
   }
 
-  // Uploads a file directly to object storage
+  // Uploads a file directly to local file system
   async uploadObjectEntity(
     fileBuffer: Buffer,
     contentType: string,
     userId: string
   ): Promise<string> {
-    const privateObjectDir = this.getPrivateObjectDir();
-    if (!privateObjectDir) {
-      throw new Error("PRIVATE_OBJECT_DIR not set");
-    }
-
+    const fs = await import('fs');
+    const path = await import('path');
+    
     const objectId = randomUUID();
-    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
-
-    const { bucketName, objectName } = parseObjectPath(fullPath);
-
-    console.log(`📤 Uploading to bucket: ${bucketName}, object: ${objectName}`);
+    
+    // Use local file system storage in /tmp/uploads
+    const uploadsDir = '/tmp/uploads';
+    
+    // Create uploads directory if it doesn't exist
+    await fs.promises.mkdir(uploadsDir, { recursive: true });
+    
+    // Determine file extension from contentType
+    const ext = contentType.split('/')[1] || 'bin';
+    const filename = `${objectId}.${ext}`;
+    const filePath = path.join(uploadsDir, filename);
+    
+    console.log(`📤 Uploading to local storage: ${filePath}`);
 
     try {
-      const bucket = objectStorageClient.bucket(bucketName);
+      // Save file to local storage
+      await fs.promises.writeFile(filePath, fileBuffer);
       
-      // Create temporary file path
-      const tempFilePath = `/tmp/${objectId}`;
-      const fs = await import('fs');
-      await fs.promises.writeFile(tempFilePath, fileBuffer);
+      // Store metadata in a JSON file
+      const metadataPath = path.join(uploadsDir, `${objectId}.meta.json`);
+      await fs.promises.writeFile(metadataPath, JSON.stringify({
+        userId,
+        contentType,
+        filename,
+        uploadedAt: new Date().toISOString(),
+        visibility: "private"
+      }));
 
-      // Upload using bucket.upload()
-      const [file] = await bucket.upload(tempFilePath, {
-        destination: objectName,
-        metadata: {
-          contentType,
-        },
-      });
+      console.log(`✅ Upload successful: ${filename}`);
 
-      // Clean up temp file
-      await fs.promises.unlink(tempFilePath);
-
-      console.log(`✅ Upload successful: ${file.name}`);
-
-      // Set ACL policy for the uploaded file
-      await setObjectAclPolicy(file, {
-        owner: userId,
-        visibility: "private",
-      });
-
-      // Return the object path in the format /objects/<bucket>/<object>
-      return `/objects/${bucketName}/${objectName}`;
+      // Return the object path
+      return `/objects/local/${filename}`;
     } catch (error) {
-      console.error(`❌ Upload error for bucket ${bucketName}:`, error);
+      console.error(`❌ Upload error:`, error);
       throw error;
     }
   }
