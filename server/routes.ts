@@ -1752,14 +1752,21 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(400).json({ message: "YouTube URL is required" });
       }
 
+      // Load YouTube API key from database first, then environment variable
+      const youtubeSetting = await storage.getApiSetting('youtube');
+      const youtubeApiKey = youtubeSetting?.settingsJson?.apiKey || process.env.YOUTUBE_API_KEY;
+      
       // Check if YouTube API key is configured
-      if (!process.env.YOUTUBE_API_KEY) {
+      if (!youtubeApiKey) {
         console.error('❌ YouTube API key not configured');
         return res.status(503).json({ 
           message: "YouTube API not configured. Please contact admin to add YouTube API key in settings.",
           configRequired: true
         });
       }
+      
+      console.log(`✅ Using YouTube API key from ${youtubeSetting ? 'database' : 'environment'}`);
+    
 
       // Extract channel ID from YouTube URL
       let channelId = '';
@@ -1773,7 +1780,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         
         // Use YouTube API to get channel info by username
         const searchResponse = await fetch(
-          `https://www.googleapis.com/youtube/v3/channels?part=id,statistics&forHandle=${username}&key=${process.env.YOUTUBE_API_KEY}`
+          `https://www.googleapis.com/youtube/v3/channels?part=id,statistics&forHandle=${username}&key=${youtubeApiKey}`
         );
         
         if (!searchResponse.ok) {
@@ -1803,7 +1810,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         console.log(`🔍 Searching for YouTube channel: ${customName}`);
         
         const searchResponse = await fetch(
-          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${customName}&key=${process.env.YOUTUBE_API_KEY}&maxResults=1`
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${customName}&key=${youtubeApiKey}&maxResults=1`
         );
         
         if (!searchResponse.ok) {
@@ -1826,7 +1833,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
 
       // Fetch channel statistics AND snippet for country detection
-      const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${process.env.YOUTUBE_API_KEY}`;
+      const apiUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,snippet&id=${channelId}&key=${youtubeApiKey}`;
       const response = await fetch(apiUrl);
 
       if (!response.ok) {
