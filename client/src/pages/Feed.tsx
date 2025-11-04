@@ -246,54 +246,18 @@ export default function Feed() {
                 </p>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex gap-4">
                 <Select
                   value={watchedValues.visibility || "public"}
                   onValueChange={(value) => setValue("visibility", value as "public" | "followers" | "private")}
                 >
-                  <SelectTrigger data-testid="select-post-visibility">
+                  <SelectTrigger data-testid="select-post-visibility" className="w-[200px]">
                     <SelectValue placeholder="Visibility" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="public">🌍 Public</SelectItem>
                     <SelectItem value="followers">👥 Followers Only</SelectItem>
                     <SelectItem value="private">🔒 Private</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={watchedValues.country || ""}
-                  onValueChange={(value) => setValue("country", value)}
-                >
-                  <SelectTrigger data-testid="select-post-country">
-                    <SelectValue placeholder="Country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No Location</SelectItem>
-                    {/* Real-world countries (250+ with flags) */}
-                    {worldCountries.map((country) => (
-                      <SelectItem key={country.name} value={country.name}>
-                        {country.flag} {country.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={watchedValues.city || ""}
-                  onValueChange={(value) => setValue("city", value)}
-                  disabled={!selectedCountry}
-                >
-                  <SelectTrigger data-testid="select-post-city">
-                    <SelectValue placeholder={selectedCountry ? "Select City" : "Select Country First"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">No City</SelectItem>
-                    {availableCities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -338,10 +302,43 @@ export default function Feed() {
               </div>
 
               {watchedValues.mediaUrls && watchedValues.mediaUrls.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Uploaded Media:</p>
-                  <div className="text-sm text-muted-foreground">
-                    {watchedValues.mediaUrls.length} file(s) uploaded
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">📸 {watchedValues.mediaUrls.length} {watchedValues.mediaUrls.length === 1 ? 'photo' : 'photos'} added</p>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setValue("mediaUrls", [])}
+                      className="text-xs"
+                    >
+                      Remove all
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {watchedValues.mediaUrls.map((url, index) => (
+                      <div key={index} className="relative group rounded-lg overflow-hidden border border-border">
+                        <img 
+                          src={url} 
+                          alt={`Upload ${index + 1}`} 
+                          className="w-full h-32 object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const newUrls = watchedValues.mediaUrls.filter((_, i) => i !== index);
+                              setValue("mediaUrls", newUrls);
+                            }}
+                            className="text-xs"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

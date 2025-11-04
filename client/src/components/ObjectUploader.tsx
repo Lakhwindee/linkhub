@@ -19,9 +19,12 @@ export function ObjectUploader({
 }: ObjectUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleButtonClick = () => {
-    fileInputRef.current?.click();
+    if (!uploading) {
+      fileInputRef.current?.click();
+    }
   };
 
   const checkVideoDuration = (file: File): Promise<boolean> => {
@@ -77,18 +80,29 @@ export function ObjectUploader({
     }
 
     setUploading(true);
+    setUploadProgress(0);
 
     try {
+      // Simulate progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) return prev;
+          return prev + 10;
+        });
+      }, 200);
+
       // Read file as base64
       const fileBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => {
-          const base64 = (reader.result as string).split(',')[1]; // Remove data:image/png;base64, prefix
+          const base64 = (reader.result as string).split(',')[1];
           resolve(base64);
         };
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+
+      setUploadProgress(50);
 
       // Upload file to server
       const uploadResponse = await fetch('/api/objects/upload', {
@@ -107,6 +121,12 @@ export function ObjectUploader({
       }
 
       const { objectPath } = await uploadResponse.json();
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      // Small delay to show 100%
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Call onComplete with successful result
       const result = {
@@ -116,7 +136,7 @@ export function ObjectUploader({
             name: file.name,
             type: file.type,
             size: file.size,
-            uploadURL: objectPath, // Return the object path
+            uploadURL: objectPath,
           }
         ],
         failed: [],
@@ -124,6 +144,7 @@ export function ObjectUploader({
 
       onComplete?.(result);
       setUploading(false);
+      setUploadProgress(0);
       
       // Reset file input
       if (fileInputRef.current) {
@@ -133,6 +154,7 @@ export function ObjectUploader({
       console.error('Upload error:', error);
       alert('❌ Upload failed! Please try again.');
       setUploading(false);
+      setUploadProgress(0);
       
       // Reset file input
       if (fileInputRef.current) {
@@ -142,14 +164,19 @@ export function ObjectUploader({
   };
 
   return (
-    <div>
+    <div className="relative">
       <Button 
         onClick={handleButtonClick} 
         className={buttonClassName} 
         type="button"
         disabled={uploading}
       >
-        {uploading ? 'Uploading...' : children}
+        {uploading ? (
+          <div className="flex items-center">
+            <div className="animate-spin w-4 h-4 border-2 border-current border-t-transparent rounded-full mr-2" />
+            {uploadProgress}%
+          </div>
+        ) : children}
       </Button>
 
       <input
