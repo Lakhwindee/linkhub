@@ -240,48 +240,84 @@ export function PostCard({ post, compact = false }: PostCardProps) {
           </div>
         )}
 
-        {/* Media */}
+        {/* Media - Facebook Style */}
         {post.mediaUrls && post.mediaUrls.length > 0 && (
           <div className="mb-4">
             {post.mediaType === 'video' ? (
               <video 
                 controls 
-                className="w-full rounded-lg max-h-96"
+                className="w-full rounded-lg max-h-[600px]"
                 data-testid={`video-post-${post.id}`}
               >
                 <source src={post.mediaUrls[0]} />
                 Your browser does not support the video tag.
               </video>
-            ) : (
-              <div className={`grid gap-2 rounded-lg overflow-hidden ${
-                post.mediaUrls.length === 1 ? 'grid-cols-1' :
-                post.mediaUrls.length === 2 ? 'grid-cols-2' :
-                post.mediaUrls.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
-              }`}>
-                {post.mediaUrls.slice(0, 4).map((url, index) => (
-                  <div key={index} className={post.mediaUrls!.length === 3 && index === 0 ? 'row-span-2' : ''}>
+            ) : post.mediaUrls.length === 1 ? (
+              // Single image - Full width with aspect ratio maintained
+              <div className="rounded-lg overflow-hidden bg-muted">
+                <img 
+                  src={post.mediaUrls[0]} 
+                  alt="Post media"
+                  className="w-full max-h-[600px] object-contain"
+                  data-testid={`img-post-media-${post.id}-0`}
+                />
+              </div>
+            ) : post.mediaUrls.length === 2 ? (
+              // Two images - Side by side
+              <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+                {post.mediaUrls.map((url, index) => (
+                  <div key={index} className="bg-muted aspect-square">
                     <img 
                       src={url} 
                       alt={`Post media ${index + 1}`}
-                      className="w-full h-48 object-cover"
+                      className="w-full h-full object-cover"
                       data-testid={`img-post-media-${post.id}-${index}`}
                     />
                   </div>
                 ))}
-                {post.mediaUrls.length > 4 && (
-                  <div className="relative">
+              </div>
+            ) : post.mediaUrls.length === 3 ? (
+              // Three images - One large on left, two stacked on right
+              <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden h-[400px]">
+                <div className="row-span-2 bg-muted">
+                  <img 
+                    src={post.mediaUrls[0]} 
+                    alt="Post media 1"
+                    className="w-full h-full object-cover"
+                    data-testid={`img-post-media-${post.id}-0`}
+                  />
+                </div>
+                {post.mediaUrls.slice(1, 3).map((url, index) => (
+                  <div key={index + 1} className="bg-muted">
                     <img 
-                      src={post.mediaUrls[3]} 
-                      alt="More media"
-                      className="w-full h-48 object-cover"
+                      src={url} 
+                      alt={`Post media ${index + 2}`}
+                      className="w-full h-full object-cover"
+                      data-testid={`img-post-media-${post.id}-${index + 1}`}
                     />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="text-white font-semibold">
-                        +{post.mediaUrls.length - 3} more
-                      </span>
-                    </div>
                   </div>
-                )}
+                ))}
+              </div>
+            ) : (
+              // Four or more images - 2x2 grid
+              <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden">
+                {post.mediaUrls.slice(0, 4).map((url, index) => (
+                  <div key={index} className="relative bg-muted aspect-square">
+                    <img 
+                      src={url} 
+                      alt={`Post media ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      data-testid={`img-post-media-${post.id}-${index}`}
+                    />
+                    {index === 3 && post.mediaUrls!.length > 4 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white text-2xl font-semibold">
+                          +{post.mediaUrls.length - 4}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
