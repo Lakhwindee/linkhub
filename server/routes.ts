@@ -954,21 +954,6 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
 
   // Demo admin login endpoint removed for production security
 
-  // Check authentication status - returns current user or 401
-  app.get('/api/auth/user', async (req: any, res) => {
-    try {
-      const session = req.session;
-      
-      if (!session || !session.userId || !session.user) {
-        return res.status(401).json({ message: 'Not authenticated' });
-      }
-      
-      res.json(session.user);
-    } catch (error) {
-      res.status(500).json({ message: 'Internal server error' });
-    }
-  });
-
   // Function to send OTP email using SMTP
   async function sendOTPEmail(email: string, otp: string) {
     try {
