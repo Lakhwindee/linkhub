@@ -374,31 +374,11 @@ export default function Billing() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {user.plan !== 'free' ? (
-                          <TableRow data-testid="row-sample-invoice">
-                            <TableCell>{format(new Date(), 'MMM d, yyyy')}</TableCell>
-                            <TableCell>{user.plan} Plan Subscription</TableCell>
-                            <TableCell>£{user.plan === 'traveler' ? '25.00' : '45.00'}</TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                <CheckCircle className="w-3 h-3 mr-1" />
-                                Paid
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="sm" data-testid="button-download-invoice">
-                                <Download className="w-3 h-3 mr-2" />
-                                PDF
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ) : (
-                          <TableRow>
-                            <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                              No billing history yet. Upgrade to a paid plan to see invoices here.
-                            </TableCell>
-                          </TableRow>
-                        )}
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                            No billing history yet. Your invoices will appear here after subscription.
+                          </TableCell>
+                        </TableRow>
                       </TableBody>
                     </Table>
                   </div>
@@ -419,29 +399,19 @@ export default function Billing() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.plan === 'free' ? (
-                  <div className="text-center py-4">
-                    <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                    <p className="text-muted-foreground text-sm">
-                      No payment method required for free plan
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-accent/20 rounded-lg flex items-center justify-center">
-                        <CreditCard className="w-5 h-5 text-accent" />
-                      </div>
-                      <div>
-                        <div className="font-medium" data-testid="text-payment-method">•••• •••• •••• 4242</div>
-                        <div className="text-sm text-muted-foreground">Expires 12/28</div>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="w-full" data-testid="button-update-payment">
-                      Update Payment Method
+                <div className="text-center py-4">
+                  <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground text-sm">
+                    {user.plan === 'free' 
+                      ? 'No payment method required for free plan'
+                      : 'Add a payment method to manage your subscription'}
+                  </p>
+                  {user.plan !== 'free' && (
+                    <Button variant="outline" size="sm" className="w-full mt-4" data-testid="button-add-payment">
+                      Add Payment Method
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
 
