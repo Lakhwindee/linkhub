@@ -461,22 +461,22 @@ export default function Subscribe() {
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Full map access</td>
-                    <td className="text-center py-3 text-muted-foreground">Limited</td>
+                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Connect requests & DM</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
+                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Create & join events</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
+                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
                     <td className="py-3">Ad Marketplace</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
+                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                   <tr className="border-b border-border">
@@ -486,7 +486,7 @@ export default function Subscribe() {
                   </tr>
                   <tr>
                     <td className="py-3">Priority support</td>
-                    <td className="text-center py-3 text-red-500">✗</td>
+                    <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                     <td className="text-center py-3"><CheckIcon className="w-4 h-4 text-green-500 mx-auto" /></td>
                   </tr>
                 </tbody>
