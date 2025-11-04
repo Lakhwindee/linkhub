@@ -83,38 +83,54 @@ export function ObjectUploader({
 
     setUploading(true);
 
-    // Demo upload - simulate successful upload after 1 second
-    setTimeout(() => {
-      // Create a demo image URL using the selected file
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageUrl = e.target?.result as string;
-        
-        // Simulate successful upload result
-        const result = {
-          successful: [
-            {
-              id: file.name,
-              name: file.name,
-              type: file.type,
-              size: file.size,
-              uploadURL: imageUrl, // Use the file data URL for demo
-            }
-          ],
-          failed: [],
-        };
-
-        onComplete?.(result);
-        setUploading(false);
-        
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      };
+    try {
+      // Get upload URL from server
+      const { method, url: uploadURL } = await onGetUploadParameters();
       
-      reader.readAsDataURL(file);
-    }, 1000);
+      // Upload file to the URL
+      const uploadResponse = await fetch(uploadURL, {
+        method: method,
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Upload failed');
+      }
+
+      // Call onComplete with successful result
+      const result = {
+        successful: [
+          {
+            id: file.name,
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            uploadURL: uploadURL, // Return the actual upload URL
+          }
+        ],
+        failed: [],
+      };
+
+      onComplete?.(result);
+      setUploading(false);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('❌ Upload failed! Please try again.');
+      setUploading(false);
+      
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   return (
