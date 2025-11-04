@@ -5035,27 +5035,32 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return key.substring(0, prefix.length + 5) + '••••••••••••' + key.substring(key.length - 4);
       };
       
+      // Helper to check if key is valid (non-empty, non-whitespace)
+      const isValidKey = (key: any) => {
+        return key && typeof key === 'string' && key.trim().length > 0;
+      };
+
       // Return API configuration status with database settings
       const apiSettings = {
         stripe: {
           publishableKey: stripeSetting ? maskKey(stripeSetting.settingsJson.publishableKey, 'pk_') : (process.env.STRIPE_PUBLISHABLE_KEY ? maskKey(process.env.STRIPE_PUBLISHABLE_KEY, 'pk_') : ''),
           secretKey: stripeSetting ? maskKey(stripeSetting.settingsJson.secretKey, 'sk_') : (process.env.STRIPE_SECRET_KEY ? maskKey(process.env.STRIPE_SECRET_KEY, 'sk_') : ''),
           webhookSecret: stripeSetting ? maskKey(stripeSetting.settingsJson.webhookSecret, 'whsec_') : (process.env.STRIPE_WEBHOOK_SECRET ? maskKey(process.env.STRIPE_WEBHOOK_SECRET, 'whsec_') : ''),
-          status: (stripeSetting?.settingsJson?.secretKey || process.env.STRIPE_SECRET_KEY) ? 'active' : 'inactive',
+          status: (isValidKey(stripeSetting?.settingsJson?.secretKey) || isValidKey(process.env.STRIPE_SECRET_KEY)) ? 'active' : 'inactive',
           lastTested: stripeSetting?.lastTestedAt?.toISOString() || null,
           source: stripeSetting ? 'database' : 'environment'
         },
         youtube: {
           apiKey: youtubeSetting ? maskKey(youtubeSetting.settingsJson.apiKey, 'AIza') : (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
           projectId: youtubeSetting?.settingsJson?.projectId || 'hublink-project',
-          status: (youtubeSetting?.settingsJson?.apiKey || process.env.YOUTUBE_API_KEY) ? 'active' : 'inactive',
+          status: (isValidKey(youtubeSetting?.settingsJson?.apiKey) || isValidKey(process.env.YOUTUBE_API_KEY)) ? 'active' : 'inactive',
           lastTested: youtubeSetting?.lastTestedAt?.toISOString() || null,
           source: youtubeSetting ? 'database' : 'environment'
         },
         maps: {
           apiKey: mapsSetting ? maskKey(mapsSetting.settingsJson.apiKey, 'AIza') : (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
           enableAdvancedFeatures: mapsSetting?.settingsJson?.enableAdvancedFeatures !== undefined ? mapsSetting.settingsJson.enableAdvancedFeatures : true,
-          status: (mapsSetting?.settingsJson?.apiKey || process.env.GOOGLE_MAPS_API_KEY) ? 'active' : 'inactive',
+          status: (isValidKey(mapsSetting?.settingsJson?.apiKey) || isValidKey(process.env.GOOGLE_MAPS_API_KEY)) ? 'active' : 'inactive',
           monthlyRequests: 6,
           lastTested: mapsSetting?.lastTestedAt?.toISOString() || null,
           source: mapsSetting ? 'database' : 'environment'
@@ -5063,20 +5068,20 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         database: {
           url: process.env.DATABASE_URL ? 'postgres://••••••••••••' : '',
           poolSize: 10,
-          status: process.env.DATABASE_URL ? 'connected' : 'disconnected',
+          status: isValidKey(process.env.DATABASE_URL) ? 'connected' : 'disconnected',
           lastTested: new Date().toISOString()
         },
         storage: {
           bucketName: storageSetting?.settingsJson?.bucketName || 'hublink-storage',
           serviceAccountKey: storageSetting?.settingsJson?.serviceAccountKey ? '••••••••••••' : '',
-          status: storageSetting?.settingsJson?.status || 'active',
+          status: isValidKey(storageSetting?.settingsJson?.serviceAccountKey) ? 'active' : 'inactive',
           lastTested: storageSetting?.lastTestedAt?.toISOString() || new Date().toISOString()
         },
         email: {
           provider: emailSetting?.settingsJson?.provider || 'gmail_smtp',
           email: emailSetting?.settingsJson?.email || '',
           appPassword: emailSetting?.settingsJson?.appPassword ? '••••••••••••••••' : '',
-          status: emailSetting?.settingsJson?.status || 'inactive',
+          status: isValidKey(emailSetting?.settingsJson?.appPassword) ? 'active' : 'inactive',
           lastTested: emailSetting?.lastTestedAt?.toISOString() || null
         },
         usage: {
