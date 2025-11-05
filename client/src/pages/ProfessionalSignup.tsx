@@ -418,11 +418,17 @@ export default function ProfessionalSignup() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="country">Country *</Label>
-                      <Select value={formData.country} onValueChange={(value) => setFormData(prev => ({ ...prev, country: value, state: '', city: '' }))}>
-                        <SelectTrigger>
+                      <Select 
+                        value={formData.country || undefined} 
+                        onValueChange={(value) => {
+                          console.log('Country selected:', value);
+                          setFormData(prev => ({ ...prev, country: value, state: '', city: '' }));
+                        }}
+                      >
+                        <SelectTrigger id="country">
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-80 overflow-y-auto">
+                        <SelectContent className="max-h-80 overflow-y-auto" position="popper" sideOffset={4}>
                           {countries.map((country) => (
                             <SelectItem key={country.name} value={country.name}>
                               {country.flag} {country.name}
