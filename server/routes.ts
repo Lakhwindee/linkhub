@@ -4638,6 +4638,10 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
 
       // Create Stripe checkout session for wallet top-up
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS}`
+        : 'http://localhost:5000';
+      
       const session = await stripe.checkout.sessions.create({
         customer: user.stripeCustomerId || undefined,
         customer_email: !user.stripeCustomerId ? user.email : undefined,
@@ -4656,8 +4660,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/wallet?topup=success`,
-        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/wallet?topup=cancel`,
+        success_url: `${baseUrl}/wallet?topup=success`,
+        cancel_url: `${baseUrl}/wallet?topup=cancel`,
         metadata: {
           userId,
           type: 'wallet_topup',
@@ -6433,6 +6437,10 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
       
       // Create Stripe checkout session for campaign payment
+      const baseUrl = process.env.REPLIT_DOMAINS 
+        ? `https://${process.env.REPLIT_DOMAINS}`
+        : 'http://localhost:5000';
+      
       const session = await stripe.checkout.sessions.create({
         customer: user.stripeCustomerId || undefined,
         customer_email: !user.stripeCustomerId ? user.email : undefined,
@@ -6451,8 +6459,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           },
         ],
         mode: 'payment',
-        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment/success/${campaignId}`,
-        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment/${campaignId}`,
+        success_url: `${baseUrl}/payment/success/${campaignId}`,
+        cancel_url: `${baseUrl}/payment/${campaignId}`,
         metadata: {
           userId,
           type: 'campaign_payment',
