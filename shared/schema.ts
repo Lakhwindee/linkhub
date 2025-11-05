@@ -938,7 +938,7 @@ export const insertPublisherAdSchema = z.object({
     }
     return val;
   }),
-  totalBudget: z.number().min(120, "Minimum budget is $120"),
+  totalBudget: z.number().min(50, "Minimum budget is $50"),
   tierLevel: z.number().min(1).max(15),
   numberOfInfluencers: z.number().min(1, "Must select at least 1 influencer"),
   adImageUrl: z.string().url("Must be a valid image URL"),

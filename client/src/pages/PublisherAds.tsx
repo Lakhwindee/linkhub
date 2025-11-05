@@ -65,10 +65,10 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
     }
 
     // Validate minimum budget
-    if (totalBudget < 120) {
+    if (totalBudget < 50) {
       toast({
         title: "Budget Too Low",
-        description: `Minimum campaign budget is $120. Current budget: $${totalBudget.toFixed(2)}. Please select more influencers or a higher tier.`,
+        description: `Minimum campaign budget is $50. Current budget: $${totalBudget.toFixed(2)}. Please select more influencers or a higher tier.`,
         variant: "destructive",
       });
       return;
