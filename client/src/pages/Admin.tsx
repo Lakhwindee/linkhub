@@ -415,13 +415,47 @@ export default function Admin() {
     },
     onSuccess: async (data, variables) => {
       setSavingService(null);
+      
+      // Force refetch to get fresh masked values
+      await queryClient.refetchQueries({ queryKey: ["/api/admin/api-settings"] });
+      
+      // Manually refetch and update form
+      const result = await refetchApiSettings();
+      if (result?.data) {
+        const freshData = result.data as ApiSettings;
+        
+        if (variables.service === 'youtube') {
+          setApiFormData(prev => ({
+            ...prev,
+            youtube: {
+              apiKey: freshData.youtube?.apiKey || '',
+              projectId: freshData.youtube?.projectId || 'hublink-project',
+            }
+          }));
+        } else if (variables.service === 'maps') {
+          setApiFormData(prev => ({
+            ...prev,
+            maps: {
+              apiKey: freshData.maps?.apiKey || '',
+              enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
+            }
+          }));
+        } else if (variables.service === 'stripe') {
+          setApiFormData(prev => ({
+            ...prev,
+            stripe: {
+              publishableKey: freshData.stripe?.publishableKey || '',
+              secretKey: freshData.stripe?.secretKey || '',
+              webhookSecret: freshData.stripe?.webhookSecret || '',
+            }
+          }));
+        }
+      }
+      
       toast({
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
       });
-      
-      // Force refetch to get fresh masked values
-      await queryClient.refetchQueries({ queryKey: ["/api/admin/api-settings"] });
     },
     onError: (error: any) => {
       setSavingService(null);
