@@ -843,25 +843,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAds(filters?: any): Promise<Ad[]> {
-    // Return test ads for demo
-    return testAds.map(ad => ({
-      ...ad,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    })) as Ad[];
+    const allAds = await db
+      .select()
+      .from(ads)
+      .where(eq(ads.status, 'active'))
+      .orderBy(desc(ads.createdAt));
+    return allAds;
   }
 
   async getAd(id: string): Promise<Ad | undefined> {
-    // Check if it's a test ad first
-    const testAd = testAds.find(ad => ad.id === id);
-    if (testAd) {
-      return {
-        ...testAd,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as Ad;
-    }
-
     const [ad] = await db.select().from(ads).where(eq(ads.id, id));
     return ad;
   }
