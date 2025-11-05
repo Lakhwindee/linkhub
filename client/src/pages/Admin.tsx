@@ -19,7 +19,7 @@ import {
   Search, Filter, Download, Upload, Shield, Monitor, Database, Globe, Mail, CreditCard,
   Activity, Lock, Unlock, UserPlus, UserMinus, Trash2, Edit3, Calendar, TrendingUp,
   Clock, Server, Wifi, AlertCircle, RefreshCw, MoreVertical, Bell, Home, MessageSquare,
-  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp, Receipt, LogOut, Building
+  Save, MapPin, Plus, Percent, Send, Key, Bot, Zap, ArrowUp, Receipt, LogOut, Building, ExternalLink
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { format, subDays, subWeeks, subMonths } from "date-fns";
@@ -1761,14 +1761,24 @@ export default function Admin() {
                                   <p className="text-sm text-muted-foreground">
                                     Submission ID: {submission.id}
                                   </p>
-                                  {submission.rawFileUrl && (
-                                    <Button variant="outline" size="sm" asChild>
-                                      <a href={submission.rawFileUrl} target="_blank" rel="noopener noreferrer">
-                                        <Eye className="w-3 h-3 mr-2" />
-                                        View File
-                                      </a>
-                                    </Button>
-                                  )}
+                                  <div className="flex flex-wrap gap-2">
+                                    {submission.contentLink && (
+                                      <Button variant="outline" size="sm" asChild>
+                                        <a href={submission.contentLink} target="_blank" rel="noopener noreferrer">
+                                          <ExternalLink className="w-3 h-3 mr-2" />
+                                          Content Link
+                                        </a>
+                                      </Button>
+                                    )}
+                                    {submission.rawFileUrl && (
+                                      <Button variant="outline" size="sm" asChild>
+                                        <a href={submission.rawFileUrl} target="_blank" rel="noopener noreferrer">
+                                          <Eye className="w-3 h-3 mr-2" />
+                                          View File
+                                        </a>
+                                      </Button>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="flex space-x-2">
                                   <Dialog>
@@ -1794,6 +1804,32 @@ export default function Admin() {
                                               <p><strong>ID:</strong> {selectedSubmission.id}</p>
                                               <p><strong>Status:</strong> {selectedSubmission.status}</p>
                                               <p><strong>Submitted:</strong> {format(new Date(selectedSubmission.createdAt!), 'MMM d, yyyy h:mm a')}</p>
+                                              {selectedSubmission.contentLink && (
+                                                <p>
+                                                  <strong>Content Link:</strong>{' '}
+                                                  <a 
+                                                    href={selectedSubmission.contentLink} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                                                  >
+                                                    {selectedSubmission.contentLink}
+                                                  </a>
+                                                </p>
+                                              )}
+                                              {selectedSubmission.rawFileUrl && (
+                                                <p>
+                                                  <strong>File URL:</strong>{' '}
+                                                  <a 
+                                                    href={selectedSubmission.rawFileUrl} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+                                                  >
+                                                    View File
+                                                  </a>
+                                                </p>
+                                              )}
                                             </div>
                                           </div>
                                           
