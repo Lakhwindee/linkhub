@@ -3932,7 +3932,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         }
         
         // Check access permissions
-        if (metadata.visibility === 'private' && metadata.userId !== userId) {
+        // Admins can view all files
+        const user = await storage.getUser(userId);
+        const isAdmin = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator');
+        
+        if (!isAdmin && metadata.visibility === 'private' && metadata.userId !== userId) {
           return res.sendStatus(401);
         }
         
@@ -3944,7 +3948,13 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Handle Google Cloud Storage (old approach)
       const objectStorageService = new ObjectStorageService();
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
-      const canAccess = await objectStorageService.canAccessObjectEntity({
+      
+      // Check if user is admin
+      const user = await storage.getUser(userId);
+      const isAdmin = user && (user.role === 'admin' || user.role === 'superadmin' || user.role === 'moderator');
+      
+      // Admins can access all files, regular users need permission check
+      const canAccess = isAdmin || await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: userId,
         requestedPermission: ObjectPermission.READ,
