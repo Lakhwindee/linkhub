@@ -5246,9 +5246,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return key.substring(0, prefix.length + 5) + '••••••••••••' + key.substring(key.length - 4);
       };
       
-      // Helper to check if key is valid (non-empty, non-whitespace)
+      // Helper to check if key is valid (non-empty, non-whitespace, not masked)
       const isValidKey = (key: any) => {
-        return key && typeof key === 'string' && key.trim().length > 0;
+        if (!key || typeof key !== 'string') return false;
+        const trimmed = key.trim();
+        // Reject if empty or contains only dots (masked value)
+        if (trimmed.length === 0 || /^[•\.]+$/.test(trimmed)) return false;
+        // Reject if it's a masked placeholder
+        if (trimmed === '••••••••••••' || trimmed === '••••••••••••••••') return false;
+        return true;
       };
 
       // Return API configuration status with database settings
