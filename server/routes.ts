@@ -6450,7 +6450,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           {
             price_data: {
               currency: wallet.currency.toLowerCase(),
-              unit_amount: campaign.totalBudget,
+              unit_amount: Math.round(parseFloat(campaign.totalBudget.toString())),
               product_data: {
                 name: `Campaign: ${campaign.title}`,
                 description: `Payment for campaign targeting Tier ${campaign.tierLevel} creators`,
