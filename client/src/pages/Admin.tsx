@@ -411,46 +411,46 @@ export default function Admin() {
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
       setSavingService(data.service);
-      return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+      // Save to database
+      await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+      // Immediately fetch fresh settings to get masked values
+      const freshSettings = await apiRequest("GET", "/api/admin/api-settings");
+      return { service: data.service, settings: await freshSettings.json() };
     },
-    onSuccess: async (data, variables) => {
+    onSuccess: (data, variables) => {
       setSavingService(null);
+      const freshData = data.settings as ApiSettings;
       
-      // Force refetch to get fresh masked values
-      await queryClient.refetchQueries({ queryKey: ["/api/admin/api-settings"] });
-      
-      // Manually refetch and update form
-      const result = await refetchApiSettings();
-      if (result?.data) {
-        const freshData = result.data as ApiSettings;
-        
-        if (variables.service === 'youtube') {
-          setApiFormData(prev => ({
-            ...prev,
-            youtube: {
-              apiKey: freshData.youtube?.apiKey || '',
-              projectId: freshData.youtube?.projectId || 'hublink-project',
-            }
-          }));
-        } else if (variables.service === 'maps') {
-          setApiFormData(prev => ({
-            ...prev,
-            maps: {
-              apiKey: freshData.maps?.apiKey || '',
-              enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
-            }
-          }));
-        } else if (variables.service === 'stripe') {
-          setApiFormData(prev => ({
-            ...prev,
-            stripe: {
-              publishableKey: freshData.stripe?.publishableKey || '',
-              secretKey: freshData.stripe?.secretKey || '',
-              webhookSecret: freshData.stripe?.webhookSecret || '',
-            }
-          }));
-        }
+      // Update form with masked values from server
+      if (variables.service === 'youtube') {
+        setApiFormData(prev => ({
+          ...prev,
+          youtube: {
+            apiKey: freshData.youtube?.apiKey || '',
+            projectId: freshData.youtube?.projectId || 'hublink-project',
+          }
+        }));
+      } else if (variables.service === 'maps') {
+        setApiFormData(prev => ({
+          ...prev,
+          maps: {
+            apiKey: freshData.maps?.apiKey || '',
+            enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
+          }
+        }));
+      } else if (variables.service === 'stripe') {
+        setApiFormData(prev => ({
+          ...prev,
+          stripe: {
+            publishableKey: freshData.stripe?.publishableKey || '',
+            secretKey: freshData.stripe?.secretKey || '',
+            webhookSecret: freshData.stripe?.webhookSecret || '',
+          }
+        }));
       }
+      
+      // Update React Query cache
+      queryClient.setQueryData(["/api/admin/api-settings"], freshData);
       
       toast({
         title: "Settings Saved",
