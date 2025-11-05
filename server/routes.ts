@@ -3452,13 +3452,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       
       console.log(`✅ Tier access granted: User tier ${userTier} >= Required tier ${requiredTier} for campaign "${ad.title}"`);
       
-      // Auto-fix demo user plan if needed
-      if (user?.plan !== 'standard') {
-        user = await storage.updateUserProfile(userId, { plan: 'standard' });
-      }
-      
-      // For demo users, bypass plan check  
-      // Remove demo user restrictions for production
+      // Role and plan validation
       if (true) {
         // Admin role has unrestricted access
         if (user?.role === 'admin') {
