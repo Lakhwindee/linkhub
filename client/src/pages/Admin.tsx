@@ -411,13 +411,14 @@ export default function Admin() {
       setSavingService(data.service);
       return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       setSavingService(null);
       toast({
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
       });
-      refetchApiSettings();
+      // Await refetch to ensure form updates with masked value
+      await refetchApiSettings();
     },
     onError: (error: any) => {
       setSavingService(null);
@@ -475,6 +476,13 @@ export default function Admin() {
   // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
+      console.log('📊 API Settings loaded:', {
+        youtubeApiKey: apiSettings.youtube?.apiKey,
+        mapsApiKey: apiSettings.maps?.apiKey,
+        youtubeStatus: apiSettings.youtube?.status,
+        mapsStatus: apiSettings.maps?.status
+      });
+      
       setApiFormData(prev => ({
         stripe: {
           publishableKey: apiSettings.stripe?.publishableKey || prev.stripe.publishableKey,
