@@ -1223,7 +1223,9 @@ export default function AdMarketplace() {
                 </div>
               ) : (filteredAds as Ad[]).length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {(filteredAds as Ad[]).map((ad: Ad) => (
+                  {(filteredAds as Ad[]).map((ad: Ad) => {
+                    const isAlreadyReserved = reservations.some((r: any) => r.adId === ad.id);
+                    return (
                     <Card 
                       key={ad.id} 
                       className={`travel-card group ${isFree ? 'cursor-not-allowed' : isStandard ? 'cursor-pointer hover:shadow-lg transition-all duration-300' : ''}`}
@@ -1237,6 +1239,20 @@ export default function AdMarketplace() {
                             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
                             </svg>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Hover X Indicator for Already Reserved Ads */}
+                      {isAlreadyReserved && !shouldShowLocks && (
+                        <div className="absolute inset-0 bg-orange-500/10 z-20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-300 pointer-events-none">
+                          <div className="bg-orange-600 text-white px-6 py-4 rounded-lg shadow-lg transform scale-90 group-hover:scale-100 transition-transform duration-300">
+                            <div className="flex items-center gap-3">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span className="font-semibold text-sm">Already Reserved</span>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1452,7 +1468,7 @@ export default function AdMarketplace() {
                         </Dialog>
                       </CardContent>
                     </Card>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <Card data-testid="card-no-campaigns">
