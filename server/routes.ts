@@ -3475,49 +3475,10 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         }
       }
 
-      // SECURITY: Re-verify channel ownership before allowing campaign reservation
-      // Production security: require verified YouTube channel
-      if (!user?.youtubeVerified || !user?.youtubeChannelId || !user?.youtubeVerificationCode) {
+      // SECURITY: Check verified YouTube channel status from database
+      // We trust database verification - no need to call YouTube API on every reservation
+      if (!user?.youtubeVerified || !user?.youtubeChannelId) {
         return res.status(403).json({ message: "YouTube channel verification required" });
-      }
-
-      // Fresh verification check - only for regular users (NOT demo user)
-      // Fresh verification check for all users
-      if (true) {
-        try {
-          const response = await fetch(
-            `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
-          );
-
-          if (!response.ok) {
-            return res.status(400).json({ message: "Cannot verify channel ownership - please re-verify your channel" });
-          }
-
-          const data = await response.json();
-          if (!data.items || data.items.length === 0) {
-            return res.status(400).json({ message: "Channel not found - please re-verify your channel" });
-          }
-
-          const channelDescription = data.items[0].snippet.description || '';
-          
-          // Check if verification code still exists in channel description
-          if (!channelDescription.includes(user.youtubeVerificationCode)) {
-            // Mark user as unverified and prevent campaign access
-            await storage.updateUserProfile(userId, {
-              youtubeVerified: false
-            });
-            
-            return res.status(403).json({ 
-              message: "Channel verification expired. Verification code no longer found in channel description. Please re-verify your channel.",
-              requiresReVerification: true 
-            });
-          }
-        } catch (verifyError) {
-          console.error("Error during campaign verification check:", verifyError);
-          return res.status(500).json({ message: "Unable to verify channel ownership. Please try again." });
-        }
-      } else {
-        console.log('Demo user - skipping fresh verification check');
       }
       
       const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
