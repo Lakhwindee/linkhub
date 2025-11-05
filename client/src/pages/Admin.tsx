@@ -76,6 +76,8 @@ export default function Admin() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [selectedSubmission, setSelectedSubmission] = useState<AdSubmission | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
+  const [selectedAd, setSelectedAd] = useState<any | null>(null);
+  const [adReviewNotes, setAdReviewNotes] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterRole, setFilterRole] = useState("all");
@@ -355,6 +357,34 @@ export default function Admin() {
     },
   });
 
+  // Review publisher ad mutation
+  const reviewAdMutation = useMutation({
+    mutationFn: async (data: { adId: string; status: string; notes?: string }) => {
+      return await apiRequest("POST", `/api/admin/ads/${data.adId}/review`, {
+        status: data.status,
+        notes: data.notes
+      });
+    },
+    onSuccess: (data, { status }) => {
+      toast({
+        title: status === 'active' ? "Ad Approved" : "Ad Rejected",
+        description: status === 'active' 
+          ? "Publisher ad is now live and visible to creators." 
+          : "Publisher ad has been rejected.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/ads"] });
+      setSelectedAd(null);
+      setAdReviewNotes("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Review Failed",
+        description: error.message || "Failed to review ad.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleReviewSubmission = (status: 'approved' | 'rejected') => {
     if (!selectedSubmission) return;
     
@@ -362,6 +392,16 @@ export default function Admin() {
       submissionId: selectedSubmission.id,
       status,
       notes: reviewNotes.trim() || undefined
+    });
+  };
+
+  const handleReviewAd = (status: 'active' | 'rejected') => {
+    if (!selectedAd) return;
+    
+    reviewAdMutation.mutate({
+      adId: selectedAd.id,
+      status,
+      notes: adReviewNotes.trim() || undefined
     });
   };
 
@@ -1869,6 +1909,87 @@ export default function Admin() {
                                       <p className="font-medium">{format(new Date(ad.createdAt), 'MMM d, yyyy')}</p>
                                     </div>
                                   </div>
+                                </div>
+                                <div className="flex space-x-2 ml-4">
+                                  {ad.status === 'pending_approval' && (
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button 
+                                          variant="outline" 
+                                          size="sm"
+                                          onClick={() => {
+                                            setSelectedAd(ad);
+                                            setAdReviewNotes("");
+                                          }}
+                                        >
+                                          <Eye className="w-3 h-3 mr-2" />
+                                          Review
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-2xl">
+                                        <DialogHeader>
+                                          <DialogTitle>Review Publisher Ad</DialogTitle>
+                                        </DialogHeader>
+                                        {selectedAd && (
+                                          <div className="space-y-4">
+                                            <div>
+                                              <h4 className="font-medium mb-2">Ad Details</h4>
+                                              <div className="space-y-2 text-sm">
+                                                <p><strong>Title:</strong> {selectedAd.title}</p>
+                                                <p><strong>Description:</strong> {selectedAd.description}</p>
+                                                <p><strong>Budget:</strong> ${(selectedAd.totalBudget / 100).toFixed(2)}</p>
+                                                <p><strong>Tier Level:</strong> {selectedAd.tierLevel}</p>
+                                                <p><strong>Max Influencers:</strong> {selectedAd.maxInfluencers}</p>
+                                                <p><strong>Status:</strong> {selectedAd.status}</p>
+                                                <p><strong>Created:</strong> {format(new Date(selectedAd.createdAt), 'MMM d, yyyy h:mm a')}</p>
+                                              </div>
+                                            </div>
+                                            
+                                            <div>
+                                              <Label htmlFor="ad-review-notes">Review Notes (Optional)</Label>
+                                              <Textarea 
+                                                id="ad-review-notes"
+                                                placeholder="Add notes about your decision..."
+                                                value={adReviewNotes}
+                                                onChange={(e) => setAdReviewNotes(e.target.value)}
+                                                className="mt-1"
+                                                rows={3}
+                                              />
+                                            </div>
+                                            
+                                            <div className="flex justify-end space-x-2">
+                                              <Button 
+                                                variant="outline" 
+                                                onClick={() => handleReviewAd('rejected')}
+                                                disabled={reviewAdMutation.isPending}
+                                              >
+                                                <XCircle className="w-4 h-4 mr-2" />
+                                                Reject
+                                              </Button>
+                                              <Button 
+                                                onClick={() => handleReviewAd('active')}
+                                                disabled={reviewAdMutation.isPending}
+                                                className="bg-green-600 hover:bg-green-700"
+                                              >
+                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                Approve
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </DialogContent>
+                                    </Dialog>
+                                  )}
+                                  {ad.status === 'active' && (
+                                    <Badge variant="default" className="self-start">
+                                      Live
+                                    </Badge>
+                                  )}
+                                  {ad.status === 'rejected' && (
+                                    <Badge variant="destructive" className="self-start">
+                                      Rejected
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
                             </CardContent>

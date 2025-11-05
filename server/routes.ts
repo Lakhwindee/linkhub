@@ -6204,6 +6204,78 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Approve/Decline publisher ad
+  app.post('/api/admin/ads/:id/review', isAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      
+      // Get admin user ID from session
+      const adminId = req.session.user?.id;
+      if (!adminId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+      
+      const user = await storage.getUser(adminId);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      if (!['active', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'active' or 'rejected'" });
+      }
+      
+      // Get the ad
+      const ad = await storage.getAd(id);
+      if (!ad) {
+        return res.status(404).json({ message: "Ad not found" });
+      }
+      
+      // Only allow review of pending_approval ads
+      if (ad.status !== 'pending_approval') {
+        return res.status(400).json({ 
+          message: `Cannot review ad with status '${ad.status}'. Only ads with status 'pending_approval' can be reviewed.` 
+        });
+      }
+      
+      // Update ad status
+      const updatedAd = await storage.updateAd(id, {
+        status,
+        reviewedBy: adminId,
+        reviewedAt: new Date(),
+        reviewNotes: notes
+      });
+      
+      // Log the action
+      await storage.createAuditLog({
+        userId: adminId,
+        action: status === 'active' ? 'approve_publisher_ad' : 'reject_publisher_ad',
+        targetType: 'publisher_ad',
+        targetId: id,
+        metaJson: { 
+          notes, 
+          adTitle: ad.title,
+          publisherId: ad.publisherId
+        },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ 
+        success: true, 
+        ad: updatedAd,
+        message: status === 'active' 
+          ? 'Publisher ad approved and now live' 
+          : 'Publisher ad rejected'
+      });
+    } catch (error) {
+      console.error("Error reviewing publisher ad:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to review ad" 
+      });
+    }
+  });
+
   app.post('/api/admin/ads', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
