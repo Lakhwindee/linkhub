@@ -152,7 +152,7 @@ export default function Admin() {
     retry: false,
   });
 
-  // Fetch ad submissions
+  // Fetch ad submissions (campaign submissions)
   const { data: submissions = [], isLoading: submissionsLoading } = useQuery({
     queryKey: ["/api/admin/submissions"],
     enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
@@ -161,6 +161,13 @@ export default function Admin() {
   
   // Cast submissions to proper type for TypeScript
   const typedSubmissions = submissions as AdSubmission[];
+
+  // Fetch publisher ads
+  const { data: publisherAds = [], isLoading: publisherAdsLoading } = useQuery({
+    queryKey: ["/api/admin/ads"],
+    enabled: Boolean(user && ['admin', 'superadmin', 'moderator'].includes(user.role || '')),
+    retry: false,
+  });
 
   // Fetch reports
   const { data: reports = [], isLoading: reportsLoading } = useQuery({
@@ -1797,6 +1804,84 @@ export default function Admin() {
                           <h3 className="text-lg font-semibold text-foreground mb-2">All caught up!</h3>
                           <p className="text-muted-foreground">
                             No ad submissions pending review at the moment.
+                          </p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Publisher Ads */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center space-x-2">
+                      <Building className="w-5 h-5 text-purple-600" />
+                      <span>Publisher Ads</span>
+                      {publisherAds.length > 0 && (
+                        <Badge>{publisherAds.length}</Badge>
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {publisherAdsLoading ? (
+                      <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="animate-pulse space-y-3 p-4 border border-border rounded-lg">
+                            <div className="h-4 bg-muted rounded w-3/4"></div>
+                            <div className="h-3 bg-muted rounded w-1/2"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : publisherAds.length > 0 ? (
+                      <div className="space-y-4">
+                        {publisherAds.map((ad: any) => (
+                          <Card key={ad.id} className="border-purple-200 dark:border-purple-800">
+                            <CardContent className="p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="space-y-2 flex-1">
+                                  <div className="flex items-center space-x-2">
+                                    <h4 className="font-semibold">{ad.title}</h4>
+                                    <Badge variant={
+                                      ad.status === 'active' ? 'default' : 
+                                      ad.status === 'pending_approval' ? 'secondary' :
+                                      ad.status === 'pending_payment' ? 'outline' : 
+                                      'destructive'
+                                    }>
+                                      {ad.status}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">{ad.description}</p>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-2">
+                                    <div>
+                                      <span className="text-muted-foreground">Budget:</span>
+                                      <p className="font-medium">${(ad.totalBudget / 100).toFixed(2)}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-muted-foreground">Tier Level:</span>
+                                      <p className="font-medium">{ad.tierLevel}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-muted-foreground">Max Influencers:</span>
+                                      <p className="font-medium">{ad.maxInfluencers}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-muted-foreground">Created:</span>
+                                      <p className="font-medium">{format(new Date(ad.createdAt), 'MMM d, yyyy')}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <Card className="border-dashed">
+                        <CardContent className="flex flex-col items-center justify-center py-12">
+                          <Building className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
+                          <h3 className="text-lg font-semibold text-foreground mb-2">No Publisher Ads</h3>
+                          <p className="text-muted-foreground">
+                            No publisher ads have been created yet.
                           </p>
                         </CardContent>
                       </Card>

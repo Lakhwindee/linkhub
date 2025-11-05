@@ -6188,6 +6188,22 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Get all publisher ads for admin review
+  app.get('/api/admin/ads', isAdmin, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.claims.sub);
+      if (!['admin', 'superadmin', 'moderator'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const ads = await storage.getAllPublisherAds();
+      res.json(ads);
+    } catch (error) {
+      console.error("Error fetching all ads:", error);
+      res.status(500).json({ message: "Failed to fetch ads" });
+    }
+  });
+
   app.post('/api/admin/ads', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);

@@ -142,6 +142,7 @@ export interface IStorage {
   getAds(filters?: any): Promise<Ad[]>;
   getAd(id: string): Promise<Ad | undefined>;
   getPublisherAds(publisherId: string): Promise<Ad[]>;
+  getAllPublisherAds(): Promise<Ad[]>;
   createAdReservation(adId: string, userId: string, expiresAt: Date): Promise<AdReservation>;
   getUserActiveReservations(userId: string): Promise<AdReservation[]>;
   createAdSubmission(data: { 
@@ -870,6 +871,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(ads)
       .where(eq(ads.publisherId, publisherId))
+      .orderBy(desc(ads.createdAt));
+  }
+
+  async getAllPublisherAds(): Promise<Ad[]> {
+    return await db
+      .select()
+      .from(ads)
       .orderBy(desc(ads.createdAt));
   }
 
