@@ -421,6 +421,39 @@ export default function Admin() {
       await queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
       const result = await refetchApiSettings();
       console.log('🔄 Refetched API settings after save:', result.data);
+      
+      // Manually update form with fresh masked values
+      if (result.data) {
+        const freshData = result.data as any;
+        console.log('💾 Updating form with fresh data:', freshData[variables.service]);
+        
+        if (variables.service === 'youtube') {
+          setApiFormData(prev => ({
+            ...prev,
+            youtube: {
+              apiKey: freshData.youtube?.apiKey || prev.youtube.apiKey,
+              projectId: freshData.youtube?.projectId || prev.youtube.projectId,
+            }
+          }));
+        } else if (variables.service === 'maps') {
+          setApiFormData(prev => ({
+            ...prev,
+            maps: {
+              apiKey: freshData.maps?.apiKey || prev.maps.apiKey,
+              enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? prev.maps.enableAdvancedFeatures,
+            }
+          }));
+        } else if (variables.service === 'stripe') {
+          setApiFormData(prev => ({
+            ...prev,
+            stripe: {
+              publishableKey: freshData.stripe?.publishableKey || prev.stripe.publishableKey,
+              secretKey: freshData.stripe?.secretKey || prev.stripe.secretKey,
+              webhookSecret: freshData.stripe?.webhookSecret || prev.stripe.webhookSecret,
+            }
+          }));
+        }
+      }
     },
     onError: (error: any) => {
       setSavingService(null);
