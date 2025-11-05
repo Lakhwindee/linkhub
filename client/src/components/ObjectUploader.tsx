@@ -128,6 +128,10 @@ export function ObjectUploader({
       // Small delay to show 100%
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // Convert object path to full URL
+      const fullURL = `${window.location.origin}${objectPath}`;
+      console.log('✅ File uploaded:', { objectPath, fullURL });
+
       // Call onComplete with successful result
       const result = {
         successful: [
@@ -136,7 +140,8 @@ export function ObjectUploader({
             name: file.name,
             type: file.type,
             size: file.size,
-            uploadURL: objectPath,
+            uploadURL: fullURL, // Use full URL instead of path
+            objectPath: objectPath, // Keep original path for reference
           }
         ],
         failed: [],
