@@ -417,8 +417,10 @@ export default function Admin() {
         title: "Settings Saved",
         description: `${variables.service} API settings saved successfully!`,
       });
-      // Await refetch to ensure form updates with masked value
-      await refetchApiSettings();
+      // Force query invalidation and refetch
+      await queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
+      const result = await refetchApiSettings();
+      console.log('🔄 Refetched API settings after save:', result.data);
     },
     onError: (error: any) => {
       setSavingService(null);
