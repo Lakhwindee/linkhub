@@ -344,17 +344,20 @@ export default function DocumentSignup() {
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
                     <Select
-                      value={formData.country}
-                      onValueChange={(value) => handleChange('country', value)}
+                      value={formData.country || undefined}
+                      onValueChange={(value) => {
+                        console.log('Country selected:', value);
+                        handleChange('country', value);
+                      }}
                       disabled={isSubmitting}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="country">
                         <SelectValue placeholder="Select country" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {countries.map(country => (
-                          <SelectItem key={country.code} value={country.code}>
-                            {country.name}
+                      <SelectContent className="max-h-80 overflow-y-auto" position="popper" sideOffset={4}>
+                        {countries.map((country, idx) => (
+                          <SelectItem key={`${country.name}-${idx}`} value={country.name}>
+                            {country.flag} {country.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -364,19 +367,28 @@ export default function DocumentSignup() {
                   <div className="space-y-2">
                     <Label htmlFor="state">State/Province</Label>
                     <Select
-                      value={formData.state}
-                      onValueChange={(value) => handleChange('state', value)}
+                      value={formData.state || undefined}
+                      onValueChange={(value) => {
+                        console.log('State selected:', value);
+                        handleChange('state', value);
+                      }}
                       disabled={isSubmitting || !formData.country}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="state">
                         <SelectValue placeholder="Select state" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {availableStates.map(state => (
-                          <SelectItem key={state} value={state}>
-                            {state}
+                      <SelectContent className="max-h-80 overflow-y-auto" position="popper" sideOffset={4}>
+                        {availableStates.length > 0 ? (
+                          availableStates.map((state, idx) => (
+                            <SelectItem key={`${state}-${idx}`} value={state}>
+                              {state}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-states" disabled>
+                            Select country first
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -384,19 +396,28 @@ export default function DocumentSignup() {
                   <div className="space-y-2">
                     <Label htmlFor="city">City</Label>
                     <Select
-                      value={formData.city}
-                      onValueChange={(value) => handleChange('city', value)}
+                      value={formData.city || undefined}
+                      onValueChange={(value) => {
+                        console.log('City selected:', value);
+                        handleChange('city', value);
+                      }}
                       disabled={isSubmitting || !formData.state}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="city">
                         <SelectValue placeholder="Select city" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {availableCities.map(city => (
-                          <SelectItem key={city} value={city}>
-                            {city}
+                      <SelectContent className="max-h-80 overflow-y-auto" position="popper" sideOffset={4}>
+                        {availableCities.length > 0 ? (
+                          availableCities.map((city, idx) => (
+                            <SelectItem key={`${city}-${idx}`} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem value="no-cities" disabled>
+                            {!formData.country ? 'Select country first' : 'Select state first'}
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
