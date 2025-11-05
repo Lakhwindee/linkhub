@@ -414,37 +414,37 @@ export default function Admin() {
       return await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
     },
     onSuccess: async (data, variables) => {
-      try {
-        setSavingService(null);
-        toast({
-          title: "Settings Saved",
-          description: `${variables.service} API settings saved successfully!`,
-        });
-        
-        // Wait a bit for database to commit
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        // Force query invalidation and refetch
-        await queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
+      setSavingService(null);
+      toast({
+        title: "Settings Saved",
+        description: `${variables.service} API settings saved successfully!`,
+      });
+      
+      // Invalidate and refetch to get fresh masked values
+      await queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
+      
+      // Force a manual refetch to get the fresh data
+      setTimeout(async () => {
         const result = await refetchApiSettings();
+        console.log('🔄 Refetched after save:', result.data);
         
-        // Manually update form with fresh masked values
         if (result?.data) {
           const freshData = result.data as any;
+          console.log('💾 Fresh data for', variables.service, ':', freshData[variables.service]);
           
           if (variables.service === 'youtube' && freshData.youtube) {
             setApiFormData(prev => ({
               ...prev,
               youtube: {
-                apiKey: freshData.youtube.apiKey || '',
-                projectId: freshData.youtube.projectId || 'hublink-project',
+                apiKey: freshData.youtube.apiKey ?? '',
+                projectId: freshData.youtube.projectId ?? 'hublink-project',
               }
             }));
           } else if (variables.service === 'maps' && freshData.maps) {
             setApiFormData(prev => ({
               ...prev,
               maps: {
-                apiKey: freshData.maps.apiKey || '',
+                apiKey: freshData.maps.apiKey ?? '',
                 enableAdvancedFeatures: freshData.maps.enableAdvancedFeatures ?? true,
               }
             }));
@@ -452,16 +452,14 @@ export default function Admin() {
             setApiFormData(prev => ({
               ...prev,
               stripe: {
-                publishableKey: freshData.stripe.publishableKey || '',
-                secretKey: freshData.stripe.secretKey || '',
-                webhookSecret: freshData.stripe.webhookSecret || '',
+                publishableKey: freshData.stripe.publishableKey ?? '',
+                secretKey: freshData.stripe.secretKey ?? '',
+                webhookSecret: freshData.stripe.webhookSecret ?? '',
               }
             }));
           }
         }
-      } catch (error) {
-        console.error('❌ Error updating form after save:', error);
-      }
+      }, 200);
     },
     onError: (error: any) => {
       setSavingService(null);
