@@ -183,6 +183,8 @@ export default function Admin() {
     queryKey: ["/api/admin/api-settings"],
     enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
     retry: false,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Fetch tax configurations
