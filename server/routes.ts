@@ -1920,7 +1920,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
 
       // Load YouTube API key from database first, then fallback to environment
-      const youtubeApiKey = await loadYouTubeApiKey(storage);
+      const youtubeSetting = await storage.getApiSetting('youtube');
+      const youtubeApiKey = youtubeSetting?.settingsJson?.apiKey || process.env.YOUTUBE_API_KEY;
       
       if (!youtubeApiKey) {
         return res.status(500).json({ message: "YouTube API key not configured. Please contact support." });
