@@ -466,27 +466,27 @@ export default function Admin() {
     }
   });
 
-  // Helper to check if value is masked (don't populate form with masked values)
+  // Helper to check if value is masked
   const isMaskedValue = (value: string | undefined) => {
     if (!value) return false;
     return value.includes('••••') || value.includes('....') || /^[•\.]+$/.test(value);
   };
 
-  // Populate form with loaded API settings (but skip masked values)
+  // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
       setApiFormData(prev => ({
         stripe: {
-          publishableKey: isMaskedValue(apiSettings.stripe?.publishableKey) ? '' : (apiSettings.stripe?.publishableKey || prev.stripe.publishableKey),
-          secretKey: isMaskedValue(apiSettings.stripe?.secretKey) ? '' : (apiSettings.stripe?.secretKey || prev.stripe.secretKey),
-          webhookSecret: isMaskedValue(apiSettings.stripe?.webhookSecret) ? '' : (apiSettings.stripe?.webhookSecret || prev.stripe.webhookSecret),
+          publishableKey: apiSettings.stripe?.publishableKey || prev.stripe.publishableKey,
+          secretKey: apiSettings.stripe?.secretKey || prev.stripe.secretKey,
+          webhookSecret: apiSettings.stripe?.webhookSecret || prev.stripe.webhookSecret,
         },
         youtube: {
-          apiKey: isMaskedValue(apiSettings.youtube?.apiKey) ? '' : (apiSettings.youtube?.apiKey || prev.youtube.apiKey),
+          apiKey: apiSettings.youtube?.apiKey || prev.youtube.apiKey,
           projectId: apiSettings.youtube?.projectId || prev.youtube.projectId,
         },
         maps: {
-          apiKey: isMaskedValue(apiSettings.maps?.apiKey) ? '' : (apiSettings.maps?.apiKey || prev.maps.apiKey),
+          apiKey: apiSettings.maps?.apiKey || prev.maps.apiKey,
           enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? prev.maps.enableAdvancedFeatures,
         },
       }));
@@ -1257,7 +1257,7 @@ export default function Admin() {
                         <div className="flex space-x-2 mt-1">
                           <Input 
                             type="password" 
-                            placeholder={apiSettings?.youtube?.status === 'active' ? '✓ API Key Already Set (Enter new to update)' : 'Enter YouTube API Key'}
+                            placeholder="Enter YouTube API Key"
                             value={apiFormData.youtube?.apiKey || ''}
                             onChange={(e) => setApiFormData(prev => ({
                               ...prev,
