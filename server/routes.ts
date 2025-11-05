@@ -6253,6 +6253,27 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       
       const data = insertPublisherAdSchema.parse(req.body);
       
+      // Check wallet balance before creating ad
+      const wallet = await storage.getWallet(userId);
+      if (!wallet) {
+        return res.status(400).json({ message: "Wallet not found. Please create a wallet first." });
+      }
+      
+      // Convert total budget to cents (minor units)
+      const budgetInCents = Math.round(data.totalBudget * 100);
+      
+      // Check if wallet has sufficient funds
+      if (wallet.balanceMinor < budgetInCents) {
+        const walletBalance = (wallet.balanceMinor / 100).toFixed(2);
+        const requiredAmount = data.totalBudget.toFixed(2);
+        return res.status(400).json({ 
+          message: "Insufficient funds in wallet",
+          walletBalance: parseFloat(walletBalance),
+          requiredAmount: parseFloat(requiredAmount),
+          shortfall: parseFloat((parseFloat(requiredAmount) - parseFloat(walletBalance)).toFixed(2))
+        });
+      }
+      
       // Calculate max influencers based on tier and budget
       const tier = getTierByLevel(data.tierLevel);
       if (!tier) {
@@ -6272,6 +6293,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       };
       
       const ad = await storage.createAd(adData);
+      
+      console.log(`💰 Campaign created - Budget: $${data.totalBudget}, Wallet Balance: $${(wallet.balanceMinor / 100).toFixed(2)}`);
       
       res.json(ad);
     } catch (error) {
