@@ -6262,10 +6262,18 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Convert total budget to cents (minor units)
       const budgetInCents = Math.round(data.totalBudget * 100);
       
+      console.log(`💰 Wallet Balance Check:
+        - Wallet Balance (cents): ${wallet.balanceMinor}
+        - Wallet Balance (USD): $${(wallet.balanceMinor / 100).toFixed(2)}
+        - Campaign Budget (USD): $${data.totalBudget.toFixed(2)}
+        - Campaign Budget (cents): ${budgetInCents}
+        - Has Sufficient Funds: ${wallet.balanceMinor >= budgetInCents ? '✅ YES' : '❌ NO'}`);
+      
       // Check if wallet has sufficient funds
       if (wallet.balanceMinor < budgetInCents) {
         const walletBalance = (wallet.balanceMinor / 100).toFixed(2);
         const requiredAmount = data.totalBudget.toFixed(2);
+        console.log(`❌ INSUFFICIENT FUNDS - Blocking campaign creation`);
         return res.status(400).json({ 
           message: "Insufficient funds in wallet",
           walletBalance: parseFloat(walletBalance),
@@ -6273,6 +6281,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           shortfall: parseFloat((parseFloat(requiredAmount) - parseFloat(walletBalance)).toFixed(2))
         });
       }
+      
+      console.log(`✅ SUFFICIENT FUNDS - Proceeding with campaign creation`);
       
       // Calculate max influencers based on tier and budget
       const tier = getTierByLevel(data.tierLevel);
