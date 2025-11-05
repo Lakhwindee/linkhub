@@ -420,8 +420,8 @@ export default function Admin() {
         description: `${variables.service} API settings saved successfully!`,
       });
       
-      // Invalidate query to trigger refetch
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
+      // Force refetch to get fresh masked values
+      await queryClient.refetchQueries({ queryKey: ["/api/admin/api-settings"] });
     },
     onError: (error: any) => {
       setSavingService(null);
