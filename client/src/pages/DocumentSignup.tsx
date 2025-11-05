@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,12 +10,41 @@ import { Building2, Loader2, CheckCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { countries, statesByCountry, getCitiesForState } from "@/data/locationData";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DocumentSignup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirect already-authenticated users
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (user) {
+      // Publishers already registered - redirect to their dashboard
+      if (user.role === 'publisher') {
+        toast({
+          title: "Already Registered",
+          description: "You're already registered as a publisher. Redirecting...",
+        });
+        setTimeout(() => setLocation('/stays'), 1000);
+        return;
+      }
+      
+      // Creators shouldn't use publisher signup
+      if (user.role === 'creator') {
+        toast({
+          title: "Wrong Signup Page",
+          description: "This is for business publishers. Redirecting you to dashboard...",
+        });
+        setTimeout(() => setLocation('/'), 1000);
+        return;
+      }
+    }
+  }, [user, authLoading, setLocation, toast]);
   const [formData, setFormData] = useState({
     // Personal Account Info
     email: '',

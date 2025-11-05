@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,15 +13,44 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { countryCodes, countries, statesByCountry, getCitiesForState, citiesByCountry } from "@/data/locationData";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ProfessionalSignup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user, isLoading: authLoading } = useAuth();
   
   const [step] = useState(3); // Start directly at form - creator only
   const [selectedRole] = useState<'creator'>('creator'); // Always creator for this page
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successStage, setSuccessStage] = useState<'none' | 'creating' | 'success' | 'redirecting'>('none');
+
+  // Redirect already-authenticated users
+  useEffect(() => {
+    if (authLoading) return;
+    
+    if (user) {
+      // Publishers shouldn't be on creator signup - send to their dashboard
+      if (user.role === 'publisher') {
+        toast({
+          title: "Already Registered",
+          description: "You're already registered as a publisher. Redirecting to your dashboard...",
+        });
+        setTimeout(() => setLocation('/stays'), 1000);
+        return;
+      }
+      
+      // Creators with complete profiles - send to dashboard
+      if (user.role === 'creator' && user.username && user.firstName && user.lastName) {
+        toast({
+          title: "Already Registered",
+          description: "Your profile is already complete. Redirecting to dashboard...",
+        });
+        setTimeout(() => setLocation('/'), 1000);
+        return;
+      }
+    }
+  }, [user, authLoading, setLocation, toast]);
   
   const [formData, setFormData] = useState({
     // Personal Information (Creator)
