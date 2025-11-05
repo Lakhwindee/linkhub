@@ -1772,9 +1772,9 @@ export default function Admin() {
                                     )}
                                     {submission.rawFileUrl && (
                                       <Button variant="outline" size="sm" asChild>
-                                        <a href={submission.rawFileUrl} target="_blank" rel="noopener noreferrer">
-                                          <Eye className="w-3 h-3 mr-2" />
-                                          View File
+                                        <a href={submission.rawFileUrl} download>
+                                          <Download className="w-3 h-3 mr-2" />
+                                          Download Video
                                         </a>
                                       </Button>
                                     )}
@@ -1818,17 +1818,15 @@ export default function Admin() {
                                                 </p>
                                               )}
                                               {selectedSubmission.rawFileUrl && (
-                                                <p>
-                                                  <strong>File URL:</strong>{' '}
-                                                  <a 
-                                                    href={selectedSubmission.rawFileUrl} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-                                                  >
-                                                    View File
-                                                  </a>
-                                                </p>
+                                                <div className="flex items-center gap-2">
+                                                  <strong>Video Clip:</strong>{' '}
+                                                  <Button variant="outline" size="sm" asChild>
+                                                    <a href={selectedSubmission.rawFileUrl} download>
+                                                      <Download className="w-3 h-3 mr-2" />
+                                                      Download
+                                                    </a>
+                                                  </Button>
+                                                </div>
                                               )}
                                             </div>
                                           </div>

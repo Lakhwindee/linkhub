@@ -1584,13 +1584,13 @@ export default function AdMarketplace() {
                                 </DialogHeader>
                                 <div className="space-y-4">
                                   <p className="text-muted-foreground">
-                                    Upload your final video or image content and provide the link to your post for admin review.
+                                    Upload your video clip and provide the link to your post for admin review.
                                   </p>
                                   
                                   {/* Content Link Input */}
                                   <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground">
-                                      Content Link (Instagram, TikTok, YouTube, etc.)
+                                      Content Link (Instagram, TikTok, YouTube, etc.) <span className="text-red-500">*</span>
                                     </label>
                                     <Input
                                       type="url"
@@ -1598,23 +1598,29 @@ export default function AdMarketplace() {
                                       value={contentLink}
                                       onChange={(e) => setContentLink(e.target.value)}
                                       className="w-full"
+                                      required
                                     />
                                   </div>
                                   
-                                  <ObjectUploader
-                                    maxNumberOfFiles={1}
-                                    maxFileSize={100 * 1024 * 1024} // 100MB
-                                    onGetUploadParameters={handleMediaUpload}
-                                    onComplete={handleMediaComplete}
-                                    buttonClassName="w-full bg-accent hover:bg-accent/90"
-                                  >
-                                    <Upload className="w-4 h-4 mr-2" />
-                                    Upload Content File
-                                  </ObjectUploader>
-
-                                  <p className="text-xs text-muted-foreground">
-                                    Supported formats: MP4, MOV, JPG, PNG. Max size: 100MB
-                                  </p>
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-foreground">
+                                      Upload Video Clip (Optional)
+                                    </label>
+                                    <ObjectUploader
+                                      maxNumberOfFiles={1}
+                                      maxFileSize={100 * 1024 * 1024} // 100MB
+                                      onGetUploadParameters={handleMediaUpload}
+                                      onComplete={handleMediaComplete}
+                                      buttonClassName="w-full bg-accent hover:bg-accent/90"
+                                      allowedFileTypes={['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/webm']}
+                                    >
+                                      <Upload className="w-4 h-4 mr-2" />
+                                      Upload Video Clip
+                                    </ObjectUploader>
+                                    <p className="text-xs text-muted-foreground">
+                                      Only video files: MP4, MOV, AVI, WebM. Max 100MB
+                                    </p>
+                                  </div>
                                 </div>
                               </DialogContent>
                             </Dialog>
