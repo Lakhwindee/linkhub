@@ -187,10 +187,10 @@ export default function WalletPage() {
       return;
     }
     
-    if (!walletBalance || amountMinor > walletBalance.balanceMinor) {
+    if (!walletBalance?.wallet || amountMinor > walletBalance.wallet.balanceMinor) {
       toast({
         title: "Insufficient Balance",
-        description: `You only have ${formatCurrency(walletBalance?.balanceMinor || 0, walletBalance?.currency || 'USD')} available`,
+        description: `You only have ${formatCurrency(walletBalance?.wallet?.balanceMinor || 0, walletBalance?.wallet?.currency || 'USD')} available`,
         variant: "destructive",
       });
       return;
@@ -242,8 +242,8 @@ export default function WalletPage() {
     );
   }
 
-  const balance = walletBalance?.balanceMinor || 0;
-  const currency = walletBalance?.currency || 'USD';
+  const balance = walletBalance?.wallet?.balanceMinor || 0;
+  const currency = walletBalance?.wallet?.currency || 'USD';
   const canWithdraw = balance >= 5000;
 
   return (
@@ -316,7 +316,7 @@ export default function WalletPage() {
                     <span className="font-medium">Total Deposited</span>
                   </div>
                   <span className="font-semibold text-green-600">
-                    {formatCurrency(walletBalance?.totalDepositedMinor || 0, currency)}
+                    {formatCurrency(walletBalance?.wallet?.totalDepositedMinor || 0, currency)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between p-3 bg-red-500/10 rounded-md">
@@ -325,7 +325,7 @@ export default function WalletPage() {
                     <span className="font-medium">Total Spent</span>
                   </div>
                   <span className="font-semibold text-red-600">
-                    {formatCurrency(walletBalance?.totalSpentMinor || 0, currency)}
+                    {formatCurrency(walletBalance?.wallet?.totalSpentMinor || 0, currency)}
                   </span>
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function WalletPage() {
               <div className="flex justify-center py-8">
                 <div className="animate-spin w-6 h-6 border-4 border-accent border-t-transparent rounded-full" />
               </div>
-            ) : !transactions || transactions.length === 0 ? (
+            ) : !transactions?.transactions || transactions.transactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
                 <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
                 <p>No transactions yet</p>
@@ -376,7 +376,7 @@ export default function WalletPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {transactions.map((tx: any) => (
+                  {transactions.transactions.map((tx: any) => (
                     <TableRow key={tx.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
