@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { countryCodes, countries, statesByCountry, getCitiesForState, citiesByCountry } from "@/data/locationData";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ProfessionalSignup() {
   const [, setLocation] = useLocation();

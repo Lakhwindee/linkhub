@@ -10,7 +10,7 @@ import { Building2, Loader2, CheckCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { countries, statesByCountry, getCitiesForState } from "@/data/locationData";
 import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DocumentSignup() {
   const [, setLocation] = useLocation();
