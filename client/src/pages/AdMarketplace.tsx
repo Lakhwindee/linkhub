@@ -53,7 +53,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
   const [isVerifyingConnection, setIsVerifyingConnection] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
   const [showEligibilityModal, setShowEligibilityModal] = useState(false);
-  const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 30000 });
+  const [eligibilityData, setEligibilityData] = useState({ currentSubs: 0, requiredSubs: 5000 });
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [pendingChannel, setPendingChannel] = useState<{channelId?: string; title?: string; subscribers?: number; region?: string; tier?: number} | null>(null);
@@ -130,7 +130,7 @@ function YouTubeCreatorSection({ user }: { user: any }) {
         const match = error.message.match(/only ([\d,]+) subsc/);
         const currentSubs = match ? parseInt(match[1].replace(/,/g, '')) : 0;
         
-        setEligibilityData({ currentSubs, requiredSubs: 30000 });
+        setEligibilityData({ currentSubs, requiredSubs: 5000 });
         setShowEligibilityModal(true);
       }
       // No popup for other errors - show error in VFX instead
