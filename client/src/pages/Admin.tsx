@@ -420,46 +420,8 @@ export default function Admin() {
         description: `${variables.service} API settings saved successfully!`,
       });
       
-      // Invalidate and refetch to get fresh masked values
-      await queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
-      
-      // Force a manual refetch to get the fresh data
-      setTimeout(async () => {
-        const result = await refetchApiSettings();
-        console.log('🔄 Refetched after save:', result.data);
-        
-        if (result?.data) {
-          const freshData = result.data as any;
-          console.log('💾 Fresh data for', variables.service, ':', freshData[variables.service]);
-          
-          if (variables.service === 'youtube' && freshData.youtube) {
-            setApiFormData(prev => ({
-              ...prev,
-              youtube: {
-                apiKey: freshData.youtube.apiKey ?? '',
-                projectId: freshData.youtube.projectId ?? 'hublink-project',
-              }
-            }));
-          } else if (variables.service === 'maps' && freshData.maps) {
-            setApiFormData(prev => ({
-              ...prev,
-              maps: {
-                apiKey: freshData.maps.apiKey ?? '',
-                enableAdvancedFeatures: freshData.maps.enableAdvancedFeatures ?? true,
-              }
-            }));
-          } else if (variables.service === 'stripe' && freshData.stripe) {
-            setApiFormData(prev => ({
-              ...prev,
-              stripe: {
-                publishableKey: freshData.stripe.publishableKey ?? '',
-                secretKey: freshData.stripe.secretKey ?? '',
-                webhookSecret: freshData.stripe.webhookSecret ?? '',
-              }
-            }));
-          }
-        }
-      }, 200);
+      // Invalidate query to trigger refetch
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/api-settings"] });
     },
     onError: (error: any) => {
       setSavingService(null);
@@ -517,26 +479,21 @@ export default function Admin() {
   // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
-      console.log('📊 API Settings loaded:', {
-        youtubeApiKey: apiSettings.youtube?.apiKey,
-        mapsApiKey: apiSettings.maps?.apiKey,
-        youtubeStatus: apiSettings.youtube?.status,
-        mapsStatus: apiSettings.maps?.status
-      });
+      console.log('📊 API Settings loaded:', apiSettings);
       
       setApiFormData(prev => ({
         stripe: {
-          publishableKey: apiSettings.stripe?.publishableKey || prev.stripe.publishableKey,
-          secretKey: apiSettings.stripe?.secretKey || prev.stripe.secretKey,
-          webhookSecret: apiSettings.stripe?.webhookSecret || prev.stripe.webhookSecret,
+          publishableKey: apiSettings.stripe?.publishableKey || '',
+          secretKey: apiSettings.stripe?.secretKey || '',
+          webhookSecret: apiSettings.stripe?.webhookSecret || '',
         },
         youtube: {
-          apiKey: apiSettings.youtube?.apiKey || prev.youtube.apiKey,
-          projectId: apiSettings.youtube?.projectId || prev.youtube.projectId,
+          apiKey: apiSettings.youtube?.apiKey || '',
+          projectId: apiSettings.youtube?.projectId || 'hublink-project',
         },
         maps: {
-          apiKey: apiSettings.maps?.apiKey || prev.maps.apiKey,
-          enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? prev.maps.enableAdvancedFeatures,
+          apiKey: apiSettings.maps?.apiKey || '',
+          enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? true,
         },
       }));
       
