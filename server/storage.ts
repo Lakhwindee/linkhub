@@ -17,6 +17,7 @@ import {
   boostedPosts,
   feedAdImpressions,
   wallets,
+  walletTransactions,
   payouts,
   subscriptions,
   invoices,
@@ -54,6 +55,7 @@ import {
   type BoostedPost,
   type FeedAdImpression,
   type Wallet,
+  type WalletTransaction,
   type Payout,
   type Subscription,
   type Invoice,
@@ -175,6 +177,10 @@ export interface IStorage {
   createWallet(userId: string): Promise<Wallet>;
   getWallet(userId: string): Promise<Wallet | undefined>;
   updateWalletBalance(userId: string, amountMinor: number, grossAmountMinor?: number, taxWithheldMinor?: number): Promise<Wallet>;
+  createWalletTransaction(data: any): Promise<any>;
+  getWalletTransactions(userId: string, filters?: { type?: string; limit?: number }): Promise<any[]>;
+  depositToWallet(userId: string, amountMinor: number, stripePaymentId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }>;
+  deductFromWallet(userId: string, amountMinor: number, campaignId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }>;
   createPayout(data: { userId: string; grossAmountMinor: number; taxWithheldMinor: number; amountMinor: number; taxRate?: number; currency?: string; method?: string }): Promise<Payout>;
   getUserPayouts(userId: string): Promise<Payout[]>;
   
@@ -1248,6 +1254,123 @@ export class DatabaseStorage implements IStorage {
       .where(eq(wallets.userId, userId))
       .returning();
     return wallet;
+  }
+
+  // Wallet Transactions - For billing and expenses
+  async createWalletTransaction(data: {
+    walletId: string;
+    userId: string;
+    type: string; // 'deposit', 'campaign_payment', 'earning', 'withdrawal', 'refund'
+    amountMinor: number;
+    balanceAfterMinor: number;
+    currency?: string;
+    status?: string;
+    campaignId?: string;
+    payoutId?: string;
+    stripePaymentId?: string;
+    description?: string;
+    metadata?: string;
+  }): Promise<any> {
+    const [transaction] = await db
+      .insert(walletTransactions)
+      .values({
+        ...data,
+        currency: data.currency || 'USD',
+        status: data.status || 'completed',
+      })
+      .returning();
+    return transaction;
+  }
+
+  async getWalletTransactions(userId: string, filters?: { type?: string; limit?: number }): Promise<any[]> {
+    // Build where conditions
+    const conditions = [eq(walletTransactions.userId, userId)];
+    
+    // FILTER BY TYPE if provided
+    if (filters?.type) {
+      conditions.push(eq(walletTransactions.type, filters.type));
+    }
+
+    let query = db
+      .select()
+      .from(walletTransactions)
+      .where(and(...conditions))
+      .orderBy(desc(walletTransactions.createdAt));
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+
+    return await query;
+  }
+
+  // Deposit funds to wallet (for publishers topping up)
+  async depositToWallet(userId: string, amountMinor: number, stripePaymentId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }> {
+    // Get or create wallet
+    let wallet = await this.getWallet(userId);
+    if (!wallet) {
+      wallet = await this.createWallet(userId);
+    }
+
+    // Update wallet balance
+    const [updatedWallet] = await db
+      .update(wallets)
+      .set({
+        balanceMinor: sql`balance_minor + ${amountMinor}`,
+        totalDepositedMinor: sql`total_deposited_minor + ${amountMinor}`,
+      })
+      .where(eq(wallets.userId, userId))
+      .returning();
+
+    // Create transaction record - use wallet's currency
+    const transaction = await this.createWalletTransaction({
+      walletId: updatedWallet.id,
+      userId,
+      type: 'deposit',
+      amountMinor,
+      balanceAfterMinor: updatedWallet.balanceMinor,
+      currency: updatedWallet.currency, // ALIGN with wallet currency
+      stripePaymentId,
+      description: description || 'Wallet top-up',
+    });
+
+    return { wallet: updatedWallet, transaction };
+  }
+
+  // Deduct funds from wallet (for campaign payments)
+  async deductFromWallet(userId: string, amountMinor: number, campaignId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }> {
+    const wallet = await this.getWallet(userId);
+    if (!wallet) {
+      throw new Error('Wallet not found');
+    }
+
+    if (wallet.balanceMinor < amountMinor) {
+      throw new Error('Insufficient wallet balance');
+    }
+
+    // Update wallet balance
+    const [updatedWallet] = await db
+      .update(wallets)
+      .set({
+        balanceMinor: sql`balance_minor - ${amountMinor}`,
+        totalSpentMinor: sql`total_spent_minor + ${amountMinor}`,
+      })
+      .where(eq(wallets.userId, userId))
+      .returning();
+
+    // Create transaction record - use wallet's currency
+    const transaction = await this.createWalletTransaction({
+      walletId: updatedWallet.id,
+      userId,
+      type: 'campaign_payment',
+      amountMinor: -amountMinor, // negative for debit
+      balanceAfterMinor: updatedWallet.balanceMinor,
+      currency: updatedWallet.currency, // ALIGN with wallet currency
+      campaignId,
+      description: description || 'Campaign payment',
+    });
+
+    return { wallet: updatedWallet, transaction };
   }
 
   async createPayout(data: { userId: string; grossAmountMinor: number; taxWithheldMinor: number; amountMinor: number; taxRate?: number; currency?: string; method?: string }): Promise<Payout> {

@@ -51,7 +51,7 @@ export default function PaymentPage() {
     onSuccess: () => {
       toast({
         title: "Payment Successful! 🎉",
-        description: "Your campaign is now live and available to creators.",
+        description: "Campaign submitted for admin approval. You'll be notified once it's live.",
       });
       // Redirect to success page, which then redirects to active campaigns
       navigate(`/payment/success/${campaignId}`);
@@ -209,10 +209,10 @@ export default function PaymentPage() {
                 <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800">
                   <div className="flex items-center gap-2 mb-2">
                     <CheckCircle className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Ready to Launch</span>
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Ready to Submit</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    💡 Your campaign will be live immediately after payment and visible to all creators in your target tier.
+                    💡 Your campaign will be submitted for admin approval after payment. Once approved, it will be visible to creators.
                   </p>
                 </div>
 
@@ -243,7 +243,7 @@ export default function PaymentPage() {
                 )}
 
                 <p className="text-xs text-muted-foreground text-center">
-                  Secure payment powered by Stripe. Your campaign will activate immediately.
+                  Secure payment powered by Stripe. Your campaign will be submitted for admin approval.
                 </p>
               </div>
             </CardContent>

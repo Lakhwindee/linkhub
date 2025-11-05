@@ -348,17 +348,37 @@ export const feedAdImpressions = pgTable("feed_ad_impressions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-// Wallets - Enhanced with tax tracking
+// Wallets - Enhanced with tax tracking and billing support
 export const wallets = pgTable("wallets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).unique(),
   balanceMinor: integer("balance_minor").default(0), // in pence/paisa - available balance after tax
   totalEarnedMinor: integer("total_earned_minor").default(0), // total gross earnings (before tax)
   totalTaxWithheldMinor: integer("total_tax_withheld_minor").default(0), // total tax withheld
+  totalDepositedMinor: integer("total_deposited_minor").default(0), // total funds added by publisher for campaigns
+  totalSpentMinor: integer("total_spent_minor").default(0), // total spent on campaigns
   currency: varchar("currency").default("GBP"),
   taxRate: decimal("tax_rate", { precision: 5, scale: 2 }).default("20.00"), // UK: 20%, India: 10% TDS
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Wallet Transactions - Track all wallet movements (deposits, spending, earnings, withdrawals)
+export const walletTransactions = pgTable("wallet_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  walletId: varchar("wallet_id").references(() => wallets.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  type: varchar("type").notNull(), // 'deposit', 'campaign_payment', 'earning', 'withdrawal', 'refund'
+  amountMinor: integer("amount_minor").notNull(), // positive for credits, negative for debits
+  balanceAfterMinor: integer("balance_after_minor").notNull(), // balance after this transaction
+  currency: varchar("currency").default("USD"),
+  status: varchar("status").default("completed"), // 'pending', 'completed', 'failed', 'cancelled'
+  campaignId: varchar("campaign_id").references(() => ads.id), // if related to campaign
+  payoutId: varchar("payout_id").references(() => payouts.id), // if related to withdrawal
+  stripePaymentId: varchar("stripe_payment_id"), // Stripe payment intent ID for deposits/withdrawals
+  description: text("description"),
+  metadata: text("metadata"), // JSON string for additional data
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Payouts - Enhanced with tax tracking
@@ -768,8 +788,16 @@ export const adSubmissionsRelations = relations(adSubmissions, ({ one }) => ({
   reviewer: one(users, { fields: [adSubmissions.reviewedBy], references: [users.id] }),
 }));
 
-export const walletsRelations = relations(wallets, ({ one }) => ({
+export const walletsRelations = relations(wallets, ({ one, many }) => ({
   user: one(users, { fields: [wallets.userId], references: [users.id] }),
+  transactions: many(walletTransactions),
+}));
+
+export const walletTransactionsRelations = relations(walletTransactions, ({ one }) => ({
+  wallet: one(wallets, { fields: [walletTransactions.walletId], references: [wallets.id] }),
+  user: one(users, { fields: [walletTransactions.userId], references: [users.id] }),
+  campaign: one(ads, { fields: [walletTransactions.campaignId], references: [ads.id] }),
+  payout: one(payouts, { fields: [walletTransactions.payoutId], references: [payouts.id] }),
 }));
 
 export const payoutsRelations = relations(payouts, ({ one }) => ({
@@ -1191,6 +1219,7 @@ export type AdSubmission = typeof adSubmissions.$inferSelect;
 export type BoostedPost = typeof boostedPosts.$inferSelect;
 export type FeedAdImpression = typeof feedAdImpressions.$inferSelect;
 export type Wallet = typeof wallets.$inferSelect;
+export type WalletTransaction = typeof walletTransactions.$inferSelect;
 export type Payout = typeof payouts.$inferSelect;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;

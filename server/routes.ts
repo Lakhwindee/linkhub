@@ -5845,6 +5845,57 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Admin campaign approval endpoint
+  app.post('/api/admin/campaigns/:id/approve', isAdmin, async (req: any, res) => {
+    try {
+      const reviewerId = req.user.claims.sub;
+      const user = await storage.getUser(reviewerId);
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      const { id } = req.params;
+      const { status, notes } = req.body;
+      
+      // VALIDATION: Only allow 'active' or 'rejected' status
+      if (!status || !['active', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status. Must be 'active' or 'rejected'" });
+      }
+      
+      const campaign = await storage.getAd(id);
+      if (!campaign) {
+        return res.status(404).json({ message: "Campaign not found" });
+      }
+      
+      if (campaign.status !== 'pending_approval') {
+        return res.status(400).json({ message: "Campaign is not pending approval" });
+      }
+      
+      // Update campaign status
+      const updatedCampaign = await storage.updateAd(id, { status });
+      
+      // Create audit log
+      await storage.createAuditLog({
+        actorId: reviewerId,
+        action: `campaign_${status}`,
+        targetType: "campaign",
+        targetId: id,
+        metaJson: { notes, campaignTitle: campaign.title },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+      
+      res.json({ 
+        success: true, 
+        campaign: updatedCampaign,
+        message: status === 'active' ? 'Campaign approved and now live' : 'Campaign rejected'
+      });
+    } catch (error) {
+      console.error("Error approving campaign:", error);
+      res.status(500).json({ message: "Failed to approve campaign" });
+    }
+  });
+
   app.post('/api/admin/ads', isAdmin, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.claims.sub);
@@ -6083,12 +6134,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(400).json({ message: 'Campaign is not eligible for payment' });
       }
       
-      // Update campaign status to active after payment
-      const updatedCampaign = await storage.updateAd(campaignId, { status: 'active' });
+      // Update campaign status to pending_approval after payment (admin must approve before going live)
+      const updatedCampaign = await storage.updateAd(campaignId, { status: 'pending_approval' });
       
       res.json({ 
         success: true, 
-        message: 'Payment processed successfully',
+        message: 'Payment processed successfully. Campaign awaiting admin approval.',
         campaign: updatedCampaign
       });
     } catch (error) {
