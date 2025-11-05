@@ -4315,6 +4315,94 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         case 'checkout.session.completed': {
           const session = event.data.object as any;
           const userId = session.metadata.userId;
+          const type = session.metadata.type;
+
+          // Handle wallet top-up
+          if (type === 'wallet_topup') {
+            const amountMinor = parseInt(session.metadata.amountMinor);
+            const paymentIntentId = session.payment_intent;
+
+            // IDEMPOTENCY CHECK: Check if this payment_intent was already processed
+            const existingTransactions = await storage.getWalletTransactions(userId, { limit: 100 });
+            const alreadyProcessed = existingTransactions.some(
+              (tx: any) => tx.stripePaymentId === paymentIntentId && tx.type === 'deposit'
+            );
+
+            if (alreadyProcessed) {
+              console.log(`⚠️  Payment ${paymentIntentId} already processed for user ${userId}, skipping duplicate`);
+              break;
+            }
+
+            // Deposit to wallet
+            const { wallet, transaction } = await storage.depositToWallet(
+              userId,
+              amountMinor,
+              paymentIntentId,
+              'Wallet top-up via Stripe'
+            );
+
+            console.log(`✅ Wallet topped up for user ${userId}: ${amountMinor / 100} ${wallet.currency}`);
+
+            await storage.createAuditLog({
+              actorId: userId,
+              action: "wallet_topup",
+              targetType: "wallet",
+              targetId: wallet.id,
+              metaJson: { amountMinor, transactionId: transaction.id, paymentIntentId },
+            });
+            break;
+          }
+
+          // Handle campaign payment
+          if (type === 'campaign_payment') {
+            const campaignId = session.metadata.campaignId;
+            const amountMinor = parseInt(session.metadata.amountMinor);
+            const paymentIntentId = session.payment_intent;
+
+            // IDEMPOTENCY CHECK: Check if this payment_intent was already processed
+            const existingTransactions = await storage.getWalletTransactions(userId, { limit: 100 });
+            const alreadyProcessed = existingTransactions.some(
+              (tx: any) => tx.stripePaymentId === paymentIntentId && tx.type === 'deposit'
+            );
+
+            if (alreadyProcessed) {
+              console.log(`⚠️  Campaign payment ${paymentIntentId} already processed for ${campaignId}, skipping duplicate`);
+              break;
+            }
+
+            // Check campaign is still pending_payment before processing
+            const campaign = await storage.getAd(campaignId);
+            if (!campaign || campaign.status !== 'pending_payment') {
+              console.log(`⚠️  Campaign ${campaignId} is not pending_payment (status: ${campaign?.status}), skipping payment processing`);
+              break;
+            }
+
+            // Deposit to wallet
+            const { wallet, transaction } = await storage.depositToWallet(
+              userId,
+              amountMinor,
+              paymentIntentId,
+              `Campaign payment: ${campaignId}`
+            );
+
+            // Update campaign status to pending_approval
+            const updatedCampaign = await storage.updateAd(campaignId, { 
+              status: 'pending_approval' 
+            });
+
+            console.log(`✅ Campaign payment processed for ${campaignId}: ${amountMinor / 100} ${wallet.currency} added to wallet. Status: pending_approval`);
+
+            await storage.createAuditLog({
+              actorId: userId,
+              action: "campaign_payment_received",
+              targetType: "campaign",
+              targetId: campaignId,
+              metaJson: { amountMinor, transactionId: transaction.id, paymentIntentId, walletBalance: wallet.balanceMinor },
+            });
+            break;
+          }
+
+          // Handle subscription signup
           const plan = session.metadata.plan;
           const trialDays = session.metadata.trialDays ? parseInt(session.metadata.trialDays) : null;
           
@@ -4503,6 +4591,170 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     } catch (error) {
       console.error("Error creating payout:", error);
       res.status(500).json({ message: "Failed to create payout" });
+    }
+  });
+
+  // New Wallet API routes with transaction tracking
+  app.get('/api/wallet/balance', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      let wallet = await storage.getWallet(userId);
+      
+      // Auto-create wallet if doesn't exist
+      if (!wallet) {
+        wallet = await storage.createWallet(userId);
+      }
+      
+      res.json({ wallet });
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+      res.status(500).json({ message: "Failed to fetch wallet balance" });
+    }
+  });
+
+  app.post('/api/wallet/topup', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { amountMinor } = req.body;
+      
+      // VALIDATION: Ensure amountMinor is a valid integer
+      if (!Number.isInteger(amountMinor) || amountMinor < 1000 || amountMinor > 100000000) {
+        return res.status(400).json({ 
+          message: "Invalid amount. Minimum $10, maximum $1,000,000",
+          min: 1000,
+          max: 100000000
+        });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Ensure wallet exists
+      let wallet = await storage.getWallet(userId);
+      if (!wallet) {
+        wallet = await storage.createWallet(userId);
+      }
+
+      // Create Stripe checkout session for wallet top-up
+      const session = await stripe.checkout.sessions.create({
+        customer: user.stripeCustomerId || undefined,
+        customer_email: !user.stripeCustomerId ? user.email : undefined,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: wallet.currency.toLowerCase(),
+              unit_amount: amountMinor,
+              product_data: {
+                name: 'Wallet Top-up',
+                description: `Add funds to your HubLink wallet`,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/wallet?topup=success`,
+        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/wallet?topup=cancel`,
+        metadata: {
+          userId,
+          type: 'wallet_topup',
+          amountMinor: amountMinor.toString(),
+        },
+      });
+
+      res.json({ url: session.url });
+    } catch (error) {
+      console.error("Error creating wallet top-up session:", error);
+      res.status(500).json({ message: "Failed to create top-up session" });
+    }
+  });
+
+  app.post('/api/wallet/withdraw', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { amountMinor, method = 'stripe' } = req.body;
+      
+      // Minimum withdrawal threshold
+      const MIN_WITHDRAWAL = 5000; // $50 / £50
+      const MAX_WITHDRAWAL = 100000000; // $1M safety limit
+      
+      // VALIDATION: Ensure amountMinor is valid integer within limits
+      if (!Number.isInteger(amountMinor) || amountMinor < MIN_WITHDRAWAL || amountMinor > MAX_WITHDRAWAL) {
+        return res.status(400).json({ 
+          message: `Withdrawal amount must be between $${MIN_WITHDRAWAL / 100} and $${MAX_WITHDRAWAL / 100}`,
+          minimumMinor: MIN_WITHDRAWAL,
+          maximumMinor: MAX_WITHDRAWAL
+        });
+      }
+
+      const wallet = await storage.getWallet(userId);
+      if (!wallet) {
+        return res.status(404).json({ message: "Wallet not found" });
+      }
+
+      if (wallet.balanceMinor < amountMinor) {
+        return res.status(400).json({ 
+          message: "Insufficient wallet balance",
+          available: wallet.balanceMinor,
+          requested: amountMinor
+        });
+      }
+
+      // Create payout request first (this validates before deducting)
+      const payout = await storage.createPayout({
+        userId,
+        grossAmountMinor: amountMinor,
+        taxWithheldMinor: 0,
+        amountMinor,
+        taxRate: 0,
+        currency: wallet.currency,
+        method
+      });
+
+      // Deduct from wallet and create transaction (can throw on insufficient balance)
+      const { transaction } = await storage.deductFromWallet(
+        userId, 
+        amountMinor, 
+        undefined,
+        `Withdrawal request #${payout.id}`
+      );
+
+      // Update transaction with payout reference
+      await storage.createAuditLog({
+        actorId: userId,
+        action: "withdrawal_requested",
+        targetType: "payout",
+        targetId: payout.id,
+        metaJson: { amountMinor, method, transactionId: transaction.id },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent"),
+      });
+
+      res.json({ payout, transaction });
+    } catch (error) {
+      console.error("Error processing withdrawal:", error);
+      res.status(500).json({ message: error instanceof Error ? error.message : "Failed to process withdrawal" });
+    }
+  });
+
+  app.get('/api/wallet/transactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { type, limit } = req.query;
+      
+      const filters: any = {};
+      if (type) filters.type = type as string;
+      if (limit) filters.limit = parseInt(limit as string);
+      
+      const transactions = await storage.getWalletTransactions(userId, filters);
+      
+      res.json({ transactions });
+    } catch (error) {
+      console.error("Error fetching wallet transactions:", error);
+      res.status(500).json({ message: "Failed to fetch transactions" });
     }
   });
 
@@ -5870,8 +6122,33 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       if (campaign.status !== 'pending_approval') {
         return res.status(400).json({ message: "Campaign is not pending approval" });
       }
+
+      let walletTransaction = null;
       
-      // Update campaign status
+      // If approving (status = 'active'), deduct from publisher's wallet
+      if (status === 'active') {
+        // Deduct from wallet - this will throw if insufficient balance
+        // The deductFromWallet method already checks balance atomically
+        try {
+          const result = await storage.deductFromWallet(
+            campaign.publisherId,
+            campaign.totalBudget,
+            id,
+            `Campaign approved: ${campaign.title}`
+          );
+          
+          walletTransaction = result.transaction;
+          console.log(`✅ Auto-deducted ${campaign.totalBudget / 100} from publisher wallet for campaign ${id}`);
+        } catch (error) {
+          // If wallet deduction fails, don't approve campaign
+          return res.status(400).json({ 
+            message: error instanceof Error ? error.message : "Insufficient wallet balance",
+            required: campaign.totalBudget
+          });
+        }
+      }
+      
+      // Only update campaign status after wallet deduction succeeds
       const updatedCampaign = await storage.updateAd(id, { status });
       
       // Create audit log
@@ -5880,7 +6157,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         action: `campaign_${status}`,
         targetType: "campaign",
         targetId: id,
-        metaJson: { notes, campaignTitle: campaign.title },
+        metaJson: { 
+          notes, 
+          campaignTitle: campaign.title,
+          walletDeducted: status === 'active' ? campaign.totalBudget : 0,
+          transactionId: walletTransaction?.id
+        },
         ipAddress: req.ip,
         userAgent: req.get("User-Agent"),
       });
@@ -5888,11 +6170,16 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       res.json({ 
         success: true, 
         campaign: updatedCampaign,
-        message: status === 'active' ? 'Campaign approved and now live' : 'Campaign rejected'
+        walletTransaction,
+        message: status === 'active' 
+          ? 'Campaign approved and now live. Funds deducted from wallet.' 
+          : 'Campaign rejected'
       });
     } catch (error) {
       console.error("Error approving campaign:", error);
-      res.status(500).json({ message: "Failed to approve campaign" });
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to approve campaign" 
+      });
     }
   });
 
@@ -6093,7 +6380,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-  // Process campaign payment
+  // Process campaign payment - creates Stripe checkout to add funds to wallet
   app.post('/api/campaigns/:campaignId/payment', isAuthenticated, async (req: any, res) => {
     try {
       const { campaignId } = req.params;
@@ -6111,11 +6398,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           success: true, 
           message: 'Payment processed successfully',
           campaignId,
-          status: 'active'
+          status: 'pending_approval'
         });
       }
       
-      // Real implementation - would integrate with Stripe here
+      // Real implementation - Stripe checkout to add funds to wallet
       const campaign = await storage.getAd(campaignId);
       if (!campaign) {
         return res.status(404).json({ message: 'Campaign not found' });
@@ -6126,22 +6413,55 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
 
       // Prevent double payment
-      if (campaign.status === 'active') {
-        return res.status(400).json({ message: 'Campaign is already active and paid for' });
+      if (campaign.status === 'active' || campaign.status === 'pending_approval') {
+        return res.status(400).json({ message: 'Campaign is already paid for' });
       }
 
       if (campaign.status !== 'pending_payment') {
         return res.status(400).json({ message: 'Campaign is not eligible for payment' });
       }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Ensure wallet exists
+      let wallet = await storage.getWallet(userId);
+      if (!wallet) {
+        wallet = await storage.createWallet(userId);
+      }
       
-      // Update campaign status to pending_approval after payment (admin must approve before going live)
-      const updatedCampaign = await storage.updateAd(campaignId, { status: 'pending_approval' });
-      
-      res.json({ 
-        success: true, 
-        message: 'Payment processed successfully. Campaign awaiting admin approval.',
-        campaign: updatedCampaign
+      // Create Stripe checkout session for campaign payment
+      const session = await stripe.checkout.sessions.create({
+        customer: user.stripeCustomerId || undefined,
+        customer_email: !user.stripeCustomerId ? user.email : undefined,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: wallet.currency.toLowerCase(),
+              unit_amount: campaign.totalBudget,
+              product_data: {
+                name: `Campaign: ${campaign.title}`,
+                description: `Payment for campaign targeting Tier ${campaign.tierLevel} creators`,
+              },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment/success/${campaignId}`,
+        cancel_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/payment/${campaignId}`,
+        metadata: {
+          userId,
+          type: 'campaign_payment',
+          campaignId,
+          amountMinor: campaign.totalBudget.toString(),
+        },
       });
+
+      res.json({ url: session.url });
     } catch (error) {
       console.error('❌ Error processing payment:', error);
       res.status(500).json({ message: 'Payment processing failed' });

@@ -48,13 +48,23 @@ export default function PaymentPage() {
 
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Payment Successful! 🎉",
-        description: "Campaign submitted for admin approval. You'll be notified once it's live.",
-      });
-      // Redirect to success page, which then redirects to active campaigns
-      navigate(`/payment/success/${campaignId}`);
+    onSuccess: (data) => {
+      // Check if this is a demo campaign (returns success directly)
+      if (data.success && data.status === 'pending_approval') {
+        toast({
+          title: "Payment Successful! 🎉",
+          description: "Campaign submitted for admin approval. You'll be notified once it's live.",
+        });
+        navigate(`/payment/success/${campaignId}`);
+        return;
+      }
+
+      // Real campaign - redirect to Stripe checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No payment URL received');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -68,8 +78,6 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     setIsProcessing(true);
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
       paymentMutation.mutate();
     } finally {
       setIsProcessing(false);
