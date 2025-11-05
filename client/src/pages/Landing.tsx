@@ -461,7 +461,7 @@ export default function Landing() {
           </div>
 
           <div className="border-t border-primary-foreground/20 mt-12 pt-8 text-center text-primary-foreground/80">
-            <p>&copy; 2024 HubLink. All rights reserved. | Made with ❤️ for travelers worldwide</p>
+            <p>&copy; 2024 HubLink. All rights reserved.</p>
           </div>
         </div>
       </footer>
