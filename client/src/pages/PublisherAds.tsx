@@ -103,8 +103,20 @@ function NewFreshForm({ onSuccess }: { onSuccess: () => void }) {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`API Error: ${response.status} - ${error}`);
+        const errorData = await response.json();
+        
+        // Handle insufficient funds error
+        if (errorData.message === "Insufficient funds in wallet") {
+          toast({
+            title: "💰 Insufficient Wallet Balance",
+            description: `You need $${errorData.requiredAmount} but only have $${errorData.walletBalance} in your wallet. Please add $${errorData.shortfall} to continue.`,
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        throw new Error(errorData.message || `API Error: ${response.status}`);
       }
 
       const result = await response.json();
