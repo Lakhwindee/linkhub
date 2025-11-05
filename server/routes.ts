@@ -5268,16 +5268,16 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           source: stripeSetting ? 'database' : 'environment'
         },
         youtube: {
-          apiKey: youtubeSetting ? maskKey(youtubeSetting.settingsJson.apiKey, 'AIza') : (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
-          projectId: youtubeSetting?.settingsJson?.projectId || 'hublink-project',
-          status: (isValidKey(youtubeSetting?.settingsJson?.apiKey) || isValidKey(process.env.YOUTUBE_API_KEY)) ? 'active' : 'inactive',
+          apiKey: youtubeSetting ? maskKey((youtubeSetting.settingsJson as any).apiKey, 'AIza') : (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
+          projectId: (youtubeSetting?.settingsJson as any)?.projectId || 'hublink-project',
+          status: (isValidKey((youtubeSetting?.settingsJson as any)?.apiKey) || isValidKey(process.env.YOUTUBE_API_KEY)) ? 'active' : 'inactive',
           lastTested: youtubeSetting?.lastTestedAt?.toISOString() || null,
           source: youtubeSetting ? 'database' : 'environment'
         },
         maps: {
-          apiKey: mapsSetting ? maskKey(mapsSetting.settingsJson.apiKey, 'AIza') : (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
-          enableAdvancedFeatures: mapsSetting?.settingsJson?.enableAdvancedFeatures !== undefined ? mapsSetting.settingsJson.enableAdvancedFeatures : true,
-          status: (isValidKey(mapsSetting?.settingsJson?.apiKey) || isValidKey(process.env.GOOGLE_MAPS_API_KEY)) ? 'active' : 'inactive',
+          apiKey: mapsSetting ? maskKey((mapsSetting.settingsJson as any).apiKey, 'AIza') : (process.env.GOOGLE_MAPS_API_KEY ? '••••••••••••' : ''),
+          enableAdvancedFeatures: (mapsSetting?.settingsJson as any)?.enableAdvancedFeatures !== undefined ? (mapsSetting.settingsJson as any).enableAdvancedFeatures : true,
+          status: (isValidKey((mapsSetting?.settingsJson as any)?.apiKey) || isValidKey(process.env.GOOGLE_MAPS_API_KEY)) ? 'active' : 'inactive',
           monthlyRequests: 6,
           lastTested: mapsSetting?.lastTestedAt?.toISOString() || null,
           source: mapsSetting ? 'database' : 'environment'
