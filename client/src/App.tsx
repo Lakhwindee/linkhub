@@ -132,7 +132,6 @@ function Router() {
                   <Route path="/profile" component={Profile} />
                   <Route path="/feed" component={Feed} />
                   <Route path="/boosted-posts" component={BoostedPosts} />
-                  <Route path="/ads" component={AdsWrapper} />
                   <Route path="/earn" component={AdsWrapper} />
                   <Route path="/payment/:campaignId" component={PaymentPage} />
                   <Route path="/payment/success/:campaignId" component={PaymentSuccess} />
@@ -147,6 +146,7 @@ function Router() {
           )}
           {/* Public routes (accessible to everyone) */}
           <Route path="/subscribe" component={Subscribe} />
+          <Route path="/ads" component={AdsWrapper} />
           <Route path="/reset-password" component={ResetPassword} />
           <Route path="/help-center" component={HelpCenter} />
           <Route path="/community-guidelines" component={CommunityGuidelines} />
