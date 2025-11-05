@@ -181,6 +181,7 @@ export interface IStorage {
   getWalletTransactions(userId: string, filters?: { type?: string; limit?: number }): Promise<any[]>;
   depositToWallet(userId: string, amountMinor: number, stripePaymentId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }>;
   deductFromWallet(userId: string, amountMinor: number, campaignId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }>;
+  creditEarnings(userId: string, netAmountMinor: number, grossAmountMinor: number, submissionId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }>;
   createPayout(data: { userId: string; grossAmountMinor: number; taxWithheldMinor: number; amountMinor: number; taxRate?: number; currency?: string; method?: string }): Promise<Payout>;
   getUserPayouts(userId: string): Promise<Payout[]>;
   
@@ -1368,6 +1369,38 @@ export class DatabaseStorage implements IStorage {
       currency: updatedWallet.currency, // ALIGN with wallet currency
       campaignId,
       description: description || 'Campaign payment',
+    });
+
+    return { wallet: updatedWallet, transaction };
+  }
+
+  // Credit earnings to wallet (for approved submissions)
+  async creditEarnings(userId: string, netAmountMinor: number, grossAmountMinor: number, submissionId?: string, description?: string): Promise<{ wallet: Wallet; transaction: any }> {
+    let wallet = await this.getWallet(userId);
+    if (!wallet) {
+      wallet = await this.createWallet(userId);
+    }
+
+    // Update wallet balance and earnings
+    const [updatedWallet] = await db
+      .update(wallets)
+      .set({
+        balanceMinor: sql`balance_minor + ${netAmountMinor}`,
+        totalEarnedMinor: sql`total_earned_minor + ${grossAmountMinor}`,
+      })
+      .where(eq(wallets.userId, userId))
+      .returning();
+
+    // Create transaction record - use wallet's currency
+    const transaction = await this.createWalletTransaction({
+      walletId: updatedWallet.id,
+      userId,
+      type: 'earning',
+      amountMinor: netAmountMinor,
+      balanceAfterMinor: updatedWallet.balanceMinor,
+      currency: updatedWallet.currency,
+      submissionId,
+      description: description || 'Campaign earnings',
     });
 
     return { wallet: updatedWallet, transaction };

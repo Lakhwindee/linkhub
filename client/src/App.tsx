@@ -20,6 +20,7 @@ import Admin from "@/pages/Admin";
 import Subscribe from "@/pages/Subscribe";
 import Events from "@/pages/Events";
 import Billing from "@/pages/Billing";
+import Wallet from "@/pages/Wallet";
 import Stays from "@/pages/Stays";
 import Trips from "@/pages/Trips";
 import TourPackages from "@/pages/TourPackages";
@@ -139,6 +140,7 @@ function Router() {
                   <Route path="/messages" component={Messages} />
                   <Route path="/events" component={Events} />
                   <Route path="/billing" component={Billing} />
+                  <Route path="/wallet" component={Wallet} />
                 </>
               )}
             </>

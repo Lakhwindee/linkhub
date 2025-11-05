@@ -6057,12 +6057,13 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           
           const netAmountMinor = grossAmountMinor - taxWithheldMinor;
           
-          // Update wallet with gross, tax, and net amounts
-          await storage.updateWalletBalance(
+          // Credit earnings to creator's wallet (with transaction record)
+          await storage.creditEarnings(
             reservation.userId!, 
             netAmountMinor,
             grossAmountMinor,
-            taxWithheldMinor
+            submission.id,
+            `Campaign earnings: ${reservation.ad.title}`
           );
           
           // Create tax record for audit trail
