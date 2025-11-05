@@ -426,8 +426,10 @@ export default function Admin() {
       if (result.data) {
         const freshData = result.data as any;
         console.log('💾 Updating form with fresh data:', freshData[variables.service]);
+        console.log('🔑 Fresh API Key:', freshData[variables.service]?.apiKey);
         
         if (variables.service === 'youtube') {
+          console.log('✅ Setting YouTube form data:', freshData.youtube);
           setApiFormData(prev => ({
             ...prev,
             youtube: {
