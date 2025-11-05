@@ -1860,11 +1860,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const tier = computeTierFromSubscribers(subscriberCount);
       
       // Check minimum subscriber requirement
-      if (subscriberCount < 30000) {
+      if (subscriberCount < 5000) {
         return res.status(400).json({ 
-          message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 30,000 subscribers required to participate in campaigns.`,
+          message: `Channel has only ${subscriberCount.toLocaleString()} subscribers. Minimum 5,000 subscribers required to participate in campaigns.`,
           subscriberCount,
-          minimumRequired: 30000
+          minimumRequired: 5000
         });
       }
 
@@ -1919,9 +1919,16 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         return res.status(429).json({ message: "Too many verification attempts. Please contact support." });
       }
 
+      // Load YouTube API key from database first, then fallback to environment
+      const youtubeApiKey = await loadYouTubeApiKey(storage);
+      
+      if (!youtubeApiKey) {
+        return res.status(500).json({ message: "YouTube API key not configured. Please contact support." });
+      }
+
       // Fetch channel details to check description
       const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${process.env.YOUTUBE_API_KEY}`
+        `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${user.youtubeChannelId}&key=${youtubeApiKey}`
       );
 
       if (!response.ok) {
