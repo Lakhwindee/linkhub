@@ -410,58 +410,31 @@ export default function Admin() {
   // API Settings mutations
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
-      console.log('🚀 MUTATION START:', data.service);
       setSavingService(data.service);
-      // Save to database
-      console.log('📤 Saving to database...');
       await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
-      console.log('✅ Saved! Now fetching fresh data...');
-      // Immediately fetch fresh settings to get masked values
       const freshSettings = await apiRequest("GET", "/api/admin/api-settings");
-      const freshData = await freshSettings.json();
-      console.log('📥 Fresh data received:', freshData);
-      return { service: data.service, settings: freshData };
+      return { service: data.service, settings: await freshSettings.json() };
     },
     onSuccess: (data, variables) => {
       setSavingService(null);
       const freshData = data.settings as ApiSettings;
       
-      console.log('🎯 MUTATION SUCCESS - Service:', variables.service);
-      console.log('🎯 Fresh Data:', freshData);
-      console.log('🎯 YouTube API Key from server:', freshData.youtube?.apiKey);
-      
       // Update form with masked values from server
-      if (variables.service === 'youtube') {
-        console.log('🎯 Updating YouTube form...');
-        setApiFormData(prev => {
-          const updated = {
-            ...prev,
-            youtube: {
-              apiKey: freshData.youtube?.apiKey || '',
-              projectId: freshData.youtube?.projectId || 'hublink-project',
-            }
-          };
-          console.log('🎯 New form data:', updated);
-          return updated;
-        });
-      } else if (variables.service === 'maps') {
-        setApiFormData(prev => ({
-          ...prev,
-          maps: {
-            apiKey: freshData.maps?.apiKey || '',
-            enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
-          }
-        }));
-      } else if (variables.service === 'stripe') {
-        setApiFormData(prev => ({
-          ...prev,
-          stripe: {
-            publishableKey: freshData.stripe?.publishableKey || '',
-            secretKey: freshData.stripe?.secretKey || '',
-            webhookSecret: freshData.stripe?.webhookSecret || '',
-          }
-        }));
-      }
+      setApiFormData({
+        stripe: {
+          publishableKey: freshData.stripe?.publishableKey || '',
+          secretKey: freshData.stripe?.secretKey || '',
+          webhookSecret: freshData.stripe?.webhookSecret || '',
+        },
+        youtube: {
+          apiKey: freshData.youtube?.apiKey || '',
+          projectId: freshData.youtube?.projectId || 'hublink-project',
+        },
+        maps: {
+          apiKey: freshData.maps?.apiKey || '',
+          enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
+        },
+      });
       
       // Update React Query cache
       queryClient.setQueryData(["/api/admin/api-settings"], freshData);
@@ -473,9 +446,6 @@ export default function Admin() {
     },
     onError: (error: any) => {
       setSavingService(null);
-      console.error('❌ MUTATION ERROR:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Full error:', JSON.stringify(error, null, 2));
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save API settings.",
@@ -530,9 +500,6 @@ export default function Admin() {
   // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
-      console.log('📊 API Settings loaded:', apiSettings);
-      console.log('📊 YouTube API Key:', apiSettings.youtube?.apiKey);
-      
       setApiFormData({
         stripe: {
           publishableKey: apiSettings.stripe?.publishableKey || '',
@@ -1314,7 +1281,8 @@ export default function Admin() {
                         <Label>API Key</Label>
                         <div className="flex space-x-2 mt-1">
                           <Input 
-                            type="text"
+                            key={`youtube-key-${apiFormData.youtube?.apiKey}`}
+                            type="password"
                             placeholder="Enter YouTube API Key"
                             value={apiFormData.youtube?.apiKey || ''}
                             onChange={(e) => setApiFormData(prev => ({
@@ -1326,7 +1294,6 @@ export default function Admin() {
                             <Eye className="w-4 h-4" />
                           </Button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Current value: {apiFormData.youtube?.apiKey || '(empty)'}</p>
                       </div>
                       <div>
                         <Label>Project ID</Label>
@@ -1344,10 +1311,7 @@ export default function Admin() {
                         <Button 
                           size="sm"
                           onClick={() => {
-                            console.log('🔵 BUTTON CLICKED!');
-                            console.log('🔵 Current form data:', apiFormData.youtube);
                             if (!apiFormData.youtube?.apiKey) {
-                              console.log('🔵 No API key - showing toast');
                               toast({
                                 title: "API Key Required",
                                 description: "Please enter YouTube API key.",
@@ -1355,7 +1319,6 @@ export default function Admin() {
                               });
                               return;
                             }
-                            console.log('🔵 API key exists, calling mutation...');
                             saveApiSettingsMutation.mutate({
                               service: 'youtube',
                               settings: apiFormData.youtube || {}
