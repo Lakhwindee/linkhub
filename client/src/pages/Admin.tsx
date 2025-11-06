@@ -458,6 +458,29 @@ export default function Admin() {
     return (apiSettings as any)?.[service]?.[field] || '';
   };
 
+  // API Settings form state (minimal for Stripe/Maps compatibility)
+  const [apiFormData, setApiFormData] = useState<any>({
+    stripe: { publishableKey: '', secretKey: '', webhookSecret: '' },
+    maps: { apiKey: '', enableAdvancedFeatures: true }
+  });
+
+  // Sync with server data
+  useEffect(() => {
+    if (apiSettings) {
+      setApiFormData({
+        stripe: {
+          publishableKey: apiSettings.stripe?.publishableKey || '',
+          secretKey: apiSettings.stripe?.secretKey || '',
+          webhookSecret: apiSettings.stripe?.webhookSecret || '',
+        },
+        maps: {
+          apiKey: apiSettings.maps?.apiKey || '',
+          enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? true,
+        },
+      });
+    }
+  }, [apiSettings]);
+
   // Email form state
   const [emailFormData, setEmailFormData] = useState({
     provider: 'gmail_smtp',
