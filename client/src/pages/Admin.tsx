@@ -530,11 +530,10 @@ export default function Admin() {
   // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
-      alert(`YouTube API Key from server: ${apiSettings.youtube?.apiKey}`);
       console.log('📊 API Settings loaded:', apiSettings);
       console.log('📊 YouTube API Key:', apiSettings.youtube?.apiKey);
       
-      setApiFormData(prev => ({
+      setApiFormData({
         stripe: {
           publishableKey: apiSettings.stripe?.publishableKey || '',
           secretKey: apiSettings.stripe?.secretKey || '',
@@ -548,7 +547,7 @@ export default function Admin() {
           apiKey: apiSettings.maps?.apiKey || '',
           enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? true,
         },
-      }));
+      });
       
       setEmailFormData(prev => ({
         provider: apiSettings.email?.provider || prev.provider,
@@ -1315,7 +1314,7 @@ export default function Admin() {
                         <Label>API Key</Label>
                         <div className="flex space-x-2 mt-1">
                           <Input 
-                            type="password" 
+                            type="text"
                             placeholder="Enter YouTube API Key"
                             value={apiFormData.youtube?.apiKey || ''}
                             onChange={(e) => setApiFormData(prev => ({
@@ -1327,6 +1326,7 @@ export default function Admin() {
                             <Eye className="w-4 h-4" />
                           </Button>
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">Current value: {apiFormData.youtube?.apiKey || '(empty)'}</p>
                       </div>
                       <div>
                         <Label>Project ID</Label>
