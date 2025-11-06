@@ -530,7 +530,9 @@ export default function Admin() {
   // Populate form with loaded API settings (show masked values for saved keys)
   useEffect(() => {
     if (apiSettings) {
+      alert(`YouTube API Key from server: ${apiSettings.youtube?.apiKey}`);
       console.log('📊 API Settings loaded:', apiSettings);
+      console.log('📊 YouTube API Key:', apiSettings.youtube?.apiKey);
       
       setApiFormData(prev => ({
         stripe: {
