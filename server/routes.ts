@@ -864,10 +864,23 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       }
       
       // Require environment variables for admin authentication (production ready)
-      const adminEmail = process.env.ADMIN_EMAIL;
-      const adminPassword = process.env.ADMIN_PASSWORD;
+      const adminEmail = process.env.ADMIN_EMAIL?.trim();
+      const adminPassword = process.env.ADMIN_PASSWORD?.trim();
+      
+      // Debug logging (safe - doesn't expose actual values)
+      console.log('🔐 Admin login attempt:', {
+        hasEmail: !!adminEmail,
+        hasPassword: !!adminPassword,
+        emailMatch: email === adminEmail,
+        passwordMatch: password === adminPassword,
+        envEmailLength: adminEmail?.length,
+        envPasswordLength: adminPassword?.length,
+        inputEmailLength: email?.length,
+        inputPasswordLength: password?.length
+      });
       
       if (!adminEmail || !adminPassword) {
+        console.error('❌ Missing environment variables - ADMIN_EMAIL or ADMIN_PASSWORD not set');
         throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required for production');
       }
       
