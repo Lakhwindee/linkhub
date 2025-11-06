@@ -412,36 +412,15 @@ export default function Admin() {
     mutationFn: async (data: { service: string; settings: any }) => {
       setSavingService(data.service);
       await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
-      const freshSettings = await apiRequest("GET", "/api/admin/api-settings");
-      return { service: data.service, settings: await freshSettings.json() };
+      return data.service;
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (service) => {
       setSavingService(null);
-      const freshData = data.settings as ApiSettings;
-      
-      // Update form with masked values from server
-      setApiFormData({
-        stripe: {
-          publishableKey: freshData.stripe?.publishableKey || '',
-          secretKey: freshData.stripe?.secretKey || '',
-          webhookSecret: freshData.stripe?.webhookSecret || '',
-        },
-        youtube: {
-          apiKey: freshData.youtube?.apiKey || '',
-          projectId: freshData.youtube?.projectId || 'hublink-project',
-        },
-        maps: {
-          apiKey: freshData.maps?.apiKey || '',
-          enableAdvancedFeatures: freshData.maps?.enableAdvancedFeatures ?? true,
-        },
-      });
-      
-      // Update React Query cache
-      queryClient.setQueryData(["/api/admin/api-settings"], freshData);
-      
+      // Refetch to get fresh masked values
+      await refetchApiSettings();
       toast({
         title: "Settings Saved",
-        description: `${variables.service} API settings saved successfully!`,
+        description: `${service} API settings saved successfully!`,
       });
     },
     onError: (error: any) => {
@@ -474,55 +453,10 @@ export default function Admin() {
     },
   });
 
-  // API Settings form state  
-  const [apiFormData, setApiFormData] = useState<ApiFormData>({
-    stripe: {
-      publishableKey: '',
-      secretKey: '',
-      webhookSecret: ''
-    },
-    youtube: {
-      apiKey: '',
-      projectId: 'hublink-project'
-    },
-    maps: {
-      apiKey: '',
-      enableAdvancedFeatures: true
-    }
-  });
-
-  // Helper to check if value is masked
-  const isMaskedValue = (value: string | undefined) => {
-    if (!value) return false;
-    return value.includes('••••') || value.includes('....') || /^[•\.]+$/.test(value);
+  // Simple helper to get current value or masked value from server
+  const getFieldValue = (service: 'youtube' | 'maps' | 'stripe', field: string) => {
+    return (apiSettings as any)?.[service]?.[field] || '';
   };
-
-  // Populate form with loaded API settings (show masked values for saved keys)
-  useEffect(() => {
-    if (apiSettings) {
-      setApiFormData({
-        stripe: {
-          publishableKey: apiSettings.stripe?.publishableKey || '',
-          secretKey: apiSettings.stripe?.secretKey || '',
-          webhookSecret: apiSettings.stripe?.webhookSecret || '',
-        },
-        youtube: {
-          apiKey: apiSettings.youtube?.apiKey || '',
-          projectId: apiSettings.youtube?.projectId || 'hublink-project',
-        },
-        maps: {
-          apiKey: apiSettings.maps?.apiKey || '',
-          enableAdvancedFeatures: apiSettings.maps?.enableAdvancedFeatures ?? true,
-        },
-      });
-      
-      setEmailFormData(prev => ({
-        provider: apiSettings.email?.provider || prev.provider,
-        email: apiSettings.email?.email || prev.email,
-        appPassword: apiSettings.email?.appPassword || prev.appPassword,
-      }));
-    }
-  }, [apiSettings]);
 
   // Email form state
   const [emailFormData, setEmailFormData] = useState({
@@ -1281,14 +1215,11 @@ export default function Admin() {
                         <Label>API Key</Label>
                         <div className="flex space-x-2 mt-1">
                           <Input 
-                            key={`youtube-key-${apiFormData.youtube?.apiKey}`}
+                            id="youtube-api-key"
                             type="password"
                             placeholder="Enter YouTube API Key"
-                            value={apiFormData.youtube?.apiKey || ''}
-                            onChange={(e) => setApiFormData(prev => ({
-                              ...prev,
-                              youtube: { ...prev.youtube, apiKey: e.target.value }
-                            }))} 
+                            defaultValue={getFieldValue('youtube', 'apiKey')}
+                            key={getFieldValue('youtube', 'apiKey')}
                           />
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4" />
@@ -1298,20 +1229,23 @@ export default function Admin() {
                       <div>
                         <Label>Project ID</Label>
                         <Input 
+                          id="youtube-project-id"
                           placeholder="Google Cloud Project ID" 
                           className="mt-1"
-                          value={apiFormData.youtube?.projectId || ''}
-                          onChange={(e) => setApiFormData(prev => ({
-                            ...prev,
-                            youtube: { ...prev.youtube, projectId: e.target.value }
-                          }))}
+                          defaultValue={getFieldValue('youtube', 'projectId') || 'hublink-project'}
                         />
                       </div>
                       <div className="flex space-x-2">
                         <Button 
                           size="sm"
                           onClick={() => {
-                            if (!apiFormData.youtube?.apiKey) {
+                            const apiKeyInput = document.getElementById('youtube-api-key') as HTMLInputElement;
+                            const projectIdInput = document.getElementById('youtube-project-id') as HTMLInputElement;
+                            
+                            const apiKey = apiKeyInput?.value || '';
+                            const projectId = projectIdInput?.value || 'hublink-project';
+                            
+                            if (!apiKey) {
                               toast({
                                 title: "API Key Required",
                                 description: "Please enter YouTube API key.",
@@ -1321,7 +1255,7 @@ export default function Admin() {
                             }
                             saveApiSettingsMutation.mutate({
                               service: 'youtube',
-                              settings: apiFormData.youtube || {}
+                              settings: { apiKey, projectId }
                             });
                           }}
                           disabled={saveApiSettingsMutation.isPending}
