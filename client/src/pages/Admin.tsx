@@ -410,12 +410,17 @@ export default function Admin() {
   // API Settings mutations
   const saveApiSettingsMutation = useMutation({
     mutationFn: async (data: { service: string; settings: any }) => {
+      console.log('🚀 MUTATION START:', data.service);
       setSavingService(data.service);
       // Save to database
+      console.log('📤 Saving to database...');
       await apiRequest("PUT", `/api/admin/api-settings/${data.service}`, data.settings);
+      console.log('✅ Saved! Now fetching fresh data...');
       // Immediately fetch fresh settings to get masked values
       const freshSettings = await apiRequest("GET", "/api/admin/api-settings");
-      return { service: data.service, settings: await freshSettings.json() };
+      const freshData = await freshSettings.json();
+      console.log('📥 Fresh data received:', freshData);
+      return { service: data.service, settings: freshData };
     },
     onSuccess: (data, variables) => {
       setSavingService(null);
@@ -468,6 +473,9 @@ export default function Admin() {
     },
     onError: (error: any) => {
       setSavingService(null);
+      console.error('❌ MUTATION ERROR:', error);
+      console.error('❌ Error message:', error.message);
+      console.error('❌ Full error:', JSON.stringify(error, null, 2));
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save API settings.",
