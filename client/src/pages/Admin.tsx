@@ -1342,7 +1342,10 @@ export default function Admin() {
                         <Button 
                           size="sm"
                           onClick={() => {
+                            console.log('🔵 BUTTON CLICKED!');
+                            console.log('🔵 Current form data:', apiFormData.youtube);
                             if (!apiFormData.youtube?.apiKey) {
+                              console.log('🔵 No API key - showing toast');
                               toast({
                                 title: "API Key Required",
                                 description: "Please enter YouTube API key.",
@@ -1350,6 +1353,7 @@ export default function Admin() {
                               });
                               return;
                             }
+                            console.log('🔵 API key exists, calling mutation...');
                             saveApiSettingsMutation.mutate({
                               service: 'youtube',
                               settings: apiFormData.youtube || {}
