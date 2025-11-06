@@ -421,15 +421,24 @@ export default function Admin() {
       setSavingService(null);
       const freshData = data.settings as ApiSettings;
       
+      console.log('🎯 MUTATION SUCCESS - Service:', variables.service);
+      console.log('🎯 Fresh Data:', freshData);
+      console.log('🎯 YouTube API Key from server:', freshData.youtube?.apiKey);
+      
       // Update form with masked values from server
       if (variables.service === 'youtube') {
-        setApiFormData(prev => ({
-          ...prev,
-          youtube: {
-            apiKey: freshData.youtube?.apiKey || '',
-            projectId: freshData.youtube?.projectId || 'hublink-project',
-          }
-        }));
+        console.log('🎯 Updating YouTube form...');
+        setApiFormData(prev => {
+          const updated = {
+            ...prev,
+            youtube: {
+              apiKey: freshData.youtube?.apiKey || '',
+              projectId: freshData.youtube?.projectId || 'hublink-project',
+            }
+          };
+          console.log('🎯 New form data:', updated);
+          return updated;
+        });
       } else if (variables.service === 'maps') {
         setApiFormData(prev => ({
           ...prev,
