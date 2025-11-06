@@ -537,6 +537,20 @@ export default function ProfessionalSignup() {
                   Account Security
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="username">Username *</Label>
+                    <Input
+                      id="username"
+                      value={formData.username}
+                      onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '') }))}
+                      placeholder="your_username (3-30 characters, letters, numbers, _ and - only)"
+                      required
+                      maxLength={30}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      This will be your public profile URL: hublink.com/@{formData.username || 'your_username'}
+                    </p>
+                  </div>
                   <div>
                     <Label htmlFor="password">Password *</Label>
                     <Input
