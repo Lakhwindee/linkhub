@@ -709,6 +709,24 @@ export const userTrials = pgTable("user_trials", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Email notifications tracking
+export const emailNotifications = pgTable("email_notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id),
+  recipientEmail: varchar("recipient_email").notNull(),
+  eventType: varchar("event_type").notNull(), // premium_upgrade, trial_code_redeemed, password_reset, account_created, payment_success, payment_failed, etc.
+  subject: varchar("subject").notNull(),
+  htmlContent: text("html_content"),
+  payloadJson: jsonb("payload_json"), // Event-specific data
+  status: varchar("status").default("pending"), // pending, sent, failed, retry
+  sentAt: timestamp("sent_at"),
+  retryCount: integer("retry_count").default(0),
+  lastError: text("last_error"),
+  gmailMessageId: varchar("gmail_message_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   authProviders: many(authProviders),
@@ -1247,3 +1265,4 @@ export type UserTrial = typeof userTrials.$inferSelect;
 export type TaxConfiguration = typeof taxConfiguration.$inferSelect;
 export type TaxRecord = typeof taxRecords.$inferSelect;
 export type ApiSetting = typeof apiSettings.$inferSelect;
+export type EmailNotification = typeof emailNotifications.$inferSelect;
