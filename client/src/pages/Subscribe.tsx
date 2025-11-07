@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { CheckIcon, DollarSign, Star, Heart, Users, MapPin, MessageCircle, Calendar, Crown, Zap, Tag } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { CheckIcon, DollarSign, Star, Heart, Users, MapPin, MessageCircle, Calendar, Crown, Zap, Tag, PartyPopper, Gift, Mail } from "lucide-react";
 import { Link } from "wouter";
 
 // Load Stripe (only if key is available)
@@ -66,6 +67,8 @@ export default function Subscribe() {
   const [promoCode, setPromoCode] = useState("");
   const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<any>(null);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successDetails, setSuccessDetails] = useState<any>(null);
 
   // Allow unauthenticated users to view the subscription page
   // Authentication will be required when they try to subscribe
@@ -166,16 +169,14 @@ export default function Subscribe() {
       const data = await response.json();
       
       if (data.success && data.autoDebitEnabled === false) {
-        // Direct trial activation without payment
-        toast({
-          title: "Trial Activated! 🎉",
-          description: data.message || "Your trial has been activated successfully!",
-          variant: "default",
+        // Direct trial activation without payment - show success dialog
+        setSuccessDetails({
+          planName: planId.charAt(0).toUpperCase() + planId.slice(1),
+          trialDays: appliedPromo?.trialPeriodDays || 30,
+          promoCode: promoCode.trim().toUpperCase(),
+          message: data.message
         });
-        // Redirect to dashboard after brief delay
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 2000);
+        setShowSuccessDialog(true);
       } else if (data.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
@@ -552,6 +553,90 @@ export default function Subscribe() {
           </Button>
         </div>
       </div>
+
+      {/* Success Dialog */}
+      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader className="text-center space-y-3">
+            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center animate-bounce">
+              <PartyPopper className="w-8 h-8 text-white" />
+            </div>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              🎉 Congratulations!
+            </DialogTitle>
+            <DialogDescription className="text-base">
+              You're now a Premium member!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift className="w-5 h-5 text-purple-600" />
+                <span className="font-semibold text-purple-900 dark:text-purple-100">Trial Activated</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Your <strong className="text-purple-600">{successDetails?.trialDays}-day free trial</strong> of {successDetails?.planName} plan has started!
+              </p>
+            </div>
+
+            {successDetails?.promoCode && (
+              <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag className="w-5 h-5 text-green-600" />
+                  <span className="font-semibold text-green-900 dark:text-green-100">Promo Code Applied</span>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Code: <strong className="text-green-600">{successDetails.promoCode}</strong>
+                </p>
+              </div>
+            )}
+
+            <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-5 h-5 text-blue-600" />
+                <span className="font-semibold text-blue-900 dark:text-blue-100">Confirmation Email Sent</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Check your inbox for trial details and premium features guide.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">✨ What's Next:</p>
+              <ul className="space-y-1 ml-4">
+                <li>• Explore all premium features</li>
+                <li>• Start applying to brand campaigns</li>
+                <li>• Connect with travelers worldwide</li>
+                <li>• Manage your trial in billing dashboard</li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Button 
+              onClick={() => {
+                setShowSuccessDialog(false);
+                window.location.href = "/feed";
+              }}
+              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Explore Premium Features
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                setShowSuccessDialog(false);
+                window.location.href = "/billing";
+              }}
+              className="w-full"
+            >
+              View Billing Dashboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
