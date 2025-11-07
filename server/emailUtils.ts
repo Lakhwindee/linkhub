@@ -365,3 +365,188 @@ export const sendPaymentFailedEmail = async (email: string, userName: string, am
     return { success: false, error };
   }
 };
+
+// Send premium upgrade confirmation email (via trial code or direct purchase)
+export const sendPremiumUpgradeEmail = async (email: string, userName: string, planName: string, isTrialing: boolean, trialDays?: number, promoCode?: string) => {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
+        <h1 style="margin: 0; font-size: 32px;">🎉 Congratulations!</h1>
+        <p style="margin: 10px 0 0 0; font-size: 18px; font-weight: bold;">You're Now Premium!</p>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+        <h2 style="color: #333; margin-top: 0;">Welcome to ${planName}, ${userName}! 🚀</h2>
+        <p style="color: #666; line-height: 1.6; font-size: 16px;">
+          ${isTrialing 
+            ? `🎁 Fantastic! You've unlocked a <strong>${trialDays}-day free trial</strong> of ${planName}.${promoCode ? ` Your promo code <strong>${promoCode}</strong> has been successfully applied.` : ''}`
+            : `✨ Your account has been successfully upgraded to ${planName}!`
+          }
+        </p>
+        
+        ${isTrialing ? `
+        <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+          <p style="margin: 0; color: #92400e; font-size: 15px; line-height: 1.7;">
+            <strong>📅 Trial Information:</strong><br><br>
+            ⏰ <strong>Duration:</strong> ${trialDays} days of full premium access<br>
+            💳 <strong>Auto-renewal:</strong> After trial ends, standard billing applies<br>
+            🛑 <strong>Cancel anytime:</strong> Manage from your billing dashboard
+          </p>
+        </div>
+        ` : ''}
+        
+        <div style="background: white; padding: 25px; border-radius: 8px; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3 style="color: #8b5cf6; margin-top: 0; font-size: 18px;">✨ Your Premium Features:</h3>
+          <ul style="color: #666; line-height: 2; padding-left: 20px;">
+            <li><strong>🗺️ Full Map Access</strong> - Connect with travelers worldwide</li>
+            <li><strong>💬 Unlimited Messaging</strong> - Chat with all your connections</li>
+            <li><strong>🎯 Campaign Marketplace</strong> - Apply to brand advertising campaigns</li>
+            <li><strong>💰 Earnings Dashboard</strong> - Track your income and analytics</li>
+            <li><strong>🌟 Creator Profile Badge</strong> - Stand out in the community</li>
+            <li><strong>📊 Advanced Analytics</strong> - Deep insights into your performance</li>
+          </ul>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/feed" 
+             style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(139, 92, 246, 0.3);">
+            🚀 Explore Premium Features
+          </a>
+        </div>
+        
+        <div style="background: #e0e7ff; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+          <p style="margin: 0; color: #4c1d95; font-size: 14px; line-height: 1.6;">
+            💡 <strong>Pro Tip:</strong> Visit your <a href="${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/billing" style="color: #6d28d9; font-weight: bold; text-decoration: underline;">billing dashboard</a> to manage your subscription anytime
+          </p>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        
+        <p style="color: #999; font-size: 12px; text-align: center; line-height: 1.6;">
+          Need help? We're here for you at ${process.env.GMAIL_EMAIL}<br>
+          © 2025 HubLink Tourism Platform<br>
+          <em>This is an automated email. Please do not reply.</em>
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const result = await sendEmailViaGmailAPI(
+      email,
+      `🎉 Congratulations! You're Now Premium - HubLink`,
+      htmlContent
+    );
+    console.log('✅ Premium upgrade email sent:', { 
+      email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), 
+      isTrialing, 
+      trialDays,
+      promoCode: promoCode ? '***' : 'none'
+    });
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to send premium upgrade email:', error);
+    return { success: false, error };
+  }
+};
+
+// Send trial code redeemed confirmation email
+export const sendTrialCodeRedeemedEmail = async (
+  email: string, 
+  userName: string, 
+  promoCode: string, 
+  planName: string, 
+  trialDays: number
+) => {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
+        <h1 style="margin: 0; font-size: 32px;">🎟️ Code Redeemed!</h1>
+        <p style="margin: 10px 0 0 0; font-size: 18px;">Your Free Trial Starts Now</p>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
+        <h2 style="color: #333; margin-top: 0;">Great News, ${userName}! 🎊</h2>
+        <p style="color: #666; line-height: 1.6; font-size: 16px;">
+          You've successfully redeemed promo code <strong style="color: #10b981; font-size: 18px;">${promoCode}</strong>
+        </p>
+        
+        <div style="background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); padding: 25px; border-radius: 8px; margin: 25px 0; text-align: center; border: 2px solid #10b981;">
+          <p style="margin: 0; color: #065f46; font-size: 18px; font-weight: bold;">
+            ${trialDays}-Day Free Trial Activated! 🎁
+          </p>
+          <p style="margin: 10px 0 0 0; color: #047857; font-size: 14px;">
+            Enjoy full ${planName} access at no cost
+          </p>
+        </div>
+        
+        <div style="background: white; padding: 25px; border-radius: 8px; margin: 25px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3 style="color: #10b981; margin-top: 0; font-size: 18px;">📋 Trial Details:</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #666;"><strong>Trial Period:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #333; font-weight: bold;">${trialDays} Days</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #666;"><strong>Plan Level:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #333; font-weight: bold;">${planName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #666;"><strong>Promo Code:</strong></td>
+              <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; color: #10b981; font-weight: bold;">${promoCode}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px; color: #666;"><strong>Status:</strong></td>
+              <td style="padding: 10px; color: #10b981; font-weight: bold;">✅ Active Now</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; margin: 25px 0;">
+          <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.7;">
+            <strong>⚠️ Important:</strong><br><br>
+            • Your trial will automatically end in ${trialDays} days<br>
+            • Standard billing will apply after trial ends<br>
+            • You can cancel anytime before trial expires to avoid charges
+          </p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/feed" 
+             style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3); margin: 5px;">
+            🚀 Start Exploring
+          </a>
+          <a href="${process.env.REPLIT_DOMAINS?.split(',')[0] || 'http://localhost:5000'}/billing" 
+             style="background: white; border: 2px solid #10b981; color: #10b981; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; margin: 5px;">
+            💳 Manage Trial
+          </a>
+        </div>
+        
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+        
+        <p style="color: #999; font-size: 12px; text-align: center; line-height: 1.6;">
+          Questions? Contact us at ${process.env.GMAIL_EMAIL}<br>
+          © 2025 HubLink Tourism Platform<br>
+          <em>This is an automated confirmation email.</em>
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const result = await sendEmailViaGmailAPI(
+      email,
+      `🎟️ Trial Code ${promoCode} Redeemed - ${trialDays} Days Free! - HubLink`,
+      htmlContent
+    );
+    console.log('✅ Trial code redeemed email sent:', { 
+      email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), 
+      promoCode: '***',
+      trialDays 
+    });
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to send trial code redeemed email:', error);
+    return { success: false, error };
+  }
+};
