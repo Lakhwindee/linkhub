@@ -227,6 +227,10 @@ export interface IStorage {
   // Audit logging
   createAuditLog(data: { actorId?: string; action: string; targetType?: string; targetId?: string; metaJson?: any; ipAddress?: string; userAgent?: string }): Promise<AuditLog>;
   
+  // Email Notifications
+  createEmailNotification(data: { userId?: string; recipientEmail: string; eventType: string; subject: string; htmlContent?: string; payloadJson?: any }): Promise<EmailNotification>;
+  updateEmailNotificationStatus(id: string, status: string, gmailMessageId?: string, error?: string): Promise<EmailNotification>;
+  
   // Follows
   createFollow(followerId: string, followeeId: string): Promise<void>;
   removeFollow(followerId: string, followeeId: string): Promise<void>;
@@ -1493,6 +1497,44 @@ export class DatabaseStorage implements IStorage {
       .values(data)
       .returning();
     return log;
+  }
+
+  // Email Notifications
+  async createEmailNotification(data: { userId?: string; recipientEmail: string; eventType: string; subject: string; htmlContent?: string; payloadJson?: any }): Promise<EmailNotification> {
+    const [notification] = await db
+      .insert(emailNotifications)
+      .values({
+        ...data,
+        status: 'pending',
+        retryCount: 0,
+      })
+      .returning();
+    return notification;
+  }
+
+  async updateEmailNotificationStatus(id: string, status: string, gmailMessageId?: string, error?: string): Promise<EmailNotification> {
+    const updateData: any = {
+      status,
+      updatedAt: new Date(),
+    };
+    
+    if (status === 'sent') {
+      updateData.sentAt = new Date();
+      if (gmailMessageId) {
+        updateData.gmailMessageId = gmailMessageId;
+      }
+    }
+    
+    if (status === 'failed' && error) {
+      updateData.lastError = error;
+    }
+    
+    const [notification] = await db
+      .update(emailNotifications)
+      .set(updateData)
+      .where(eq(emailNotifications.id, id))
+      .returning();
+    return notification;
   }
 
   // Follows

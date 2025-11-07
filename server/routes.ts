@@ -7,7 +7,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import Stripe from "stripe";
 import { storage } from "./storage";
 import { OAuth2Client } from 'google-auth-library';
-import { sendSubscriptionWelcomeEmail, sendTrialEndingEmail, sendPaymentConfirmationEmail, sendPaymentFailedEmail } from "./emailUtils";
+import { sendSubscriptionWelcomeEmail, sendTrialEndingEmail, sendPaymentConfirmationEmail, sendPaymentFailedEmail, sendPremiumUpgradeEmail, sendTrialCodeRedeemedEmail } from "./emailUtils";
 
 // Session-based authentication middleware
 function isAuthenticated(req: any, res: any, next: any) {
@@ -4196,6 +4196,26 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           
           console.log(`✅ Applied ${promoDetails.trialPeriodDays}-day trial (no auto-debit) for user ${userId}`);
           
+          // Send congratulations email for trial code redemption
+          try {
+            const userName = user.displayName || user.firstName || user.username;
+            const planName = promoDetails.trialPlanType || plan;
+            
+            // Send trial code redeemed email
+            await sendTrialCodeRedeemedEmail(
+              user.email!,
+              userName,
+              promoCode.trim().toUpperCase(),
+              planName.charAt(0).toUpperCase() + planName.slice(1),
+              promoDetails.trialPeriodDays
+            );
+            
+            console.log(`📧 Trial code redemption email sent to ${user.email}`);
+          } catch (emailError) {
+            console.error('❌ Failed to send trial code redemption email:', emailError);
+            // Don't fail the request if email fails
+          }
+          
           // Return success without Stripe checkout
           return res.json({ 
             success: true,
@@ -4354,17 +4374,36 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
             }
           }
 
-          // Send welcome email
+          // Send welcome email and premium upgrade email
           const user = await storage.getUser(userId);
           if (user?.email) {
+            const userName = user.displayName || user.firstName || user.username;
+            const planName = plan === 'premium' ? 'Premium' : 'Standard';
+            
+            // Send welcome email (existing functionality)
             await sendSubscriptionWelcomeEmail(
               user.email,
-              user.displayName || user.username,
-              plan === 'premium' ? 'Premium' : 'Standard',
+              userName,
+              planName,
               !!trialDays,
               trialDays || undefined
             );
             console.log(`✅ Welcome email sent to user ${userId} (trial: ${!!trialDays})`);
+            
+            // Send premium upgrade congratulations email
+            try {
+              await sendPremiumUpgradeEmail(
+                user.email,
+                userName,
+                planName,
+                !!trialDays,
+                trialDays || undefined,
+                session.metadata?.promoCode || undefined
+              );
+              console.log(`✅ Premium upgrade email sent to user ${userId}`);
+            } catch (emailError) {
+              console.error('❌ Failed to send premium upgrade email:', emailError);
+            }
           }
           break;
         }
