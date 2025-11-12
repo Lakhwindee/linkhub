@@ -35,6 +35,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import PublisherDashboard from "@/pages/PublisherDashboard";
 import Signup from "@/pages/Signup";
 import DocumentSignup from "@/pages/DocumentSignup";
+import ForBusiness from "@/pages/ForBusiness";
 import ProfessionalSignup from "@/pages/ProfessionalSignup";
 import SignupCompletion from "@/pages/SignupCompletion";
 import OTPVerification from "@/pages/OTPVerification";
@@ -82,6 +83,7 @@ function Router() {
           {/* Public routes - always accessible */}
           <Route path="/signup" component={Signup} />
           <Route path="/document-signup" component={DocumentSignup} />
+          <Route path="/for-business" component={ForBusiness} />
           <Route path="/professional-signup" component={ProfessionalSignup} />
           <Route path="/signup-completion" component={SignupCompletion} />
           <Route path="/verify-otp" component={OTPVerification} />
