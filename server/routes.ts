@@ -5079,7 +5079,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const allUsers = await storage.getUsers({ limit: 10000 });
       
       // Filter users who have YouTube channel data
-      const channels = (allUsers?.data || [])
+      const channels = (allUsers || [])
         .filter((u: any) => u.youtubeChannelId || u.youtubeSubscribers)
         .map((u: any) => ({
           userId: u.id,
@@ -5096,6 +5096,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           country: u.country
         }));
       
+      console.log(`📊 YouTube channels found: ${channels.length} from ${allUsers.length} total users`);
       res.json(channels);
     } catch (error) {
       console.error("Error fetching YouTube channels:", error);
