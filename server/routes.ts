@@ -1763,10 +1763,38 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   app.post('/api/youtube/sync', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { youtubeUrl } = req.body;
+      const { youtubeUrl, testMode, testSubscribers } = req.body;
       
       if (!youtubeUrl) {
         return res.status(400).json({ message: "YouTube URL is required" });
+      }
+
+      // TEST MODE - For development/testing purposes
+      if (testMode === true && testSubscribers) {
+        console.log(`🧪 Test mode activated: Creating test YouTube profile with ${testSubscribers} subscribers`);
+        
+        const verificationCode = `HUBLINK-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+        const testTier = computeTierFromSubscribers(testSubscribers);
+        
+        await storage.updateUserProfile(userId, {
+          youtubeUrl: youtubeUrl || 'https://youtube.com/@testchannel',
+          youtubeChannelId: `test-channel-${Date.now()}`,
+          youtubeSubscribers: testSubscribers,
+          youtubeTier: testTier,
+          youtubeVerified: false,
+          youtubeVerificationCode: verificationCode,
+          youtubeVerificationAttempts: 0,
+          youtubeLastUpdated: new Date()
+        });
+        
+        return res.json({
+          subscriberCount: testSubscribers,
+          tier: testTier,
+          verificationCode,
+          requiresVerification: true,
+          testMode: true,
+          message: 'Test mode: Channel setup for testing'
+        });
       }
 
       // Load YouTube API key from database first, then environment variable
@@ -1777,8 +1805,9 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       if (!youtubeApiKey) {
         console.error('❌ YouTube API key not configured');
         return res.status(503).json({ 
-          message: "YouTube API not configured. Please contact admin to add YouTube API key in settings.",
-          configRequired: true
+          message: "YouTube API not configured. Please contact admin to add YouTube API key in settings. You can use test mode for development.",
+          configRequired: true,
+          testModeAvailable: true
         });
       }
       
