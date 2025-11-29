@@ -208,6 +208,13 @@ export default function Admin() {
     retry: false,
   });
 
+  // Fetch YouTube channels data
+  const { data: youtubeChannels = [], isLoading: youtubeChannelsLoading, refetch: refetchYoutubeChannels } = useQuery<any[]>({
+    queryKey: ["/api/admin/youtube-channels"],
+    enabled: Boolean(user && ['admin', 'superadmin'].includes(user.role || '')),
+    retry: false,
+  });
+
   // Tax configuration form state
   const [taxConfigForm, setTaxConfigForm] = useState({
     country: '',
@@ -867,6 +874,7 @@ export default function Admin() {
   const navigationItems = [
     { id: "dashboard", label: "Dashboard", icon: Home, description: "Overview & Analytics" },
     { id: "users", label: "User Management", icon: Users, description: "Manage all users", badge: "Live" },
+    { id: "youtube-channels", label: "YouTube Channels", icon: ExternalLink, description: "Creator YouTube data", badge: "New" },
     { id: "email-management", label: "Email Management", icon: Mail, description: "Company communications", badge: "New" },
     { id: "discount-codes", label: "Coupons & Trials", icon: Percent, description: "Manage discount codes, trial coupons & auto-billing", badge: "Updated" },
     { id: "branding", label: "Branding & Logo", icon: Globe, description: "Website appearance", badge: "New" },
@@ -4995,6 +5003,120 @@ export default function Admin() {
                     </CardContent>
                   </Card>
                 </div>
+              </div>
+            )}
+
+            {/* YouTube Channels Section */}
+            {activeSection === "youtube-channels" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-2xl font-bold text-foreground">YouTube Creator Channels</h2>
+                  <Button variant="outline" onClick={() => refetchYoutubeChannels()}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Refresh
+                  </Button>
+                </div>
+
+                {/* YouTube Stats */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{youtubeChannels.length}</div>
+                        <div className="text-sm text-muted-foreground">Total Channels</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{youtubeChannels.filter((c: any) => c.verified).length}</div>
+                        <div className="text-sm text-muted-foreground">Verified</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{youtubeChannels.reduce((sum: number, c: any) => sum + (c.subscribers || 0), 0).toLocaleString()}</div>
+                        <div className="text-sm text-muted-foreground">Total Subscribers</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold">{youtubeChannels.filter((c: any) => !c.verified).length}</div>
+                        <div className="text-sm text-muted-foreground">Pending Verification</div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* YouTube Channels Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Creator YouTube Channels</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {youtubeChannelsLoading ? (
+                      <div className="text-center py-8 text-muted-foreground">Loading channels...</div>
+                    ) : youtubeChannels.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground">No YouTube channels connected yet</div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Email</TableHead>
+                              <TableHead>Display Name</TableHead>
+                              <TableHead>Channel</TableHead>
+                              <TableHead>Subscribers</TableHead>
+                              <TableHead>Tier</TableHead>
+                              <TableHead>Verified</TableHead>
+                              <TableHead>Attempts</TableHead>
+                              <TableHead>Country</TableHead>
+                              <TableHead>Last Updated</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {youtubeChannels.map((channel: any, idx: number) => (
+                              <TableRow key={idx}>
+                                <TableCell className="text-sm">{channel.email}</TableCell>
+                                <TableCell className="text-sm">{channel.displayName || '-'}</TableCell>
+                                <TableCell className="text-sm">
+                                  {channel.youtubeUrl ? (
+                                    <a href={channel.youtubeUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                      View
+                                    </a>
+                                  ) : (
+                                    '-'
+                                  )}
+                                </TableCell>
+                                <TableCell className="font-semibold">{(channel.subscribers || 0).toLocaleString()}</TableCell>
+                                <TableCell>
+                                  <Badge variant="outline">{channel.tier || 'N/A'}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {channel.verified ? (
+                                    <CheckCircle className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <XCircle className="w-4 h-4 text-red-600" />
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-center">{channel.verificationAttempts || 0}</TableCell>
+                                <TableCell className="text-sm">{channel.country || '-'}</TableCell>
+                                <TableCell className="text-sm">
+                                  {channel.lastUpdated ? format(new Date(channel.lastUpdated), 'MMM dd, yyyy') : '-'}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
 

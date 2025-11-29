@@ -52,7 +52,7 @@ import { ObjectPermission } from "./objectAcl";
 import { insertUserProfileSchema, insertConnectRequestSchema, insertMessageSchema, insertPostSchema, insertEventSchema, insertAdSchema, insertPublisherAdSchema, insertReportSchema, insertStaySchema, insertStayBookingSchema, insertStayReviewSchema, adReservations, insertPersonalHostSchema, insertHostBookingSchema, insertBoostedPostSchema } from "@shared/schema";
 import { isCountryTargeted, logGeoTargeting } from "@shared/countryUtils";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { ZodError } from "zod";
 import { getTierByLevel } from "@shared/tierConfig";
 import FormData from 'form-data';
@@ -5062,6 +5062,44 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       });
     } catch (error) {
             res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Get YouTube channels data for all users
+  app.get('/api/admin/youtube-channels', isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!['admin', 'superadmin'].includes(user?.role || '')) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Query database for users with YouTube data
+      const allUsers = await storage.getUsers({ limit: 10000 });
+      
+      // Filter users who have YouTube channel data
+      const channels = (allUsers?.data || [])
+        .filter((u: any) => u.youtubeChannelId || u.youtubeSubscribers)
+        .map((u: any) => ({
+          userId: u.id,
+          email: u.email,
+          displayName: u.displayName || `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+          youtubeUrl: u.youtubeUrl,
+          youtubeChannelId: u.youtubeChannelId,
+          subscribers: u.youtubeSubscribers || 0,
+          tier: u.youtubeTier,
+          verified: u.youtubeVerified,
+          verificationCode: u.youtubeVerificationCode,
+          verificationAttempts: u.youtubeVerificationAttempts || 0,
+          lastUpdated: u.youtubeLastUpdated,
+          country: u.country
+        }));
+      
+      res.json(channels);
+    } catch (error) {
+      console.error("Error fetching YouTube channels:", error);
+      res.status(500).json({ message: "Failed to fetch YouTube channels" });
     }
   });
 
