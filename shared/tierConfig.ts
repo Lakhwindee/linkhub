@@ -8,6 +8,7 @@ export interface Tier {
 }
 
 export const TIERS: Tier[] = [
+  { level: 0, description: "Nano-Influencers (Test)", range: "5K-30K", price: 50, minSubscribers: 5000, maxSubscribers: 30000 },
   { level: 1, description: "Micro-Influencers", range: "30K-70K", price: 100, minSubscribers: 30000, maxSubscribers: 70000 },
   { level: 2, description: "Small Influencers", range: "70K-150K", price: 150, minSubscribers: 70000, maxSubscribers: 150000 },
   { level: 3, description: "Mid-Tier Influencers", range: "150K-300K", price: 200, minSubscribers: 150000, maxSubscribers: 300000 },
@@ -34,8 +35,8 @@ export function subscribersToTier(subscribers: number): number {
       return tier.level;
     }
   }
-  // If no tier matches (below minimum), return tier 0 (ineligible)
-  return 0;
+  // If no tier matches (below minimum 5K), return -1 (ineligible)
+  return -1;
 }
 
 /**
@@ -50,7 +51,7 @@ export function getTierByLevel(level: number): Tier | undefined {
  */
 export function getTierBySubscribers(subscribers: number): Tier | null {
   const level = subscribersToTier(subscribers);
-  if (level === 0) return null; // Ineligible
+  if (level === -1) return null; // Ineligible (below 5K)
   return getTierByLevel(level) || null;
 }
 
