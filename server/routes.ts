@@ -867,11 +867,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const adminEmail = process.env.ADMIN_EMAIL?.trim();
       const adminPassword = process.env.ADMIN_PASSWORD?.trim();
       
+      // Normalize email for comparison (case-insensitive)
+      const normalizedInputEmail = email?.trim().toLowerCase();
+      const normalizedAdminEmail = adminEmail?.toLowerCase();
+      
       // Debug logging (safe - doesn't expose actual values)
       console.log('🔐 Admin login attempt:', {
         hasEmail: !!adminEmail,
         hasPassword: !!adminPassword,
-        emailMatch: email === adminEmail,
+        emailMatch: normalizedInputEmail === normalizedAdminEmail,
         passwordMatch: password === adminPassword,
         envEmailLength: adminEmail?.length,
         envPasswordLength: adminPassword?.length,
@@ -884,8 +888,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required for production');
       }
       
-      // Verify admin credentials against environment variables
-      if (email !== adminEmail || password !== adminPassword) {
+      // Verify admin credentials against environment variables (email is case-insensitive)
+      if (normalizedInputEmail !== normalizedAdminEmail || password !== adminPassword) {
         // Update rate limiting
         if (attempt && now - attempt.lastAttempt < 900000) {
           attempt.count++;
