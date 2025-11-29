@@ -23,20 +23,28 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
     const params = new URLSearchParams(window.location.search);
     const loginParam = params.get('login');
     
-    if (loginParam === 'account_exists' && !isAuthenticated) {
-      // Open login modal
-      setLoginModalOpen(true);
-      
-      // Show toast message
-      toast({
-        title: "Account Already Registered",
-        description: "This email is already registered. Please log in instead.",
-        variant: "default",
-        duration: 5000,
-      });
-      
-      // Clean URL without reloading
-      window.history.replaceState({}, '', '/');
+    if (!isAuthenticated) {
+      if (loginParam === 'account_exists') {
+        // Open login modal
+        setLoginModalOpen(true);
+        
+        // Show toast message
+        toast({
+          title: "Account Already Registered",
+          description: "This email is already registered. Please log in instead.",
+          variant: "default",
+          duration: 5000,
+        });
+        
+        // Clean URL without reloading
+        window.history.replaceState({}, '', '/');
+      } else if (loginParam === 'true') {
+        // Open login modal when coming from "Sign in here" link
+        setLoginModalOpen(true);
+        
+        // Clean URL without reloading
+        window.history.replaceState({}, '', '/');
+      }
     }
   }, [isAuthenticated, toast]);
 
