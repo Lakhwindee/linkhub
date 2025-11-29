@@ -1790,14 +1790,14 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       if (youtubeUrl.includes('/channel/')) {
         channelId = youtubeUrl.split('/channel/')[1].split('/')[0].split('?')[0];
       } else if (youtubeUrl.includes('/@')) {
-        // Handle @username format - we'll need to convert it
+        // Handle @username format - search for the channel
         const username = youtubeUrl.split('/@')[1].split('/')[0].split('?')[0];
         
         console.log(`🔍 Looking up YouTube channel by handle: @${username}`);
         
-        // Use YouTube API to get channel info by username
+        // Use YouTube API search to get channel info by handle/username
         const searchResponse = await fetch(
-          `https://www.googleapis.com/youtube/v3/channels?part=id,statistics&forHandle=${username}&key=${youtubeApiKey}`
+          `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=@${username}&key=${youtubeApiKey}&maxResults=1`
         );
         
         if (!searchResponse.ok) {
@@ -1809,12 +1809,12 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           });
         }
         
-        const searchData = await searchResponse.json();
+        const searchData = await searchResponse.json() as YTSearchResponse;
         if (!searchData.items || searchData.items.length === 0) {
           return res.status(400).json({ message: "YouTube channel not found" });
         }
         
-        channelId = searchData.items[0].id;
+        channelId = searchData.items[0]?.id?.channelId || '';
       } else if (youtubeUrl.includes('/c/') || youtubeUrl.includes('/user/')) {
         // Handle custom URLs - need to search by name
         let customName = '';
