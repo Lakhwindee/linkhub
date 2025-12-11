@@ -276,29 +276,18 @@ export default function FlatWorldMap({
               </p>
             )}
             
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleConnect}
-                disabled={isConnecting}
-                className="flex-1 bg-blue-500 hover:bg-blue-600"
-              >
-                {isConnecting ? (
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                ) : (
-                  <UserPlus className="w-4 h-4 mr-2" />
-                )}
-                Connect
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  window.location.href = `/users/${selectedUser.username}`;
-                }}
-                className="flex-1"
-              >
-                View Profile
-              </Button>
-            </div>
+            <Button 
+              onClick={handleConnect}
+              disabled={isConnecting}
+              className="w-full bg-blue-500 hover:bg-blue-600"
+            >
+              {isConnecting ? (
+                <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+              ) : (
+                <UserPlus className="w-4 h-4 mr-2" />
+              )}
+              Connect
+            </Button>
             
             <p className="text-xs text-center text-gray-400 mt-3">
               <MessageCircle className="w-3 h-3 inline mr-1" />

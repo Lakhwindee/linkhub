@@ -2165,6 +2165,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       const request = await storage.updateConnectRequestStatus(requestId, status);
       console.log('Updated request:', request);
       
+      let conversationId: string | null = null;
+      
       // If accepted, create follow relationship and conversation
       if (status === 'accepted') {
         // Skip follow creation on error to avoid foreign key constraints
@@ -2179,10 +2181,11 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         }
         
         // Always create conversation for messaging (even for demo users)
-        await storage.createConversation({
+        const conversation = await storage.createConversation({
           user1Id: request.fromUserId!,
           user2Id: request.toUserId!,
         });
+        conversationId = conversation?.id || null;
       }
       
       // Skip audit log on error to avoid foreign key constraints  
@@ -2198,7 +2201,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         });
       }
       
-      res.json(request);
+      res.json({ ...request, conversationId });
     } catch (error) {
       console.error("Error updating connect request:", error);
       res.status(500).json({ message: "Failed to update connect request" });

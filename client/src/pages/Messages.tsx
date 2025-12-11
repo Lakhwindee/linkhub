@@ -96,19 +96,38 @@ export default function Messages() {
       console.log('Request update response:', response);
       return response;
     },
-    onSuccess: (data, { status }) => {
+    onSuccess: (data: any, { status }) => {
       console.log('Request updated successfully:', data);
       
       queryClient.invalidateQueries({ queryKey: ["/api/connect-requests"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       
-      toast({
-        title: status === 'accepted' ? "Request Accepted" : "Request Declined",
-        description: status === 'accepted' 
-          ? "You can now message each other!" 
-          : "Request has been declined.",
-        variant: status === 'accepted' ? "default" : "destructive",
-      });
+      if (status === 'accepted') {
+        toast({
+          title: "Connected!",
+          description: "Opening chat...",
+        });
+        
+        // Auto-redirect to chat after accepting
+        if (data.conversationId) {
+          console.log('Auto-opening conversation:', data.conversationId);
+          setSelectedConversation(data.conversationId);
+        } else {
+          // Fallback: refetch conversations and select the newest one
+          setTimeout(() => {
+            queryClient.refetchQueries({ queryKey: ["/api/conversations"] }).then(() => {
+              // The new conversation will be at the top
+              console.log('Refetched conversations, selecting newest');
+            });
+          }, 500);
+        }
+      } else {
+        toast({
+          title: "Request Declined",
+          description: "Request has been declined.",
+          variant: "destructive",
+        });
+      }
     },
     onError: (error: any) => {
       console.error('Failed to update request:', error);
