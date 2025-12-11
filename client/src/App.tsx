@@ -87,6 +87,8 @@ function Router() {
           <Route path="/professional-signup" component={ProfessionalSignup} />
           <Route path="/signup-completion" component={SignupCompletion} />
           <Route path="/verify-otp" component={OTPVerification} />
+          {/* Discover route - accessible for testing even without auth */}
+          <Route path="/discover" component={DiscoverTravelers} />
           
           {!isAuthenticated ? (
             <>

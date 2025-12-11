@@ -1,128 +1,128 @@
 import { useState, useEffect, useRef } from 'react';
-import type { User, Stay } from '@shared/schema';
+import type { User } from '@shared/schema';
 
 interface Globe3DProps {
   users: User[];
-  width?: number;
-  height?: number;
   onUserClick?: (user: User) => void;
-  onStayClick?: (stay: Stay) => void;
   selectedCountry?: string;
   selectedState?: string;
   showTravellers?: boolean;
-  showStays?: boolean;
 }
 
 export default function Globe3D({ 
   users = [], 
-  width = typeof window !== 'undefined' ? window.innerWidth : 1024,
-  height = typeof window !== 'undefined' ? window.innerHeight : 768,
   onUserClick,
   selectedCountry,
   selectedState,
-  showTravellers = true,
-  showStays = true
+  showTravellers = true
 }: Globe3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const globeRef = useRef<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initGlobe = async () => {
+    if (!canvasRef.current) return;
+
+    const init = async () => {
       try {
-        // Dynamically import globe.gl
+        // Dynamic import to avoid SSR issues
         const Globe = (await import('globe.gl')).default;
         
-        if (!canvasRef.current) {
-          setIsLoading(false);
-          return;
-        }
+        // Get actual canvas dimensions
+        const container = canvasRef.current?.parentElement;
+        if (!container) return;
 
-        // Initialize globe
-        const globe = Globe()
-          .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-blue-marble.jpg')
-          .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-topology.png')
-          .backgroundImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/night-sky.png')
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        console.log('Initializing globe with dimensions:', width, height);
+
+        // Create globe instance
+        const world = Globe()
           .width(width)
           .height(height)
-          .pointOfView({ lat: 20, lng: 0, altitude: 2.5 });
+          .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-blue-marble.jpg')
+          .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-topology.png');
 
-        globe(canvasRef.current);
-        globeRef.current = globe;
+        // Mount to canvas
+        world(canvasRef.current);
 
-        // Add traveler points if enabled
+        // Add traveler points
         if (showTravellers && users.length > 0) {
           const points = users
             .filter(u => u.lat && u.lng)
             .map(user => ({
               lat: user.lat,
               lng: user.lng,
-              size: user.plan === 'creator' ? 1.5 : 1,
+              size: 1,
               color: user.plan === 'creator' ? '#fbbf24' : '#3b82f6',
-              userData: user
+              user: user
             }));
 
-          globe.pointsData(points)
-            .pointColor(d => (d as any).color)
-            .pointSize(d => (d as any).size)
-            .pointAltitude(0.01)
-            .onPointClick(d => {
-              const point = d as any;
-              if (point.userData && onUserClick) {
-                onUserClick(point.userData);
-              }
-            });
+          if (points.length > 0) {
+            console.log('Adding traveler points:', points.length);
+            world
+              .pointsData(points)
+              .pointColor((d: any) => d.color)
+              .pointSize((d: any) => d.size)
+              .pointAltitude(0.01)
+              .onPointClick((d: any) => {
+                if (onUserClick && d.user) {
+                  onUserClick(d.user);
+                }
+              });
+          }
         }
 
-        // Auto-rotate
-        globe.controls().autoRotate = true;
-        globe.controls().autoRotateSpeed = 2;
+        // Enable auto-rotation
+        if (world.controls) {
+          world.controls().autoRotate = true;
+          world.controls().autoRotateSpeed = 2;
+        }
 
-        setIsLoading(false);
+        globeRef.current = world;
+        console.log('Globe initialized successfully');
+        setLoading(false);
 
-        // Handle window resize
+        // Handle resize
         const handleResize = () => {
-          const newWidth = window.innerWidth;
-          const newHeight = window.innerHeight;
-          globe.width(newWidth).height(newHeight);
+          const container = canvasRef.current?.parentElement;
+          if (container) {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            world.width(newWidth).height(newHeight);
+          }
         };
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
 
-      } catch (error) {
-        console.error('Failed to initialize globe:', error);
-        setIsLoading(false);
+      } catch (err) {
+        console.error('Globe init error:', err);
+        setLoading(false);
       }
     };
 
-    initGlobe();
-  }, [users, width, height, onUserClick, showTravellers]);
+    init();
+  }, [users, onUserClick, showTravellers]);
 
   return (
-    <div className="w-full h-full relative bg-slate-900">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-50">
+    <div className="w-full h-full relative bg-slate-950">
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-950/95 z-50">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-            <p className="text-white font-semibold">Loading World Map...</p>
+            <div className="animate-spin h-8 w-8 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-3"></div>
+            <p className="text-white text-sm">Loading world map...</p>
           </div>
         </div>
       )}
-      
       <canvas
         ref={canvasRef}
-        style={{
-          display: 'block',
-          width: '100%',
-          height: '100%'
-        }}
+        className="w-full h-full block"
       />
-      
-      {/* Info overlay */}
-      <div className="absolute top-4 left-4 bg-slate-800/90 backdrop-blur text-white px-4 py-2 rounded-lg text-sm">
-        <div className="font-semibold">🗺️ World Map</div>
-        <div className="text-gray-300 text-xs">{users.filter(u => u.lat && u.lng).length} travelers worldwide</div>
+      <div className="absolute top-4 left-4 bg-slate-800/80 backdrop-blur text-white px-3 py-2 rounded z-10 text-xs">
+        <div className="font-bold">🌍 World Map</div>
+        <div className="text-gray-300">{users.filter(u => u.lat && u.lng).length} travelers</div>
       </div>
     </div>
   );

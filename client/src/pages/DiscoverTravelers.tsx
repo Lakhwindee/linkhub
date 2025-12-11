@@ -741,7 +741,16 @@ export default function DiscoverTravelers() {
   console.log('Frontend users data:', users.length, users);
   
   // Type users data properly
-  const typedUsers = users as any[];
+  // Add test travelers if no real travelers exist (for demo/testing)
+  const testTravelers = [
+    { id: 'test-1', displayName: 'Alice', username: 'alice', lat: 40.7128, lng: -74.0060, country: 'USA', city: 'New York', plan: 'creator', interests: ['travel', 'food'] } as User,
+    { id: 'test-2', displayName: 'Bob', username: 'bob', lat: 48.8566, lng: 2.3522, country: 'France', city: 'Paris', plan: 'traveler', interests: ['art', 'history'] } as User,
+    { id: 'test-3', displayName: 'Carol', username: 'carol', lat: 35.6762, lng: 139.6503, country: 'Japan', city: 'Tokyo', plan: 'creator', interests: ['photography'] } as User,
+    { id: 'test-4', displayName: 'David', username: 'david', lat: -33.8688, lng: 151.2093, country: 'Australia', city: 'Sydney', plan: 'traveler', interests: ['adventure', 'beaches'] } as User,
+    { id: 'test-5', displayName: 'Emma', username: 'emma', lat: 28.6139, lng: 77.2090, country: 'India', city: 'Delhi', plan: 'traveler', interests: ['culture', 'spirituality'] } as User,
+  ];
+  
+  const typedUsers = (users && users.length > 0 ? users : testTravelers) as any[];
 
 
   const handleCountryChange = (value: string) => {
