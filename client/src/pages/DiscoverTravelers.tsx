@@ -942,53 +942,6 @@ export default function DiscoverTravelers() {
           </CardContent>
         </Card>
 
-        {/* Location Filters */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <MapPin className="w-4 h-4" />
-              Location Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-xs">Country</Label>
-              <Select value={selectedCountry} onValueChange={handleCountryChange}>
-                <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Select Country" />
-                </SelectTrigger>
-                <SelectContent className="z-[9999]">
-                  <SelectItem value="all">All Countries</SelectItem>
-                  {getFilteredCountries().map((country) => (
-                    <SelectItem key={country.code} value={country.code}>
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {selectedCountry !== "all" && getStatesForCountry().length > 0 && (
-              <div>
-                <Label className="text-xs">State/Province</Label>
-                <Select value={selectedState} onValueChange={handleStateChange}>
-                  <SelectTrigger className="h-8">
-                    <SelectValue placeholder="Select State/Province" />
-                  </SelectTrigger>
-                  <SelectContent className="z-[9999]">
-                    <SelectItem value="all">All States/Provinces</SelectItem>
-                    {getFilteredStates().map((state: any) => (
-                      <SelectItem key={state.code} value={state.code}>
-                        {state.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-          </CardContent>
-        </Card>
 
         {/* Map Display Controls */}
         <Card>
@@ -1098,7 +1051,6 @@ export default function DiscoverTravelers() {
           onUserClick={(user) => setSelectedUser(user)}
           onConnect={handleConnect}
           isConnecting={connectMutation.isPending}
-          zoomToCountry={focusTarget ? { lat: focusTarget.lat, lng: focusTarget.lng, zoom: focusTarget.altitude ? Math.max(2, 6 - focusTarget.altitude * 2) : 4 } : null}
         />
       </div>
 
