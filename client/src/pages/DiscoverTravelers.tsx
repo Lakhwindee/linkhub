@@ -1098,6 +1098,7 @@ export default function DiscoverTravelers() {
           onUserClick={(user) => setSelectedUser(user)}
           onConnect={handleConnect}
           isConnecting={connectMutation.isPending}
+          zoomToCountry={focusTarget ? { lat: focusTarget.lat, lng: focusTarget.lng, zoom: focusTarget.altitude ? Math.max(2, 6 - focusTarget.altitude * 2) : 4 } : null}
         />
       </div>
 

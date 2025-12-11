@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -26,6 +26,12 @@ interface Stay {
   imageUrls?: string[];
 }
 
+interface ZoomTarget {
+  lat: number;
+  lng: number;
+  zoom?: number;
+}
+
 interface FlatWorldMapProps {
   users: User[];
   stays?: Stay[];
@@ -35,6 +41,7 @@ interface FlatWorldMapProps {
   showTravellers?: boolean;
   showStays?: boolean;
   isConnecting?: boolean;
+  zoomToCountry?: ZoomTarget | null;
 }
 
 export default function FlatWorldMap({ 
@@ -45,12 +52,25 @@ export default function FlatWorldMap({
   onConnect,
   showTravellers = true,
   showStays = true,
-  isConnecting = false
+  isConnecting = false,
+  zoomToCountry = null
 }: FlatWorldMapProps) {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedStay, setSelectedStay] = useState<Stay | null>(null);
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
   const [hoveredStay, setHoveredStay] = useState<Stay | null>(null);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
+  const [mapZoom, setMapZoom] = useState(1);
+  
+  useEffect(() => {
+    if (zoomToCountry) {
+      setMapCenter([zoomToCountry.lng, zoomToCountry.lat]);
+      setMapZoom(zoomToCountry.zoom || 4);
+    } else {
+      setMapCenter([0, 20]);
+      setMapZoom(1);
+    }
+  }, [zoomToCountry]);
   
   const validUsers = useMemo(() => {
     if (!showTravellers) return [];
@@ -104,7 +124,7 @@ export default function FlatWorldMap({
   };
 
   return (
-    <div className="w-full h-full relative bg-[#0c4a6e]">
+    <div className="w-full h-full relative" style={{ background: 'linear-gradient(180deg, #a8d8ea 0%, #87ceeb 30%, #6bb3d9 60%, #5b9bc9 100%)' }}>
       <ComposableMap
         projection="geoMercator"
         projectionConfig={{
@@ -113,19 +133,35 @@ export default function FlatWorldMap({
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        <ZoomableGroup>
+        <ZoomableGroup
+          center={mapCenter}
+          zoom={mapZoom}
+          onMoveEnd={({ coordinates, zoom }) => {
+            setMapCenter(coordinates as [number, number]);
+            setMapZoom(zoom);
+          }}
+          minZoom={1}
+          maxZoom={12}
+        >
           <Geographies geography={geoUrl}>
             {({ geographies }: { geographies: any[] }) =>
               geographies.map((geo) => (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#22c55e"
-                  stroke="#16a34a"
-                  strokeWidth={0.5}
+                  fill="#e8e4d8"
+                  stroke="#c5bfb0"
+                  strokeWidth={0.3}
                   style={{
-                    default: { outline: 'none' },
-                    hover: { fill: '#16a34a', outline: 'none' },
+                    default: { 
+                      outline: 'none',
+                      filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.1))'
+                    },
+                    hover: { 
+                      fill: '#d4cfbf', 
+                      outline: 'none',
+                      cursor: 'pointer'
+                    },
                     pressed: { outline: 'none' }
                   }}
                 />
@@ -133,7 +169,6 @@ export default function FlatWorldMap({
             }
           </Geographies>
           
-          {/* Stays Pins - Bed Icons */}
           {validStays.map((stay, index) => (
             <Marker
               key={`stay-${stay.id || index}`}
@@ -145,37 +180,37 @@ export default function FlatWorldMap({
                 onMouseEnter={() => setHoveredStay(stay)}
                 onMouseLeave={() => setHoveredStay(null)}
               >
-                {/* House/Bed shape */}
                 <rect
                   x={-12}
                   y={-24}
                   width={24}
                   height={20}
                   rx={3}
-                  fill="#ec4899"
+                  fill="#e91e63"
                   stroke="#fff"
                   strokeWidth={2}
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
                 />
-                {/* Bed icon inside */}
                 <rect x={-8} y={-18} width={16} height={4} fill="#fff" rx={1} />
                 <rect x={-8} y={-12} width={6} height={8} fill="#fff" rx={1} />
                 <rect x={2} y={-12} width={6} height={8} fill="#fff" rx={1} />
-                {/* Price tag */}
                 <rect
-                  x={-25}
-                  y={-46}
-                  width={50}
-                  height={18}
+                  x={-28}
+                  y={-48}
+                  width={56}
+                  height={20}
                   rx={4}
-                  fill="rgba(236, 72, 153, 0.9)"
+                  fill="rgba(233, 30, 99, 0.95)"
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
                 />
                 <text
                   x={0}
                   y={-34}
                   textAnchor="middle"
                   fill="#fff"
-                  fontSize={9}
+                  fontSize={10}
                   fontWeight="600"
+                  fontFamily="system-ui, sans-serif"
                 >
                   {formatPrice(stay.pricePerNight, stay.currency)}
                 </text>
@@ -183,7 +218,6 @@ export default function FlatWorldMap({
             </Marker>
           ))}
           
-          {/* Traveler Pins - All same color (blue) */}
           {validUsers.map((user, index) => {
             const isSelected = selectedUser?.id === user.id;
             return (
@@ -197,39 +231,42 @@ export default function FlatWorldMap({
                   onMouseEnter={() => setHoveredUser(user)}
                   onMouseLeave={() => setHoveredUser(null)}
                 >
-                  {/* Pin shape - All travelers are blue */}
                   <path
-                    d="M0,-20 C-8,-20 -12,-12 -12,-8 C-12,0 0,10 0,10 C0,10 12,0 12,-8 C12,-12 8,-20 0,-20"
-                    fill="#3b82f6"
+                    d="M0,-24 C-10,-24 -14,-14 -14,-10 C-14,0 0,12 0,12 C0,12 14,0 14,-10 C14,-14 10,-24 0,-24"
+                    fill="#4285f4"
                     stroke="#fff"
                     strokeWidth={2}
-                    transform={isSelected ? 'scale(1.3)' : 'scale(1)'}
-                    style={{ transition: 'transform 0.2s' }}
+                    transform={isSelected ? 'scale(1.2)' : 'scale(1)'}
+                    style={{ 
+                      transition: 'transform 0.2s',
+                      filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))'
+                    }}
                   />
                   <circle
                     cx={0}
-                    cy={-10}
-                    r={4}
+                    cy={-12}
+                    r={5}
                     fill="#fff"
                   />
-                  {/* Name tag */}
                   <rect
-                    x={-30}
-                    y={-42}
-                    width={60}
-                    height={18}
+                    x={-35}
+                    y={-48}
+                    width={70}
+                    height={20}
                     rx={4}
-                    fill="rgba(0,0,0,0.8)"
+                    fill="rgba(66, 133, 244, 0.95)"
+                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
                   />
                   <text
                     x={0}
-                    y={-30}
+                    y={-34}
                     textAnchor="middle"
                     fill="#fff"
-                    fontSize={10}
+                    fontSize={11}
                     fontWeight="500"
+                    fontFamily="system-ui, sans-serif"
                   >
-                    {(user.displayName || user.username || '').slice(0, 10)}
+                    {(user.displayName || user.username || '').slice(0, 12)}
                   </text>
                 </g>
               </Marker>
@@ -238,7 +275,6 @@ export default function FlatWorldMap({
         </ZoomableGroup>
       </ComposableMap>
       
-      {/* Selected User Popup Window */}
       {selectedUser && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 min-w-[280px] max-w-[320px] border border-gray-200 dark:border-gray-700">
@@ -265,7 +301,7 @@ export default function FlatWorldMap({
                   <span>{selectedUser.city}, {selectedUser.country}</span>
                 </div>
                 <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  🌍 Traveler
+                  Traveler
                 </span>
               </div>
             </div>
@@ -297,7 +333,6 @@ export default function FlatWorldMap({
         </div>
       )}
 
-      {/* Selected Stay Popup Window */}
       {selectedStay && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
           <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 min-w-[280px] max-w-[320px] border border-gray-200 dark:border-gray-700">
@@ -354,42 +389,54 @@ export default function FlatWorldMap({
         </div>
       )}
       
-      {/* Hover tooltips */}
       {hoveredUser && !selectedUser && !selectedStay && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-black/90 rounded-lg shadow-lg px-3 py-2 pointer-events-none">
-          <p className="font-semibold text-white text-sm">{hoveredUser.displayName || hoveredUser.username}</p>
-          <p className="text-xs text-gray-300">{hoveredUser.city}, {hoveredUser.country}</p>
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-white rounded-lg shadow-lg px-3 py-2 pointer-events-none border border-gray-200">
+          <p className="font-semibold text-gray-900 text-sm">{hoveredUser.displayName || hoveredUser.username}</p>
+          <p className="text-xs text-gray-500">{hoveredUser.city}, {hoveredUser.country}</p>
         </div>
       )}
 
       {hoveredStay && !selectedUser && !selectedStay && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-pink-600 rounded-lg shadow-lg px-3 py-2 pointer-events-none">
-          <p className="font-semibold text-white text-sm">{hoveredStay.title}</p>
-          <p className="text-xs text-pink-100">{formatPrice(hoveredStay.pricePerNight, hoveredStay.currency)}</p>
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-white rounded-lg shadow-lg px-3 py-2 pointer-events-none border border-pink-200">
+          <p className="font-semibold text-gray-900 text-sm">{hoveredStay.title}</p>
+          <p className="text-xs text-pink-600">{formatPrice(hoveredStay.pricePerNight, hoveredStay.currency)}</p>
         </div>
       )}
       
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-3">
+      <div className="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-lg border border-gray-200">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
-            <span className="text-white text-xs">Travelers</span>
+            <div className="w-3 h-3 bg-[#4285f4] rounded-full border border-white shadow"></div>
+            <span className="text-gray-700 text-xs font-medium">Travelers</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-pink-500 rounded-sm border border-white"></div>
-            <span className="text-white text-xs">Stays</span>
+            <div className="w-3 h-3 bg-[#e91e63] rounded-sm border border-white shadow"></div>
+            <span className="text-gray-700 text-xs font-medium">Stays</span>
           </div>
         </div>
-        <p className="text-gray-300 text-xs mt-2">
+        <p className="text-gray-500 text-xs mt-2">
           {validUsers.length} travelers · {validStays.length} stays
         </p>
       </div>
       
-      {/* Header */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
-        <h2 className="text-white font-semibold text-lg text-center">Discover Travelers & Stays</h2>
-        <p className="text-gray-300 text-xs text-center">Click on a pin to connect or book</p>
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-sm rounded-lg px-5 py-3 shadow-lg border border-gray-200">
+        <h2 className="text-gray-900 font-semibold text-lg text-center">Discover Travelers & Stays</h2>
+        <p className="text-gray-500 text-xs text-center">Click on a pin to connect or book</p>
+      </div>
+      
+      <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1">
+        <button 
+          onClick={() => setMapZoom(z => Math.min(z * 1.5, 12))}
+          className="w-8 h-8 bg-white rounded shadow-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 font-bold"
+        >
+          +
+        </button>
+        <button 
+          onClick={() => setMapZoom(z => Math.max(z / 1.5, 1))}
+          className="w-8 h-8 bg-white rounded shadow-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 font-bold"
+        >
+          -
+        </button>
       </div>
     </div>
   );
