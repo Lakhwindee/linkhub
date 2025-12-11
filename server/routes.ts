@@ -863,41 +863,58 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         }
       }
       
-      // Require environment variables for admin authentication (production ready)
-      const adminEmail = process.env.ADMIN_EMAIL?.trim();
-      const adminPassword = process.env.ADMIN_PASSWORD?.trim();
-      
-      // Normalize email for comparison (case-insensitive)
+      // Get admin email from environment or request
       const normalizedInputEmail = email?.trim().toLowerCase();
-      const normalizedAdminEmail = adminEmail?.toLowerCase();
+      const adminEmailEnv = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+      const adminPasswordEnv = process.env.ADMIN_PASSWORD?.trim();
       
-      // Debug logging (safe - doesn't expose actual values)
       console.log('🔐 Admin login attempt:', {
-        hasEmail: !!adminEmail,
-        hasPassword: !!adminPassword,
-        emailMatch: normalizedInputEmail === normalizedAdminEmail,
-        passwordMatch: password === adminPassword,
-        envEmailLength: adminEmail?.length,
-        envPasswordLength: adminPassword?.length,
-        inputEmailLength: email?.length,
-        inputPasswordLength: password?.length
+        inputEmail: normalizedInputEmail,
+        hasEnvEmail: !!adminEmailEnv,
+        hasEnvPassword: !!adminPasswordEnv,
+        emailMatch: normalizedInputEmail === adminEmailEnv
       });
       
-      if (!adminEmail || !adminPassword) {
-        console.error('❌ Missing environment variables - ADMIN_EMAIL or ADMIN_PASSWORD not set');
-        throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required for production');
-      }
+      // Strategy: Try environment variables first (production), then check database
+      let admin = await storage.getAdminByEmail(email);
       
-      // Verify admin credentials against environment variables (email is case-insensitive)
-      if (normalizedInputEmail !== normalizedAdminEmail || password !== adminPassword) {
-        // Update rate limiting
-        if (attempt && now - attempt.lastAttempt < 900000) {
-          attempt.count++;
-          attempt.lastAttempt = now;
+      if (!admin) {
+        // Admin doesn't exist in database yet
+        if (adminEmailEnv && adminPasswordEnv && normalizedInputEmail === adminEmailEnv && password === adminPasswordEnv) {
+          // Valid credentials from environment - create admin
+          const bcrypt = await import('bcrypt');
+          const hashedPassword = await bcrypt.hash(adminPasswordEnv, 12);
+          
+          admin = await storage.createAdmin({
+            email: adminEmailEnv,
+            password: hashedPassword,
+            name: 'System Administrator'
+          });
         } else {
-          adminLoginAttempts.set(clientKey, { count: 1, lastAttempt: now });
+          // Invalid credentials or no environment credentials set
+          if (attempt && now - attempt.lastAttempt < 900000) {
+            attempt.count++;
+            attempt.lastAttempt = now;
+          } else {
+            adminLoginAttempts.set(clientKey, { count: 1, lastAttempt: now });
+          }
+          return res.status(401).json({ message: 'Invalid admin credentials' });
         }
-        return res.status(401).json({ message: 'Invalid admin credentials' });
+      } else {
+        // Admin exists in database - validate password hash
+        const bcrypt = await import('bcrypt');
+        const passwordMatch = await bcrypt.compare(password, admin.password);
+        
+        if (!passwordMatch) {
+          // Invalid password
+          if (attempt && now - attempt.lastAttempt < 900000) {
+            attempt.count++;
+            attempt.lastAttempt = now;
+          } else {
+            adminLoginAttempts.set(clientKey, { count: 1, lastAttempt: now });
+          }
+          return res.status(401).json({ message: 'Invalid admin credentials' });
+        }
       }
       
       // Clear rate limiting on successful login
@@ -909,30 +926,15 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         req.session.user = null;
       }
       
-      // Check if admin exists in ADMINS table (NOT users table!)
-      let admin = await storage.getAdminByEmail(adminEmail);
-      
-      if (!admin) {
-        // Create admin in admins table if doesn't exist
-        const bcrypt = await import('bcrypt');
-        const hashedPassword = await bcrypt.hash(adminPassword, 12);
-        
-        admin = await storage.createAdmin({
-          email: adminEmail,
-          password: hashedPassword,
-          name: 'System Administrator'
-        });
-      }
-      
       // Also create/update linked user record in users table (for route compatibility)
-      let adminUser = await storage.getUserByEmail(adminEmail);
+      let adminUser = await storage.getUserByEmail(admin.email);
       if (!adminUser) {
         // Check if username 'admin' exists for a different email
         const existingAdminUsername = await storage.getUserByUsername('admin');
         if (existingAdminUsername) {
           // Update the existing user with this username
           adminUser = await storage.updateUser(existingAdminUsername.id, {
-            email: adminEmail,
+            email: admin.email,
             displayName: 'System Administrator',
             firstName: 'System',
             lastName: 'Administrator',
@@ -942,7 +944,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         } else {
           // Create new admin user
           adminUser = await storage.upsertUser({
-            email: adminEmail,
+            email: admin.email,
             username: 'admin',
             displayName: 'System Administrator',
             firstName: 'System',
