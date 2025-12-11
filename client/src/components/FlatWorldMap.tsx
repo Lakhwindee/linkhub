@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ComposableMap,
   Geographies,
@@ -21,6 +21,8 @@ export default function FlatWorldMap({
   onUserClick,
   showTravellers = true 
 }: FlatWorldMapProps) {
+  const [hoveredUser, setHoveredUser] = useState<User | null>(null);
+  
   const validUsers = useMemo(() => {
     if (!showTravellers) return [];
     return users.filter(u => 
@@ -43,7 +45,7 @@ export default function FlatWorldMap({
       >
         <ZoomableGroup>
           <Geographies geography={geoUrl}>
-            {({ geographies }) =>
+            {({ geographies }: { geographies: any[] }) =>
               geographies.map((geo) => (
                 <Geography
                   key={geo.rsmKey}
@@ -67,14 +69,16 @@ export default function FlatWorldMap({
               <Marker
                 key={user.id || index}
                 coordinates={[Number(user.lng), Number(user.lat)]}
-                onClick={() => onUserClick?.(user)}
               >
                 <circle
                   r={8}
                   fill={isCreator ? '#fbbf24' : '#3b82f6'}
                   stroke="#fff"
                   strokeWidth={2}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => onUserClick?.(user)}
+                  onMouseEnter={() => setHoveredUser(user)}
+                  onMouseLeave={() => setHoveredUser(null)}
                 />
               </Marker>
             );
@@ -82,7 +86,17 @@ export default function FlatWorldMap({
         </ZoomableGroup>
       </ComposableMap>
       
-      <div className="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3">
+      {hoveredUser && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-white rounded-lg shadow-lg p-3 min-w-[200px]">
+          <p className="font-bold text-gray-800">{hoveredUser.displayName || hoveredUser.username}</p>
+          <p className="text-sm text-gray-600">{hoveredUser.city}, {hoveredUser.country}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {hoveredUser.plan === 'creator' ? '⭐ Creator' : '🌍 Traveler'}
+          </p>
+        </div>
+      )}
+      
+      <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-yellow-400 rounded-full border border-white"></div>
@@ -98,7 +112,7 @@ export default function FlatWorldMap({
         </p>
       </div>
       
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
         <h2 className="text-white font-semibold text-lg text-center">Discover Travelers</h2>
         <p className="text-gray-300 text-xs text-center">Click on a marker to view profile</p>
       </div>
