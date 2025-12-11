@@ -1382,9 +1382,10 @@ export default function Globe3D({
     );
   }
 
+  // Show traveler list when no map
   return (
     <div 
-      className="relative bg-slate-900 rounded-lg overflow-hidden"
+      className="w-full h-full bg-gradient-to-br from-slate-900 to-slate-800 p-6 overflow-y-auto"
       style={{ 
         width: `${width}px`, 
         height: `${height}px`,
@@ -1392,23 +1393,82 @@ export default function Globe3D({
         minHeight: '200px'
       }}
     >
-      {isLoading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm z-10">
-          <div className="animate-spin w-10 h-10 border-4 border-blue-400 border-t-transparent rounded-full mb-4"></div>
-          <h3 className="text-xl font-semibold text-white mb-2">Loading Google Maps</h3>
-          <p className="text-gray-300 text-sm">High-quality satellite imagery loading...</p>
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="text-5xl mb-3">🗺️</div>
+          <h2 className="text-3xl font-bold text-white mb-2">Traveler Locations</h2>
+          <p className="text-gray-400">
+            {showTravellers && showStays ? '👥 All travelers' :
+             showTravellers ? '✈️ Travelers only' :
+             showStays ? '🏨 Stays only' :
+             '❌ No data selected'}
+          </p>
+          <p className="text-sm text-gray-500 mt-2">{users.length} travelers discovered</p>
         </div>
-      )}
+
+        {/* Travelers Grid */}
+        {users && users.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {users.map((user) => (
+              <div 
+                key={user.id}
+                className="bg-slate-800 border border-slate-700 rounded-lg p-5 hover:bg-slate-750 transition-colors cursor-pointer"
+                onClick={() => onUserClick?.(user)}
+              >
+                <div className="flex gap-4">
+                  <img 
+                    src={user.profileImageUrl || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'} 
+                    alt={user.displayName || user.username}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-white truncate">{user.displayName || user.username}</h3>
+                    <p className="text-xs text-gray-400 truncate">@{user.username}</p>
+                    <p className="text-sm text-gray-300 mt-1 flex items-center gap-1">
+                      📍 {user.city || 'Unknown'}, {user.country || 'Unknown'}
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Plan Badge */}
+                <div className="mt-3 flex items-center gap-2">
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                    user.plan === 'creator' ? 'bg-yellow-500/20 text-yellow-300' :
+                    user.plan === 'traveler' ? 'bg-blue-500/20 text-blue-300' :
+                    'bg-gray-500/20 text-gray-300'
+                  }`}>
+                    {user.plan?.toUpperCase() || 'FREE'}
+                  </span>
+                </div>
+
+                {/* Interests */}
+                {user.interests && user.interests.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1">
+                    {user.interests.slice(0, 2).map((interest) => (
+                      <span key={interest} className="text-xs bg-slate-700 text-slate-200 px-2 py-1 rounded">
+                        {interest}
+                      </span>
+                    ))}
+                    {user.interests.length > 2 && (
+                      <span className="text-xs text-gray-400">+{user.interests.length - 2}</span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-gray-300 mb-2">No travelers found</h3>
+            <p className="text-gray-400 text-sm">Try adjusting your filters or searching different locations</p>
+          </div>
+        )}
+      </div>
       
-      <div 
-        ref={mapRef} 
-        className="w-full h-full absolute inset-0"
-        style={{ 
-          opacity: isLoading ? 0.3 : 1,
-          transition: 'opacity 0.5s ease-in-out'
-        }}
-      />
-      
+      {/* Hidden map ref for compatibility */}
+      <div ref={mapRef} className="hidden" />
     </div>
   );
 }
