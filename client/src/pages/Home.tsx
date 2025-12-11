@@ -117,7 +117,14 @@ export default function Home() {
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
-                Welcome back, {user.displayName || user.username}! 👋
+                {(() => {
+                  const isNewUser = localStorage.getItem('justSignedUp') === 'true';
+                  if (isNewUser) {
+                    localStorage.removeItem('justSignedUp');
+                    return `Welcome, ${user.displayName || user.username}! 👋`;
+                  }
+                  return `Welcome back, ${user.displayName || user.username}! 👋`;
+                })()}
               </h1>
               <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
                 Discover new travelers and share your journey

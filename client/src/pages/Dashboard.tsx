@@ -136,7 +136,14 @@ export default function Dashboard() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8 w-full">
           <div>
             <h1 className="text-3xl font-bold text-foreground" data-testid="heading-welcome">
-              Welcome back, {user?.displayName || user?.firstName || 'Demo User'}! 👋
+              {(() => {
+                const isNewUser = localStorage.getItem('justSignedUp') === 'true';
+                if (isNewUser) {
+                  localStorage.removeItem('justSignedUp');
+                  return `Welcome, ${user?.displayName || user?.firstName || 'Demo User'}! 👋`;
+                }
+                return `Welcome back, ${user?.displayName || user?.firstName || 'Demo User'}! 👋`;
+              })()}
             </h1>
             <p className="text-muted-foreground mt-1" data-testid="text-welcome-subtitle">
               {user?.plan === 'free' 

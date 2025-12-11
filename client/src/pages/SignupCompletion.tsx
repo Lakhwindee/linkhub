@@ -56,6 +56,9 @@ export default function SignupCompletion() {
           localStorage.removeItem('thepicstory_signup_data');
           localStorage.removeItem('thepicstory_signup_type');
           
+          // Set flag to show "Welcome" instead of "Welcome back"
+          localStorage.setItem('justSignedUp', 'true');
+          
           toast({
             title: "Signup Complete!",
             description: "Your account has been created and verified successfully. Welcome to ThePicStory!",
