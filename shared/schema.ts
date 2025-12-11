@@ -491,6 +491,7 @@ export const stays = pgTable("stays", {
   availableTo: timestamp("available_to"),
   status: varchar("status").default("active"), // active, paused, archived
   featured: boolean("featured").default(false),
+  showOnMap: boolean("show_on_map").default(false), // Show this stay on discover map
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

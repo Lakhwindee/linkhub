@@ -769,11 +769,11 @@ export default function DiscoverTravelers() {
 
   console.log('Frontend users data:', users.length, users);
 
-  // Fetch stays for map pins
+  // Fetch stays for map pins (only those with showOnMap=true)
   const { data: stays = [] } = useQuery({
-    queryKey: ["/api/stays"],
+    queryKey: ["/api/stays", "map"],
     queryFn: async () => {
-      const response = await fetch('/api/stays?limit=50');
+      const response = await fetch('/api/stays?limit=50&showOnMap=true');
       if (!response.ok) throw new Error('Failed to fetch stays');
       return response.json();
     },

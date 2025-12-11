@@ -2436,7 +2436,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
   // Stays routes
   app.get('/api/stays', async (req, res) => {
     try {
-      const { country, city, type, minPrice, maxPrice, guests = 1, limit = 20 } = req.query;
+      const { country, city, type, minPrice, maxPrice, guests = 1, limit = 20, showOnMap } = req.query;
       const stays = await storage.getStays({
         country: country as string,
         city: city as string,
@@ -2444,7 +2444,8 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         minPrice: minPrice ? parseFloat(minPrice as string) : undefined,
         maxPrice: maxPrice ? parseFloat(maxPrice as string) : undefined,
         guests: parseInt(guests as string),
-        limit: parseInt(limit as string)
+        limit: parseInt(limit as string),
+        showOnMap: showOnMap === 'true' ? true : undefined
       });
       res.json(stays);
     } catch (error) {

@@ -70,6 +70,7 @@ const stayFormSchema = z.object({
   contactInfo: z.string().optional(),
   availableFrom: z.string().optional(),
   availableTo: z.string().optional(),
+  showOnMap: z.boolean().default(false), // Show on discover map
 });
 
 type StayFormData = z.infer<typeof stayFormSchema>;
@@ -133,6 +134,7 @@ export function AddStayDialog({ open, onOpenChange }: AddStayDialogProps) {
       minimumStay: "1",
       currency: "GBP",
       instantBooking: false,
+      showOnMap: false,
     },
   });
 
@@ -663,6 +665,34 @@ export function AddStayDialog({ open, onOpenChange }: AddStayDialogProps) {
                         How guests can reach you for questions
                       </FormDescription>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Separator />
+
+                {/* Show on Map Option */}
+                <FormField
+                  control={form.control}
+                  name="showOnMap"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-blue-50 dark:bg-blue-950">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-base font-semibold flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-blue-600" />
+                          Show on Discover Map
+                        </FormLabel>
+                        <FormDescription>
+                          If checked, your stay will appear as a pin on the world map in Discover page. 
+                          Travelers can see and book your stay directly from the map.
+                        </FormDescription>
+                      </div>
                     </FormItem>
                   )}
                 />

@@ -239,7 +239,7 @@ export interface IStorage {
   getFollowing(userId: string): Promise<User[]>;
   
   // Stays
-  getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]>;
+  getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number; showOnMap?: boolean }): Promise<Stay[]>;
   getStayById(id: string): Promise<Stay | undefined>;
   createStay(data: any): Promise<Stay>;
   updateStay(id: string, data: any): Promise<Stay>;
@@ -1592,7 +1592,7 @@ export class DatabaseStorage implements IStorage {
   // searchUsers already defined above - removing duplicate
   
   // Stays implementation
-  async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number }): Promise<Stay[]> {
+  async getStays(filters?: { country?: string; city?: string; type?: string; minPrice?: number; maxPrice?: number; guests?: number; limit?: number; showOnMap?: boolean }): Promise<Stay[]> {
     // Return real database stays only
     const limit = filters?.limit || 50;
     const conditions = [eq(stays.status, 'active')];
@@ -1614,6 +1614,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters?.maxPrice) {
       conditions.push(sql`${stays.pricePerNight} <= ${filters.maxPrice}`);
+    }
+    if (filters?.showOnMap === true) {
+      conditions.push(eq(stays.showOnMap, true));
     }
     
     return await db.select().from(stays)
