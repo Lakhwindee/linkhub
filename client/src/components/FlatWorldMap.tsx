@@ -183,9 +183,8 @@ export default function FlatWorldMap({
             </Marker>
           ))}
           
-          {/* User Pins */}
+          {/* Traveler Pins - All same color (blue) */}
           {validUsers.map((user, index) => {
-            const isCreator = user.plan === 'creator';
             const isSelected = selectedUser?.id === user.id;
             return (
               <Marker
@@ -198,10 +197,10 @@ export default function FlatWorldMap({
                   onMouseEnter={() => setHoveredUser(user)}
                   onMouseLeave={() => setHoveredUser(null)}
                 >
-                  {/* Pin shape */}
+                  {/* Pin shape - All travelers are blue */}
                   <path
                     d="M0,-20 C-8,-20 -12,-12 -12,-8 C-12,0 0,10 0,10 C0,10 12,0 12,-8 C12,-12 8,-20 0,-20"
-                    fill={isCreator ? '#fbbf24' : '#3b82f6'}
+                    fill="#3b82f6"
                     stroke="#fff"
                     strokeWidth={2}
                     transform={isSelected ? 'scale(1.3)' : 'scale(1)'}
@@ -251,9 +250,9 @@ export default function FlatWorldMap({
             </button>
             
             <div className="flex items-center gap-3 mb-4">
-              <Avatar className="w-14 h-14 border-2 border-primary">
+              <Avatar className="w-14 h-14 border-2 border-blue-500">
                 <AvatarImage src={selectedUser.avatarUrl || selectedUser.profileImageUrl || ''} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                <AvatarFallback className="bg-blue-500 text-white text-lg">
                   {(selectedUser.displayName || selectedUser.username || 'U').charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -265,12 +264,8 @@ export default function FlatWorldMap({
                   <MapPin className="w-3 h-3" />
                   <span>{selectedUser.city}, {selectedUser.country}</span>
                 </div>
-                <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                  selectedUser.plan === 'creator' 
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' 
-                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                }`}>
-                  {selectedUser.plan === 'creator' ? '⭐ Creator' : '🌍 Traveler'}
+                <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  🌍 Traveler
                 </span>
               </div>
             </div>
@@ -285,7 +280,7 @@ export default function FlatWorldMap({
               <Button 
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="flex-1 bg-primary hover:bg-primary/90"
+                className="flex-1 bg-blue-500 hover:bg-blue-600"
               >
                 {isConnecting ? (
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
@@ -387,11 +382,7 @@ export default function FlatWorldMap({
       
       {/* Legend */}
       <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-3">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-yellow-400 rounded-full border border-white"></div>
-            <span className="text-white text-xs">Creators</span>
-          </div>
+        <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-blue-500 rounded-full border border-white"></div>
             <span className="text-white text-xs">Travelers</span>
