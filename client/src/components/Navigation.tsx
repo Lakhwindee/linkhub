@@ -95,6 +95,9 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                   <Link href="/">Home</Link>
                 </Button>
               )}
+              <Button variant="ghost" asChild>
+                <Link href="/discover">Discover</Link>
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
@@ -136,6 +139,9 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
                         <Link href="/">Home</Link>
                       </Button>
                     )}
+                    <Button variant="outline" asChild className="w-full justify-start">
+                      <Link href="/discover">Discover</Link>
+                    </Button>
                     <Button variant="outline" asChild className="w-full justify-start">
                       <Link href="/for-business">For Business</Link>
                     </Button>
