@@ -758,7 +758,7 @@ export default function Admin() {
         },
         youtube: {
           apiKey: '',
-          projectId: settings.youtube?.projectId || 'hublink-project',
+          projectId: settings.youtube?.projectId || 'thepicstory-project',
         },
         maps: {
           apiKey: '', // Don't pre-populate sensitive data
@@ -1263,7 +1263,7 @@ export default function Admin() {
                           id="youtube-project-id"
                           placeholder="Google Cloud Project ID" 
                           className="mt-1"
-                          defaultValue={getFieldValue('youtube', 'projectId') || 'hublink-project'}
+                          defaultValue={getFieldValue('youtube', 'projectId') || 'thepicstory-project'}
                         />
                       </div>
                       <div className="flex space-x-2">
@@ -1274,7 +1274,7 @@ export default function Admin() {
                             const projectIdInput = document.getElementById('youtube-project-id') as HTMLInputElement;
                             
                             const apiKey = apiKeyInput?.value || '';
-                            const projectId = projectIdInput?.value || 'hublink-project';
+                            const projectId = projectIdInput?.value || 'thepicstory-project';
                             
                             if (!apiKey) {
                               toast({
@@ -1472,7 +1472,7 @@ export default function Admin() {
                       <div>
                         <Label>Bucket Name</Label>
                         <Input 
-                          defaultValue="hublink-storage"
+                          defaultValue="thepicstory-storage"
                           className="mt-1"
                         />
                       </div>

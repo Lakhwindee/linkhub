@@ -252,7 +252,7 @@ export default function ProfessionalSignup() {
       };
 
       // Store signup data for completion after OTP verification
-      localStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
+      localStorage.setItem('thepicstory_signup_data', JSON.stringify(signupData));
       localStorage.setItem('thepicstory_signup_type', 'professional');
       
       // Store OTP verification data

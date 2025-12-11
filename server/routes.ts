@@ -188,7 +188,7 @@ let storedApiSettings = {
   },
   youtube: {
     apiKey: '',
-    projectId: 'hublink-project'
+    projectId: 'thepicstory-project'
   },
   maps: {
     apiKey: '',
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       sameSite: 'lax', // CSRF protection
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     },
-    name: 'hublink-session' // Custom session name
+    name: 'thepicstory-session' // Custom session name
   }));
 
   // Authentication routes
@@ -700,7 +700,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       if (err) {
         return res.status(500).json({ message: 'Logout failed' });
       }
-      res.clearCookie('hublink-session');
+      res.clearCookie('thepicstory-session');
       res.json({ message: 'Logout successful' });
     });
   });
@@ -5393,7 +5393,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         },
         youtube: {
           apiKey: youtubeSetting ? maskKey((youtubeSetting.settingsJson as any).apiKey, 'AIza') : (process.env.YOUTUBE_API_KEY ? '••••••••••••' : ''),
-          projectId: (youtubeSetting?.settingsJson as any)?.projectId || 'hublink-project',
+          projectId: (youtubeSetting?.settingsJson as any)?.projectId || 'thepicstory-project',
           status: (isValidKey((youtubeSetting?.settingsJson as any)?.apiKey) || isValidKey(process.env.YOUTUBE_API_KEY)) ? 'active' : 'inactive',
           lastTested: youtubeSetting?.lastTestedAt?.toISOString() || null,
           source: youtubeSetting ? 'database' : 'environment'
@@ -5413,7 +5413,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           lastTested: new Date().toISOString()
         },
         storage: {
-          bucketName: storageSetting?.settingsJson?.bucketName || 'hublink-storage',
+          bucketName: storageSetting?.settingsJson?.bucketName || 'thepicstory-storage',
           serviceAccountKey: storageSetting?.settingsJson?.serviceAccountKey ? '••••••••••••' : '',
           status: isValidKey(storageSetting?.settingsJson?.serviceAccountKey) ? 'active' : 'inactive',
           lastTested: storageSetting?.lastTestedAt?.toISOString() || new Date().toISOString()
@@ -5583,7 +5583,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
               message: 'YouTube API connection successful',
               details: { 
                 quota: { remaining: 9500, total: 10000 },
-                project: 'hublink-project'
+                project: 'thepicstory-project'
               }
             };
           } else {
@@ -5613,7 +5613,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
             success: true, 
             message: 'Google Cloud Storage connection successful',
             details: { 
-              bucket: 'hublink-storage',
+              bucket: 'thepicstory-storage',
               region: 'us-central1',
               objects: 1247
             }
