@@ -420,7 +420,7 @@ export default function Landing() {
                 <img 
                   src="/thepicstory-logo.png" 
                   alt="ThePicStory" 
-                  className="w-auto brightness-0 invert" 
+                  className="w-auto" 
                   style={{ height: '100px', maxWidth: '375px' }}
                 />
               </div>
