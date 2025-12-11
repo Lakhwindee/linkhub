@@ -1,12 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import type { User } from '@shared/schema';
 
+interface FocusTarget {
+  lat: number;
+  lng: number;
+  altitude?: number;
+}
+
 interface Globe3DProps {
   users: User[];
   onUserClick?: (user: User) => void;
   selectedCountry?: string;
   selectedState?: string;
   showTravellers?: boolean;
+  focusTarget?: FocusTarget | null;
 }
 
 export default function Globe3D({ 
@@ -14,13 +21,16 @@ export default function Globe3D({
   onUserClick,
   selectedCountry,
   selectedState,
-  showTravellers = true
+  showTravellers = true,
+  focusTarget
 }: Globe3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const globeRef = useRef<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [globeLoaded, setGlobeLoaded] = useState(false);
 
+  // Initialize globe
   useEffect(() => {
     const initGlobe = async () => {
       try {
@@ -56,6 +66,9 @@ export default function Globe3D({
           .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe@2/example/img/earth-topology.png')
           .backgroundColor('#0f172a');
 
+        // Store globe instance
+        globeRef.current = world;
+
         // Render to container
         world(containerRef.current);
         console.log('Globe mounted');
@@ -89,7 +102,7 @@ export default function Globe3D({
           }
         }
 
-        // Auto-rotate
+        // Enable auto-rotate
         if (world.controls?.()) {
           world.controls().autoRotate = true;
           world.controls().autoRotateSpeed = 1.5;
@@ -100,8 +113,8 @@ export default function Globe3D({
         // Handle resize
         const handleResize = () => {
           const newRect = containerRef.current?.getBoundingClientRect();
-          if (newRect) {
-            world.width(newRect.width).height(newRect.height);
+          if (newRect && globeRef.current) {
+            globeRef.current.width(newRect.width).height(newRect.height);
           }
         };
 
@@ -119,6 +132,46 @@ export default function Globe3D({
     return () => clearTimeout(timer);
 
   }, [users, onUserClick, showTravellers]);
+
+  // Handle focus target changes (country/state selection)
+  useEffect(() => {
+    if (!globeRef.current || !globeLoaded) return;
+
+    const world = globeRef.current;
+
+    if (focusTarget && focusTarget.lat !== undefined && focusTarget.lng !== undefined) {
+      console.log('Focusing on:', focusTarget);
+      
+      // Stop auto-rotate during animation
+      if (world.controls?.()) {
+        world.controls().autoRotate = false;
+      }
+
+      // Animate to target location
+      const altitude = focusTarget.altitude || 1.5;
+      world.pointOfView(
+        { lat: focusTarget.lat, lng: focusTarget.lng, altitude },
+        1500 // 1.5 second animation
+      );
+
+      // Resume auto-rotate after animation
+      setTimeout(() => {
+        if (world.controls?.()) {
+          world.controls().autoRotate = true;
+          world.controls().autoRotateSpeed = 0.5; // Slower rotation when focused
+        }
+      }, 2000);
+    } else {
+      // Reset to default view (world overview)
+      console.log('Resetting to world view');
+      world.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1500);
+      
+      if (world.controls?.()) {
+        world.controls().autoRotate = true;
+        world.controls().autoRotateSpeed = 1.5;
+      }
+    }
+  }, [focusTarget, globeLoaded]);
 
   // Error state - show a nice fallback
   if (error) {
