@@ -29,12 +29,13 @@ export default function Globe3D({
 
         // Import Globe
         const GlobeGL = (await import('globe.gl')).default;
-        console.log('Globe.gl imported successfully');
+        console.log('✅ Globe.gl imported');
 
-        // Get viewport dimensions
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        console.log('Creating globe with dimensions:', width, height);
+        // Get container dimensions
+        const rect = containerRef.current.getBoundingClientRect();
+        const width = rect.width || window.innerWidth;
+        const height = rect.height || window.innerHeight;
+        console.log('📐 Globe dimensions:', { width, height });
 
         // Create globe
         const world = GlobeGL()
@@ -45,12 +46,12 @@ export default function Globe3D({
 
         // Render to container
         world(containerRef.current);
-        console.log('Globe mounted to container');
+        console.log('🌍 Globe mounted');
 
         // Add traveler points
-        if (showTravellers && users.length > 0) {
+        if (showTravellers && users && users.length > 0) {
           const validUsers = users.filter(u => u.lat !== undefined && u.lng !== undefined);
-          console.log('Valid users with coords:', validUsers.length, validUsers);
+          console.log('👥 Valid users:', validUsers.length);
 
           if (validUsers.length > 0) {
             const points = validUsers.map(user => ({
@@ -67,12 +68,11 @@ export default function Globe3D({
               .pointSize((d: any) => d.size)
               .pointAltitude(0.01)
               .onPointClick((d: any) => {
-                console.log('Clicked point:', d.user);
                 if (onUserClick && d.user) {
                   onUserClick(d.user);
                 }
               });
-            console.log('Points added to globe:', points.length);
+            console.log('📍 Points added:', points.length);
           }
         }
 
@@ -80,29 +80,29 @@ export default function Globe3D({
         if (world.controls?.()) {
           world.controls().autoRotate = true;
           world.controls().autoRotateSpeed = 2;
-          console.log('Auto-rotate enabled');
+          console.log('🔄 Auto-rotate enabled');
         }
 
         setLoading(false);
 
-        // Handle window resize
+        // Handle resize
         const handleResize = () => {
-          const newWidth = window.innerWidth;
-          const newHeight = window.innerHeight;
-          world.width(newWidth).height(newHeight);
+          const newRect = containerRef.current?.getBoundingClientRect();
+          if (newRect) {
+            world.width(newRect.width).height(newRect.height);
+          }
         };
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
 
       } catch (error) {
-        console.error('❌ Globe initialization error:', error);
+        console.error('❌ Globe error:', error);
         setLoading(false);
       }
     };
 
-    // Small delay to ensure container is mounted
-    const timer = setTimeout(initGlobe, 100);
+    const timer = setTimeout(initGlobe, 50);
     return () => clearTimeout(timer);
 
   }, [users, onUserClick, showTravellers]);
@@ -110,18 +110,43 @@ export default function Globe3D({
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full bg-slate-950 relative"
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        backgroundColor: '#0f172a'
+      }}
     >
       {loading && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/90 z-40">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-400 border-t-transparent rounded-full mb-3"></div>
-          <p className="text-white text-sm font-medium">🌍 Loading World Map...</p>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          zIndex: 40
+        }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            border: '4px solid rgb(96, 165, 250)',
+            borderTopColor: 'transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: '12px'
+          }} />
+          <p style={{ color: 'white', fontSize: '14px', fontWeight: '500' }}>Loading map...</p>
+          <style>{`
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       )}
-      <div className="absolute top-4 left-4 bg-slate-800/80 backdrop-blur text-white px-3 py-2 rounded text-xs z-10 pointer-events-none">
-        <div className="font-bold">World Map</div>
-        <div className="text-gray-300">{users.filter(u => u.lat && u.lng).length} travelers</div>
-      </div>
     </div>
   );
 }
