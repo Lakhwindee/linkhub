@@ -7,20 +7,28 @@ import {
   ZoomableGroup
 } from 'react-simple-maps';
 import type { User } from '@shared/schema';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { X, UserPlus, MapPin, MessageCircle } from 'lucide-react';
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface FlatWorldMapProps {
   users: User[];
   onUserClick?: (user: User) => void;
+  onConnect?: (userId: string) => void;
   showTravellers?: boolean;
+  isConnecting?: boolean;
 }
 
 export default function FlatWorldMap({ 
   users = [], 
   onUserClick,
-  showTravellers = true 
+  onConnect,
+  showTravellers = true,
+  isConnecting = false
 }: FlatWorldMapProps) {
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
   
   const validUsers = useMemo(() => {
@@ -32,6 +40,21 @@ export default function FlatWorldMap({
       u.lng !== null
     );
   }, [users, showTravellers]);
+
+  const handleMarkerClick = (user: User) => {
+    setSelectedUser(user);
+    onUserClick?.(user);
+  };
+
+  const handleConnect = () => {
+    if (selectedUser && onConnect) {
+      onConnect(selectedUser.id);
+    }
+  };
+
+  const closePopup = () => {
+    setSelectedUser(null);
+  };
 
   return (
     <div className="w-full h-full relative bg-[#0c4a6e]">
@@ -65,37 +88,146 @@ export default function FlatWorldMap({
           
           {validUsers.map((user, index) => {
             const isCreator = user.plan === 'creator';
+            const isSelected = selectedUser?.id === user.id;
             return (
               <Marker
                 key={user.id || index}
                 coordinates={[Number(user.lng), Number(user.lat)]}
               >
-                <circle
-                  r={8}
-                  fill={isCreator ? '#fbbf24' : '#3b82f6'}
-                  stroke="#fff"
-                  strokeWidth={2}
+                <g 
                   style={{ cursor: 'pointer' }}
-                  onClick={() => onUserClick?.(user)}
+                  onClick={() => handleMarkerClick(user)}
                   onMouseEnter={() => setHoveredUser(user)}
                   onMouseLeave={() => setHoveredUser(null)}
-                />
+                >
+                  {/* Pin shape */}
+                  <path
+                    d="M0,-20 C-8,-20 -12,-12 -12,-8 C-12,0 0,10 0,10 C0,10 12,0 12,-8 C12,-12 8,-20 0,-20"
+                    fill={isCreator ? '#fbbf24' : '#3b82f6'}
+                    stroke="#fff"
+                    strokeWidth={2}
+                    transform={isSelected ? 'scale(1.3)' : 'scale(1)'}
+                    style={{ transition: 'transform 0.2s' }}
+                  />
+                  <circle
+                    cx={0}
+                    cy={-10}
+                    r={4}
+                    fill="#fff"
+                  />
+                  {/* Name tag */}
+                  <rect
+                    x={-30}
+                    y={-42}
+                    width={60}
+                    height={18}
+                    rx={4}
+                    fill="rgba(0,0,0,0.8)"
+                  />
+                  <text
+                    x={0}
+                    y={-30}
+                    textAnchor="middle"
+                    fill="#fff"
+                    fontSize={10}
+                    fontWeight="500"
+                  >
+                    {(user.displayName || user.username || '').slice(0, 10)}
+                  </text>
+                </g>
               </Marker>
             );
           })}
         </ZoomableGroup>
       </ComposableMap>
       
-      {hoveredUser && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-white rounded-lg shadow-lg p-3 min-w-[200px]">
-          <p className="font-bold text-gray-800">{hoveredUser.displayName || hoveredUser.username}</p>
-          <p className="text-sm text-gray-600">{hoveredUser.city}, {hoveredUser.country}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            {hoveredUser.plan === 'creator' ? '⭐ Creator' : '🌍 Traveler'}
-          </p>
+      {/* Selected User Popup Window */}
+      {selectedUser && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-5 min-w-[280px] max-w-[320px] border border-gray-200 dark:border-gray-700">
+            {/* Close button */}
+            <button 
+              onClick={closePopup}
+              className="absolute top-2 right-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+            
+            {/* User Info */}
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="w-14 h-14 border-2 border-primary">
+                <AvatarImage src={selectedUser.avatarUrl || selectedUser.profileImageUrl || ''} />
+                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                  {(selectedUser.displayName || selectedUser.username || 'U').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                  {selectedUser.displayName || selectedUser.username}
+                </h3>
+                <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+                  <MapPin className="w-3 h-3" />
+                  <span>{selectedUser.city}, {selectedUser.country}</span>
+                </div>
+                <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                  selectedUser.plan === 'creator' 
+                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' 
+                    : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                }`}>
+                  {selectedUser.plan === 'creator' ? '⭐ Creator' : '🌍 Traveler'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Bio if available */}
+            {selectedUser.bio && (
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                {selectedUser.bio}
+              </p>
+            )}
+            
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleConnect}
+                disabled={isConnecting}
+                className="flex-1 bg-primary hover:bg-primary/90"
+              >
+                {isConnecting ? (
+                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                ) : (
+                  <UserPlus className="w-4 h-4 mr-2" />
+                )}
+                Connect
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  window.location.href = `/users/${selectedUser.username}`;
+                }}
+                className="flex-1"
+              >
+                View Profile
+              </Button>
+            </div>
+            
+            <p className="text-xs text-center text-gray-400 mt-3">
+              <MessageCircle className="w-3 h-3 inline mr-1" />
+              Send a connect request to start chatting
+            </p>
+          </div>
         </div>
       )}
       
+      {/* Hover tooltip */}
+      {hoveredUser && !selectedUser && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 bg-black/90 rounded-lg shadow-lg px-3 py-2 pointer-events-none">
+          <p className="font-semibold text-white text-sm">{hoveredUser.displayName || hoveredUser.username}</p>
+          <p className="text-xs text-gray-300">{hoveredUser.city}, {hoveredUser.country}</p>
+        </div>
+      )}
+      
+      {/* Legend */}
       <div className="absolute bottom-4 left-4 z-10 bg-black/70 backdrop-blur-sm rounded-lg p-3">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -112,9 +244,10 @@ export default function FlatWorldMap({
         </p>
       </div>
       
+      {/* Header */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-black/70 backdrop-blur-sm rounded-lg px-4 py-2">
         <h2 className="text-white font-semibold text-lg text-center">Discover Travelers</h2>
-        <p className="text-gray-300 text-xs text-center">Click on a marker to view profile</p>
+        <p className="text-gray-300 text-xs text-center">Click on a pin to connect</p>
       </div>
     </div>
   );

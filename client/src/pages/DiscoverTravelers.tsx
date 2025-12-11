@@ -1072,6 +1072,8 @@ export default function DiscoverTravelers() {
           users={typedUsers} 
           showTravellers={showTravellers}
           onUserClick={(user) => setSelectedUser(user)}
+          onConnect={handleConnect}
+          isConnecting={connectMutation.isPending}
         />
       </div>
 
