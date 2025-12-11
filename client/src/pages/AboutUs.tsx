@@ -6,7 +6,7 @@ export default function AboutUs() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-8">
       <div className="max-w-4xl mx-auto pt-20">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">About HubLink</h1>
+          <h1 className="text-4xl font-bold mb-4">About ThePicStory</h1>
           <p className="text-xl text-muted-foreground">
             Connecting travelers and creators worldwide
           </p>
@@ -17,14 +17,14 @@ export default function AboutUs() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
               <p className="text-muted-foreground text-lg">
-                HubLink was created to build the world's largest travel community where travelers can connect, share experiences, and creators can monetize their passion for travel and content creation.
+                ThePicStory was created to build the world's largest travel community where travelers can connect, share experiences, and creators can monetize their passion for travel and content creation.
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold mb-4">Our Story</h2>
               <p className="text-muted-foreground">
-                Founded in 2024, HubLink started with a simple idea: travelers deserve a dedicated platform to connect with like-minded explorers around the world. We've evolved into a comprehensive ecosystem that not only facilitates connections but also empowers creators to earn from their content through our innovative ad marketplace.
+                Founded in 2024, ThePicStory started with a simple idea: travelers deserve a dedicated platform to connect with like-minded explorers around the world. We've evolved into a comprehensive ecosystem that not only facilitates connections but also empowers creators to earn from their content through our innovative ad marketplace.
               </p>
             </section>
           </CardContent>

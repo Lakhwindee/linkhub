@@ -110,7 +110,7 @@ export default function Admin() {
   
   // Email Management state
   const [emailTemplates] = useState([
-    { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to HubLink!', content: '' },
+    { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to ThePicStory!', content: '' },
     { id: 'password-reset', name: 'Password Reset', subject: 'Reset Your Password', content: '' },
     { id: 'subscription', name: 'Subscription Update', subject: 'Subscription Changes', content: '' },
     { id: 'payment', name: 'Payment Receipt', subject: 'Payment Confirmation', content: '' }
@@ -787,7 +787,7 @@ export default function Admin() {
               </div>
               <h1 className="text-2xl font-bold text-foreground">Admin Login</h1>
               <p className="text-muted-foreground">
-                Access the HubLink administration panel
+                Access the ThePicStory administration panel
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -835,7 +835,7 @@ export default function Admin() {
                     if (response.ok) {
                       toast({
                         title: "Login Successful",
-                        description: "Welcome to HubLink Admin Panel",
+                        description: "Welcome to ThePicStory Admin Panel",
                       });
                       // Full page reload to properly load the session
                       setTimeout(() => {
@@ -2094,7 +2094,7 @@ export default function Admin() {
                     <CardContent className="space-y-4">
                       <div>
                         <Label>SMTP Host</Label>
-                        <Input defaultValue="smtp.hublink.com" className="mt-1" />
+                        <Input defaultValue="smtp.thepicstory.com" className="mt-1" />
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
@@ -2108,7 +2108,7 @@ export default function Admin() {
                       </div>
                       <div>
                         <Label>Username</Label>
-                        <Input defaultValue="notifications@hublink.com" className="mt-1" />
+                        <Input defaultValue="notifications@thepicstory.com" className="mt-1" />
                       </div>
                       <div>
                         <Label>Password</Label>
@@ -2794,7 +2794,7 @@ export default function Admin() {
                     <CardContent className="space-y-4">
                       <div>
                         <Label>Website Name</Label>
-                        <Input defaultValue="HubLink" className="mt-1" />
+                        <Input defaultValue="ThePicStory" className="mt-1" />
                       </div>
                       <div>
                         <Label>Primary Color</Label>
@@ -3185,7 +3185,7 @@ export default function Admin() {
                     <CardContent className="space-y-4">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Site Name</label>
-                        <Input defaultValue="HubLink" />
+                        <Input defaultValue="ThePicStory" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-medium">Site Description</label>

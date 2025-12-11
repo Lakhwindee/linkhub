@@ -75,7 +75,7 @@ export function LoginModal({ open, onOpenChange }: LoginModalProps) {
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Sign In to HubLink</DialogTitle>
+            <DialogTitle>Sign In to ThePicStory</DialogTitle>
             <DialogDescription>
               Choose your preferred sign-in method
             </DialogDescription>

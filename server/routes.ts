@@ -1019,13 +1019,13 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px;">
             <h1 style="margin: 0; font-size: 28px;">✅ Account Verification</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink Tourism Platform</p>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">ThePicStory Tourism Platform</p>
           </div>
           
           <div style="background: #f8f9fa; padding: 30px; border-radius: 10px; margin-top: 20px;">
             <h2 style="color: #333; margin-top: 0;">Your Verification Code</h2>
             <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
-              Welcome to HubLink! Please use the verification code below to complete your account setup:
+              Welcome to ThePicStory! Please use the verification code below to complete your account setup:
             </p>
             
             <div style="background: #667eea; color: white; padding: 25px; margin: 30px 0; text-align: center; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
@@ -1036,19 +1036,19 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
               <p style="margin: 0; color: #1976d2; font-size: 14px;">
                 <strong>⏰ Important:</strong><br>
                 • This code will expire in 10 minutes<br>
-                • Use this code only on the HubLink verification page<br>
+                • Use this code only on the ThePicStory verification page<br>
                 • Do not share this code with anyone
               </p>
             </div>
             
             <p style="color: #666; font-size: 14px; margin-top: 25px;">
-              If you didn't create an account with HubLink, please ignore this email and your email will not be used.
+              If you didn't create an account with ThePicStory, please ignore this email and your email will not be used.
             </p>
             
             <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
             
             <p style="color: #999; font-size: 12px; text-align: center; margin: 0;">
-              © 2025 HubLink Tourism Platform - Connect with travelers worldwide<br>
+              © 2025 ThePicStory Tourism Platform - Connect with travelers worldwide<br>
               This is an automated message, please do not reply to this email.
             </p>
           </div>
@@ -1058,7 +1058,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
         // Send email via SMTP
         const result = await sendEmailViaSMTP(
           email,
-          '🔐 Your HubLink Verification Code',
+          '🔐 Your ThePicStory Verification Code',
           emailContent
         );
         
@@ -4655,7 +4655,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
               unit_amount: amountMinor,
               product_data: {
                 name: 'Wallet Top-up',
-                description: `Add funds to your HubLink wallet`,
+                description: `Add funds to your ThePicStory wallet`,
               },
             },
             quantity: 1,
@@ -5282,7 +5282,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Return site settings including branding
       const settings = {
         branding: {
-          siteName: 'HubLink',
+          siteName: 'ThePicStory',
           logoUrl: '/images/logo.png',
           faviconUrl: '/images/favicon.ico',
           primaryColor: '#0066cc',
@@ -5718,7 +5718,7 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
           status: 'connected',
           mode: 'live',
           publishableKey: 'pk_live_••••••••••••3456',
-          webhookEndpoint: 'https://api.hublink.com/webhooks/stripe',
+          webhookEndpoint: 'https://api.thepicstory.com/webhooks/stripe',
           platformFee: 10,
           currency: 'GBP'
         },
@@ -5788,14 +5788,14 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
       // Return email configuration and templates
       const emailSettings = {
         smtp: {
-          host: 'smtp.hublink.com',
+          host: 'smtp.thepicstory.com',
           port: 587,
           security: 'TLS',
-          username: 'notifications@hublink.com',
+          username: 'notifications@thepicstory.com',
           password: '••••••••'
         },
         templates: [
-          { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to HubLink!', status: 'active' },
+          { id: 'welcome', name: 'Welcome Email', subject: 'Welcome to ThePicStory!', status: 'active' },
           { id: 'password_reset', name: 'Password Reset', subject: 'Reset Your Password', status: 'active' },
           { id: 'subscription_update', name: 'Subscription Update', subject: 'Your Subscription Has Been Updated', status: 'active' },
           { id: 'payment_receipt', name: 'Payment Receipt', subject: 'Payment Confirmation', status: 'active' }

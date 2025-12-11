@@ -16,7 +16,7 @@ export default function MobileApp() {
             </p>
           </div>
           <p className="text-xl text-muted-foreground">
-            Experience HubLink on the go
+            Experience ThePicStory on the go
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export default function MobileApp() {
         </Card>
 
         <div className="text-center mt-8 text-muted-foreground">
-          <p>In the meantime, access HubLink from any browser on your mobile device</p>
+          <p>In the meantime, access ThePicStory from any browser on your mobile device</p>
         </div>
       </div>
     </div>

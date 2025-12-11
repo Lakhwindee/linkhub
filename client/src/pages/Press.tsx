@@ -18,9 +18,9 @@ export default function Press() {
             <div className="flex items-start space-x-4 mb-6">
               <Newspaper className="w-12 h-12 text-primary flex-shrink-0" />
               <div>
-                <h2 className="text-2xl font-bold mb-2">About HubLink</h2>
+                <h2 className="text-2xl font-bold mb-2">About ThePicStory</h2>
                 <p className="text-muted-foreground">
-                  HubLink is the world's leading travel community platform, connecting travelers from 180+ countries and empowering creators to monetize their content through brand partnerships. With over 50,000 active users and $2M+ in creator earnings, we're reshaping how people experience and share travel.
+                  ThePicStory is the world's leading travel community platform, connecting travelers from 180+ countries and empowering creators to monetize their content through brand partnerships. With over 50,000 active users and $2M+ in creator earnings, we're reshaping how people experience and share travel.
                 </p>
               </div>
             </div>
@@ -73,19 +73,19 @@ export default function Press() {
             <div className="space-y-6">
               <div className="border-l-4 border-primary pl-4">
                 <p className="text-sm text-muted-foreground mb-1">October 2025</p>
-                <h3 className="font-semibold text-lg mb-2">HubLink Surpasses $2M in Creator Earnings</h3>
+                <h3 className="font-semibold text-lg mb-2">ThePicStory Surpasses $2M in Creator Earnings</h3>
                 <p className="text-muted-foreground">Platform reaches major milestone as creators earn over $2 million through brand partnerships...</p>
               </div>
 
               <div className="border-l-4 border-primary pl-4">
                 <p className="text-sm text-muted-foreground mb-1">September 2025</p>
-                <h3 className="font-semibold text-lg mb-2">50,000 Travelers Join HubLink Community</h3>
+                <h3 className="font-semibold text-lg mb-2">50,000 Travelers Join ThePicStory Community</h3>
                 <p className="text-muted-foreground">Travel platform celebrates rapid growth across 180+ countries...</p>
               </div>
 
               <div className="border-l-4 border-primary pl-4">
                 <p className="text-sm text-muted-foreground mb-1">August 2025</p>
-                <h3 className="font-semibold text-lg mb-2">HubLink Launches Creator Tier System</h3>
+                <h3 className="font-semibold text-lg mb-2">ThePicStory Launches Creator Tier System</h3>
                 <p className="text-muted-foreground">New 15-tier system helps creators of all sizes monetize their content...</p>
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function Press() {
             </p>
             <Button size="lg">
               <Mail className="w-4 h-4 mr-2" />
-              press@hublink.com
+              press@thepicstory.com
             </Button>
           </CardContent>
         </Card>

@@ -45,7 +45,7 @@ export default function ForBusiness() {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900 dark:text-white">
-            HubLink for Business
+            ThePicStory for Business
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Connect with millions of travelers worldwide. Grow your business with our powerful platform designed for hospitality and tourism professionals.

@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Introduction</h2>
               <p className="text-muted-foreground">
-                At HubLink, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
+                At ThePicStory, we take your privacy seriously. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.
               </p>
             </section>
 
@@ -70,7 +70,7 @@ export default function PrivacyPolicy() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Contact Us</h2>
               <p className="text-muted-foreground">
-                If you have questions about this Privacy Policy, please contact us through our Help Center or email us at privacy@hublink.com
+                If you have questions about this Privacy Policy, please contact us through our Help Center or email us at privacy@thepicstory.com
               </p>
             </section>
           </CardContent>

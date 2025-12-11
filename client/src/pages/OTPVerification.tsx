@@ -397,7 +397,7 @@ export default function OTPVerification() {
               variant="ghost" 
               onClick={() => {
                 // Get signup type from localStorage to navigate back to correct page
-                const signupType = localStorage.getItem('hublink_signup_type');
+                const signupType = localStorage.getItem('thepicstory_signup_type');
                 const signupPage = signupType === 'business' ? '/document-signup' : '/professional-signup';
                 setLocation(signupPage);
               }}

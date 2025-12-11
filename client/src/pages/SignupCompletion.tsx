@@ -14,7 +14,7 @@ export default function SignupCompletion() {
         
         // Get stored signup data from localStorage (persists across redirects)
         const signupData = localStorage.getItem('hublink_signup_data');
-        const signupType = localStorage.getItem('hublink_signup_type');
+        const signupType = localStorage.getItem('thepicstory_signup_type');
         
         console.log('📦 SignupCompletion: Retrieved data from sessionStorage:', {
           hasData: !!signupData,
@@ -54,11 +54,11 @@ export default function SignupCompletion() {
           
           // Clear signup data from localStorage
           localStorage.removeItem('hublink_signup_data');
-          localStorage.removeItem('hublink_signup_type');
+          localStorage.removeItem('thepicstory_signup_type');
           
           toast({
             title: "Signup Complete!",
-            description: "Your account has been created and verified successfully. Welcome to HubLink!",
+            description: "Your account has been created and verified successfully. Welcome to ThePicStory!",
           });
           
           // Redirect to home page with success message
@@ -79,7 +79,7 @@ export default function SignupCompletion() {
         
         // Clear signup data on error from localStorage
         localStorage.removeItem('hublink_signup_data');
-        localStorage.removeItem('hublink_signup_type');
+        localStorage.removeItem('thepicstory_signup_type');
         
         // Check if user already exists - redirect to homepage with login prompt
         if (errorMessage.toLowerCase().includes('already exists')) {

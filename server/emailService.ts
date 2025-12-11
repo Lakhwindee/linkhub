@@ -22,7 +22,7 @@ export async function sendEmailViaSMTP(to: string, subject: string, htmlContent:
     });
     
     const mailOptions = {
-      from: `"HubLink Platform" <${email}>`,
+      from: `"ThePicStory Platform" <${email}>`,
       to: to,
       subject: subject,
       html: htmlContent

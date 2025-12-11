@@ -51,7 +51,7 @@ export default function CommunityGuidelines() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Our Principles</h2>
               <p className="text-muted-foreground">
-                HubLink is a platform for travelers to connect, share experiences, and grow together. We believe in creating a positive, inclusive, and safe environment for everyone.
+                ThePicStory is a platform for travelers to connect, share experiences, and grow together. We believe in creating a positive, inclusive, and safe environment for everyone.
               </p>
             </section>
 

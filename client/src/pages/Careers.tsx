@@ -15,7 +15,7 @@ export default function Careers() {
 
         <Card className="mb-8">
           <CardContent className="p-8">
-            <h2 className="text-2xl font-bold mb-4">Why Work at HubLink?</h2>
+            <h2 className="text-2xl font-bold mb-4">Why Work at ThePicStory?</h2>
             <p className="text-muted-foreground mb-6">
               We're on a mission to connect travelers worldwide and empower creators to monetize their passion. Join a team that's reshaping how people experience and share travel.
             </p>

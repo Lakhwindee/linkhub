@@ -21,7 +21,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
         <h1 style="margin: 0; font-size: 28px;">🔐 Password Reset</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink Tourism Platform</p>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">ThePicStory Tourism Platform</p>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
@@ -52,7 +52,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         
         <p style="color: #999; font-size: 12px; text-align: center;">
-          © 2025 HubLink Tourism Platform<br>
+          © 2025 ThePicStory Tourism Platform<br>
           This is an automated email. Please do not reply.
         </p>
       </div>
@@ -64,7 +64,7 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
     console.log('📧 Attempting to send password reset email via Gmail API to:', email.replace(/(.{2}).*(@.*)/, '$1***$2'));
     const result = await sendEmailViaGmailAPI(
       email,
-      '🔐 Password Reset Request - HubLink',
+      '🔐 Password Reset Request - ThePicStory',
       htmlContent
     );
     
@@ -89,9 +89,9 @@ export const sendPasswordResetEmail = async (email: string, resetToken: string, 
     try {
       const transporter = createTransporter();
       const mailOptions = {
-        from: `"HubLink Support" <${process.env.GMAIL_EMAIL}>`,
+        from: `"ThePicStory Support" <${process.env.GMAIL_EMAIL}>`,
         to: email,
-        subject: '🔐 Password Reset Request - HubLink',
+        subject: '🔐 Password Reset Request - ThePicStory',
         html: htmlContent,
       };
       
@@ -123,7 +123,7 @@ export const sendSubscriptionWelcomeEmail = async (email: string, userName: stri
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
         <h1 style="margin: 0; font-size: 28px;">🎉 Welcome to ${planName}!</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink Tourism Platform</p>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">ThePicStory Tourism Platform</p>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
@@ -168,7 +168,7 @@ export const sendSubscriptionWelcomeEmail = async (email: string, userName: stri
         
         <p style="color: #999; font-size: 12px; text-align: center;">
           Need help? Contact us anytime at ${process.env.GMAIL_EMAIL}<br>
-          © 2025 HubLink Tourism Platform
+          © 2025 ThePicStory Tourism Platform
         </p>
       </div>
     </div>
@@ -196,7 +196,7 @@ export const sendTrialEndingEmail = async (email: string, userName: string, days
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
         <h1 style="margin: 0; font-size: 28px;">⏰ Your Trial Ends ${daysLeft === 1 ? 'Tomorrow' : `in ${daysLeft} Days`}</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink ${planName}</p>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">ThePicStory ${planName}</p>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
@@ -231,7 +231,7 @@ export const sendTrialEndingEmail = async (email: string, userName: string, days
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         
         <p style="color: #999; font-size: 12px; text-align: center;">
-          © 2025 HubLink Tourism Platform<br>
+          © 2025 ThePicStory Tourism Platform<br>
           This is an automated reminder.
         </p>
       </div>
@@ -241,7 +241,7 @@ export const sendTrialEndingEmail = async (email: string, userName: string, days
   try {
     const result = await sendEmailViaGmailAPI(
       email,
-      `⏰ Trial Ends ${daysLeft === 1 ? 'Tomorrow' : `in ${daysLeft} Days`} - HubLink`,
+      `⏰ Trial Ends ${daysLeft === 1 ? 'Tomorrow' : `in ${daysLeft} Days`} - ThePicStory`,
       htmlContent
     );
     console.log('✅ Trial ending email sent:', { email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), daysLeft });
@@ -258,7 +258,7 @@ export const sendPaymentConfirmationEmail = async (email: string, userName: stri
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 30px; text-align: center; border-radius: 8px;">
         <h1 style="margin: 0; font-size: 28px;">✅ Payment Confirmed</h1>
-        <p style="margin: 10px 0 0 0; font-size: 16px;">HubLink Tourism Platform</p>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">ThePicStory Tourism Platform</p>
       </div>
       
       <div style="background: #f8f9fa; padding: 30px; border-radius: 8px; margin-top: 20px;">
@@ -287,7 +287,7 @@ export const sendPaymentConfirmationEmail = async (email: string, userName: stri
         
         <p style="color: #999; font-size: 12px; text-align: center;">
           Questions? Contact us at ${process.env.GMAIL_EMAIL}<br>
-          © 2025 HubLink Tourism Platform
+          © 2025 ThePicStory Tourism Platform
         </p>
       </div>
     </div>
@@ -296,7 +296,7 @@ export const sendPaymentConfirmationEmail = async (email: string, userName: stri
   try {
     const result = await sendEmailViaGmailAPI(
       email,
-      `✅ Payment Confirmed - $${amount} - HubLink`,
+      `✅ Payment Confirmed - $${amount} - ThePicStory`,
       htmlContent
     );
     console.log('✅ Payment confirmation email sent:', { email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), amount });
@@ -345,7 +345,7 @@ export const sendPaymentFailedEmail = async (email: string, userName: string, am
         <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
         
         <p style="color: #999; font-size: 12px; text-align: center;">
-          © 2025 HubLink Tourism Platform<br>
+          © 2025 ThePicStory Tourism Platform<br>
           This is an automated notice.
         </p>
       </div>
@@ -355,7 +355,7 @@ export const sendPaymentFailedEmail = async (email: string, userName: string, am
   try {
     const result = await sendEmailViaGmailAPI(
       email,
-      `⚠️ Payment Failed - Action Required - HubLink`,
+      `⚠️ Payment Failed - Action Required - ThePicStory`,
       htmlContent
     );
     console.log('✅ Payment failed email sent:', { email: email.replace(/(.{2}).*(@.*)/, '$1***$2'), amount });
@@ -424,7 +424,7 @@ export const sendPremiumUpgradeEmail = async (email: string, userName: string, p
         
         <p style="color: #999; font-size: 12px; text-align: center; line-height: 1.6;">
           Need help? We're here for you at ${process.env.GMAIL_EMAIL}<br>
-          © 2025 HubLink Tourism Platform<br>
+          © 2025 ThePicStory Tourism Platform<br>
           <em>This is an automated email. Please do not reply.</em>
         </p>
       </div>
@@ -434,7 +434,7 @@ export const sendPremiumUpgradeEmail = async (email: string, userName: string, p
   try {
     const result = await sendEmailViaGmailAPI(
       email,
-      `🎉 Congratulations! You're Now Premium - HubLink`,
+      `🎉 Congratulations! You're Now Premium - ThePicStory`,
       htmlContent
     );
     console.log('✅ Premium upgrade email sent:', { 
@@ -526,7 +526,7 @@ export const sendTrialCodeRedeemedEmail = async (
         
         <p style="color: #999; font-size: 12px; text-align: center; line-height: 1.6;">
           Questions? Contact us at ${process.env.GMAIL_EMAIL}<br>
-          © 2025 HubLink Tourism Platform<br>
+          © 2025 ThePicStory Tourism Platform<br>
           <em>This is an automated confirmation email.</em>
         </p>
       </div>
@@ -536,7 +536,7 @@ export const sendTrialCodeRedeemedEmail = async (
   try {
     const result = await sendEmailViaGmailAPI(
       email,
-      `🎟️ Trial Code ${promoCode} Redeemed - ${trialDays} Days Free! - HubLink`,
+      `🎟️ Trial Code ${promoCode} Redeemed - ${trialDays} Days Free! - ThePicStory`,
       htmlContent
     );
     console.log('✅ Trial code redeemed email sent:', { 

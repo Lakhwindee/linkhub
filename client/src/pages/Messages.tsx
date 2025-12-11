@@ -389,7 +389,7 @@ export default function Messages() {
                 <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
                   <MessageCircle className="w-12 h-12 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-foreground mb-4">Welcome to HubLink Chat! 🚀</h3>
+                <h3 className="text-2xl font-bold text-foreground mb-4">Welcome to ThePicStory Chat! 🚀</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed mb-6">
                   Select a conversation from the list to start messaging with fellow travelers.
                   <br />Accept connect requests to begin new conversations and build your travel network!

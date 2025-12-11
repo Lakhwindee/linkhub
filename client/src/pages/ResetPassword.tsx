@@ -234,7 +234,7 @@ export default function ResetPassword() {
           )}
           
           <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-6">
-            © 2025 HubLink Tourism Platform
+            © 2025 ThePicStory Tourism Platform
           </div>
         </CardContent>
       </Card>

@@ -9,7 +9,7 @@ export default function HelpCenter() {
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">Help Center</h1>
           <p className="text-xl text-muted-foreground">
-            Get the support you need to make the most of HubLink
+            Get the support you need to make the most of ThePicStory
           </p>
         </div>
 
@@ -64,7 +64,7 @@ export default function HelpCenter() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-lg mb-2">How can I earn money on HubLink?</h3>
+              <h3 className="font-semibold text-lg mb-2">How can I earn money on ThePicStory?</h3>
               <p className="text-muted-foreground">
                 Creators with verified YouTube channels can reserve brand campaigns, create content, and earn money after admin approval. Premium plan required.
               </p>

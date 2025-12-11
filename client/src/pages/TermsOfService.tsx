@@ -14,7 +14,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Agreement to Terms</h2>
               <p className="text-muted-foreground">
-                By accessing or using HubLink, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.
+                By accessing or using ThePicStory, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.
               </p>
             </section>
 
@@ -64,7 +64,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Intellectual Property</h2>
               <p className="text-muted-foreground">
-                You retain ownership of content you post. By posting content, you grant HubLink a license to display, distribute, and promote your content on the platform.
+                You retain ownership of content you post. By posting content, you grant ThePicStory a license to display, distribute, and promote your content on the platform.
               </p>
             </section>
 
@@ -78,7 +78,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Limitation of Liability</h2>
               <p className="text-muted-foreground">
-                HubLink shall not be liable for any indirect, incidental, special, consequential or punitive damages resulting from your use of the service.
+                ThePicStory shall not be liable for any indirect, incidental, special, consequential or punitive damages resulting from your use of the service.
               </p>
             </section>
 
@@ -92,7 +92,7 @@ export default function TermsOfService() {
             <section>
               <h2 className="text-2xl font-bold mb-4">Contact</h2>
               <p className="text-muted-foreground">
-                Questions about the Terms of Service should be sent to legal@hublink.com
+                Questions about the Terms of Service should be sent to legal@thepicstory.com
               </p>
             </section>
           </CardContent>

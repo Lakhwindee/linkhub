@@ -72,7 +72,7 @@ export default function Globe3D({
           },
           body: JSON.stringify({
             recipientId: userId,
-            message: 'Hi! I found you on HubLink and would love to connect!'
+            message: 'Hi! I found you on ThePicStory and would love to connect!'
           }),
         });
 

@@ -404,7 +404,7 @@ export default function Landing() {
               </div>
 
               <Button size="lg" className="px-8 py-4" asChild >
-                <Link href="/professional-signup">Join HubLink Today</Link>
+                <Link href="/professional-signup">Join ThePicStory Today</Link>
               </Button>
             </div>
           </div>
@@ -418,8 +418,8 @@ export default function Landing() {
             <div className="space-y-4">
               <div className="flex items-center space-x-2">
                 <img 
-                  src="/hublink-logo.png" 
-                  alt="HubLink" 
+                  src="/thepicstory-logo.png" 
+                  alt="ThePicStory" 
                   className="w-auto brightness-0 invert" 
                   style={{ height: '100px', maxWidth: '375px' }}
                 />
@@ -461,7 +461,7 @@ export default function Landing() {
           </div>
 
           <div className="border-t border-primary-foreground/20 mt-12 pt-8 text-center text-primary-foreground/80">
-            <p>&copy; 2024 HubLink. All rights reserved.</p>
+            <p>&copy; 2024 ThePicStory. All rights reserved.</p>
           </div>
         </div>
       </footer>

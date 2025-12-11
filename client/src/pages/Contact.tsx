@@ -20,7 +20,7 @@ export default function Contact() {
             <CardContent className="p-6 text-center">
               <Mail className="w-12 h-12 mx-auto mb-4 text-primary" />
               <h3 className="font-semibold mb-2">Email</h3>
-              <p className="text-sm text-muted-foreground">support@hublink.com</p>
+              <p className="text-sm text-muted-foreground">support@thepicstory.com</p>
             </CardContent>
           </Card>
 

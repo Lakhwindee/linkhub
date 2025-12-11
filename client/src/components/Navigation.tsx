@@ -80,8 +80,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             <Link href="/">
               <div className="flex items-center space-x-2">
                 <img 
-                  src="/hublink-logo.png" 
-                  alt="HubLink" 
+                  src="/thepicstory-logo.png" 
+                  alt="ThePicStory" 
                   className="w-auto" 
                   style={{ height: '120px', maxWidth: '500px' }}
                 />
@@ -203,8 +203,8 @@ export function Navigation({ isAuthenticated }: { isAuthenticated: boolean }) {
             <Link href="/">
               <div className="flex items-center space-x-2">
                 <img 
-                  src="/hublink-logo.png" 
-                  alt="HubLink" 
+                  src="/thepicstory-logo.png" 
+                  alt="ThePicStory" 
                   className="w-auto" 
                   style={{ height: '100px', maxWidth: '250px' }}
                 />

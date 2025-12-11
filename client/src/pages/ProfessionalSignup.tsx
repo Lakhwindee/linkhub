@@ -253,7 +253,7 @@ export default function ProfessionalSignup() {
 
       // Store signup data for completion after OTP verification
       localStorage.setItem('hublink_signup_data', JSON.stringify(signupData));
-      localStorage.setItem('hublink_signup_type', 'professional');
+      localStorage.setItem('thepicstory_signup_type', 'professional');
       
       // Store OTP verification data
       localStorage.setItem('signup_email', formData.email);
@@ -309,7 +309,7 @@ export default function ProfessionalSignup() {
       <div className="max-w-4xl mx-auto px-2 sm:px-4">
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Join HubLink as a Creator
+            Join ThePicStory as a Creator
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground px-4">
             Create content, earn from campaigns, and connect with travelers worldwide
@@ -548,7 +548,7 @@ export default function ProfessionalSignup() {
                       maxLength={30}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      This will be your public profile URL: hublink.com/@{formData.username || 'your_username'}
+                      This will be your public profile URL: thepicstory.com/@{formData.username || 'your_username'}
                     </p>
                   </div>
                   <div>
@@ -612,7 +612,7 @@ export default function ProfessionalSignup() {
                     <Loader2 className="w-12 h-12 animate-spin text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold">Creating Your Account</h3>
-                  <p className="text-muted-foreground">Please wait while we set up your HubLink profile...</p>
+                  <p className="text-muted-foreground">Please wait while we set up your ThePicStory profile...</p>
                 </div>
               )}
               
@@ -624,7 +624,7 @@ export default function ProfessionalSignup() {
                     </div>
                   </div>
                   <h3 className="text-xl font-semibold text-green-600">Account Created Successfully!</h3>
-                  <p className="text-muted-foreground">Welcome to HubLink! Your creator account is ready.</p>
+                  <p className="text-muted-foreground">Welcome to ThePicStory! Your creator account is ready.</p>
                 </div>
               )}
               
