@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Maximize2, Minimize2, Star, Heart, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import Globe3D from "@/components/Globe3D";
+import FlatWorldMap from "@/components/FlatWorldMap";
 import { UserCard } from "@/components/UserCard";
 import type { User } from "@shared/schema";
 import { Input } from "@/components/ui/input";
@@ -1066,14 +1066,11 @@ export default function DiscoverTravelers() {
         )}
       </div>
 
-      {/* 3D Globe Map - Background */}
-      <div className="w-full h-full fixed inset-0 top-0 left-0 z-0 bg-gray-100">
-        <Globe3D 
+      {/* Flat World Map - Background */}
+      <div className="w-full h-full fixed inset-0 top-0 left-0 z-0">
+        <FlatWorldMap 
           users={typedUsers} 
-          selectedCountry={selectedCountry}
-          selectedState={selectedState}
           showTravellers={showTravellers}
-          focusTarget={focusTarget}
           onUserClick={(user) => setSelectedUser(user)}
         />
       </div>
