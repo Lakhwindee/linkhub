@@ -768,6 +768,28 @@ export default function DiscoverTravelers() {
   });
 
   console.log('Frontend users data:', users.length, users);
+
+  // Fetch stays for map pins
+  const { data: stays = [] } = useQuery({
+    queryKey: ["/api/stays"],
+    queryFn: async () => {
+      const response = await fetch('/api/stays?limit=50');
+      if (!response.ok) throw new Error('Failed to fetch stays');
+      return response.json();
+    },
+    enabled: showStays,
+  });
+
+  // Test stays for demo if no real stays exist
+  const testStays = [
+    { id: 'stay-1', title: 'Cozy London Flat', lat: 51.5074, lng: -0.1278, city: 'London', country: 'UK', pricePerNight: '75', currency: 'GBP', type: 'apartment' },
+    { id: 'stay-2', title: 'Paris Studio', lat: 48.8566, lng: 2.3522, city: 'Paris', country: 'France', pricePerNight: '95', currency: 'EUR', type: 'studio' },
+    { id: 'stay-3', title: 'Tokyo Modern Room', lat: 35.6762, lng: 139.6503, city: 'Tokyo', country: 'Japan', pricePerNight: '60', currency: 'JPY', type: 'room' },
+    { id: 'stay-4', title: 'Sydney Beach House', lat: -33.8688, lng: 151.2093, city: 'Sydney', country: 'Australia', pricePerNight: '120', currency: 'AUD', type: 'house' },
+    { id: 'stay-5', title: 'Delhi Heritage Home', lat: 28.6139, lng: 77.2090, city: 'Delhi', country: 'India', pricePerNight: '40', currency: 'INR', type: 'house' },
+  ];
+
+  const typedStays = (stays && stays.length > 0 ? stays : testStays) as any[];
   
   // Type users data properly
   // Add test travelers if no real travelers exist (for demo/testing)
@@ -1070,151 +1092,15 @@ export default function DiscoverTravelers() {
       <div className="w-full h-full fixed inset-0 top-0 left-0 z-0">
         <FlatWorldMap 
           users={typedUsers} 
+          stays={typedStays}
           showTravellers={showTravellers}
+          showStays={showStays}
           onUserClick={(user) => setSelectedUser(user)}
           onConnect={handleConnect}
           isConnecting={connectMutation.isPending}
         />
       </div>
 
-      {/* Right Sidebar - Travelers List */}
-      <div className="absolute top-20 right-4 z-50 w-80 bg-card/95 backdrop-blur-md border border-border rounded-lg shadow-xl max-h-[calc(100vh-6rem)] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Users className="w-5 h-5 text-blue-500" />
-            Travelers Nearby
-          </h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            {typedUsers.length} travelers found
-          </p>
-        </div>
-
-        {/* Selected User Detail */}
-        {selectedUser && (
-          <div className="p-4 border-b border-border bg-blue-50 dark:bg-blue-950">
-            <div className="flex items-start gap-3">
-              <Avatar className="w-12 h-12">
-                <AvatarImage src={selectedUser?.profileImageUrl || undefined} />
-                <AvatarFallback className="bg-blue-500 text-white">
-                  {(selectedUser?.displayName?.[0] || selectedUser?.username?.[0] || 'U').toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold truncate">{selectedUser?.displayName || selectedUser?.username}</h3>
-                  {selectedUser?.plan === 'creator' && (
-                    <Badge className="bg-yellow-500 text-white text-xs">
-                      <Star className="w-3 h-3 mr-1" />
-                      Creator
-                    </Badge>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {selectedUser?.city}, {selectedUser?.country}
-                </p>
-                {selectedUser?.interests && selectedUser.interests.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {selectedUser.interests.slice(0, 3).map((interest) => (
-                      <Badge key={interest} variant="outline" className="text-xs">
-                        {interest}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <div className="flex gap-2 mt-3">
-                  <Link href={`/profile/${selectedUser.id}`}>
-                    <Button variant="outline" size="sm" className="text-xs">
-                      <UserIcon className="w-3 h-3 mr-1" />
-                      Profile
-                    </Button>
-                  </Link>
-                  <Link href="/messages">
-                    <Button size="sm" className="text-xs bg-blue-500 hover:bg-blue-600">
-                      <MessageCircle className="w-3 h-3 mr-1" />
-                      Message
-                    </Button>
-                  </Link>
-                  <Button 
-                    variant="secondary" 
-                    size="sm" 
-                    className="text-xs"
-                    onClick={() => handleConnect(selectedUser.id)}
-                    disabled={connectMutation.isPending}
-                  >
-                    <Send className="w-3 h-3 mr-1" />
-                    {connectMutation.isPending ? 'Sending...' : 'Connect'}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Travelers List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
-          {typedUsers.map((user: any) => (
-            <div 
-              key={user.id}
-              onClick={() => setSelectedUser(user)}
-              className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                selectedUser?.id === user.id 
-                  ? 'bg-blue-100 dark:bg-blue-900 border-2 border-blue-500' 
-                  : 'bg-background hover:bg-muted border border-border'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={user.profileImageUrl || user.avatarUrl} />
-                  <AvatarFallback className={user.plan === 'creator' ? 'bg-yellow-500 text-white' : 'bg-blue-500 text-white'}>
-                    {(user.displayName?.[0] || user.username?.[0] || 'U').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-sm truncate">{user.displayName || user.username}</span>
-                    {user.plan === 'creator' && <Star className="w-3 h-3 text-yellow-500" />}
-                    {user.plan === 'traveler' && <Heart className="w-3 h-3 text-blue-500" />}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {user.city}, {user.country}
-                  </p>
-                </div>
-                <Badge 
-                  variant="secondary" 
-                  className={`text-xs ${
-                    user.plan === 'creator' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' : 
-                    user.plan === 'traveler' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 
-                    'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {user.plan || 'free'}
-                </Badge>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Legend */}
-        <div className="p-3 border-t border-border bg-muted/50">
-          <div className="flex items-center justify-around text-xs">
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <span>Creators</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <span>Travelers</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-              <span>Free</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
     </div>
   );
