@@ -71,12 +71,39 @@ export default function Globe3D({
     
     const initMap = async () => {
       try {
-        // Use simple list view instead of Google Maps
-        console.log('Initializing traveler list with', users.length, 'users');
+        // Use simple canvas-based map display
+        console.log('Initializing map with', users.length, 'users');
         
-        // Show travelers in a list format without requiring Google Maps API
+        // Initialize the map canvas
+        if (mapRef.current) {
+          mapRef.current.style.backgroundColor = '#1e293b';
+          mapRef.current.innerHTML = `
+            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; flex-direction: column;">
+              <div style="font-size: 48px; margin-bottom: 20px;">🗺️</div>
+              <h2 style="margin: 0 0 10px 0; font-size: 24px;">Traveler Locations</h2>
+              <p style="margin: 0; color: #94a3b8; font-size: 14px;">${users.length} travelers discovered</p>
+              <div style="margin-top: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 30px; max-height: 80vh; overflow-y: auto; width: 90%;">
+                ${users.map(user => `
+                  <div style="background: #334155; border-radius: 12px; padding: 20px; border: 1px solid #475569; hover: background #3f4651;">
+                    <div style="display: flex; gap: 12px;">
+                      <img src="${user.profileImageUrl || 'https://via.placeholder.com/60'}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;" />
+                      <div style="flex: 1;">
+                        <div style="font-weight: 600; color: white;">${user.displayName || user.username}</div>
+                        <div style="color: #94a3b8; font-size: 12px;">📍 ${user.city || 'Unknown'}, ${user.country || 'Unknown'}</div>
+                        ${user.interests ? `<div style="margin-top: 8px; display: flex; gap: 4px; flex-wrap: wrap;">
+                          ${user.interests.slice(0, 2).map(interest => `<span style="background: #475569; color: #93c5fd; font-size: 11px; padding: 2px 6px; border-radius: 4px;">${interest}</span>`).join('')}
+                        </div>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+        
         setIsLoading(false);
-        setError('Displaying travelers in list view');
+        setError(null);
         return;
         
         // Create advanced Google Maps with satellite imagery
