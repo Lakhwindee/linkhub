@@ -1000,7 +1000,7 @@ export default function DiscoverTravelers() {
       </div>
 
       {/* Google Maps Integration - True Full Screen */}
-      <div className="w-full h-full absolute inset-0">
+      <div className="w-full h-full fixed inset-0 top-0 left-0 z-0 bg-gray-100">
         <Globe3D 
           users={typedUsers} 
           selectedCountry={selectedCountry}
