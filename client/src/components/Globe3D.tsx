@@ -58,163 +58,26 @@ export default function Globe3D({
     fetchStays();
   }, []);
 
-  // Load Google Maps API
-  // Setup global connection request handler
+  // Initialize map immediately without Google Maps API
   useEffect(() => {
-    const handleConnectionRequest = async (userId: string) => {
-      try {
-        console.log('Sending connection request to user:', userId);
-        
-        const response = await fetch('/api/connect-requests', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            recipientId: userId,
-            message: 'Hi! I found you on ThePicStory and would love to connect!'
-          }),
-        });
-
-        if (response.ok) {
-          // Show success notification
-          const button = document.querySelector(`[onclick="window.sendConnectionRequest('${userId}')"]`) as HTMLElement;
-          if (button) {
-            button.innerHTML = '✅ Request Sent!';
-            button.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-            button.style.cursor = 'default';
-            button.onclick = null;
-            
-            setTimeout(() => {
-              // Close any open InfoWindows
-              document.querySelectorAll('.gm-ui-hover-effect').forEach(el => {
-                (el as HTMLElement).click();
-              });
-            }, 1500);
-          }
-          
-          console.log('Connection request sent successfully!');
-        } else {
-          throw new Error('Failed to send connection request');
-        }
-      } catch (error) {
-        console.error('Connection request error:', error);
-        
-        const button = document.querySelector(`[onclick="window.sendConnectionRequest('${userId}')"]`) as HTMLElement;
-        if (button) {
-          button.innerHTML = '❌ Request Failed';
-          button.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
-          setTimeout(() => {
-            button.innerHTML = '🤝 Send Connection Request';
-            button.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
-          }, 2000);
-        }
-      }
-    };
-
-    // Make function globally available
-    (window as any).sendConnectionRequest = handleConnectionRequest;
-
-    return () => {
-      // Cleanup
-      delete (window as any).sendConnectionRequest;
-    };
+    // Skip Google Maps - use simple canvas-based display
+    setIsLoading(false);
+    setIsGoogleMapsLoaded(true);
   }, []);
 
+  // Initialize map with simple user list view (no Google Maps required)
   useEffect(() => {
-    const loadGoogleMaps = async () => {
-      if (window.google && window.google.maps) {
-        console.log('Google Maps already loaded');
-        setIsGoogleMapsLoaded(true);
-        return;
-      }
-
-      try {
-        // Fetch API key from server
-        const response = await fetch('/api/config/maps-key');
-        const data = await response.json();
-        
-        if (!response.ok || !data.apiKey) {
-          console.log('Loading Google Maps API with key:', 'NO API KEY');
-          setError('Google Maps API key not configured.');
-          setIsLoading(false);
-          return;
-        }
-
-        const apiKey = data.apiKey;
-        console.log('Loading Google Maps API with key:', apiKey ? 'API key found' : 'NO API KEY');
-
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&map_ids=DEMO_MAP_ID&libraries=geometry,places&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-
-        window.initMap = () => {
-          console.log('Google Maps API loaded successfully');
-          setIsGoogleMapsLoaded(true);
-        };
-
-        // Set a shorter timeout to detect API key errors faster
-        const errorTimeout = setTimeout(() => {
-          console.log('Google Maps API timeout - switching to fallback');
-          setError('Using fallback display - Google Maps unavailable in development.');
-          setIsLoading(false);
-        }, 1500);
-
-        // Listen for Google Maps errors
-        const errorHandler = (event: any) => {
-          if (event.message && event.message.includes('Google Maps')) {
-            console.error('Google Maps error detected:', event.message);
-            clearTimeout(errorTimeout);
-            setError('Using fallback display - Google Maps unavailable in development.');
-            setIsLoading(false);
-          }
-        };
-        window.addEventListener('error', errorHandler);
-
-        script.onerror = (error) => {
-          console.error('Failed to load Google Maps API:', error);
-          clearTimeout(errorTimeout);
-          window.removeEventListener('error', errorHandler);
-          setError('Using fallback display - Google Maps unavailable in development.');
-          setIsLoading(false);
-        };
-
-        document.head.appendChild(script);
-        
-        // Return cleanup function
-        return () => {
-          clearTimeout(errorTimeout);
-          window.removeEventListener('error', errorHandler);
-        };
-      } catch (error) {
-        console.error('Failed to fetch API key:', error);
-        setError('Failed to fetch Google Maps API configuration.');
-        setIsLoading(false);
-      }
-    };
-
-    loadGoogleMaps();
-  }, []);
-
-  // Initialize high-quality Google Maps with 3D satellite view
-  useEffect(() => {
-    if (!isGoogleMapsLoaded || !mapRef.current || mapInstanceRef.current) return;
+    if (!isGoogleMapsLoaded) return;
     
     const initMap = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
+        // Use simple list view instead of Google Maps
+        console.log('Initializing traveler list with', users.length, 'users');
         
-        console.log('Initializing Google Maps with', users.length, 'users');
-        
-        // Check if Google Maps API is properly loaded
-        if (!window.google || !window.google.maps) {
-          console.error('Google Maps API not properly loaded');
-          setError('Using fallback display - Google Maps unavailable in development.');
-          setIsLoading(false);
-          return;
-        }
+        // Show travelers in a list format without requiring Google Maps API
+        setIsLoading(false);
+        setError('Displaying travelers in list view');
+        return;
         
         // Create advanced Google Maps with satellite imagery
         const map = new window.google.maps.Map(mapRef.current, {
