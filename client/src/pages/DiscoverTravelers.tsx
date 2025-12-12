@@ -738,15 +738,17 @@ export default function DiscoverTravelers() {
   // Toggle live sharing mutation
   const liveSharingMutation = useMutation({
     mutationFn: async (isLiveSharing: boolean) => {
-      return await apiRequest("POST", "/api/user/live-sharing", { isLiveSharing });
+      const response = await apiRequest("POST", "/api/user/live-sharing", { isLiveSharing });
+      return await response.json();
     },
     onSuccess: (data) => {
-      setLiveLocationSharing(data.isLiveSharing);
+      const isOn = Boolean(data.isLiveSharing);
+      setLiveLocationSharing(isOn);
       queryClient.invalidateQueries({ queryKey: ["/api/users/live"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: data.isLiveSharing ? "Live Sharing Enabled" : "Live Sharing Disabled",
-        description: data.isLiveSharing 
+        title: isOn ? "Live Sharing Enabled" : "Live Sharing Disabled",
+        description: isOn 
           ? "You are now visible on the map to other travelers" 
           : "You are no longer visible on the map",
       });
