@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navigation } from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/PageTransition";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import NotFound from "@/pages/not-found";
@@ -76,6 +78,8 @@ function Router() {
     <div className="min-h-screen bg-background">
       {!isAdminRoute && !isAdminUser && <Navigation isAuthenticated={isAuthenticated} />}
       <main className={isAuthenticated && !isAdminRoute ? "pt-16" : ""}>
+        <AnimatePresence mode="wait">
+          <PageTransition key={location}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
           <Route path="/admin" component={Admin} />
@@ -163,6 +167,8 @@ function Router() {
           <Route path="/mobile-app" component={MobileApp} />
           <Route component={NotFound} />
         </Switch>
+          </PageTransition>
+        </AnimatePresence>
       </main>
     </div>
   );
