@@ -75,7 +75,7 @@ function Router() {
   return (
     <div className="min-h-screen bg-background">
       {!isAdminRoute && !isAdminUser && <Navigation isAuthenticated={isAuthenticated} />}
-      <main key={location} className={`page-transition ${isAuthenticated && !isAdminRoute ? "pt-16" : ""}`}>
+      <main className={isAuthenticated && !isAdminRoute ? "pt-16" : ""}>
         <Switch>
           {/* Admin route accessible to everyone - handles its own auth */}
           <Route path="/admin" component={Admin} />
