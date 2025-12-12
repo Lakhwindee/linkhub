@@ -188,16 +188,6 @@ export default function Messages() {
             <h1 className="text-3xl font-bold text-foreground mb-2">Messages</h1>
             <p className="text-muted-foreground">Connect with travelers around the world</p>
           </div>
-          {process.env.NODE_ENV === 'development' && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setShowNewRequestNotification(true)}
-              className="border-dashed"
-            >
-              🔔 Test Notification
-            </Button>
-          )}
         </div>
       </div>
 
