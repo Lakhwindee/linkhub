@@ -726,12 +726,14 @@ export default function DiscoverTravelers() {
   const queryClient = useQueryClient();
   const { user: currentUser, isAuthenticated } = useAuth();
   
-  // Sync live sharing state with user profile
+  // Sync live sharing state with user profile on initial load only
+  const [hasInitialized, setHasInitialized] = useState(false);
   useEffect(() => {
-    if (currentUser && currentUser.isLiveSharing !== undefined) {
+    if (currentUser && currentUser.isLiveSharing !== undefined && !hasInitialized) {
       setLiveLocationSharing(Boolean(currentUser.isLiveSharing));
+      setHasInitialized(true);
     }
-  }, [currentUser]);
+  }, [currentUser, hasInitialized]);
 
   // Toggle live sharing mutation
   const liveSharingMutation = useMutation({
@@ -739,6 +741,7 @@ export default function DiscoverTravelers() {
       return await apiRequest("POST", "/api/user/live-sharing", { isLiveSharing });
     },
     onSuccess: (data) => {
+      setLiveLocationSharing(data.isLiveSharing);
       queryClient.invalidateQueries({ queryKey: ["/api/users/live"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
@@ -759,7 +762,6 @@ export default function DiscoverTravelers() {
   });
 
   const handleLiveSharingToggle = (checked: boolean) => {
-    setLiveLocationSharing(checked);
     liveSharingMutation.mutate(checked);
   };
 
