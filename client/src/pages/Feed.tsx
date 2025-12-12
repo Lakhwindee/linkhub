@@ -21,6 +21,7 @@ import { z } from "zod";
 import type { Post } from "@shared/schema";
 import { Link } from "wouter";
 import { worldCountries, statesByCountry, citiesByCountry } from "@/data/locationData";
+import { PageWrapper } from "@/components/PageWrapper";
 
 type CreatePostData = z.infer<typeof insertPostSchema>;
 
@@ -211,6 +212,7 @@ export default function Feed() {
   const watchedValues = watch();
 
   return (
+    <PageWrapper>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
@@ -499,5 +501,6 @@ export default function Feed() {
         </Tabs>
       </div>
     </div>
+    </PageWrapper>
   );
 }

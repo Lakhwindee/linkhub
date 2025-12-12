@@ -12,6 +12,7 @@ import { Link } from "wouter";
 import { PostCard } from "@/components/PostCard";
 import { EventCard } from "@/components/EventCard";
 import { FollowersFollowingSection } from "@/components/FollowersFollowingSection";
+import { PageWrapper } from "@/components/PageWrapper";
 import type { User, Post, Event } from "@shared/schema";
 
 export default function Dashboard() {
@@ -130,6 +131,7 @@ export default function Dashboard() {
   ];
 
   return (
+    <PageWrapper>
     <div className="min-h-screen bg-background p-2 md:p-4 space-y-4 md:space-y-6 overflow-x-hidden">
       <div className="max-w-7xl mx-auto w-full">
         {/* Welcome Header */}
@@ -371,5 +373,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    </PageWrapper>
   );
 }

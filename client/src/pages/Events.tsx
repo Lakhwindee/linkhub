@@ -21,6 +21,7 @@ import { insertEventSchema } from "@shared/schema";
 import { z } from "zod";
 import { format } from "date-fns";
 import type { Event } from "@shared/schema";
+import { PageWrapper } from "@/components/PageWrapper";
 
 type CreateEventData = z.infer<typeof insertEventSchema>;
 
@@ -160,6 +161,7 @@ export default function Events() {
   };
 
   return (
+    <PageWrapper>
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
@@ -554,5 +556,6 @@ export default function Events() {
         </Card>
       </div>
     </div>
+    </PageWrapper>
   );
 }
