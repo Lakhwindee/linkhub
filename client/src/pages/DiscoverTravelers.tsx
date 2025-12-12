@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapPin, Globe, Radar, User as UserIcon, MessageCircle, Users, Maximize2, Minimize2, Star, Heart, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import FlatWorldMap from "@/components/FlatWorldMap";
 import { UserCard } from "@/components/UserCard";
 import type { User } from "@shared/schema";
@@ -723,6 +724,44 @@ export default function DiscoverTravelers() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user: currentUser, isAuthenticated } = useAuth();
+  
+  // Sync live sharing state with user profile
+  useEffect(() => {
+    if (currentUser && currentUser.isLiveSharing !== undefined) {
+      setLiveLocationSharing(Boolean(currentUser.isLiveSharing));
+    }
+  }, [currentUser]);
+
+  // Toggle live sharing mutation
+  const liveSharingMutation = useMutation({
+    mutationFn: async (isLiveSharing: boolean) => {
+      return await apiRequest("POST", "/api/user/live-sharing", { isLiveSharing });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users/live"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      toast({
+        title: data.isLiveSharing ? "Live Sharing Enabled" : "Live Sharing Disabled",
+        description: data.isLiveSharing 
+          ? "You are now visible on the map to other travelers" 
+          : "You are no longer visible on the map",
+      });
+    },
+    onError: () => {
+      setLiveLocationSharing(currentUser?.isLiveSharing ?? false);
+      toast({
+        title: "Failed to update",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLiveSharingToggle = (checked: boolean) => {
+    setLiveLocationSharing(checked);
+    liveSharingMutation.mutate(checked);
+  };
 
   // Connect/Friend request mutation
   const connectMutation = useMutation({
@@ -749,22 +788,16 @@ export default function DiscoverTravelers() {
     connectMutation.mutate(userId);
   };
 
-  // Fetch users based on location and filters
+  // Fetch users with live sharing enabled for map display
   const { data: users = [], isLoading } = useQuery({
-    queryKey: ["/api/discover"],
+    queryKey: ["/api/users/live"],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (selectedCountry !== "all") params.append("country", selectedCountry);
-      if (userLocation) {
-        params.append("lat", userLocation[0].toString());
-        params.append("lng", userLocation[1].toString());
-      }
-      
-      const response = await fetch(`/api/discover?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch users');
+      const response = await fetch('/api/users/live');
+      if (!response.ok) throw new Error('Failed to fetch live users');
       return response.json();
     },
-    enabled: true,
+    enabled: showTravellers,
+    refetchInterval: 30000, // Refresh every 30 seconds for real-time updates
   });
 
   console.log('Frontend users data:', users.length, users);
@@ -974,14 +1007,19 @@ export default function DiscoverTravelers() {
               <Switch
                 id="live-location"
                 checked={liveLocationSharing}
-                onCheckedChange={setLiveLocationSharing}
+                onCheckedChange={handleLiveSharingToggle}
+                disabled={!isAuthenticated || liveSharingMutation.isPending}
               />
               <Label htmlFor="live-location" className="text-xs">
                 Share Live Location
               </Label>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              {liveLocationSharing ? "📍 Sharing with connected users" : "🔒 Location sharing disabled"}
+              {!isAuthenticated 
+                ? "🔐 Sign in to share your location" 
+                : liveLocationSharing 
+                  ? "📍 You are visible on the map" 
+                  : "🔒 Turn on to appear on map"}
             </p>
           </CardContent>
         </Card>

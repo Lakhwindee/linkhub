@@ -1,16 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import {
   ComposableMap,
   Geographies,
   Geography,
   Marker,
   ZoomableGroup,
-  Annotation
 } from 'react-simple-maps';
+import { geoCentroid } from 'd3-geo';
 import type { User } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { X, UserPlus, MapPin, MessageCircle, Bed, Calendar } from 'lucide-react';
+import { X, UserPlus, MapPin, MessageCircle, Bed, Calendar, RotateCcw } from 'lucide-react';
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -132,6 +132,22 @@ export default function FlatWorldMap({
   const [hoveredUser, setHoveredUser] = useState<User | null>(null);
   const [hoveredStay, setHoveredStay] = useState<Stay | null>(null);
   const [mapZoom, setMapZoom] = useState(1);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  
+  const handleCountryClick = useCallback((geo: any) => {
+    const centroid = geoCentroid(geo);
+    const countryName = geo.properties?.name || '';
+    setSelectedCountry(countryName);
+    setMapCenter([centroid[0], centroid[1]]);
+    setMapZoom(4);
+  }, []);
+  
+  const resetMapView = useCallback(() => {
+    setSelectedCountry(null);
+    setMapCenter([0, 20]);
+    setMapZoom(1);
+  }, []);
   
   const validUsers = useMemo(() => {
     if (!showTravellers) return [];
@@ -196,8 +212,10 @@ export default function FlatWorldMap({
       >
         <ZoomableGroup
           zoom={mapZoom}
-          onMoveEnd={({ zoom }) => {
+          center={mapCenter}
+          onMoveEnd={({ zoom, coordinates }) => {
             setMapZoom(zoom);
+            setMapCenter(coordinates as [number, number]);
           }}
           minZoom={1}
           maxZoom={12}
@@ -208,16 +226,17 @@ export default function FlatWorldMap({
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#e8e4d8"
+                  fill={selectedCountry === geo.properties?.name ? '#c9e4ca' : '#e8e4d8'}
                   stroke="#c5bfb0"
                   strokeWidth={0.3}
+                  onClick={() => handleCountryClick(geo)}
                   style={{
                     default: { 
                       outline: 'none',
                       filter: 'drop-shadow(1px 1px 1px rgba(0,0,0,0.1))'
                     },
                     hover: { 
-                      fill: '#d4cfbf', 
+                      fill: '#c9e4ca', 
                       outline: 'none',
                       cursor: 'pointer'
                     },
@@ -485,8 +504,12 @@ export default function FlatWorldMap({
       
       {/* Header */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-sm rounded-lg px-5 py-3 shadow-lg border border-gray-200">
-        <h2 className="text-gray-900 font-semibold text-lg text-center">Discover Travelers & Stays</h2>
-        <p className="text-gray-500 text-xs text-center">Click on a pin to connect or book</p>
+        <h2 className="text-gray-900 font-semibold text-lg text-center">
+          {selectedCountry ? selectedCountry : 'Discover Travelers & Stays'}
+        </h2>
+        <p className="text-gray-500 text-xs text-center">
+          {selectedCountry ? 'Click another country or reset to see all' : 'Click on a country to zoom in'}
+        </p>
       </div>
       
       {/* Zoom Controls */}
@@ -503,6 +526,15 @@ export default function FlatWorldMap({
         >
           -
         </button>
+        {selectedCountry && (
+          <button 
+            onClick={resetMapView}
+            className="w-8 h-8 bg-blue-500 rounded shadow-lg border border-blue-400 flex items-center justify-center text-white hover:bg-blue-600"
+            title="Reset view"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>
   );

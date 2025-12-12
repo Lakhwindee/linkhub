@@ -46,6 +46,7 @@ export const users = pgTable("users", {
   lat: real("lat"),
   lng: real("lng"),
   showOnMap: boolean("show_on_map").default(true),
+  isLiveSharing: boolean("is_live_sharing").default(false), // live location sharing toggle
   locationRadius: integer("location_radius").default(5), // km
   languages: text("languages").array(),
   interests: text("interests").array(),

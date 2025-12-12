@@ -105,6 +105,7 @@ export interface IStorage {
   getUsersNearby(lat: number, lng: number, radiusKm: number, filters?: any): Promise<User[]>;
   searchUsers(query: string, filters?: any): Promise<User[]>;
   getUsers(filters?: any): Promise<User[]>;
+  getLiveSharingUsers(): Promise<User[]>;
   
   // Connect requests
   createConnectRequest(data: { fromUserId: string; toUserId: string; message?: string }): Promise<ConnectRequest>;
@@ -476,6 +477,25 @@ export class DatabaseStorage implements IStorage {
         .limit(filters?.limit || 100);
     } catch (error) {
       console.error('Error fetching users:', error);
+      return [];
+    }
+  }
+
+  async getLiveSharingUsers(): Promise<User[]> {
+    try {
+      return await db
+        .select()
+        .from(users)
+        .where(
+          and(
+            eq(users.isLiveSharing, true),
+            sql`${users.lat} IS NOT NULL`,
+            sql`${users.lng} IS NOT NULL`
+          )
+        )
+        .limit(100);
+    } catch (error) {
+      console.error('Error fetching live sharing users:', error);
       return [];
     }
   }

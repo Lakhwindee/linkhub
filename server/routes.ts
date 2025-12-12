@@ -1295,6 +1295,17 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
+  // Get users with live sharing enabled (for map display) - MUST be before :handle route
+  app.get('/api/users/live', async (req, res) => {
+    try {
+      const liveUsers = await storage.getLiveSharingUsers();
+      res.json(liveUsers);
+    } catch (error) {
+      console.error("Error getting live sharing users:", error);
+      res.status(500).json({ message: "Failed to get live sharing users" });
+    }
+  });
+
   // Profile routes
   app.get('/api/users/:handle', async (req, res) => {
     try {
@@ -6676,7 +6687,23 @@ export async function registerRoutes(app: Express, httpServer?: Server): Promise
     }
   });
 
-
+  // Toggle live sharing for map visibility
+  app.post('/api/user/live-sharing', isAuthenticated, async (req: any, res) => {
+    try {
+      const { isLiveSharing } = req.body;
+      const userId = req.user.claims.sub;
+      
+      const updatedUser = await storage.updateUserProfile(userId, { 
+        isLiveSharing: Boolean(isLiveSharing) 
+      });
+      
+      console.log(`📍 Live sharing toggled for user ${userId}: ${isLiveSharing}`);
+      res.json({ success: true, isLiveSharing: updatedUser?.isLiveSharing });
+    } catch (error) {
+      console.error("Error toggling live sharing:", error);
+      res.status(500).json({ message: "Failed to toggle live sharing" });
+    }
+  });
 
   // Tour Packages routes (Simplified Travel Website Style)
   app.get('/api/tour-packages', async (req, res) => {
