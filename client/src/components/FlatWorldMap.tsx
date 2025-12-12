@@ -136,12 +136,20 @@ export default function FlatWorldMap({
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   
   const handleCountryClick = useCallback((geo: any) => {
-    const centroid = geoCentroid(geo);
     const countryName = geo.properties?.name || '';
-    setSelectedCountry(countryName);
-    setMapCenter([centroid[0], centroid[1]]);
-    setMapZoom(4);
-  }, []);
+    
+    // Toggle zoom - if same country clicked again, zoom out
+    if (selectedCountry === countryName) {
+      setSelectedCountry(null);
+      setMapCenter([0, 20]);
+      setMapZoom(1);
+    } else {
+      const centroid = geoCentroid(geo);
+      setSelectedCountry(countryName);
+      setMapCenter([centroid[0], centroid[1]]);
+      setMapZoom(4);
+    }
+  }, [selectedCountry]);
   
   const resetMapView = useCallback(() => {
     setSelectedCountry(null);
