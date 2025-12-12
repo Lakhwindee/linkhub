@@ -921,26 +921,6 @@ export default function DiscoverTravelers() {
         </div>
 
 
-        {/* Location Search */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Search className="w-4 h-4" />
-              Search Locations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search countries and states..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8 h-8"
-              />
-            </div>
-          </CardContent>
-        </Card>
 
 
         {/* Map Display Controls */}
