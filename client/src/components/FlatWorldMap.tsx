@@ -270,7 +270,7 @@ export default function FlatWorldMap({
             </Marker>
           ))}
           
-          {/* Stays Pins */}
+          {/* Stays Pins - Modern compact design */}
           {validStays.map((stay, index) => (
             <Marker
               key={`stay-${stay.id || index}`}
@@ -282,45 +282,22 @@ export default function FlatWorldMap({
                 onMouseEnter={() => setHoveredStay(stay)}
                 onMouseLeave={() => setHoveredStay(null)}
               >
-                <rect
-                  x={-12}
-                  y={-24}
-                  width={24}
-                  height={20}
-                  rx={3}
-                  fill="#e91e63"
+                <circle
+                  cx={0}
+                  cy={0}
+                  r={8}
+                  fill="#ec4899"
                   stroke="#fff"
                   strokeWidth={2}
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}
+                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}
                 />
-                <rect x={-8} y={-18} width={16} height={4} fill="#fff" rx={1} />
-                <rect x={-8} y={-12} width={6} height={8} fill="#fff" rx={1} />
-                <rect x={2} y={-12} width={6} height={8} fill="#fff" rx={1} />
-                <rect
-                  x={-28}
-                  y={-48}
-                  width={56}
-                  height={20}
-                  rx={4}
-                  fill="rgba(233, 30, 99, 0.95)"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
-                />
-                <text
-                  x={0}
-                  y={-34}
-                  textAnchor="middle"
-                  fill="#fff"
-                  fontSize={10}
-                  fontWeight="600"
-                  fontFamily="system-ui, sans-serif"
-                >
-                  {formatPrice(stay.pricePerNight, stay.currency)}
-                </text>
+                <rect x={-3} y={-3} width={6} height={4} fill="#fff" rx={1} />
+                <rect x={-2} y={2} width={4} height={2} fill="#fff" rx={0.5} />
               </g>
             </Marker>
           ))}
           
-          {/* Traveler Pins */}
+          {/* Traveler Pins - Modern compact design */}
           {validUsers.map((user, index) => {
             const isSelected = selectedUser?.id === user.id;
             return (
@@ -334,43 +311,23 @@ export default function FlatWorldMap({
                   onMouseEnter={() => setHoveredUser(user)}
                   onMouseLeave={() => setHoveredUser(null)}
                 >
-                  <path
-                    d="M0,-24 C-10,-24 -14,-14 -14,-10 C-14,0 0,12 0,12 C0,12 14,0 14,-10 C14,-14 10,-24 0,-24"
-                    fill="#4285f4"
-                    stroke="#fff"
-                    strokeWidth={2}
-                    transform={isSelected ? 'scale(1.2)' : 'scale(1)'}
-                    style={{ 
-                      transition: 'transform 0.2s',
-                      filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.4))'
-                    }}
-                  />
                   <circle
                     cx={0}
-                    cy={-12}
-                    r={5}
+                    cy={0}
+                    r={isSelected ? 10 : 8}
+                    fill="#3b82f6"
+                    stroke="#fff"
+                    strokeWidth={2}
+                    style={{ 
+                      transition: 'all 0.2s',
+                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))'
+                    }}
+                  />
+                  <circle cx={0} cy={-2} r={2.5} fill="#fff" />
+                  <path
+                    d="M-3,3 Q0,1 3,3 Q3,6 0,6 Q-3,6 -3,3"
                     fill="#fff"
                   />
-                  <rect
-                    x={-35}
-                    y={-48}
-                    width={70}
-                    height={20}
-                    rx={4}
-                    fill="rgba(66, 133, 244, 0.95)"
-                    style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}
-                  />
-                  <text
-                    x={0}
-                    y={-34}
-                    textAnchor="middle"
-                    fill="#fff"
-                    fontSize={11}
-                    fontWeight="500"
-                    fontFamily="system-ui, sans-serif"
-                  >
-                    {(user.displayName || user.username || '').slice(0, 12)}
-                  </text>
                 </g>
               </Marker>
             );
