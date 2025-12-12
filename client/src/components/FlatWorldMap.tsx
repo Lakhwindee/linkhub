@@ -502,15 +502,6 @@ export default function FlatWorldMap({
         </p>
       </div>
       
-      {/* Header */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-white/95 backdrop-blur-sm rounded-lg px-5 py-3 shadow-lg border border-gray-200">
-        <h2 className="text-gray-900 font-semibold text-lg text-center">
-          {selectedCountry ? selectedCountry : 'Discover Travelers & Stays'}
-        </h2>
-        <p className="text-gray-500 text-xs text-center">
-          {selectedCountry ? 'Click another country or reset to see all' : 'Click on a country to zoom in'}
-        </p>
-      </div>
       
       {/* Zoom Controls */}
       <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-1">
