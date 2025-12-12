@@ -289,7 +289,7 @@ export default function FlatWorldMap({
             </Marker>
           ))}
           
-          {/* Stays Pins - Modern compact design */}
+          {/* Stays Pins - Bed shape design */}
           {validStays.map((stay, index) => (
             <Marker
               key={`stay-${stay.id || index}`}
@@ -304,19 +304,19 @@ export default function FlatWorldMap({
                 <circle
                   cx={0}
                   cy={0}
-                  r={8}
+                  r={5}
                   fill="#ec4899"
                   stroke="#fff"
-                  strokeWidth={2}
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))' }}
+                  strokeWidth={1.5}
+                  style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}
                 />
-                <rect x={-3} y={-3} width={6} height={4} fill="#fff" rx={1} />
-                <rect x={-2} y={2} width={4} height={2} fill="#fff" rx={0.5} />
+                <rect x={-2.5} y={-1} width={5} height={2.5} fill="#fff" rx={0.5} />
+                <rect x={-2} y={0.5} width={1.5} height={1} fill="#ec4899" rx={0.3} />
               </g>
             </Marker>
           ))}
           
-          {/* Traveler Pins - Modern compact design */}
+          {/* Traveler Pins - Person shape design */}
           {validUsers.map((user, index) => {
             const isSelected = selectedUser?.id === user.id;
             return (
@@ -333,18 +333,18 @@ export default function FlatWorldMap({
                   <circle
                     cx={0}
                     cy={0}
-                    r={isSelected ? 10 : 8}
+                    r={isSelected ? 6 : 5}
                     fill="#3b82f6"
                     stroke="#fff"
-                    strokeWidth={2}
+                    strokeWidth={1.5}
                     style={{ 
                       transition: 'all 0.2s',
-                      filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.25))'
+                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                     }}
                   />
-                  <circle cx={0} cy={-2} r={2.5} fill="#fff" />
+                  <circle cx={0} cy={-1.2} r={1.3} fill="#fff" />
                   <path
-                    d="M-3,3 Q0,1 3,3 Q3,6 0,6 Q-3,6 -3,3"
+                    d="M-1.8,1.5 Q0,0 1.8,1.5 Q1.8,3 0,3 Q-1.8,3 -1.8,1.5"
                     fill="#fff"
                   />
                 </g>
